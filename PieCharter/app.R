@@ -577,20 +577,22 @@ server <- function(input, output, session) {
     teaching_df <- if (input$facilitator == "All") {
       teaching_df
     } else {
-      teaching_df %>% dplyr::filter(`Name Of Your First Facilitator` == input$facilitator | `Name Of Your Second Facilitator.` == input$facilitator)
+      teaching_df %>% dplyr::filter(`Name Of Your First Facilitator` == input$facilitator)
     }
   
     teaching_df <- teaching_df %>%
       select(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`,
-                               `Why did you choose this rating?`,
-                               `What could have improved your experience?`,
-                               `Professional Training Session`,
-                               `Date for the session`,
-                               `Name Of Your First Facilitator`) %>%
+             `Why did you choose this rating?`,
+             `What could have improved your experience?`,
+             `Professional Training Session`,
+             `Date for the session`,
+             `Name Of Your First Facilitator`,
+             `Do you have additional comments?`,
+             `Overall, what went well in this professional learning?`,
+             `Which activities best supported your learning?`) %>%
       drop_na(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`) %>%
       mutate(Date = format(`Date for the session`, '%b, %d %Y')) %>%
-      select(-`Date for the session`) %>%
-      dplyr::arrange(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`) # Why does this take so long??
+      select(-`Date for the session`)
     
     # teaching_df <- teaching_df %>% 
     #   select("% Satisfied With The Overall Quality Of Today's Professional Learning Session",
@@ -711,8 +713,8 @@ server <- function(input, output, session) {
       cowplot::ggdraw(g) #+
       # theme(plot.background = element_rect(fill = "#355c7d", color = NA))
     },
-    height = 400,
-    width = 700,
+    height = 450,
+    width = "auto",
     res = 80
   )
 # This isn't just a pie plot, it is a variable visualization type
@@ -858,9 +860,10 @@ server <- function(input, output, session) {
           )
         cowplot::ggdraw(g2)
       } else if (input$viz_type == "Tree Map") {
-        treemap::treemap(
-          mydata2(),
-          index = c("get(input$data)"),
+        mydata2() %>%
+          mutate(label = paste0(percent, "% (", n, ")\n", `get(input$data)`)) %>%
+          treemap::treemap(
+          index = c("label"),
           vSize = "n",
           type = "index",
           palette = c(rev(col(nrow(mydata2())))),
@@ -918,36 +921,63 @@ server <- function(input, output, session) {
         # wordcloud2(text_viz_data(), n, col = col(nrow(text_viz_data())))
       # }
     },
-    height = 400,
-    width = 700,
+    height = 450,
+    width = "auto",
     res = 80
   )
-# A beautiful table
+  
+  # A slice sampled table?
   output$gt_text <- render_gt(
     text_viz_data() %>%
-      # select(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`) %>%
-      gt::gt() %>%
-      # fmt_ggplot(columns = vars(`Likert Plot Scale`), height = px(400), aspect_ratio = 1) %>%
+      slice_sample(n = 10) %>%
+      dplyr::arrange(as.numeric(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`)) %>%
+      relocate(c("Professional Training Session", "Name Of Your First Facilitator"), .before = Date) %>%
+      gt() %>%
       tab_header(
         title = md("&#128202; **Selected Reviews** &#128202;"),
-        subtitle = md("Sorted *Worst-Best*")
+        subtitle = md("Sorted *Worst-Best:* A Sample of 10 Random Responses")
       ) %>%
+      cols_label(
+        `How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?` = md("**Likeliness to recommend**"),
+        `Why did you choose this rating?` = md("**Why did you choose this rating?**"),
+        `What could have improved your experience?` = md("**What could have improved your experience?**"),
+        `Professional Training Session` = md("**Professional training session**"),
+        Date = md("**Date**"),
+        `Name Of Your First Facilitator` = md("**Facilitator**"),
+        `Do you have additional comments?` = md("**Do you have additional comments?**"),
+        `Overall, what went well in this professional learning?` = md("**Overall, what went well in this professional learning?**"),
+        `Which activities best supported your learning?` = md("**Which activities best supported your learning?**")
+      ),
+    height = px(450),
+    width = pct(100)
+  )
+  
+# A beautiful table
+  # output$gt_text <- render_gt(
+    # text_viz_data() %>%
+      # select(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`) %>%
+      # gt::gt() %>%
+      # fmt_ggplot(columns = vars(`Likert Plot Scale`), height = px(400), aspect_ratio = 1) %>%
+      # tab_header(
+      #   title = md("&#128202; **Selected Reviews** &#128202;"),
+      #   subtitle = md("Sorted *Worst-Best*")
+      # ) %>%
       # cols_width(
       #   vars(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`) ~ px(110),
       #   # vars(`Likert Plot Scale`) ~ px(400),
       #   everything() ~ px(225)
       # ) %>%
-      cols_label(
-        `How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?` = md("**Likeliness to Recommend**"),
-        `What could have improved your experience?` = md("**What could have improved your experience?**"),
-        `Professional Training Session` = md("**Professional training session**"),
-        Date = md("**Date**"),
-        `Name Of Your First Facilitator` = md("**Facilitator**")
-      ) %>%
-      cols_align(
-        align = "center",
-        columns = vars(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`)
-      ),# %>%
+      # cols_label(
+      #   `How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?` = md("**Likeliness to Recommend**"),
+      #   `What could have improved your experience?` = md("**What could have improved your experience?**"),
+      #   `Professional Training Session` = md("**Professional training session**"),
+      #   Date = md("**Date**"),
+      #   `Name Of Your First Facilitator` = md("**Facilitator**")
+      # ) %>%
+      # cols_align(
+      #   align = "center",
+      #   columns = vars(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`)
+      # ) %>%
       # data_color(columns = vars(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`),
       #            colors = scales::col_numeric(
       #              palette = col(10) %>% as.character(),
@@ -1031,9 +1061,9 @@ server <- function(input, output, session) {
       #   stub.border.color = "#989898",
       #   stub.border.width = "1px",
       #   summary_row.border.color = "#989898"),
-    width = px(700), 
-    height = px(400)
-  )
+  #   width = px(700), 
+  #   height = px(400)
+  # )
   
   # Might need to output as images for resolution issues?
   # output$piePlotImage <-
