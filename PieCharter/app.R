@@ -26,6 +26,7 @@ suppressPackageStartupMessages(library(waffle))
 suppressPackageStartupMessages(library(treemap))
 suppressPackageStartupMessages(library(wordcloud2))
 suppressPackageStartupMessages(library(tidytext))
+suppressPackageStartupMessages(library(gt))
 # font_add_google(name = "Open Sans", family = "Open Sans") # Adds font for ggplot
 # font_add("Open Sans", "~/Library/Fonts/OpenSans-Regular.ttf")
 # font_add("Open Sans ExtraBold", "~/Library/Fonts/OpenSans-ExtraBold.ttf")
@@ -94,6 +95,83 @@ teaching_df <- teaching_df %>%
 
 col <- grDevices::colorRampPalette(c("#040404", "#04ABEB", "#9FDBF5")) # Color ramp, includes white because ugly otherwise
 teaching_colors <- c("#04ABEB", "#040404", "#346475", "#324D56") # Teaching Lab Color Palette - derived from logo
+
+# Teaching Lab theme
+# theme_tl <- function(){
+#   
+#   font <- "Open Sans" # Assign font up front
+#   
+#   theme_bw() %+replace%
+#     theme(
+#       legend.position = "none",
+#       legend.title = element_blank(),
+#       plot.title = element_text(hjust = 0.5, font),
+#       plot.subtitle = element_text(hjust = 0.5, font),
+#       panel.grid.major.x = element_blank(),
+#       panel.grid.minor.y = element_blank(),
+#       axis.text.x = element_text(color = "#324D56", font),
+#       axis.title.y = element_text(font),
+#       axis.title.x = element_text(font),
+#       axis.text.y = element_text(color = "#324D56", font),
+#       legend.text = element_text(font),
+#       text = element_text(font))
+# }
+# 
+# # Filtering columns for gt table
+# cols_filtered <- c("Clear\nFacilitation #1",
+#                    "Community of\nLearners #1", 
+#                    "Clear\nFacilitation #2",
+#                    "Community\nof Learners #2",
+#                    "Satisfied with\nOverall Quality",
+#                    "Relevance to\nRole",
+#                    "Helped Me\n Learn",
+#                    "Apply Next 4-\n6 Weeks")
+# 
+# 
+# # Labels for ggplot gt table
+# x_labels <- c("Strongly\nDisagree", "Disagree", "Neither Agree or Disagree", "Agree", "Strongly\nAgree")
+# 
+# # Function for creating a plot
+# plot_group <- function(name, df) {
+#   plot_object <- ggplot(data = df, aes(x = factor(question), y = likert_numeric, 
+#                                        fill = factor(pos, levels = c("positive", "negative")))) +
+#     geom_col(color = "black") +
+#     geom_text(aes(y = 0, label = ifelse(is.na(likert_numeric), "No Data Available", "")), family = "Oswald", color = "black") +
+#     scale_fill_manual(values = c(positive = "#04ABEB", negative = "black")) +
+#     labs(y = "Rating", x = "Question") +
+#     scale_y_continuous(labels = x_labels, breaks = c(-2,-1,0,1,2), limits = c(-2,2)) +
+#     theme_tl() +
+#     coord_flip() +
+#     theme(axis.title.y = element_text(angle = 90))
+#   return(plot_object)
+# }
+# 
+# # Combine ggplot within table
+# fmt_ggplot <- fmt_gg <- function(
+#   data,
+#   columns,
+#   rows = NULL,
+#   height = 100,
+#   aspect_ratio = 1.0
+# ) {
+#   rows <- rlang::enquo(rows)
+#   
+#   fmt(
+#     data = data,
+#     columns = columns,
+#     rows = !!rows,
+#     fns = list(
+#       html = function(x) {
+#         map(
+#           x,
+#           ggplot_image,
+#           height = height,
+#           aspect_ratio = aspect_ratio
+#         )
+#       }
+#     )
+#   )
+# }
 
 # colordates <- unique(c(na.omit(teaching_df$`Date for the session`))) # Need to figure out how to highlight available dates
 
@@ -283,7 +361,10 @@ ui <- dashboard_page(
       column(
         8,
         # cell_widths = 750,
-        plotOutput("piePlotNA", width = "100%")
+        conditionalPanel(condition = "input.viz_type != 'Text Visualization'",
+                         plotOutput("piePlotNA", width = "100%")),
+        conditionalPanel(condition = "input.viz_type == 'Text Visualization'",
+                         gt_output("gt_text"))
       ),
       column(8, plotOutput("piePlot", width = "100%"))
     ),
@@ -464,6 +545,9 @@ server <- function(input, output, session) {
   })
   
   text_viz_data <- reactive({
+    # Filter for date
+    teaching_df <- teaching_df %>%
+      dplyr::filter(between(`Date for the session`, input$date[1], input$date[2]))
     # Filter for portfolio
     teaching_df <- if (input$portfolio == "All") {
       teaching_df
@@ -495,22 +579,66 @@ server <- function(input, output, session) {
     } else {
       teaching_df %>% dplyr::filter(`Name Of Your First Facilitator` == input$facilitator | `Name Of Your Second Facilitator.` == input$facilitator)
     }
+  
+    teaching_df <- teaching_df %>%
+      select(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`,
+                               `Why did you choose this rating?`,
+                               `What could have improved your experience?`,
+                               `Professional Training Session`,
+                               `Date for the session`,
+                               `Name Of Your First Facilitator`) %>%
+      drop_na(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`) %>%
+      mutate(Date = format(`Date for the session`, '%b, %d %Y')) %>%
+      select(-`Date for the session`) %>%
+      dplyr::arrange(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`) # Why does this take so long??
     
-    teaching_df %>%
-      # dplyr::filter(if (input$course != "All") `Professional Training Session` == input$course) %>%
-      # dplyr::filter(if (input$client != "All") `District, Parish, Or Network` == input$client) %>%
-      dplyr::filter(between(`Date for the session`, input$date[1], input$date[2])) %>%
-      select(`What could have improved your experience?`) %>%
-      unnest_tokens(word, `What could have improved your experience?`) %>% # Get a column of words
-      mutate(word = tolower(word)) %>% # This isn't necessary because it looks like unnest_tokens does it already, I feel like it hasn't always done that
-      anti_join(stop_words, by = "word") %>%
-      count(word, sort = T) %>%
-      filter(n > 100) %>%
-      mutate(word = reorder(word, n))
+    # teaching_df <- teaching_df %>% 
+    #   select("% Satisfied With The Overall Quality Of Today's Professional Learning Session",
+    #          "% Who Say Today's Topic Was Relevant For My Role", 
+    #          "% Who Say Activities Of Today's Session Were Well-Designed To Help Me Learn", 
+    #          "How Likely Are You To Apply This Learning To Your Practice In The Next 4-6 Weeks?", 
+    #          "S/He Facilitated The Content Clearly (First Facilitator)", 
+    #          "S/He Effectively Built A Community Of Learners (First Facilitator)", 
+    #          "S/He Facilitated The Content Clearly (Second Facilitator)", 
+    #          "S/He Effectively Built A Community Of Learners (Second Facilitator)",
+    #          "How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?") %>% 
+    #   rename(`Clear\nFacilitation #1` = `S/He Facilitated The Content Clearly (First Facilitator)`,
+    #          `Community of\nLearners #1` = `S/He Effectively Built A Community Of Learners (First Facilitator)`,
+    #          `Clear\nFacilitation #2` = `S/He Facilitated The Content Clearly (Second Facilitator)`,
+    #          `Community\nof Learners #2` = `S/He Effectively Built A Community Of Learners (Second Facilitator)`,
+    #          `Satisfied with\nOverall Quality` = `% Satisfied With The Overall Quality Of Today's Professional Learning Session`,
+    #          `Relevance to\nRole` = `% Who Say Today's Topic Was Relevant For My Role`,
+    #          `Helped Me\n Learn` = `% Who Say Activities Of Today's Session Were Well-Designed To Help Me Learn`,
+    #          `Apply Next 4-\n6 Weeks` = `How Likely Are You To Apply This Learning To Your Practice In The Next 4-6 Weeks?`) %>%
+    #   mutate_at(cols_filtered, ~ dplyr::recode_factor(., "Strongly agree" = 2,
+    #                                                                                                 "Agree" = 1,
+    #                                                                                                 "Neither agree nor disagree" = 0,
+    #                                                                                                 "Disagree" = -1,
+    #                                                                                                 "Strongly disagree" = -2)) %>% # Map across all agree based columns to change to 2,1,0,-1,2
+    #   dplyr::mutate_all(.funs = as.character) %>% # Have to make factors characters before numeric
+    #   dplyr::mutate_all(.funs = as.numeric) %>% # Otherwise it changes to 1-5, purely aesthetic preference here
+    #   # drop_na() %>%
+    #   arrange(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`) %>%
+    #   mutate(Unique = row_number()) %>% 
+    #   pivot_longer(names_to = "question", values_to = "likert_numeric", cols = !c("How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?", "Unique")) %>%
+    #   mutate(pos = case_when(likert_numeric >= 0 ~ "positive",
+    #                          likert_numeric < 0 ~ "negative"))
+    
+    # newdata_filtered <- teaching_df %>%
+    #   group_by(Unique) %>%
+    #   nest() %>%
+    #   mutate(plot = map2(Unique, data, plot_group))
+    
+    # teaching_df <- post_responses %>%
+      # dplyr::filter(str_detect(`What could have improved your experience?`, c("more time|More time|collaborat")) == T) %>%
+      # mutate(Unique = row_number()) %>%
+      # left_join(newdata_filtered, by = "Unique") %>%
+      # rename(`Likert Plot Scale` = plot) %>%
+      # select(-Unique, -data)
   })
 
   options(shiny.usecairo = T) # I don't think this does anything, need to read about it
-
+# A time series visualization
   output$piePlot <- renderPlot(
     {
       g <- if(input$data != "How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?"){
@@ -587,7 +715,7 @@ server <- function(input, output, session) {
     width = 700,
     res = 80
   )
-
+# This isn't just a pie plot, it is a variable visualization type
   output$piePlotNA <- renderPlot(
     {
       if (input$viz_type == "Pie Chart") {
@@ -778,23 +906,135 @@ server <- function(input, output, session) {
               )
           }
           cowplot::ggdraw(g2)
-      } else if (input$viz_type == "Text Visualization") {
-        ggplot(text_viz_data(), aes(word, n, fill = -n)) + # Have to set fill to -n so it gets darker with number as blues palette is reversed
-          geom_col() +
-          scale_fill_distiller(palette = "Blues") + # Using blues palette to visualize scale of increase in n
-          geom_text(aes(label = n), hjust = -0.14) + # Label the number for more specific visualization
-          labs(x = "", y = "", title = "Most Common Words for What Could Have Improved the Learning Experience") +
-          coord_flip() +
-          theme_minimal() +
-          theme(legend.position = "none")
+      } #else if (input$viz_type == "Text Visualization") {
+        # ggplot(text_viz_data(), aes(word, n, fill = -n)) + # Have to set fill to -n so it gets darker with number as blues palette is reversed
+        #   geom_col() +
+        #   scale_fill_distiller(palette = "Blues") + # Using blues palette to visualize scale of increase in n
+        #   geom_text(aes(label = n), hjust = -0.14) + # Label the number for more specific visualization
+        #   labs(x = "", y = "", title = "Most Common Words for What Could Have Improved the Learning Experience") +
+        #   coord_flip() +
+        #   theme_minimal() +
+        #   theme(legend.position = "none")
         # wordcloud2(text_viz_data(), n, col = col(nrow(text_viz_data())))
-      }
+      # }
     },
     height = 400,
     width = 700,
     res = 80
   )
-
+# A beautiful table
+  output$gt_text <- render_gt(
+    text_viz_data() %>%
+      # select(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`) %>%
+      gt::gt() %>%
+      # fmt_ggplot(columns = vars(`Likert Plot Scale`), height = px(400), aspect_ratio = 1) %>%
+      tab_header(
+        title = md("&#128202; **Selected Reviews** &#128202;"),
+        subtitle = md("Sorted *Worst-Best*")
+      ) %>%
+      # cols_width(
+      #   vars(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`) ~ px(110),
+      #   # vars(`Likert Plot Scale`) ~ px(400),
+      #   everything() ~ px(225)
+      # ) %>%
+      cols_label(
+        `How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?` = md("**Likeliness to Recommend**"),
+        `What could have improved your experience?` = md("**What could have improved your experience?**"),
+        `Professional Training Session` = md("**Professional training session**"),
+        Date = md("**Date**"),
+        `Name Of Your First Facilitator` = md("**Facilitator**")
+      ) %>%
+      cols_align(
+        align = "center",
+        columns = vars(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`)
+      ),# %>%
+      # data_color(columns = vars(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`),
+      #            colors = scales::col_numeric(
+      #              palette = col(10) %>% as.character(),
+      #              domain = NULL)
+      # ) %>%
+    
+      # tab_style(
+      #   style = list(
+      #     cell_borders(
+      #       sides = "right",
+      #       color = "black",
+      #       weight = px(3)
+      #     )
+      #   ),
+      #   locations = list(
+      #     cells_body(
+      #       columns = vars(`What could have improved your experience?`)
+      #     )
+      #   )
+      # ) %>%
+      # tab_style(
+      #   style = list(
+      #     cell_borders(
+      #       sides = "left",
+      #       color = "black",
+      #       weight = px(3)
+      #     )
+      #   ),
+      #   locations = list(
+      #     cells_body(
+      #       columns = vars(`Professional Training Session`)
+      #     )
+      #   )
+      # ) %>%
+      # tab_style(
+      #   style = list(
+      #     cell_borders(
+      #       sides = "bottom",
+      #       color = "black",
+      #       weight = px(3)
+      #     )
+      #   ),
+      #   locations = list(
+      #     cells_column_labels(
+      #       columns = gt::everything()
+      #     )
+      #   )
+      # ) %>%
+      # tab_style(
+      #   style = list(
+      #     cell_borders(
+      #       sides = "right",
+      #       color = "gray50",
+      #       weight = px(1.5)
+      #     )
+      #   ),
+      #   locations = list(
+      #     cells_body(
+      #       columns = vars(`What could have improved your experience?`,
+      #                      `Professional Training Session`,
+      #                      `Name Of Your First Facilitator`,
+      #                      `Date`)
+      #     )
+      #   )
+      # ) %>%
+      # tab_options(
+      #   summary_row.background.color = "#ACEACE80",
+      #   grand_summary_row.background.color = "#990000",
+      #   row_group.background.color = "#FFEFDB80",
+      #   heading.background.color = "#04ABEB", # Main Heading Background
+      #   column_labels.background.color = "#EFFBFC",
+      #   stub.background.color = "#EFFBFC",
+      #   table.font.color = "#323232",
+      #   table.font.names = "Oswald",
+      #   table_body.hlines.color = "#989898",
+      #   table_body.border.top.color = "#989898",
+      #   heading.border.bottom.color = "#989898",
+      #   row_group.border.top.color = "#989898",
+      #   row_group.border.bottom.style = "none",
+      #   stub.border.style = "dashed",
+      #   stub.border.color = "#989898",
+      #   stub.border.width = "1px",
+      #   summary_row.border.color = "#989898"),
+    width = px(700), 
+    height = px(400)
+  )
+  
   # Might need to output as images for resolution issues?
   # output$piePlotImage <-
   #   renderImage({
