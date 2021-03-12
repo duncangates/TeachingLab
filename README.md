@@ -8,4 +8,4 @@ Official github for all Teaching Lab software development
 - Data: All data created or stored
   - Notated as original_ for any sourced data
 - R: For both Rmd and R files
-- PieCharter: The Survey Visualization Dashboard (Don't mess with this)
+- [PieCharter](https://dungates.shinyapps.io/PieCharter/): The Survey Visualization Dashboard (Don't mess with this)
