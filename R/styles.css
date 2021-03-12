@@ -1,13 +1,13 @@
 body .main-container {
-      max-width: 1800px !important;
-      width: 1800px !important;
-    }
-    body {
-      max-width: 1800px !important;
-    }
-    
+max-width: 1200px;
+}
+
+body {
+  background-color: white;
+}
+
 /* Whole document: */
-body{
+* {
   font-family: Open Sans;
   font-size: 12pt;
 }
@@ -20,27 +20,33 @@ body{
 #main .nav-pills > li.active > a,
 #main .nav-pills > li.active > a:hover,
 #main .nav-pills > li.active > a:focus {
-    background-color: #22983B;
+    background-color: #04ABEB;
 }
 
 #main .nav-pills > li > a:hover {
-    background-color: #22983B;
+    background-color: #04ABEB;
+    text-align: center;
 }
 
 h1, h2, h3, h4, h5, h6, legend {
-    color: #22983B;
+    color: #04ABEB;
+    text-align: center;
 }
 
-#nav-top span.glyphicon {
-    color: #22983B;
+#content h2 {
+    background-color: #003366;
+}
+
+#nav-top .glyphicon {
+    color: #04ABEB;
 }
 
 #table-of-contents header {
-    color: #22983B;
+    color: #04ABEB;
 }
 
 #table-of-contents h2 {
-    background-color: #22983B;
+    background-color: #04ABEB;
 }
 
 #main a {

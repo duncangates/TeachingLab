@@ -24,6 +24,11 @@ delaware_sheet <- read_sheet("https://docs.google.com/spreadsheets/d/1voIeS_I2GG
 
 ## Reading in Moodle Data
 
+- Need date/time
+- Moodle API
+- Demo of report functions
+
+
 ```{r moodle}
 
 ```
