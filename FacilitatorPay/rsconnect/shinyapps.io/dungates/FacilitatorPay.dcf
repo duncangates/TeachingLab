@@ -1,0 +1,12 @@
+name: FacilitatorPay
+title: FacilitatorPay
+username:
+account: dungates
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3791581
+bundleId: 4346345
+url: https://dungates.shinyapps.io/FacilitatorPay/
+when: 1615792786.72841
+asMultiple: FALSE
+asStatic: FALSE

@@ -577,16 +577,18 @@ Time series
 ```{r}
 test <- teaching_df %>%
       select(`Date for the session`, newcols[c(5:8, 10:11, 14:15)]) %>%
-      pivot_longer(!`Date for the session`, names_to = "question", values_to = "answer") #%>%
+      pivot_longer(!`Date for the session`, names_to = "question", values_to = "answer") %>%
       dplyr::filter(`answer` != "No Response") %>% # Filter out non-responses
       dplyr::group_by(question, `Date for the session`) %>% # Group by input variable
+      mutate(`Number Agree/Disagree` = n()) %>%
       mutate(Rating = case_when(answer %in% c("Agree", "Strongly agree") ~ "Agree/Strongly Agree",
-                                  `answer %in% c("Neither agree nor disagree", "Disagree", "Strongly disagree") ~ "Neither/Disagree/Strongly Disagree"),
+                                  answer %in% c("Neither agree nor disagree", "Disagree", "Strongly disagree") ~ "Neither/Disagree/Strongly Disagree"),
                `Date for the session` = paste0(month(`Date for the session`, label = T, abbr = F), ", ", year(`Date for the session`))) %>%
-        group_by(`Date for the session`) %>%
+  ungroup() %>%
+        group_by(`Date for the session`, question) %>%
         mutate(Percent = `Number Agree/Disagree`/sum(`Number Agree/Disagree`)*100) %>%
         filter(Rating == "Agree/Strongly Agree") %>%
-        group_by(`Date for the session`, Rating) %>%
+        group_by(`Date for the session`, Rating, question) %>%
         summarise(Percent = round(sum(Percent), 2))
 ```
 
