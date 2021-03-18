@@ -2,8 +2,9 @@ library(shiny)
 library(bs4Dash)
 library(tidyverse)
 library(flexdashboard)
+library(gt)
 
-
+# Note: This calculator applies to facilitating our core professional learning content- not for observations, office hours, coaching etc.
 ui <- bs4DashPage(
   navbar = bs4DashNavbar(skin = "dark"),
   title = "Teaching Lab Payment Calculator",
@@ -57,42 +58,77 @@ ui <- bs4DashPage(
     bs4TabItems(
       bs4TabItem(
         tabName = "item1",
+        fluidRow(
+          bs4Card(
+            title = "New Facilitator Payment Rate",
+            closable = TRUE,
+            width = 6,
+            solidHeader = TRUE,
+            status = "primary",
+            collapsible = TRUE,
+            fluidRow(
+              column(
+                6,
+                numericInput("hours_new", "How many total hours in the course?",
+                  min = 0, max = 100, value = 0
+                ),
+                shiny::selectInput("course_platform",
+                  label = "Select the course platform:",
+                  choices = c("Not Sure", "IDK", "Something Else"),
+                  selected = NULL
+                )
+              ),
+              column(6, checkboxGroupInput("first_time", "Was this your first time facilitating a course (Did you have to do any training)?",
+                selected = NULL, choices = c("Yes", "No"), inline = T
+              ))
+            ),
+            gaugeOutput("new_plot")
+          ),
+          bs4Card(
+            title = "Total Course Pay",
+            closable = TRUE,
+            width = 6,
+            solidHeader = TRUE,
+            status = "primary",
+            collapsible = TRUE,
+            gt_output("itemized_payment")
+          )
+        ),
         bs4Card(
-          title = "New Facilitator Payment Rate",
+          title = "Session Hours",
           closable = TRUE,
           width = 12,
           solidHeader = TRUE,
           status = "primary",
-          collapsible = TRUE,
-          fluidRow(
-            column(
-              6,
-              numericInput("hours_new", "Number of Hours Worked",
-                min = 0, max = 100, value = 0
-              )
-            ),
-            column(6, checkboxGroupInput("first_time", "Was this your first time facilitating a course (Did you have to do any training)?",
-              selected = NULL, choices = c("Yes", "No"), inline = T
-            ))
-          ),
-          gaugeOutput("new_plot")
+          collapsible = TRUE
         )
       ),
-      bs4TabItem(
-        tabName = "item2",
-        bs4Card(
-          title = "Returning Facilitator Payment Rate",
-          closable = TRUE,
-          width = 12,
-          solidHeader = TRUE,
-          status = "warning",
-          collapsible = TRUE,
-          numericInput("hours_return", "Number of Hours Worked",
-            min = 0, max = 100, value = 0
-          ),
-          gaugeOutput("return_plot")
-        )
-      ),
+      # bs4TabItem(
+      #   tabName = "item2",
+      #   fluidRow(
+      #     bs4Card(
+      #       title = "Returning Facilitator Payment Rate",
+      #       closable = TRUE,
+      #       width = 6,
+      #       solidHeader = TRUE,
+      #       status = "warning",
+      #       collapsible = TRUE,
+      #       numericInput("hours_return", "Number of Hours Worked",
+      #         min = 0, max = 100, value = 0
+      #       ),
+      #       gaugeOutput("return_plot")
+      #     ),
+      #     bs4Card(
+      #       title = "Total Course Pay",
+      #       closable = TRUE,
+      #       width = 6,
+      #       solidHeader = TRUE,
+      #       status = "primary",
+      #       collapsible = TRUE,
+      #       gt_output("itemized_payment")
+      #     )
+      #   )
+      # ),
       bs4TabItem(
         tabName = "item3",
         bs4Card(
@@ -170,6 +206,12 @@ server <- function(input, output) {
       max = 150 * 100 + 100,
       symbol = "$"
     ) # Max is 150*100+100
+  })
+
+  output$itemized_payment <- render_gt({
+    mtcars %>%
+      head() %>%
+      gt()
   })
 
   # output$return_plot <- renderPlot({

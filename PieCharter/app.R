@@ -25,6 +25,7 @@ suppressPackageStartupMessages(library(bslib))
 # font_add("Open Sans ExtraBold", "~/Library/Fonts/OpenSans-ExtraBold.ttf")
 # showtext_auto()
 showtext_opts(dpi = 150) # Changes ggplot font size
+options(semantic.themes = T)
 # library(shinyalert)
 # extrafont::font_import(pattern = "Open Sans", prompt = F)
 # extrafont::ttf_import(pattern = "OpenSans-ExtraBold.ttf", paths = here("PieCharter/www"))
@@ -35,7 +36,7 @@ showtext_opts(dpi = 150) # Changes ggplot font size
 #           "~/.fonts"))
 # system('fc-cache -f ~/.fonts')
 
-teaching_df <- read_rds(here("Data/original_df.rds")) # Read in the data
+teaching_df_readin <- read_rds(here("Data/original_df.rds")) # Read in the data
 # teaching_df <- read_rds("~/Teaching Lab/Coding/TeachingLab/PieCharter/Data/original_df.rds")
 # Relevant columns
 oldcols <- c(
@@ -76,7 +77,7 @@ newcols <- str_to_title(c(
   "How likely are you to recommend this professional learning to a colleague or friend?"
 )) # New column names
 # Small data clean
-teaching_df <- teaching_df %>%
+teaching_df_readin <- teaching_df_readin %>%
   mutate_if(is.character, funs(replace_na(., "No Response"))) %>%
   mutate_if(is.numeric, funs(replace_na(., "No Response"))) %>%
   rename_with(~ newcols[which(oldcols == .x)], .cols = oldcols) %>%
@@ -91,7 +92,34 @@ teaching_df <- teaching_df %>%
          `What Grade Band(S) Do You Focus On?` = str_replace(`What Grade Band(S) Do You Focus On?`, "Grades K-2, Grades 3-5, Grades 6-8, Grades 9-12, All grades K-12", "All Grades"),
          `What Grade Band(S) Do You Focus On?` = str_replace(`What Grade Band(S) Do You Focus On?`, "Grades K-2, Grades 3-5, Grades 6-8, Grades 9-12", "All Grades"),
          `What Grade Band(S) Do You Focus On?` = str_replace(`What Grade Band(S) Do You Focus On?`, "All Grades, All Grades", "All Grades"))
-  
+
+# teaching_df <- teaching_df_readin
+
+# Making the reviews of multiple facilitators in a session into one
+# Split the data
+community_content_second <- teaching_df_readin %>%
+  filter(`Did You Have A Second Facilitator?` == "Yes") %>%
+  dplyr::select(!c(`S/He Facilitated The Content Clearly (First Facilitator)`, 
+            `S/He Effectively Built A Community Of Learners (First Facilitator)`,
+            `Name Of Your First Facilitator`)) %>%
+  rename(`S/He Facilitated The Content Clearly` = `S/He Facilitated The Content Clearly (Second Facilitator)`,
+         `S/He Effectively Built A Community Of Learners` = `S/He Effectively Built A Community Of Learners (Second Facilitator)`,
+         `Name Of Your First Facilitator` = `Name Of Your Second Facilitator.`)
+
+# Bind it to original dataframe
+teaching_df <- teaching_df_readin %>%
+  dplyr::select(-c(`S/He Facilitated The Content Clearly (Second Facilitator)`,
+         `S/He Effectively Built A Community Of Learners (Second Facilitator)`,
+         `Name Of Your Second Facilitator.`)) %>%
+  rename(`S/He Effectively Built A Community Of Learners` = `S/He Effectively Built A Community Of Learners (First Facilitator)`,
+         `S/He Facilitated The Content Clearly` = `S/He Facilitated The Content Clearly (First Facilitator)`) %>%
+  bind_rows(community_content_second) %>%
+  rename(`Name Of Your Facilitator` = `Name Of Your First Facilitator`)
+
+# Moodle data merge
+moodle_data <- read_rds(here("Data/moodle_export_reformat.rds"))
+
+teaching_df <- full_join(teaching_df, moodle_data)
 
 col <- grDevices::colorRampPalette(c("#040404", "#04ABEB")) # Color ramp, includes white because ugly otherwise
 teaching_colors <- c("#04ABEB", "#040404", "#346475", "#324D56") # Teaching Lab Color Palette - derived from logo
@@ -209,10 +237,13 @@ ui <-
 
   # Application title
   dashboardHeader(
-    title = h2("Teaching Lab Dashboard", style = "font-family:'Open Sans Bold'"),
+    title = h2("Internal Dashboard", style = "font-family:'Open Sans Bold'"),
+    logo_path = "teaching_lab_logo.png",
+    logo_align = "center",
+    # title = tabs$a(href = "https://www.teachinglab.org/", tags$img(src = "teaching_lab_logo.png", height = 150, width = 400), target = "_blank"),
     titleWidth = "wide",
     color = "black",
-    inverted = T
+    inverted = F
   ),
   # Sidebar with a series of selections for variables
   dashboardSidebar(
@@ -222,12 +253,31 @@ ui <-
       tags$head(includeCSS("www/styles.css")), # Open Sans CSS
       menu_item("",
         icon = shiny::icon("chart-pie"),
-        selectInput("data",
-          c("All", newcols[c(5:8, 10:11, 14:16)]),
-          selected = NULL,
-          label = h3("Select Variable of Interest:", style = "font-family:'Open Sans ExtraBold';"),
-          width = 400
-        ), # Basic Shiny Input Take
+        conditionalPanel(condition = "input.viz_type != 'Text Visualization'",
+            selectInput("data",
+              c("All", 
+                "% Satisfied With The Overall Quality Of Today's Professional Learning Session", 
+                "% Who Say Today's Topic Was Relevant For My Role", "% Who Say Activities Of Today's Session Were Well-Designed To Help Me Learn", 
+                "How Likely Are You To Apply This Learning To Your Practice In The Next 4-6 Weeks?", 
+                "S/He Facilitated The Content Clearly", 
+                "S/He Effectively Built A Community Of Learners", 
+                "How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?",
+                "The independent online work activities were well-designed to help me meet the learning targets.", 
+                "The Zoom meeting activities were well-designed to help me meet the learning targets.", 
+                "I felt a sense of community with the other participants in this course even though we were meeting virtually.", 
+                "This course helped me navigate remote and/or hybrid learning during COVID-19."),
+              selected = NULL,
+              label = h3("Select Variable of Interest:", style = "font-family:'Open Sans ExtraBold';"),
+              width = 400
+              )
+          ),
+        conditionalPanel(condition = "input.viz_type == 'Text Visualization'",
+                          selectInput("text_filters",
+                                      choices = c("Random", "Positive Statements", "Areas for Improvement"),
+                                      selected = NULL, 
+                                      label = h3("Select a Method of Text Filtration", style = "font-family:'Open Sans ExtraBold';"),
+                                      width = 400)),
+        # ), 
         br(),
         selectInput("viz_type",
                     choices = c("Pie Chart",
@@ -238,8 +288,13 @@ ui <-
                                 "Text Visualization"),
                     selected = "Pie Chart",
                     label = h3("Select a Type of Visualization", style = "font-family:'Open Sans ExtraBold';"),
-                    width = 400)
-      ),
+                    width = 400),
+        conditionalPanel(condition = "input.viz_type == 'Text Visualization'",
+                         textInput("string_filters",
+                                   label = h3("Filter for a Specific Word/Phrase", style = "font-family:'Open Sans ExtraBold';"),
+                                   value = "",
+                                     width = 400))
+        ),
       menu_item("",
         icon = shiny::icon("calendar"),
         # textOutput("textData"),
@@ -335,8 +390,7 @@ ui <-
       menu_item("",
                 icon = shiny::icon("globe"),
                 selectizeInput("facilitator",
-                               choices = append(unique(teaching_df$`Name Of Your First Facilitator`), 
-                                                unique(teaching_df$`Name Of Your Second Facilitator.`)) %>% 
+                               choices = unique(teaching_df$`Name Of Your Facilitator`) %>% 
                                  sort() %>%
                                  purrr::prepend("All"),
                                selected = "All",
@@ -354,33 +408,43 @@ ui <-
   # Show a plot the pie charts in one row, tables in another
   dashboardBody(
     tags$head(tags$link(rel = "shortcut icon", href = "favicon.ico")), # Favicon add
-    tags$head(
-      # includeCSS("www/styles.css"),
-      # tags$style("@import url('//fonts.googleapis.com/css?family=Open Sans');")
-    ),
     fluidRow(
+      conditionalPanel(condition = "input.viz_type == 'Text Visualization'",
+                     gt_output("gt_text"))
+      ),
+    fluidRow(
+      # Left-most plot
       column(
         8,
-        # cell_widths = 750,
+        style='margin-top:-30px', # Shifts plots up 
         conditionalPanel(condition = "input.viz_type != 'Text Visualization'",
-                         plotOutput("piePlotNA", width = "100%")),
-        conditionalPanel(condition = "input.viz_type == 'Text Visualization'",
-                         gt_output("gt_text"))
+                          plotOutput("piePlotNA", width = "100%")
+                         )
       ),
-      column(8, plotOutput("piePlot", width = "100%"))
+      # Right-most plot
+      column(8, 
+             style='margin-top:-30px', # Shifts plots up
+             conditionalPanel(condition = "input.viz_type != 'Text Visualization'",
+              plotOutput("piePlot", width = "100%")
+              )
+             )
     ),
     fluidRow(
+      # Left-most table
       column(
         8,
-        style='padding-left:3px; padding-right:3px; padding-top:38px; padding-bottom:5px',
-        # cell_widths = 750,
-        #                    cell_args = "padding: 6px;",
-        #                    style = "border: 1px solid silver;",
-        DTOutput("tableData2")
+        style='padding-left:5px; padding-right:5px; padding-top:38px; padding-bottom:5px', # Add padding to the top of table and left-right
+        conditionalPanel(condition = "input.viz_type != 'Text Visualization'",
+          DTOutput("tableData2")
+        )
       ),
+      # Right-most table
       column(8, 
-             style='padding-left:3px; padding-right:3px; padding-top:38px; padding-bottom:5px',
-             DTOutput("tableData"))
+             style='padding-left:5px; padding-right:5px; padding-top:38px; padding-bottom:5px', # Add padding to the top of table and left-right
+             conditionalPanel(condition = "input.viz_type != 'Text Visualization'",
+              DTOutput("tableData")
+              )
+             )
     )
   )
   # )
@@ -504,7 +568,7 @@ server <- function(input, output, session) {
       teaching_df <- if (input$facilitator == "All") {
         teaching_df
       } else {
-        teaching_df %>% dplyr::filter(`Name Of Your First Facilitator` == input$facilitator | `Name Of Your Second Facilitator.` == input$facilitator)
+        teaching_df %>% dplyr::filter(`Name Of Your Facilitator` == input$facilitator)
       }
       
       teaching_df <- if(input$data == "How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?") {
@@ -537,6 +601,7 @@ server <- function(input, output, session) {
     }
     # cat(str(teaching_df))
   })
+  
   # Data for first pie chart and table (leftmost)
   mydata2 <- reactive({
     if (input$data != "All") {
@@ -569,7 +634,7 @@ server <- function(input, output, session) {
       teaching_df <- if (input$facilitator == "All") {
         teaching_df
       } else {
-        teaching_df %>% dplyr::filter(`Name Of Your First Facilitator` == input$facilitator | `Name Of Your Second Facilitator.` == input$facilitator)
+        teaching_df %>% dplyr::filter(`Name Of Your Facilitator` == input$facilitator)
       }
   
       teaching_df %>%
@@ -613,11 +678,20 @@ server <- function(input, output, session) {
     teaching_df <- if (input$facilitator == "All") {
       teaching_df
     } else {
-      teaching_df %>% dplyr::filter(`Name Of Your First Facilitator` == input$facilitator | `Name Of Your Second Facilitator.` == input$facilitator)
+      teaching_df %>% dplyr::filter(`Name Of Your Facilitator` == input$facilitator)
     }
     
     teaching_df %>%
-      select(`Date for the session`, newcols[c(5:8, 10:11, 14:15)]) %>%
+      select(`Date for the session`, `% Satisfied With The Overall Quality Of Today's Professional Learning Session`, 
+             `% Who Say Today's Topic Was Relevant For My Role`, 
+             `% Who Say Activities Of Today's Session Were Well-Designed To Help Me Learn`, 
+             `How Likely Are You To Apply This Learning To Your Practice In The Next 4-6 Weeks?`, 
+             `S/He Facilitated The Content Clearly`, 
+             `S/He Effectively Built A Community Of Learners`,
+             `The independent online work activities were well-designed to help me meet the learning targets.`, 
+             `The Zoom meeting activities were well-designed to help me meet the learning targets.`, 
+             `I felt a sense of community with the other participants in this course even though we were meeting virtually.`, 
+             `This course helped me navigate remote and/or hybrid learning during COVID-19.`) %>%
       dplyr::filter(between(`Date for the session`, input$date[1], input$date[2])) %>%
       # Rename with line breaks every 24 characters
       rename_with( ~ gsub("(.{25,}?)\\s", "\\1\n", .x)) %>%
@@ -660,11 +734,20 @@ server <- function(input, output, session) {
     teaching_df <- if (input$facilitator == "All") {
       teaching_df
     } else {
-      teaching_df %>% dplyr::filter(`Name Of Your First Facilitator` == input$facilitator | `Name Of Your Second Facilitator.` == input$facilitator)
+      teaching_df %>% dplyr::filter(`Name Of Your Facilitator` == input$facilitator)
     }
     
     teaching_df %>%
-      select(`Date for the session`, newcols[c(5:8, 10:11, 14:15)]) %>%
+      select(`Date for the session`, `% Satisfied With The Overall Quality Of Today's Professional Learning Session`, 
+             `% Who Say Today's Topic Was Relevant For My Role`, 
+             `% Who Say Activities Of Today's Session Were Well-Designed To Help Me Learn`, 
+             `How Likely Are You To Apply This Learning To Your Practice In The Next 4-6 Weeks?`, 
+             `S/He Facilitated The Content Clearly`, 
+             `S/He Effectively Built A Community Of Learners`,
+             `The independent online work activities were well-designed to help me meet the learning targets.`, 
+             `The Zoom meeting activities were well-designed to help me meet the learning targets.`, 
+             `I felt a sense of community with the other participants in this course even though we were meeting virtually.`, 
+             `This course helped me navigate remote and/or hybrid learning during COVID-19.`) %>%
       dplyr::filter(between(`Date for the session`, input$date[1], input$date[2])) %>%
       # Rename with line breaks every 24 characters
       rename_with( ~ gsub("(.{25,}?)\\s", "\\1\n", .x)) %>%
@@ -683,10 +766,13 @@ server <- function(input, output, session) {
       summarise(Percent = round(sum(Percent), 2))
   })
   
+  # Text Dataframe
   text_viz_data <- reactive({
-    # Filter for date
+    # Filter for date and make rating numeric
     teaching_df <- teaching_df %>%
-      dplyr::filter(between(`Date for the session`, input$date[1], input$date[2]))
+      dplyr::filter(between(`Date for the session`, input$date[1], input$date[2])) %>%
+      dplyr::filter(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?` != "No Response") %>%
+      mutate(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?` = as.numeric(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`))
     # Filter for portfolio
     teaching_df <- if (input$portfolio == "All") {
       teaching_df
@@ -716,22 +802,35 @@ server <- function(input, output, session) {
     teaching_df <- if (input$facilitator == "All") {
       teaching_df
     } else {
-      teaching_df %>% dplyr::filter(`Name Of Your First Facilitator` == input$facilitator)
+      teaching_df %>% dplyr::filter(`Name Of Your Facilitator` == input$facilitator)
     }
-  
+    # Filter for positive
+    teaching_df <- if(input$text_filters == "Positive Statements") {
+      teaching_df %>% dplyr::filter(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?` > 7)
+    } else {
+      teaching_df
+    }
+    # Filter for negative
+    teaching_df <- if(input$text_filters == "Areas for Improvement") {
+      teaching_df %>% dplyr::filter(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?` <= 2)
+    } else {
+      teaching_df
+    }
+    
     teaching_df <- teaching_df %>%
       select(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`,
              `Why did you choose this rating?`,
              `What could have improved your experience?`,
              `Professional Training Session`,
              `Date for the session`,
-             `Name Of Your First Facilitator`,
-             `Do you have additional comments?`,
+             `Name Of Your Facilitator`,
+             `How, if in any way, this course helped you prepare for school opening after COVID-19?`,
              `Overall, what went well in this professional learning?`,
              `Which activities best supported your learning?`) %>%
       drop_na(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`) %>%
       mutate(Date = format(`Date for the session`, '%b, %d %Y')) %>%
-      select(-`Date for the session`)
+      select(-`Date for the session`) %>%
+      dplyr::filter(if_any(c(2,3,7,8,9), ~ str_detect(., input$string_filters)))
     
     # teaching_df <- teaching_df %>% 
     #   select("% Satisfied With The Overall Quality Of Today's Professional Learning Session",
@@ -797,7 +896,7 @@ server <- function(input, output, session) {
           scale_y_continuous(breaks = pretty_breaks(n = 20), limits = c(-100, 100), expand = c(0, 0)) +
           # scale_fill_manual(values = c("#04ABEB", "#040404")) +
           labs(x = "Date", title = "Monthly NPS",
-               y = paste(str_to_title(as.character(input$data)))) +
+               y = "How Likely Are You To Recommend This\nProfessional Learning To A Colleague Or Friend?") +
           theme_bw() + # BW Panel panel elements
           theme(
             legend.position = "none",
@@ -821,7 +920,14 @@ server <- function(input, output, session) {
           geom_point(size = 1.5, alpha = 0.9) +
           facet_wrap( ~ question) +
           coord_cartesian() +
-          scale_x_date(date_breaks = "3 month", date_labels = "%b, %y", expand = c(0, 0)) +
+          # Doesn't work right now
+          scale_x_date(date_breaks = if_else((max(teaching_df$`Date for the session`, na.rm = T) - min(teaching_df$`Date for the session`, na.rm = T)) > 365,
+                                             "3 month",
+                                             "1 month"), 
+                       date_labels = if_else((max(teaching_df$`Date for the session`, na.rm = T) - min(teaching_df$`Date for the session`, na.rm = T)) > 365,
+                                             "%m/%y",
+                                             "%b, %y"), 
+                       expand = c(0, 0)) +
           scale_y_continuous(breaks = pretty_breaks(n = 5), limits = c(0, 100), 
                              labels = scales::percent_format(scale = 1), expand = c(0, 0)) +
           scale_fill_manual(values = c("#04ABEB", "#040404")) +
@@ -834,7 +940,7 @@ server <- function(input, output, session) {
             text = element_text(family = "Open Sans", face = "bold"),
             # panel.grid.major.x = element_blank(),
             panel.grid.minor.x = element_blank(),
-            axis.text.x = element_text(size = 8),
+            axis.text.x = element_text(size = 6),
             axis.title.x = element_blank(),
             axis.title.y = element_blank(),
             # axis.title.y = element_text(margin = margin(l = -10)),
@@ -924,14 +1030,17 @@ server <- function(input, output, session) {
           )
         cowplot::ggdraw(g2)
       } else if (input$data == "All" & input$viz_type == "Pie Chart") {
-        g2 <- ggplot2::ggplot(all_data(), aes(x = 0, y = n, fill = reorder(percent, n))) + # Pie chart input, ordered by n
+        g2 <- all_data() %>%
+          mutate(answer = str_replace_all(answer, "Neither agree nor disagree", "Neither"),
+                 answer = str_replace_all(answer, "Strongly agree", "Strongly\nagree")) %>%
+          ggplot2::ggplot(aes(x = 0, y = n, fill = reorder(percent, n))) + # Pie chart input, ordered by n
           labs(
             fill = "Type", x = NULL, y = NULL
           ) +
           facet_wrap( ~ question, nrow = 2) +
           geom_bar(stat = "identity", width = 0.5, color = "gray10", size = 0.6, position = "fill") + # Using bar columns put in polar coordinates later
           geom_text(aes(
-            label = ifelse(percent > 5,
+            label = ifelse(percent > 10,
                            paste0(percent, "%\n", answer),
                            paste("")
             ),
@@ -939,7 +1048,7 @@ server <- function(input, output, session) {
             color = reorder(percent, n)
           ),
           position = position_fill(vjust = 0.5), # position stack normally stacks bars, but here it keeps the text in the right place once put in polar
-          size = 3,
+          size = 2.25,
           fontface = "bold",
           family = "Open Sans"
           ) + # Add bold text with percentage and variable label
@@ -955,13 +1064,16 @@ server <- function(input, output, session) {
           )
         cowplot::ggdraw(g2)
         } else if (input$data == "All" & input$viz_type == "Donut Chart") {
-        g2 <- ggplot2::ggplot(all_data(), aes(x = 0, y = n, fill = reorder(percent, n))) + # Pie chart input, ordered by n
+        g2 <- all_data() %>%
+          mutate(answer = str_replace_all(answer, "Neither agree nor disagree", "Neither agree\nnor disagree"),
+                 answer = str_replace_all(answer, "Strongly agree", "Strongly\nagree")) %>%
+          ggplot2::ggplot(aes(x = 0, y = n, fill = reorder(percent, n))) + # Pie chart input, ordered by n
           labs(
             fill = "Type", x = NULL, y = NULL
           ) +
           geom_bar(stat = "identity", width = 1.5, color = "gray10", size = 0.6, position = "fill") +
           geom_text(aes(
-            label = ifelse(percent > 5,
+            label = ifelse(percent > 10,
                            paste0(percent, "%\n", answer),
                            paste("")
             ),
@@ -969,7 +1081,7 @@ server <- function(input, output, session) {
             color = reorder(percent, n)
           ),
           position = position_fill(vjust = 0.5), # position stack normally stacks bars, but here it keeps the text in the right place once put in polar
-          size = 3,
+          size = 2.25,
           fontface = "bold",
           family = "Open Sans"
           ) + # Add bold text with percentage and variable label
@@ -1080,38 +1192,52 @@ server <- function(input, output, session) {
           )
         cowplot::ggdraw(g2)
       } else if (input$data == "All" & input$viz_type == "Column Chart") {
-        g2 <- ggplot2::ggplot(all_data(), aes(x = 0, y = n, fill = reorder(percent, n))) + # Pie chart input, ordered by n
+        g2 <- all_data() %>%
+          mutate(answer = str_replace_all(answer, "Neither agree nor disagree", "Neither")) %>%
+          # group_by(question) %>%
+          # mutate(percent = factor(percent, levels = unique(percent))) %>%
+          # arrange(desc(max(percent))) %>%
+          # ungroup() %>%
+          ggplot2::ggplot(aes(x = question, y = n, fill = reorder(percent, n))) + # Pie chart input, ordered by n
           labs(
             fill = "Type", x = NULL, y = NULL
           ) +
-          geom_bar(stat = "identity", width = 0.1, color = "gray10", position = position_fill()) +
-          geom_text(aes(x = 0.125, label = "some text that won't show up"), color = "transparent", position = "fill") + # This adjusts the column size
-          geom_text(aes(x = -0.125, label = "some text that won't show up"), color = "transparent", position = "fill") + # This adjusts the column size
+          geom_bar(stat = "identity", width = 0.5, color = "gray10", position = position_fill()) +
+          # geom_text(aes(x = 0.125, label = "some text that won't show up"), color = "transparent", position = "fill") + # This adjusts the column size
+          # geom_text(aes(x = -0.125, label = "some text that won't show up"), color = "transparent", position = "fill") + # This adjusts the column size
           geom_text(aes(
-            label = ifelse(percent > 5,
+            label = ifelse(percent > 10,
                            paste0(percent, "%\n", answer),
                            paste("")
             ),
-            x = if_else(percent > 10,
-                        0.085,
-                        -0.085), # Distance outwards from pie chart
-            color = reorder(percent, n)
+            # x = if_else(percent > 10,
+            #             0.085,
+            #             -0.085), # Distance outwards from pie chart
+            # color = reorder(percent, n)
           ),
           position = position_fill(vjust = 0.5), # position stack normally stacks bars, but here it keeps the text in the right place once put in polar
-          size = 3,
+          size = 2.3,
           fontface = "bold",
+          color = "black",
           family = "Open Sans"
           ) + # Add bold text with percentage and variable label
-          facet_wrap( ~ question) +
+          # facet_wrap( ~ question) +
           coord_flip() +
-          scale_x_continuous() + # Change x so expand is not default and adds no padding so the bars will produce a circle
+          # scale_x_continuous() + # Change x so expand is not default and adds no padding so the bars will produce a circle
           scale_fill_manual(values = c(col(nrow(all_data())))) + # custom colors
           scale_color_manual(values = c(col(nrow(all_data())))) +
-          theme_void() +
+          theme_bw() +
           theme(
             legend.position = "none",
             plot.title = element_text(hjust = 0.5, family = "Open Sans", face = "bold"),
-            strip.text = element_text(face = "bold", family = "Open Sans")
+            text = element_text(face = "bold", family = "Open Sans"),
+            panel.border = element_blank(),
+            axis.text.x = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.ticks.length.y = unit(0.45, "cm"),
+            panel.grid.major.x = element_blank(),
+            panel.grid.minor.x = element_blank(),
+            panel.grid.major.y = element_blank()
           )
         cowplot::ggdraw(g2)
         } else if (input$viz_type == "Tree Map" & input$data != "All") {
@@ -1136,7 +1262,7 @@ server <- function(input, output, session) {
             title = "All Data",
             fontfamily.labels = "Open Sans",
             fontfamily.title = "Open Sans ExtraBold",
-            fontsize.labels = 9,
+            fontsize.labels = 7.5,
             align.labels = list(c("center", "center"), c("right", "bottom")),
             bg.labels = "transparent"
           )
@@ -1146,48 +1272,48 @@ server <- function(input, output, session) {
               dplyr::mutate(`get(input$data)` = factor(`get(input$data)`, levels = c(10,9,8,7,6,5,4,3,2,1,0))) %>%
               arrange(desc(`get(input$data)`)) %>%
               ggplot(aes(values = n, fill = `get(input$data)`)) +
-              waffle::geom_waffle(aes(color = `get(input$data)`), 
-                                  n_rows = 10, flip = TRUE, make_proportional = T, size = 0.5, radius = unit(4, "pt")) +
-              scale_fill_manual(values = c("#04ABEB", "#049AD3", "#0489BC", "#0478A5", "#04688E", "#045777",
-                                           "#044660", "#043649", "#042532", "#04141B", "#040404")) + # custom colors
-              scale_color_manual(values = c("black", "black", "black", "black", "black", "white", "white", "white",
-                                            "white", "white", "white", "white", "white", "white"), guide = F) +
-              labs(
-                fill = "Type", x = NULL, y = NULL,
-                title = paste(str_to_title(as.character(input$data))),
-                subtitle = paste0(sum(mydata2() %>% 
-                                   filter(`get(input$data)` == 10 | `get(input$data)` == 9 | `get(input$data)` == 8 | `get(input$data)` == 7 | `get(input$data)` == 6) %>%
-                                   select(percent)), "% of people gave a rating of 6 or higher")
-              ) +
-              coord_equal() +
-              theme_void() +
-              theme(
-                legend.title = element_blank(),
-                plot.title = element_text(hjust = 0.5, family = "Open Sans ExtraBold")
-              )
+                geom_waffle(aes(color = `get(input$data)`), 
+                                    n_rows = 10, flip = TRUE, make_proportional = T, size = 0.5, radius = unit(4, "pt")) +
+                scale_fill_manual(values = c("#04ABEB", "#049AD3", "#0489BC", "#0478A5", "#04688E", "#045777",
+                                             "#044660", "#043649", "#042532", "#04141B", "#040404")) + # custom colors
+                scale_color_manual(values = c("black", "black", "black", "black", "black", "white", "white", "white",
+                                              "white", "white", "white", "white", "white", "white"), guide = F) +
+                labs(
+                  fill = "Type", x = NULL, y = NULL,
+                  title = paste(str_to_title(as.character(input$data))),
+                  subtitle = paste0(sum(mydata2() %>% 
+                                     filter(`get(input$data)` == 10 | `get(input$data)` == 9 | `get(input$data)` == 8 | `get(input$data)` == 7 | `get(input$data)` == 6) %>%
+                                     select(percent)), "% of people gave a rating of 6 or higher")
+                ) +
+                coord_equal() +
+                theme_void() +
+                theme(
+                  legend.title = element_blank(),
+                  plot.title = element_text(hjust = 0.5, family = "Open Sans ExtraBold")
+                )
           } else {
             mydata2() %>%
               dplyr::mutate(`get(input$data)` = factor(`get(input$data)`, levels = c("Strongly agree", "Agree", "Neither agree nor disagree", "Disagree", "Strongly disagree"))) %>%
               arrange(desc(`get(input$data)`)) %>%
               ggplot(aes(values = n, fill = `get(input$data)`)) +
-              waffle::geom_waffle(aes(color = `get(input$data)`), 
-                                  n_rows = 10, flip = TRUE, make_proportional = T, size = 1, radius = unit(4, "pt")) +
-              scale_fill_manual(values = c("#04ABEB", "#0481B1", "#045777", "#042D3D", "#040404")) + # custom colors
-              scale_color_manual(values = c("black", "black", "white", "white", "white"), guide = F) +
-              labs(
-                fill = "Type", x = NULL, y = NULL,
-                title = paste(str_to_title(as.character(input$data))),
-                subtitle = paste0(sum(mydata2() %>% 
-                                        dplyr::filter(`get(input$data)` == "Agree" | `get(input$data)` == "Strongly agree") %>%
-                                        select(percent)) ,"% of people rated agree or strongly agree")
-              ) +
-              coord_equal() +
-              theme_void() +
-              theme(
-                legend.title = element_blank(),
-                plot.title = element_text(hjust = 0.5, family = "Open Sans ExtraBold"),
-                text = element_text(family = "Open Sans")
-              )
+                geom_waffle(aes(color = `get(input$data)`), 
+                                    n_rows = 10, flip = TRUE, make_proportional = T, size = 1, radius = unit(4, "pt")) +
+                scale_fill_manual(values = c("#04ABEB", "#0481B1", "#045777", "#042D3D", "#040404")) + # custom colors
+                scale_color_manual(values = c("black", "black", "white", "white", "white"), guide = F) +
+                labs(
+                  fill = "Type", x = NULL, y = NULL,
+                  title = paste(str_to_title(as.character(input$data))),
+                  subtitle = paste0(sum(mydata2() %>% 
+                                          dplyr::filter(`get(input$data)` == "Agree" | `get(input$data)` == "Strongly agree") %>%
+                                          select(percent)) ,"% of people rated agree or strongly agree")
+                ) +
+                coord_equal() +
+                theme_void() +
+                theme(
+                  legend.title = element_blank(),
+                  plot.title = element_text(hjust = 0.5, family = "Open Sans ExtraBold"),
+                  text = element_text(family = "Open Sans")
+                )
           }
           cowplot::ggdraw(g2)
       } else if (input$viz_type == "Waffle Chart" & input$data == "All") {
@@ -1197,21 +1323,20 @@ server <- function(input, output, session) {
           dplyr::mutate(answer = factor(answer, levels = c("Strongly agree", "Agree", "Neither agree nor disagree", "Disagree", "Strongly disagree"))) %>%
           arrange(desc(answer)) %>%
           ggplot(aes(values = n, fill = answer)) +
-          waffle::geom_waffle(aes(color = answer),
-                              n_rows = 10, flip = TRUE, make_proportional = T, size = 1, radius = unit(4, "pt")) +
-          facet_wrap( ~ question, nrow = 2) +
-          scale_fill_manual(values = c("#04ABEB", "#0481B1", "#045777", "#042D3D", "#040404")) + # custom colors
-          scale_color_manual(values = c("black", "black", "white", "white", "white"), guide = F) +
-          labs(
-            fill = "Type", x = NULL, y = NULL
-          ) +
-          coord_equal() +
-          theme_void() +
-          theme(
-            legend.title = element_blank(),
-            plot.title = element_text(hjust = 0.5, family = "Open Sans ExtraBold"),
-            strip.text = element_text(face = "bold", family = "Open Sans")
-          )
+            geom_waffle(aes(color = answer),
+                                n_rows = 10, flip = TRUE, make_proportional = T, size = 1, radius = unit(4, "pt")) +
+            facet_wrap( ~ question, nrow = 2) +
+            scale_fill_manual(values = c("#04ABEB", "#0481B1", "#045777", "#042D3D", "#040404")) + # custom colors
+            scale_color_manual(values = c("black", "black", "white", "white", "white"), guide = F) +
+            labs(
+              fill = "Type", x = NULL, y = NULL
+            ) +
+            coord_equal() +
+            theme_void() +
+            theme(
+              legend.title = element_blank(),
+              strip.text = element_text(face = "bold", family = "Open Sans", size = 7)
+            )
       }
     },
     height = 450,
@@ -1224,11 +1349,12 @@ server <- function(input, output, session) {
     text_viz_data() %>%
       slice_sample(n = 10) %>%
       dplyr::arrange(as.numeric(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`)) %>%
-      relocate(c("Professional Training Session", "Name Of Your First Facilitator"), .before = Date) %>%
+      relocate(c("Professional Training Session", "Name Of Your Facilitator"), .before = Date) %>%
       gt() %>%
       tab_header(
         title = md("&#128202; **Selected Reviews** &#128202;"),
-        subtitle = md("Sorted *Worst-Best:* A Sample of 10 Random Responses")
+        subtitle = glue::glue("Sorted worst-best and filtering for {str_to_lower(input$text_filters)} observations between
+                              {input$date[1]} and {input$date[2]}")
       ) %>%
       cols_label(
         `How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?` = md("**Likeliness to recommend**"),
@@ -1236,13 +1362,26 @@ server <- function(input, output, session) {
         `What could have improved your experience?` = md("**What could have improved your experience?**"),
         `Professional Training Session` = md("**Professional training session**"),
         Date = md("**Date**"),
-        `Name Of Your First Facilitator` = md("**Facilitator**"),
-        `Do you have additional comments?` = md("**Do you have additional comments?**"),
+        `Name Of Your Facilitator` = md("**Facilitator**"),
+        `How, if in any way, this course helped you prepare for school opening after COVID-19?` = md("**How, if in any way, this course helped you prepare for school opening after COVID-19?**"),
         `Overall, what went well in this professional learning?` = md("**Overall, what went well in this professional learning?**"),
         `Which activities best supported your learning?` = md("**Which activities best supported your learning?**")
+      ) %>%
+      data_color(columns = vars(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`),
+                 colors = scales::col_numeric(
+                   palette = col(10),
+                   domain = NULL)
+      ) %>%
+      cols_align(
+        align = "center",
+        columns = vars(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`)
+      ) %>%
+      cols_width(
+        vars(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`) ~ px(110),
+        # vars(`Likert Plot Scale`) ~ px(400),
+        everything() ~ px(225)
       ),
-    height = px(450),
-    width = pct(100)
+    align = "center"
   )
   
 # A beautiful table
@@ -1254,87 +1393,6 @@ server <- function(input, output, session) {
       # tab_header(
       #   title = md("&#128202; **Selected Reviews** &#128202;"),
       #   subtitle = md("Sorted *Worst-Best*")
-      # ) %>%
-      # cols_width(
-      #   vars(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`) ~ px(110),
-      #   # vars(`Likert Plot Scale`) ~ px(400),
-      #   everything() ~ px(225)
-      # ) %>%
-      # cols_label(
-      #   `How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?` = md("**Likeliness to Recommend**"),
-      #   `What could have improved your experience?` = md("**What could have improved your experience?**"),
-      #   `Professional Training Session` = md("**Professional training session**"),
-      #   Date = md("**Date**"),
-      #   `Name Of Your First Facilitator` = md("**Facilitator**")
-      # ) %>%
-      # cols_align(
-      #   align = "center",
-      #   columns = vars(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`)
-      # ) %>%
-      # data_color(columns = vars(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`),
-      #            colors = scales::col_numeric(
-      #              palette = col(10) %>% as.character(),
-      #              domain = NULL)
-      # ) %>%
-    
-      # tab_style(
-      #   style = list(
-      #     cell_borders(
-      #       sides = "right",
-      #       color = "black",
-      #       weight = px(3)
-      #     )
-      #   ),
-      #   locations = list(
-      #     cells_body(
-      #       columns = vars(`What could have improved your experience?`)
-      #     )
-      #   )
-      # ) %>%
-      # tab_style(
-      #   style = list(
-      #     cell_borders(
-      #       sides = "left",
-      #       color = "black",
-      #       weight = px(3)
-      #     )
-      #   ),
-      #   locations = list(
-      #     cells_body(
-      #       columns = vars(`Professional Training Session`)
-      #     )
-      #   )
-      # ) %>%
-      # tab_style(
-      #   style = list(
-      #     cell_borders(
-      #       sides = "bottom",
-      #       color = "black",
-      #       weight = px(3)
-      #     )
-      #   ),
-      #   locations = list(
-      #     cells_column_labels(
-      #       columns = gt::everything()
-      #     )
-      #   )
-      # ) %>%
-      # tab_style(
-      #   style = list(
-      #     cell_borders(
-      #       sides = "right",
-      #       color = "gray50",
-      #       weight = px(1.5)
-      #     )
-      #   ),
-      #   locations = list(
-      #     cells_body(
-      #       columns = vars(`What could have improved your experience?`,
-      #                      `Professional Training Session`,
-      #                      `Name Of Your First Facilitator`,
-      #                      `Date`)
-      #     )
-      #   )
       # ) %>%
       # tab_options(
       #   summary_row.background.color = "#ACEACE80",
@@ -1514,6 +1572,7 @@ server <- function(input, output, session) {
     } else {
       page_length <- 10
       all_data() %>%
+        dplyr::mutate(answer = factor(answer, levels = c("Strongly agree", "Agree", "Neither agree nor disagree", "Disagree", "Strongly disagree"))) %>%
         arrange(desc(question, n)) %>%
         DT::datatable(
         colnames = c("Likert Rating", "Question", "Percent", "Number"), # Column names
