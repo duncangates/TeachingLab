@@ -618,3 +618,27 @@ one_community_learners <- teaching_df %>%
   rename(`S/He Effectively Built A Community Of Learners` = value)
 ```
 
+
+
+
+
+
+
+# Just some fake data for AWS Pricing
+
+```{r}
+fake_data <- tibble(hours = 1:100, price = 3.97*hours)
+
+ggplot(fake_data, aes(x = hours, y = price)) + 
+  geom_line() +
+  geom_vline(linetype = "dashed", color = "magenta4", xintercept = 60) +
+  geom_text(color = "magenta4", aes(x = 50, y = 300, label = "My Estimate:")) +
+  labs(x = "Server Hours", y = "Price") +
+  scale_y_continuous(labels = scales::dollar) +
+  theme_bw()
+```
+
+
+
+
+
