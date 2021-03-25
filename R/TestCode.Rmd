@@ -1,0 +1,85 @@
+---
+title: "Test code"
+author: "Duncan Gates"
+date: "3/24/2021"
+output: html_document
+---
+
+##### TESTING
+For all time
+```{r}
+test <- teaching_df %>%
+      select(`Date for the session`, `% Satisfied With The Overall Quality Of Today's Professional Learning Session`, 
+             `% Who Say Today's Topic Was Relevant For My Role`, 
+             `% Who Say Activities Of Today's Session Were Well-Designed To Help Me Learn`, 
+             `How Likely Are You To Apply This Learning To Your Practice In The Next 4-6 Weeks?`, 
+             `S/He Facilitated The Content Clearly`, 
+             `S/He Effectively Built A Community Of Learners`) %>%
+      pivot_longer(!`Date for the session`, names_to = "question", values_to = "answer") %>%
+      dplyr::filter(answer != "No Response") %>% # Filter out non-responses
+      dplyr::group_by(answer, question) %>% # Group by input variable
+      dplyr::summarise(n = n()) %>% # Get count of variable
+      dplyr::group_by(answer) %>%
+      dplyr::mutate(percent = round(100 * (n / sum(n)), 2)) %>% # Make a percent column without non-responses
+      dplyr::mutate(answer = factor(answer, levels = c("Strongly agree", "Agree", "Neither agree nor disagree", "Disagree", "Strongly disagree"))) %>%
+      dplyr::relocate(percent, .before = n) %>%
+          group_by(question) %>%
+          # mutate(percent = factor(percent, levels = unique(percent))) %>%
+          arrange(desc(max(percent)))
+
+```
+
+Time series
+```{r}
+test <- teaching_df %>%
+      select(`Date for the session`, newcols[c(5:8, 10:11, 14:15)]) %>%
+      pivot_longer(!`Date for the session`, names_to = "question", values_to = "answer") %>%
+      dplyr::filter(`answer` != "No Response") %>% # Filter out non-responses
+      dplyr::group_by(question, `Date for the session`) %>% # Group by input variable
+      mutate(`Number Agree/Disagree` = n()) %>%
+      mutate(Rating = case_when(answer %in% c("Agree", "Strongly agree") ~ "Agree/Strongly Agree",
+                                  answer %in% c("Neither agree nor disagree", "Disagree", "Strongly disagree") ~ "Neither/Disagree/Strongly Disagree"),
+               `Date for the session` = paste0(month(`Date for the session`, label = T, abbr = F), ", ", year(`Date for the session`))) %>%
+  ungroup() %>%
+        group_by(`Date for the session`, question) %>%
+        mutate(Percent = `Number Agree/Disagree`/sum(`Number Agree/Disagree`)*100) %>%
+        filter(Rating == "Agree/Strongly Agree") %>%
+        group_by(`Date for the session`, Rating, question) %>%
+        summarise(Percent = round(sum(Percent), 2))
+```
+
+Joining first and second facilitators
+
+```{r}
+one_content_clear <- teaching_df %>%
+  select(`S/He Effectively Built A Community Of Learners (First Facilitator)`, `S/He Facilitated The Content Clearly (Second Facilitator)`) %>%
+  pivot_longer(cols = everything()) %>%
+  select(value) %>%
+  rename(`S/He Effectively Built A Community Of Learners` = value)
+
+one_community_learners <- teaching_df %>%
+  select(`S/He Facilitated The Content Clearly (First Facilitator)`, `S/He Effectively Built A Community Of Learners (Second Facilitator)`) %>%
+  pivot_longer(cols = everything()) %>%
+  select(value) %>%
+  rename(`S/He Effectively Built A Community Of Learners` = value)
+```
+
+
+
+
+
+
+
+# Just some fake data for AWS Pricing
+
+```{r}
+fake_data <- tibble(hours = 1:100, price = 3.97*hours)
+
+ggplot(fake_data, aes(x = hours, y = price)) + 
+  geom_line() +
+  geom_vline(linetype = "dashed", color = "magenta4", xintercept = 60) +
+  geom_text(color = "magenta4", aes(x = 50, y = 300, label = "My Estimate:")) +
+  labs(x = "Server Hours", y = "Price") +
+  scale_y_continuous(labels = scales::dollar) +
+  theme_bw()
+```

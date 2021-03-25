@@ -39,31 +39,37 @@ options(width = 2000) # Adjust the width
 htmltools::tagList(rmarkdown::html_dependency_font_awesome()) # Needed so fa's in footer will show
 ```
 
-# List of Report Types
-
-- Snapshot of all PL work (for our team, funders, board, website, impact report)
-
-- Facilitator report (only has data for that facilitator) - does not include NPS
-
-- Report comparing all facilitators (for facilitator development)
-
 # Example of a Plot
 
-Note that I could add interactivity here for each point so that when you hover you can see what the response to any given question associated with the point is.
+The chart below plots the mean score for "How likely are you to recommend this professional learning to a colleague or friend?" as a dotted line, and then compares that dotted line to the mean score for each facilitator, while simultaneously trying to demonstrate the entirety of the variance of the data by showing every point of data that exists. There is a transparency applied to the points, meaning that when they cluster together they start to gain color, indicating large groupings in one area of the data.
 
-```{r}
+```{r echo = F}
 # All time plot
-sheets_data %>%
+facilitator_compare <- sheets_data %>%
   drop_na(`Select the name of your first facilitator.`) %>%
   mutate(`Select the name of your first facilitator.` = str_replace(`Select the name of your first facilitator.`,
                                                                     "Ryan Mateo Sharnbroich",
-                                                                    "Ryan Sharnbroich")) %>%
+                                                                    "Ryan Sharnbroich"),
+         mean_score = mean(`How likely are you to recommend this professional learning to a colleague or friend?`)) %>%
+  group_by(`Select the name of your first facilitator.`) %>%
+  mutate(facilitator_means = mean(`How likely are you to recommend this professional learning to a colleague or friend?`),
+         n = n()) %>%
+  ungroup()
+```
+
+```{r}
+facilitator_compare %>%
   ggplot(aes(x = `Select the name of your first facilitator.`, 
                                y = `How likely are you to recommend this professional learning to a colleague or friend?`)) +
-  geom_boxplot(alpha = 0) +
+  stat_summary(fun = mean, geom = "point", size = 3) +
+  geom_segment(aes(x = `Select the name of your first facilitator.`, xend = `Select the name of your first facilitator.`,
+               y = mean_score, yend = facilitator_means)) +
+  geom_hline(aes(yintercept = mean(`How likely are you to recommend this professional learning to a colleague or friend?`)),
+             linetype = 3) +
   geom_jitter(alpha = 0.3, width = 0.15, aes(color = `Select the name of your first facilitator.`)) +
-  coord_flip() +
-  scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  geom_text(aes(label = paste("n =", n), y = 10), family = "Open Sans", size = 3, hjust = -0.45) +
+  coord_flip(clip = "off") +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10), limits = c(0, 10)) +
   scale_color_manual(values = col(length(unique(sheets_data$`Select the name of your first facilitator.`)))) +
   labs(x = "", title = "Each Facilitator's Scores All Time") +
   theme_minimal() + 
@@ -72,19 +78,35 @@ sheets_data %>%
         panel.grid.minor.x = element_blank(),
         text = element_text(family = "Open Sans"),
         plot.title = element_text(hjust = 0.5))
+```
 
+# A plot of the most recent month
+
+Here I replicate the above plot for just the most recent month.
+
+```{r}
 sheets_data %>%
   drop_na(`Select the name of your first facilitator.`) %>%
+  mutate(Month = lubridate::month(Date, label = T)) %>%
+  filter(Month == "Feb") %>% # Filter for current month
   mutate(`Select the name of your first facilitator.` = str_replace(`Select the name of your first facilitator.`,
                                                                     "Ryan Mateo Sharnbroich",
                                                                     "Ryan Sharnbroich"),
-         Month = lubridate::month(Date, label = T)) %>%
-  filter(Month == "Feb") %>% # Filter for current month
+         mean_score = mean(`How likely are you to recommend this professional learning to a colleague or friend?`)) %>%
+  group_by(`Select the name of your first facilitator.`) %>%
+  mutate(facilitator_means = mean(`How likely are you to recommend this professional learning to a colleague or friend?`),
+         n = n()) %>%
+  ungroup() %>%
   ggplot(aes(x = `Select the name of your first facilitator.`, 
                                y = `How likely are you to recommend this professional learning to a colleague or friend?`)) +
-  geom_boxplot(alpha = 0) +
+  stat_summary(fun = mean, geom = "point", size = 3) +
+  geom_segment(aes(x = `Select the name of your first facilitator.`, xend = `Select the name of your first facilitator.`,
+               y = mean_score, yend = facilitator_means)) +
+  geom_hline(aes(yintercept = mean(`How likely are you to recommend this professional learning to a colleague or friend?`)),
+             linetype = 3) +
   geom_jitter(alpha = 0.7, width = 0.15, aes(color = `Select the name of your first facilitator.`)) +
-  coord_flip() +
+  geom_text(aes(label = paste("n =", n), y = 10), family = "Open Sans", size = 3, hjust = -0.7) +
+  coord_flip(clip = "off") +
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
   scale_color_manual(values = col(length(unique(sheets_data$`Select the name of your first facilitator.`)))) +
   labs(x = "", title = glue::glue("Each Facilitator's Scores in the Month of February")) +
@@ -97,22 +119,57 @@ sheets_data %>%
         plot.title = element_text(hjust = 0.5))
 
 # Just this month plot
-sheets_data %>%
-  drop_na(`Select the name of your first facilitator.`) %>%
-  mutate(`Select the name of your first facilitator.` = str_replace(`Select the name of your first facilitator.`,
-                                                                    "Ryan Mateo Sharnbroich",
-                                                                    "Ryan Sharnbroich"),
-         Month = lubridate::month(Date, label = T),
-         Month2 = lubridate::month(Date)) %>%
-  filter(Month2 == month(Sys.Date())) %>% # Filter for current month
-  ggplot(aes(x = `Select the name of your first facilitator.`, 
-                               y = `How likely are you to recommend this professional learning to a colleague or friend?`)) +
-  geom_boxplot(alpha = 0) +
-  geom_jitter(alpha = 0.7, width = 0.15, aes(color = `Select the name of your first facilitator.`)) +
-  coord_flip() +
-  scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  scale_color_manual(values = col(length(unique(sheets_data$`Select the name of your first facilitator.`)))) +
-  labs(x = "", title = glue::glue("Each Facilitator's Scores in the Month of {month(Sys.Date(), label = T, abbr = F)}")) +
+# sheets_data %>%
+#   drop_na(`Select the name of your first facilitator.`) %>%
+#   mutate(`Select the name of your first facilitator.` = str_replace(`Select the name of your first facilitator.`,
+#                                                                     "Ryan Mateo Sharnbroich",
+#                                                                     "Ryan Sharnbroich"),
+#          Month = lubridate::month(Date, label = T),
+#          Month2 = lubridate::month(Date)) %>%
+#   filter(Month2 == month(Sys.Date())) %>% # Filter for current month
+#   ggplot(aes(x = `Select the name of your first facilitator.`, 
+#                                y = `How likely are you to recommend this professional learning to a colleague or friend?`)) +
+#   geom_boxplot(alpha = 0) +
+#   geom_jitter(alpha = 0.7, width = 0.15, aes(color = `Select the name of your first facilitator.`)) +
+#   coord_flip() +
+#   scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
+#   scale_color_manual(values = col(length(unique(sheets_data$`Select the name of your first facilitator.`)))) +
+#   labs(x = "", title = glue::glue("Each Facilitator's Scores in the Month of {month(Sys.Date(), label = T, abbr = F)}")) +
+#   theme_minimal() + 
+#   theme(legend.position = "none",
+#         panel.grid.major.x = element_blank(),
+#         panel.grid.minor.x = element_blank(),
+#         text = element_text(family = "Open Sans", color = "black"),
+#         axis.text = element_text(color = "black"),
+#         plot.title = element_text(hjust = 0.5))
+# ggsave(here(paste0("Images/", "facilitator_", month(Sys.Date(), abbr = F, label = T), "_plot.png")), width = 16, height = 9)
+```
+
+The March scores will load in this place once it hits April 1 - I could change this to just work based on a satisfactory n as well.
+
+# Comparing Facilitators by Likert Ratings
+
+The same plot can be replicated for different questions, keep in mind here that the x axis is technically a discrete scale - and people's responses in terms of strongly disagree to strongly agree have been converted to a numeric 1-5 and then taken as a mean.
+
+```{r}
+# facilitator_compare %>% select_if(is.numeric) %>% colnames()
+facilitator_compare %>%
+  mutate(mean_score = mean(`I am satisfied with the overall quality of this course.`, na.rm = T)) %>%
+  group_by(`Select the name of your first facilitator.`) %>%
+  mutate(facilitator_means = mean(`I am satisfied with the overall quality of this course.`, na.rm = T)) %>%
+  ungroup() %>%
+  ggplot(aes(x = `Select the name of your first facilitator.`, y = `I am satisfied with the overall quality of this course.`)) +
+  stat_summary(fun = mean, geom = "point", size = 3) +
+  geom_segment(aes(x = `Select the name of your first facilitator.`, xend = `Select the name of your first facilitator.`,
+               y = mean_score, yend = facilitator_means)) +
+  geom_hline(aes(yintercept = mean(`I am satisfied with the overall quality of this course.`, na.rm = T)),
+             linetype = 3) +
+  geom_jitter(alpha = 0.7, height = 0.2, width = 0.15, aes(color = `Select the name of your first facilitator.`)) +
+  geom_text(aes(label = paste("n =", n), y = 5), family = "Open Sans", size = 3, hjust = -2) +
+  coord_flip(clip = "off") +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
+  scale_color_manual(values = col(length(unique(facilitator_compare$`Select the name of your first facilitator.`)))) +
+  labs(x = "", title = glue::glue("Each Facilitator's Scores")) +
   theme_minimal() + 
   theme(legend.position = "none",
         panel.grid.major.x = element_blank(),
@@ -120,12 +177,49 @@ sheets_data %>%
         text = element_text(family = "Open Sans", color = "black"),
         axis.text = element_text(color = "black"),
         plot.title = element_text(hjust = 0.5))
-ggsave(here(paste0("Images/", "facilitator_", month(Sys.Date(), abbr = F, label = T), "_plot.png")), width = 16, height = 9)
 ```
 
-As of yet there are no scores in march - this graph will autofill once data is updated!
 
 # Table Example
+
+```{r}
+plot_bars <- function(data) {
+  ggplot(data, aes(x = 0, fill = factor(`S/he facilitated the content clearly #1`))) +
+    geom_bar() +
+    geom_text(color = "transparent", aes(x = -1.3, label = "asdfs", y = 1)) +
+    geom_text(color = "transparent", aes(x = 1.3, label = "asdfs", y = 1)) +
+    coord_flip() +
+    scale_fill_manual(values = col(5)) +
+    labs(x = "", y = "") +
+    theme_void() +
+    theme(legend.position = "none")
+}
+fmt_ggplot <- fmt_gg <- function(
+  data,
+  columns,
+  rows = NULL,
+  height = 100,
+  aspect_ratio = 1.0
+) {
+  rows <- rlang::enquo(rows)
+  
+  fmt(
+    data = data,
+    columns = columns,
+    rows = !!rows,
+    fns = list(
+      html = function(x) {
+        map(
+          x,
+          ggplot_image,
+          height = height,
+          aspect_ratio = aspect_ratio
+        )
+      }
+    )
+  )
+}
+```
 
 ```{r}
 # Survey response filter for relevent columns
@@ -140,12 +234,24 @@ survey_responses <- sheets_data %>%
          `S/he effectively built a community of learners #1`) %>%
   drop_na(`How likely are you to recommend this professional learning to a colleague or friend?`, `Select the name of your first facilitator.`) %>%
   mutate(Date = format(`Date`, '%b, %d %Y')) %>%
-  dplyr::arrange(desc(`How likely are you to recommend this professional learning to a colleague or friend?`))
+  dplyr::arrange(desc(`How likely are you to recommend this professional learning to a colleague or friend?`))#%>%
+  # nest(bars = c(!`Select the name of your first facilitator.`)) %>%
+  # mutate(plot = map(bars, plot_bars))
+  
+# Separating plot for rebind later  
+# plot <- tibble(plot = survey_responses$plot)
+# survey_responses <- survey_responses %>% 
+#   select(-plot) %>%
+#   unnest(bars)
+  
+# test <- survey_responses
 # Calculate percent agree/strongly agree
 survey_percents <- survey_responses %>%
-  select(-`How likely are you to recommend this professional learning to a colleague or friend?`) %>%
+  select(-`How likely are you to recommend this professional learning to a colleague or friend?`,
+         -`I felt a sense of community with the other participants in this course even though we were virtual.`) %>%
   group_by(`Select the name of your first facilitator.`) %>%
-  summarise(across(where(is.numeric), ~ round(length(which(.x %in% c(4, 5)))/length(.x), 4)))
+  summarise(across(where(is.numeric), ~ round(length(which(.x %in% c(4, 5)))/length(.x), 4)),
+            `Number of Reviews` = n())
 # NPS calculations
 survey_nps <- survey_responses %>%
   select(`How likely are you to recommend this professional learning to a colleague or friend?`,
@@ -156,21 +262,26 @@ survey_nps <- survey_responses %>%
                           (length(which(`How likely are you to recommend this professional learning to a colleague or friend?` %in% c(0:6)))/
                            length(`How likely are you to recommend this professional learning to a colleague or friend?`)))*100, 2))
 # Join nps and percent agree/strongly agree
-survey_facilitators_final <- left_join(survey_percents, survey_nps, by = "Select the name of your first facilitator.")
+survey_facilitators_final <- left_join(survey_percents, survey_nps, by = "Select the name of your first facilitator.") %>%
+  # bind_cols(plot) %>%
+  relocate(NPS, .after = `Select the name of your first facilitator.`) %>%
+  relocate(`I am satisfied with the overall quality of this course.`, .before = last_col())
 ```
+
 
 <div style = "width:180%; height:auto; margin: auto;">
 ```{r gt-table-1}
 survey_facilitators_final %>%
+  # rename(`Likert Ratings` = plot) %>%
   arrange(desc(NPS)) %>%
   gt() %>%
+  # fmt_ggplot(columns = vars(`Likert Ratings`), height = px(400), aspect_ratio = 1) %>%
   tab_header(
     title = md("&#128200; **Facilitator Scoring** &#128201;"),
     subtitle = md("Sorted *Best-Worst NPS*, **%'s Represent Proportion that Strongly Agree/Agree**")
   ) %>%
   fmt_percent(
     columns = vars(`I am satisfied with the overall quality of this course.`,
-                   `I felt a sense of community with the other participants in this course even though we were virtual.`,
                    `S/he facilitated the content clearly #1`,
                    `S/he effectively built a community of learners #1`),
     decimals = 1
@@ -178,10 +289,11 @@ survey_facilitators_final %>%
   cols_label(
     `Select the name of your first facilitator.` = md("**Facilitator**"),
     `I am satisfied with the overall quality of this course.` = md("**I am satisfied with the overall quality of this course**"),
-    `I felt a sense of community with the other participants in this course even though we were virtual.` = md("**I felt a sense of community with the other participants in this course even though we were virtual**"),
     `S/he facilitated the content clearly #1` = md("**S/he facilitated the content clearly**"),
     `S/he effectively built a community of learners #1` = md("**S/he effectively built a community of learners #1**"),
-    NPS = md("**NPS**")
+    NPS = md("**NPS**"),
+    # `Likert Ratings` = md("**Likert Ratings**"),
+    `Number of Reviews` = md("**Number of Reviews**")
   ) %>%
   cols_width(
     vars(NPS) ~ px(110),
@@ -251,9 +363,10 @@ survey_facilitators_final %>%
     locations = list(
       cells_body(
         columns = vars(`I am satisfied with the overall quality of this course.`, 
-                       `I felt a sense of community with the other participants in this course even though we were virtual.`,
                        `S/he facilitated the content clearly #1`,
-                       `Select the name of your first facilitator.`)
+                       # `Likert Ratings`,
+                       `Select the name of your first facilitator.`,
+                       `Number of Reviews`)
       )
     )
   ) %>%
@@ -455,11 +568,14 @@ nps_average <- sheets_data %>%
                            length(`How likely are you to recommend this professional learning to a colleague or friend?`)) -
                           (length(which(`How likely are you to recommend this professional learning to a colleague or friend?` %in% c(0:6)))/
                            length(`How likely are you to recommend this professional learning to a colleague or friend?`)))*100, 2))
-# numeric_average <- round(colMeans(numeric_averages[-1], na.rm = T), 2)
-# numeric_average <- purrr::prepend(numeric_average, list("Month" = "Average"))
-# numeric_averages <- bind_rows(numeric_averages, numeric_average)
+
+month_replace <- c("July" = "01 July", "August" = "02 August", "September" = "03 September", "October" = "04 October", 
+                   "November" = "05 November", "December" = "06 December", "January" = "07 January", "February" = "08 February", 
+                   "March" = "09 March", "April" = "10 April", "May" = "11 May", "June" = "12 June")
+
 numeric_averages <- left_join(numeric_averages, nps_average, by = c("Month")) %>%
-  mutate(Month = factor(Month, levels = c("July", "August", "September", "October", "November", "December", "January", "February", "March", "April", "May", "June"))) %>%
+  mutate(Month = str_replace_all(Month, month_replace),
+         Month = factor(Month, levels = c("01 July", "02 August", "03 September", "04 October", "05 November", "06 December", "07 January", "08 February", "09 March", "10 April", "11 May", "12 June"))) %>%
   arrange(Month)
 ```
 
@@ -559,84 +675,7 @@ webshot2::webshot(url = here("HTML/monthly_table.html"),
                   file = here("Images/monthly_table.png"), vwidth = 900, vheight = 1200, delay = 3)
 ```
 
-##### TESTING
-For all time
-```{r}
-test <- teaching_df %>%
-      select(`Date for the session`, `% Satisfied With The Overall Quality Of Today's Professional Learning Session`, 
-             `% Who Say Today's Topic Was Relevant For My Role`, 
-             `% Who Say Activities Of Today's Session Were Well-Designed To Help Me Learn`, 
-             `How Likely Are You To Apply This Learning To Your Practice In The Next 4-6 Weeks?`, 
-             `S/He Facilitated The Content Clearly`, 
-             `S/He Effectively Built A Community Of Learners`) %>%
-      pivot_longer(!`Date for the session`, names_to = "question", values_to = "answer") %>%
-      dplyr::filter(answer != "No Response") %>% # Filter out non-responses
-      dplyr::group_by(answer, question) %>% # Group by input variable
-      dplyr::summarise(n = n()) %>% # Get count of variable
-      dplyr::group_by(answer) %>%
-      dplyr::mutate(percent = round(100 * (n / sum(n)), 2)) %>% # Make a percent column without non-responses
-      dplyr::mutate(answer = factor(answer, levels = c("Strongly agree", "Agree", "Neither agree nor disagree", "Disagree", "Strongly disagree"))) %>%
-      dplyr::relocate(percent, .before = n) %>%
-          group_by(question) %>%
-          # mutate(percent = factor(percent, levels = unique(percent))) %>%
-          arrange(desc(max(percent)))
 
-```
-
-Time series
-```{r}
-test <- teaching_df %>%
-      select(`Date for the session`, newcols[c(5:8, 10:11, 14:15)]) %>%
-      pivot_longer(!`Date for the session`, names_to = "question", values_to = "answer") %>%
-      dplyr::filter(`answer` != "No Response") %>% # Filter out non-responses
-      dplyr::group_by(question, `Date for the session`) %>% # Group by input variable
-      mutate(`Number Agree/Disagree` = n()) %>%
-      mutate(Rating = case_when(answer %in% c("Agree", "Strongly agree") ~ "Agree/Strongly Agree",
-                                  answer %in% c("Neither agree nor disagree", "Disagree", "Strongly disagree") ~ "Neither/Disagree/Strongly Disagree"),
-               `Date for the session` = paste0(month(`Date for the session`, label = T, abbr = F), ", ", year(`Date for the session`))) %>%
-  ungroup() %>%
-        group_by(`Date for the session`, question) %>%
-        mutate(Percent = `Number Agree/Disagree`/sum(`Number Agree/Disagree`)*100) %>%
-        filter(Rating == "Agree/Strongly Agree") %>%
-        group_by(`Date for the session`, Rating, question) %>%
-        summarise(Percent = round(sum(Percent), 2))
-```
-
-Joining first and second facilitators
-
-```{r}
-one_content_clear <- teaching_df %>%
-  select(`S/He Effectively Built A Community Of Learners (First Facilitator)`, `S/He Facilitated The Content Clearly (Second Facilitator)`) %>%
-  pivot_longer(cols = everything()) %>%
-  select(value) %>%
-  rename(`S/He Effectively Built A Community Of Learners` = value)
-
-one_community_learners <- teaching_df %>%
-  select(`S/He Facilitated The Content Clearly (First Facilitator)`, `S/He Effectively Built A Community Of Learners (Second Facilitator)`) %>%
-  pivot_longer(cols = everything()) %>%
-  select(value) %>%
-  rename(`S/He Effectively Built A Community Of Learners` = value)
-```
-
-
-
-
-
-
-
-# Just some fake data for AWS Pricing
-
-```{r}
-fake_data <- tibble(hours = 1:100, price = 3.97*hours)
-
-ggplot(fake_data, aes(x = hours, y = price)) + 
-  geom_line() +
-  geom_vline(linetype = "dashed", color = "magenta4", xintercept = 60) +
-  geom_text(color = "magenta4", aes(x = 50, y = 300, label = "My Estimate:")) +
-  labs(x = "Server Hours", y = "Price") +
-  scale_y_continuous(labels = scales::dollar) +
-  theme_bw()
-```
 
 
 

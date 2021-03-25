@@ -67,7 +67,55 @@ moodle_reformat <- moodle_rename %>%
   # Change to character here for joining purposes in shiny app
   mutate(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?` = as.character(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`)) %>%
   dplyr::filter(`What could have improved your experience?` != lag(`What could have improved your experience?`),
-                `Which activities best supported your learning?` != lag(`Which activities best supported your learning?`))
+                `Which activities best supported your learning?` != lag(`Which activities best supported your learning?`)) %>%
+  mutate(`Name Of Your Facilitator` = str_remove_all(`Name Of Your Facilitator`, " -"),
+         `Name Of Your Facilitator` = str_replace_all(`Name Of Your Facilitator`, "meredith starks", "Meredith Starks"),
+         `Name Of Your Facilitator` = str_replace_all(`Name Of Your Facilitator`, "Andrea Fitz(?!g)", "Andrea Fitzgerald")) %>%
+  filter(`Name Of Your Facilitator` != "Test Lead FacilitatorAnother Lead Facilitator") %>%
+  # Reformat facilitator names
+  # Regex several last names for not followed by space to have multiple spaces like data already has, 
+  # then split, unnest for duplication and filter out empties then trim blank space at end of strings
+  mutate(`Name Of Your Facilitator` = case_when(str_detect(`Name Of Your Facilitator`, "Williams(?! )") == T ~ 
+                                                  str_replace(`Name Of Your Facilitator`, "Williams", "Williams  "),
+                                                str_detect(`Name Of Your Facilitator`, "Denning(?! )") == T ~ 
+                                                  str_replace(`Name Of Your Facilitator`, "Denning", "Denning  "),
+                                                str_detect(`Name Of Your Facilitator`, "Weldon(?! )") == T ~ 
+                                                  str_replace(`Name Of Your Facilitator`, "Weldon", "Weldon  "),
+                                                str_detect(`Name Of Your Facilitator`, "Anderson(?! )") == T ~ 
+                                                  str_replace(`Name Of Your Facilitator`, "Anderson", "Anderson  "),
+                                                str_detect(`Name Of Your Facilitator`, "Fears(?! )") == T ~ 
+                                                  str_replace(`Name Of Your Facilitator`, "Fears", "Fears  "),
+                                                str_detect(`Name Of Your Facilitator`, "Rushton(?! )") == T ~ 
+                                                  str_replace(`Name Of Your Facilitator`, "Rushton", "Rushton  "),
+                                                str_detect(`Name Of Your Facilitator`, "Seeger(?! )") == T ~ 
+                                                  str_replace(`Name Of Your Facilitator`, "Seeger", "Seeger  "),
+                                                str_detect(`Name Of Your Facilitator`, "Hoesen(?! )") == T ~ 
+                                                  str_replace(`Name Of Your Facilitator`, "Hoesen", "Hoesen  "),
+                                                str_detect(`Name Of Your Facilitator`, "Fitzgerald(?! )") == T ~ 
+                                                  str_replace(`Name Of Your Facilitator`, "Fitzgerald", "Fitzgerald  "),
+                                                str_detect(`Name Of Your Facilitator`, "Herring(?! )") == T ~ 
+                                                  str_replace(`Name Of Your Facilitator`, "Herring", "Herring  "),
+                                                str_detect(`Name Of Your Facilitator`, "Taylor(?! )") == T ~ 
+                                                  str_replace(`Name Of Your Facilitator`, "Taylor", "Taylor  "),
+                                                str_detect(`Name Of Your Facilitator`, "Silverthorne(?! )") == T ~ 
+                                                  str_replace(`Name Of Your Facilitator`, "Silverthorne", "Silverthorne  "),
+                                                str_detect(`Name Of Your Facilitator`, "Walls(?! )") == T ~ 
+                                                  str_replace(`Name Of Your Facilitator`, "Walls", "Walls  "),
+                                                str_detect(`Name Of Your Facilitator`, "Endicott(?! )") == T ~ 
+                                                  str_replace(`Name Of Your Facilitator`, "Endicott", "Endicott  "),
+                                                TRUE ~ as.character(`Name Of Your Facilitator`))) %>%
+  mutate(`Name Of Your Facilitator` = case_when(str_detect(`Name Of Your Facilitator`, "(?<=[:alpha:])Christi") == T ~ 
+                                                  str_replace(`Name Of Your Facilitator`, "Christi", "  Christi"),
+                                                str_detect(`Name Of Your Facilitator`, "Silverthorne(?! )") == T ~ 
+                                                  str_replace(`Name Of Your Facilitator`, "Silverthorne", "Silverthorne  "),
+                                                str_detect(`Name Of Your Facilitator`, "Rushton(?! )") == T ~ 
+                                                  str_replace(`Name Of Your Facilitator`, "Rushton", "Rushton  "),
+                                                TRUE ~ as.character(`Name Of Your Facilitator`))) %>%
+  mutate(`Name Of Your Facilitator` = str_trim(`Name Of Your Facilitator`),
+         `Name Of Your Facilitator` = case_when(str_detect(`Name Of Your Facilitator`, "  ") == T ~ strsplit(`Name Of Your Facilitator`, "  "),
+                                                TRUE ~ as.list(`Name Of Your Facilitator`))) %>%
+  unnest(`Name Of Your Facilitator`) %>%
+  filter(`Name Of Your Facilitator` != "")
 
 
 write_rds(moodle_reformat, here("Data/moodle_export_reformat.rds"))
