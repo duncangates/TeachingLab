@@ -1,0 +1,12 @@
+name: PieCharter
+title: PieCharter
+username:
+account: teachinglabhq
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3853343
+bundleId: 4394905
+url: https://teachinglabhq.shinyapps.io/PieCharter/
+when: 1616698080.05231
+asMultiple: FALSE
+asStatic: FALSE

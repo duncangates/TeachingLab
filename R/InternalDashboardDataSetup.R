@@ -1,3 +1,5 @@
+library(tidyverse)
+
 teaching_df_readin <- read_rds(here("Data/original_df.rds")) # Read in the data
 # teaching_df <- read_rds("~/Teaching Lab/Coding/TeachingLab/PieCharter/Data/original_df.rds")
 # Relevant columns
@@ -97,3 +99,9 @@ teaching_df <- teaching_df_readin %>%
 moodle_data <- read_rds(here("Data/moodle_export_reformat.rds"))
 
 teaching_df <- full_join(teaching_df, moodle_data)
+
+
+write_rds(teaching_df, here("Data/dashboard_data.rds"))
+
+write_rds(teaching_df, here("PieCharter/Data/dashboard_data.rds"))
+
