@@ -6,8 +6,8 @@ teaching_df_readin <- read_rds(here("Data/original_df.rds")) # Read in the data
 oldcols <- c(
   "Professional training session",
   "Select your site (district, parish, or network).",
-  "Select the best description for your role.",
-  "Select the grade-band(s) you focused on.",
+  # "Select the best description for your role.",
+  # "Select the grade-band(s) you focused on.",
   "I am satisfied with the overall quality of today's professional learning session.",
   "Today's topic was relevant for my role.",
   "The activities of today's session were well-designed to help me learn.",
@@ -25,8 +25,8 @@ oldcols <- c(
 newcols <- str_to_title(c(
   "Professional training session",
   "District, parish, or network",
-  "What is the best description for your role?",
-  "What grade band(s) do you focus on?",
+  # "What is the best description for your role?",
+  # "What grade band(s) do you focus on?",
   "% satisfied with the overall quality of today's professional learning session",
   "% Who say today's topic was relevant for my role",
   "% Who say activities of today's session were well-designed to help me learn",
@@ -43,6 +43,8 @@ newcols <- str_to_title(c(
 
 # Small data clean
 teaching_df_readin <- teaching_df_readin %>%
+  select(-`Select the grade-band(s) you focused on.`,
+         -`Select the best description for your role.`) %>%
   mutate_if(is.character, funs(replace_na(., "No Response"))) %>%
   mutate_if(is.numeric, funs(replace_na(., "No Response"))) %>%
   rename_with(~ newcols[which(oldcols == .x)], .cols = oldcols) %>%
@@ -50,13 +52,13 @@ teaching_df_readin <- teaching_df_readin %>%
   mutate(Portfolio = case_when(!str_detect(`Professional Training Session`, c("EL|IM|Guidebooks|GuideBooks")) == T ~ "State-Level",
                                str_detect(`Professional Training Session`, "IM") == T ~ "Illustrative Mathematics",
                                str_detect(`Professional Training Session`, "Guidebooks|GuideBooks") == T ~ "Guidebooks",
-                               str_detect(`Professional Training Session`, "EL") == T ~ "EL"),
-         `What Grade Band(S) Do You Focus On?` = str_replace(`What Grade Band(S) Do You Focus On?`, "Grades 6-8;Grades 9-12", "Grades 6-8, Grades 9-12"),
-         `What Grade Band(S) Do You Focus On?` = str_replace(`What Grade Band(S) Do You Focus On?`, "All grades K-12", "All Grades"),
-         `What Grade Band(S) Do You Focus On?` = str_replace(`What Grade Band(S) Do You Focus On?`, "Grades 9-12, All grades K-12", "All Grades"),
-         `What Grade Band(S) Do You Focus On?` = str_replace(`What Grade Band(S) Do You Focus On?`, "Grades K-2, Grades 3-5, Grades 6-8, Grades 9-12, All grades K-12", "All Grades"),
-         `What Grade Band(S) Do You Focus On?` = str_replace(`What Grade Band(S) Do You Focus On?`, "Grades K-2, Grades 3-5, Grades 6-8, Grades 9-12", "All Grades"),
-         `What Grade Band(S) Do You Focus On?` = str_replace(`What Grade Band(S) Do You Focus On?`, "All Grades, All Grades", "All Grades"))
+                               str_detect(`Professional Training Session`, "EL") == T ~ "EL"))#,
+         # `What Grade Band(S) Do You Focus On?` = str_replace(`What Grade Band(S) Do You Focus On?`, "Grades 6-8;Grades 9-12", "Grades 6-8, Grades 9-12"),
+         # `What Grade Band(S) Do You Focus On?` = str_replace(`What Grade Band(S) Do You Focus On?`, "All grades K-12", "All Grades"),
+         # `What Grade Band(S) Do You Focus On?` = str_replace(`What Grade Band(S) Do You Focus On?`, "Grades 9-12, All grades K-12", "All Grades"),
+         # `What Grade Band(S) Do You Focus On?` = str_replace(`What Grade Band(S) Do You Focus On?`, "Grades K-2, Grades 3-5, Grades 6-8, Grades 9-12, All grades K-12", "All Grades"),
+         # `What Grade Band(S) Do You Focus On?` = str_replace(`What Grade Band(S) Do You Focus On?`, "Grades K-2, Grades 3-5, Grades 6-8, Grades 9-12", "All Grades"),
+         # `What Grade Band(S) Do You Focus On?` = str_replace(`What Grade Band(S) Do You Focus On?`, "All Grades, All Grades", "All Grades"))
 
 # teaching_df <- teaching_df_readin
 
@@ -88,7 +90,8 @@ name_replace <- c("Octavia" = "Octavia Nixon", "Vaishali" = "Vaishali Joshi", "R
 teaching_df <- teaching_df_readin %>%
   dplyr::select(-c(`S/He Facilitated The Content Clearly (Second Facilitator)`,
                    `S/He Effectively Built A Community Of Learners (Second Facilitator)`,
-                   `Name Of Your Second Facilitator.`)) %>%
+                   `Name Of Your Second Facilitator.`,
+                   -`Did You Have A Second Facilitator?`)) %>%
   rename(`S/He Effectively Built A Community Of Learners` = `S/He Effectively Built A Community Of Learners (First Facilitator)`,
          `S/He Facilitated The Content Clearly` = `S/He Facilitated The Content Clearly (First Facilitator)`) %>%
   bind_rows(community_content_second) %>%
@@ -103,5 +106,5 @@ teaching_df <- full_join(teaching_df, moodle_data)
 
 write_rds(teaching_df, here("Data/dashboard_data.rds"))
 
-write_rds(teaching_df, here("PieCharter/Data/dashboard_data.rds"))
+write_rds(teaching_df, here("ParticipantFeedback/Data/dashboard_data.rds"))
 

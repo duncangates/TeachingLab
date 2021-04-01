@@ -108,6 +108,10 @@ teachers_deidentified <- teachers_english %>%
   # Create id
   mutate(id = paste0("teacher", "_", row_number(), "_", `Please select your school/department`, "_", District, "_1")) %>%
   # Deselect identifiers
+  # Run if you need teacher name identifier column
+  mutate(names = sub("(\\w+),\\s(\\w+)","\\2 \\1", `Please type in your name using the format Last Name, First Name.`),
+         copy = paste0(names, "'s", " = ", id),
+         copy2 = paste0(names, " = ", id)) %>%
   select(-c(1, 2)) %>%
   # Move id to front
   relocate(id, .before = 1)

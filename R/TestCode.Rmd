@@ -29,6 +29,59 @@ test <- teaching_df %>%
 
 ```
 
+For column chart
+
+```{r}
+test %>%
+  drop_na(question) %>%
+          mutate(answer = str_replace_all(answer, "Neither agree nor disagree", "Neither")) %>%
+          # group_by(as.factor(question)) %>%
+          mutate(question = factor(question, levels = unique(question))) %>%
+          # arrange(desc(percent)) %>%
+          # ungroup() %>%
+          ggplot2::ggplot(aes(x = question, y = n, fill = n)) + # Pie chart input, ordered by n
+          labs(
+            fill = "Type", x = NULL, y = NULL
+          ) +
+          geom_bar(stat = "identity", width = 0.5, color = "gray10", position = position_fill()) +
+          # geom_text(aes(x = 0.125, label = "some text that won't show up"), color = "transparent", position = "fill") + # This adjusts the column size
+          # geom_text(aes(x = -0.125, label = "some text that won't show up"), color = "transparent", position = "fill") + # This adjusts the column size
+          geom_text(aes(
+            label = ifelse(percent > 10,
+                           paste0(percent, "%\n", answer),
+                           paste("")
+            ),
+            # x = if_else(percent > 10,
+            #             0.085,
+            #             -0.085), # Distance outwards from pie chart
+            # color = reorder(percent, n)
+          ),
+          position = position_fill(vjust = 0.5), # position stack normally stacks bars, but here it keeps the text in the right place once put in polar
+          size = 2.3,
+          fontface = "bold",
+          color = "black",
+          family = "Open Sans"
+          ) + # Add bold text with percentage and variable label
+          # facet_wrap( ~ question) +
+          coord_flip() +
+          # scale_x_continuous() + # Change x so expand is not default and adds no padding so the bars will produce a circle
+          # scale_fill_manual(values = c(rev(col(length(unique(test$question)))))) + # custom colors
+          theme_bw() +
+          theme(
+            legend.position = "none",
+            text = element_text(face = "bold", family = "Open Sans"),
+            axis.text.y = element_blank(),
+            panel.border = element_blank(),
+            axis.text.x = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.ticks.length.y = unit(0.45, "cm"),
+            panel.grid.major.x = element_blank(),
+            panel.grid.minor.x = element_blank(),
+            panel.grid.major.y = element_blank()
+          )
+```
+
+
 Time series
 ```{r}
 test <- teaching_df %>%
@@ -83,3 +136,29 @@ ggplot(fake_data, aes(x = hours, y = price)) +
   scale_y_continuous(labels = scales::dollar) +
   theme_bw()
 ```
+
+
+
+
+# Text Error with grid.call
+
+```{r}
+ggplot(data = tibble(x = runif(100), y = runif(100), color = rep(1:10, 10), label = "something"), aes(x = x, y = y, color = color)) + geom_point() + geom_text(aes(label = label), fontface = "bold", family = "Open Sans ExtraBold") + scale_color_identity() + labs(title = "dafsa") + theme_void() + theme(plot.title = element_text(hjust = 0.5, family = "Open Sans", face = "bold"), text = element_text(family = "Open Sans", face = "bold"))
+```
+
+# Automated Data Import
+
+```{r}
+test <- read_csv("https://learning.teachinglab.org/blocks/questionreport/adminreport.php?action=view&sid=1&cid=0&partner=&portfolio=&start_date=&end_date=&teacher=&question=10")
+```
+
+
+```{r}
+library(spotifyr)
+Sys.setenv(SPOTIFY_CLIENT_ID = '383cfac3d8434244a38c4e279a04ce47')
+Sys.setenv(SPOTIFY_CLIENT_SECRET = '486c6f539f8e45a2b82f03a30cfed26f')
+profile <- get_user_profile("abconcepcion.99")
+playlists <- get_user_playlists("abconcepcion.99")
+albums <- get_artist_albums("7pbDxGE6nQSZVfiFdq9lOL")
+```
+

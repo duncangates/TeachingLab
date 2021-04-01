@@ -31,14 +31,15 @@ moodle_rename <- moodle_csv %>%
          `What could have improved your experience?` = `response5`,
          `Why did you choose this rating?` = `response6`,
          `Do you have additional comments?` = `response7`,
-         `% Who Say Today's Topic Was Relevant For My Role` = `response9`,
+         `% Satisfied With The Overall Quality Of Today's Professional Learning Session` = `response9`,
+         `% Who Say Today's Topic Was Relevant For My Role` = `response10`,
          `How Likely Are You To Apply This Learning To Your Practice In The Next 4-6 Weeks?` = `response14`,
          `How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?` = `response15`,
          `S/He Facilitated The Content Clearly` = `response16`,
          `S/He Effectively Built A Community Of Learners` = `response17`) %>%
   select(-c(portfolio, question1, question2, question3, question4, question5, question6, question7, question8,
             question9, question11, question12, question13, question14, question15, question16, question17,
-            response10, response2, response11, response12, response13)) %>%
+            response2, response11, response12, response13)) %>%
   mutate(Portfolio = case_when(!str_detect(`Professional Training Session`, c("EL|IM|Guidebooks|GuideBooks")) == T ~ "State-Level",
                                str_detect(`Professional Training Session`, "IM") == T ~ "Illustrative Mathematics",
                                str_detect(`Professional Training Session`, "Guidebooks|GuideBooks") == T ~ "Guidebooks",
@@ -47,7 +48,8 @@ moodle_rename <- moodle_csv %>%
 cols_agree <- c("% Who Say Today's Topic Was Relevant For My Role",
                 "How Likely Are You To Apply This Learning To Your Practice In The Next 4-6 Weeks?",
                 "S/He Facilitated The Content Clearly",
-                "S/He Effectively Built A Community Of Learners")
+                "S/He Effectively Built A Community Of Learners",
+                "% Satisfied With The Overall Quality Of Today's Professional Learning Session")
 
 factor_cols <- map_df(moodle_rename[cols_agree], ~ as.factor(.x))
 
@@ -62,10 +64,12 @@ moodle_reformat <- moodle_rename %>%
   select(-c("% Who Say Today's Topic Was Relevant For My Role",
             "How Likely Are You To Apply This Learning To Your Practice In The Next 4-6 Weeks?",
             "S/He Facilitated The Content Clearly",
-            "S/He Effectively Built A Community Of Learners")) %>%
+            "S/He Effectively Built A Community Of Learners",
+            "% Satisfied With The Overall Quality Of Today's Professional Learning Session")) %>%
   bind_cols(refactor_cols, new_questions) %>%
   # Change to character here for joining purposes in shiny app
-  mutate(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?` = as.character(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`)) %>%
+  mutate(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?` = as.character(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`),
+         `How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?` = str_replace_all(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`, "11", "10")) %>%
   dplyr::filter(`What could have improved your experience?` != lag(`What could have improved your experience?`),
                 `Which activities best supported your learning?` != lag(`Which activities best supported your learning?`)) %>%
   mutate(`Name Of Your Facilitator` = str_remove_all(`Name Of Your Facilitator`, " -"),
