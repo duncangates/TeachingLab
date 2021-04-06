@@ -3,8 +3,8 @@ library(googledrive)
 library(googlesheets4)
 # Read in google sheet
 admin_data <- read_sheet("https://docs.google.com/spreadsheets/d/1V-tnR9CtI0E8WB8tZjNo1NL7CR8khFB2t6BjTGkGL-A/edit#gid=0", 
-                         range = "Admin Responses!D1:GN19") %>%
-  select(1:128)
+                         range = "Admin Responses!D1:GN23") %>%
+  select(1:189)
 # Admin replacement vector
 colnames(admin_data) <- c("column_1", "column_2", "column_3", "column_4", "column_5", 
                           "column_6", "column_7", "column_8", "column_9", "column_10", 
@@ -31,7 +31,19 @@ colnames(admin_data) <- c("column_1", "column_2", "column_3", "column_4", "colum
                           "column_111", "column_112", "column_113", "column_114", "column_115", 
                           "column_116", "column_117", "column_118", "column_119", "column_120", 
                           "column_121", "column_122", "column_123", "column_124", "column_125", 
-                          "column_126", "column_127", "column_128")
+                          "column_126", "column_127", "column_128", "column_129", "column_130", 
+                          "column_131", "column_132", "column_133", "column_134", "column_135", 
+                          "column_136", "column_137", "column_138", "column_139", "column_140", 
+                          "column_141", "column_142", "column_143", "column_144", "column_145", 
+                          "column_146", "column_147", "column_148", "column_149", "column_150", 
+                          "column_151", "column_152", "column_153", "column_154", "column_155", 
+                          "column_156", "column_157", "column_158", "column_159", "column_160", 
+                          "column_161", "column_162", "column_163", "column_164", "column_165", 
+                          "column_166", "column_167", "column_168", "column_169", "column_170", 
+                          "column_171", "column_172", "column_173", "column_174", "column_175", 
+                          "column_176", "column_177", "column_178", "column_179", "column_180", 
+                          "column_181", "column_182", "column_183", "column_184", "column_185", 
+                          "column_186", "column_187", "column_188", "column_189")
 
 admin_replace <- c("Stephanie Gardner" = "admin_1_school2_district2_2",
                    "Nicaea Chavez" = "admin_2_school9_district9_2", 
@@ -41,7 +53,9 @@ admin_replace <- c("Stephanie Gardner" = "admin_1_school2_district2_2",
                    "Felicitas Adame-Reyes" = "admin6_school8_district8_2",
                    "Stephanie Becker" = "admin7_school5_district5_2", 
                    "Jamie Watson" = "admin8_school7_district7_2", 
-                   "Christina Hidalgo" = "admin9_school14_district14_2")
+                   "Christina Hidalgo" = "admin9_school14_district14_2",
+                   "Sam Morerod" = "admin10_school3_district_district3_2",
+                   "Kristie Medina" = "admin11_school6_district6_2")
 # Teacher replacement vector from NewMexicoDeIdentification.R
 teacher_replace <- c("Lynne McDonald's" = "teacher_1_school1_district1_1", "Meredith Grant's" = "teacher_2_school2_district2_1", 
                      "Javier Viera's" = "teacher_3_school3_district3_1", "Jennifer Sears'" = "teacher_4_school4_district2_1", 
@@ -53,7 +67,7 @@ teacher_replace <- c("Lynne McDonald's" = "teacher_1_school1_district1_1", "Mere
                      "Linda Ortiz's" = "teacher_15_school6_district6_1", "Stefanie Ware's" = "teacher_16_school6_district6_1", 
                      "Stephanie Becker's" = "teacher_17_school5_district5_1", "Ambrosita Sintas'" = "teacher_18_school6_district6_1", 
                      "Vanessa Horner's" = "teacher_19_school6_district6_1", "Jamie Hephner's" = "teacher_20_school6_district6_1", 
-                     "Thomas Barksdale's" = "teacher_21_school6_district6_1", "Sydney Main's" = "teacher_22_school6_district6_1", 
+                     "Tommy Barksdale's" = "teacher_21_school6_district6_1", "Sydney Main's" = "teacher_22_school6_district6_1", 
                      "Dolores Lopez's" = "teacher_23_school8_district8_1", "Julia Geffroy's" = "teacher_24_school9_district9_1", 
                      "Elana Sobol's" = "teacher_25_school5_district5_1", "Ronda Davis'" = "teacher_26_school10_district2_1", 
                      "Phihoang Nelson's" = "teacher_27_school5_district5_1", "Sue Holland's" = "teacher_28_school6_district6_1", 
@@ -61,7 +75,7 @@ teacher_replace <- c("Lynne McDonald's" = "teacher_1_school1_district1_1", "Mere
                      "Joleene Starr's" = "teacher_31_school6_district6_1", "Diana Martinez's" = "teacher_32_school6_district6_1", 
                      "Carolyn Aragon's" = "teacher_33_school6_district6_1", "Carlos Viera's" = "teacher_34_school3_district3_1", 
                      "Krystle Winklepleck's" = "teacher_35_school11_district11_1", "Kristina Smith's" = "teacher_36_school8_district8_1", 
-                     "Robby Armijo's" = "teacher_37_school6_district6_1", "Maggie Longwill's" = "teacher_38_school6_district6_1", 
+                     "Robby Armjio's" = "teacher_37_school6_district6_1", "Maggie Longwill's" = "teacher_38_school6_district6_1", 
                      "Aimee Feldman's" = "teacher_39_school6_district6_1", "Brock Walton's" = "teacher_40_school6_district6_1", 
                      "Stephanie Grande's" = "teacher_41_school6_district6_1", "Cathie Hephner's" = "teacher_42_school6_district6_1", 
                      "Vanessa Gonzales'" = "teacher_43_school6_district6_1", "Alan French's" = "teacher_44_school7_district7_1", 
@@ -96,7 +110,7 @@ teacher_replace2 <- c("Lynne McDonald" = "teacher_1_school1_district1_1", "Mered
                       "Linda Ortiz" = "teacher_15_school6_district6_1", "Stefanie Ware" = "teacher_16_school6_district6_1", 
                       "Stephanie Becker" = "teacher_17_school5_district5_1", "Ambrosita Sintas" = "teacher_18_school6_district6_1", 
                       "Vanessa Horner" = "teacher_19_school6_district6_1", "Jamie Hephner" = "teacher_20_school6_district6_1", 
-                      "Thomas Barksdale" = "teacher_21_school6_district6_1", "Sydney Main" = "teacher_22_school6_district6_1", 
+                      "Tommy Barksdale" = "teacher_21_school6_district6_1", "Sydney Main" = "teacher_22_school6_district6_1", 
                       "Dolores Lopez" = "teacher_23_school8_district8_1", "Julia Geffroy" = "teacher_24_school9_district9_1", 
                       "Elana Sobol" = "teacher_25_school5_district5_1", "Ronda Davis" = "teacher_26_school10_district2_1", 
                       "Phihoang Nelson" = "teacher_27_school5_district5_1", "Sue Holland" = "teacher_28_school6_district6_1", 
@@ -139,7 +153,25 @@ noresponse_replacement_vector <- c("Victoria Cardona" = "teacher_85_school9_dist
                                    "Kim Tafoya-Perez" = "teacher_87_school15_district14_1",
                                    "Shea Jespersen" = "teacher_88_school15_district14_1",
                                    "Judy Hogg" = "teacher_89_school15_district14_1",
-                                   "Christina Mancha-Alvarez" = "teacher_90_school11_district11_1")
+                                   "Christina Mancha-Alvarez" = "teacher_90_school11_district11_1",
+                                   "Victoria Kelley" = "teacher_91_school6_district6_1",
+                                   "Melissa Valenzuela" = "teacher_92_school3_district3_1",
+                                   "Victoria Swanson" = "teacher_93_school3_district3_1",
+                                   "Stacy Solorzano" = "teacher_94_school3_district3_1",
+                                   "Amanda Saiz" = "teacher_95_school3_district3_1",
+                                   "Jacob Omlor" = "teacher_96_school3_district3_1",
+                                   "Jennifer Nilvo" = "teacher_97_school3_district3_1",
+                                   "Mike Hinds" = "teacher_98_school3_district3_1",
+                                   "Joanna Hernandez" = "teacher_99_school3_district3_1",
+                                   "Lorena Herrera" = "teacher_100_school3_district3_1",
+                                   "Nicole Gardner" = "teacher_101_school3_district3_1",
+                                   "Dolores Gabaldon" = "teacher_102_school3_district3_1",
+                                   "Joann Fernandez" = "teacher_103_school3_district3_1",
+                                   "Lillian Cordova" = "teacher_104_school3_district3_1",
+                                   "Alma Castillo" = "teacher_105_school3_district3_1",
+                                   "Tammy Brandt" = "teacher_106_school3_district3_1",
+                                   "Robyn Albani" = "teacher_107_school3_district3_1",
+                                   "Brenda Alberts" = "teacher_108_school3_district3_1")
 
 # Replacing data
 admin_deidentified_1 <- admin_data %>%
@@ -148,7 +180,8 @@ admin_deidentified_1 <- admin_data %>%
          column_3 = str_replace_all(column_3, school_replacement_vector)) %>%
   mutate_all( ~ str_replace_all(., teacher_replace)) %>%
   mutate_all( ~ str_replace_all(., teacher_replace2)) %>%
-  mutate_all( ~ str_replace_all(., noresponse_replacement_vector))
+  mutate_all( ~ str_replace_all(., noresponse_replacement_vector)) %>%
+  mutate_all( ~ str_replace(., " Bentacu's", "'s"))
 
 # Writing to google sheets
 
@@ -156,7 +189,7 @@ if (exists(ss)) {
   googledrive::drive_trash(ss)
 }
 # Spreadsheet creation
-ss <- gs4_create("New Mexico Administrator Deidentified Data", sheets = "Deidentified Administrators/Teachers")
+ss <- gs4_create("Updated New Mexico Administrator Deidentified Data", sheets = "Deidentified Administrators/Teachers")
 # Write to sheet
 admin_deidentified_1 %>%
   write_sheet(ss, sheet = "Deidentified Administrators/Teachers")

@@ -153,12 +153,3 @@ test <- read_csv("https://learning.teachinglab.org/blocks/questionreport/adminre
 ```
 
 
-```{r}
-library(spotifyr)
-Sys.setenv(SPOTIFY_CLIENT_ID = '383cfac3d8434244a38c4e279a04ce47')
-Sys.setenv(SPOTIFY_CLIENT_SECRET = '486c6f539f8e45a2b82f03a30cfed26f')
-profile <- get_user_profile("abconcepcion.99")
-playlists <- get_user_playlists("abconcepcion.99")
-albums <- get_artist_albums("7pbDxGE6nQSZVfiFdq9lOL")
-```
-

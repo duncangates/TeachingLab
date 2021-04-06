@@ -1,45 +1,48 @@
 # Teaching Lab Shiny Application
-suppressPackageStartupMessages(library(tidyverse))
-suppressPackageStartupMessages(library(ggforce))
-suppressPackageStartupMessages(library(lubridate))
-suppressPackageStartupMessages(library(here))
+suppressPackageStartupMessages(library(tidyverse)) # General data cleaning, graphics, etc.
+suppressPackageStartupMessages(library(ggforce)) # Not sure
+suppressPackageStartupMessages(library(lubridate)) # Dates and times
+suppressPackageStartupMessages(library(here)) # Library calling
 suppressPackageStartupMessages(library(scales)) # For graphing scales
-suppressPackageStartupMessages(library(shiny))
-suppressPackageStartupMessages(library(shinyWidgets))
-suppressPackageStartupMessages(library(DT))
-suppressPackageStartupMessages(library(grDevices))
-suppressPackageStartupMessages(library(shinyjs))
-suppressPackageStartupMessages(library(semantic.dashboard))
-suppressPackageStartupMessages(library(shiny.semantic))
-suppressPackageStartupMessages(library(Cairo))
-suppressPackageStartupMessages(library(showtext))
-library(waffle)
-# require(waffle)
-suppressPackageStartupMessages(library(treemap))
-suppressPackageStartupMessages(library(wordcloud2))
-suppressPackageStartupMessages(library(tidytext))
-suppressPackageStartupMessages(library(gt))
-suppressPackageStartupMessages(library(bslib))
+suppressPackageStartupMessages(library(shiny)) # Required for app
+suppressPackageStartupMessages(library(shinyWidgets)) # Making widgets sometimes, most called by semantic
+suppressPackageStartupMessages(library(DT)) # Data tables
+suppressPackageStartupMessages(library(grDevices)) # Color palettes
+suppressPackageStartupMessages(library(shinyjs)) # Clickability
+suppressPackageStartupMessages(library(semantic.dashboard)) # Custom themeing
+suppressPackageStartupMessages(library(shiny.semantic)) # Custom themeing
+# suppressPackageStartupMessages(library(Cairo))
+suppressPackageStartupMessages(library(showtext)) # Not sure
+suppressPackageStartupMessages(library(waffle)) # Waffle charts
+suppressPackageStartupMessages(library(treemap)) # Tree maps
+# suppressPackageStartupMessages(library(wordcloud2)) # Wordclouds if I decide to add them
+suppressPackageStartupMessages(library(tidytext)) # Sentiment modelling
+suppressPackageStartupMessages(library(gt)) # Table making
+suppressPackageStartupMessages(library(bslib)) # Not sure
 # font_add_google(name = "Open Sans", family = "Open Sans") # Adds font for ggplot
 # font_add("Open Sans", "~/Library/Fonts/OpenSans-Regular.ttf")
 # font_add("Open Sans ExtraBold", "~/Library/Fonts/OpenSans-ExtraBold.ttf")
 # showtext_auto()
 showtext_opts(dpi = 150) # Changes ggplot font size
-options(semantic.themes = T)
+options(semantic.themes = T) # Use semantic themes
 # library(shinyalert)
 # extrafont::ttf_import(pattern = "OpenSans-Regular.ttf", paths = here("ParticipantFeedback/www"))
 # extrafont::loadfonts()
-dir.create('~/.fonts')
-file.copy("www/Open Sans-Regular.ttf",
-          "~/.fonts")
-file.copy("www/Open Sans-ExtraBold.ttf",
-          "~/.fonts")
-file.copy("www/Open Sans-Bold.ttf",
-          "~/.fonts")
-system('fc-cache -f ~/.fonts')
 
-extrafont::font_import(pattern = "OpenSans-Regular", prompt = F)
-extrafont::ttf_import(pattern = "OpenSans-ExtraBold.ttf", paths = here("ParticipantFeedback/www"))
+
+#### FOR SHINY SERVER ONLY NEEDED TO BE RUN ONCE
+# dir.create('~/.fonts')
+# file.copy("www/Open Sans-Regular.ttf",
+#           "~/.fonts")
+# file.copy("www/Open Sans-ExtraBold.ttf",
+#           "~/.fonts")
+# file.copy("www/Open Sans-Bold.ttf",
+#           "~/.fonts")
+# system('fc-cache -f ~/.fonts')
+####
+
+# extrafont::font_import(pattern = "OpenSans-Regular", prompt = F)
+# extrafont::ttf_import(pattern = "OpenSans-ExtraBold.ttf", paths = here("ParticipantFeedback/www"))
 
 teaching_df <- read_rds(here("Data/dashboard_data.rds")) # See R/InternalDashboardDataSetup.R for information on data manipulation
 
@@ -199,13 +202,13 @@ ui <-
         # ), 
         br(),
         selectInput("viz_type",
-                    choices = c("Pie Chart",
+                    choices = c("Column Chart",
                                 "Donut Chart",
-                                "Column Chart",
+                                "Pie Chart",
                                 "Tree Map",
                                 "Waffle Chart",
                                 "Text Visualization"),
-                    selected = "Pie Chart",
+                    selected = "Column Chart",
                     label = h3("Select a Type of Visualization", style = "font-family:'Open Sans ExtraBold';"),
                     width = 400),
         br(),
@@ -513,7 +516,7 @@ server <- function(input, output, session) {
         # For likeliness to recommend to colleague or friend
         teaching_df %>%
           dplyr::filter(between(`Date for the session`, input$date[1], input$date[2])) %>%
-          mutate(`Date for the session` = paste0(month(`Date for the session`, label = T, abbr = F), ", ", year(`Date for the session`))) %>%
+          mutate(`Date for the session` = paste0(lubridate::month(`Date for the session`, label = T, abbr = F), ", ", year(`Date for the session`))) %>%
           group_by(`Date for the session`) %>%
           summarise(Percent = round(((length(which(as.numeric(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`) %in% c(9, 10)))/
                                         length(as.numeric(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`))) -
@@ -528,7 +531,7 @@ server <- function(input, output, session) {
           drop_na() %>%
           mutate(Rating = case_when(`get(input$data)` %in% c("Agree", "Strongly agree") ~ "Agree/Strongly Agree",
                                     `get(input$data)` %in% c("Neither agree nor disagree", "Disagree", "Strongly disagree") ~ "Neither/Disagree/Strongly Disagree"),
-                 `Date for the session` = paste0(month(`Date for the session`, label = T, abbr = F), ", ", year(`Date for the session`))) %>%
+                 `Date for the session` = paste0(lubridate::month(`Date for the session`, label = T, abbr = F), ", ", year(`Date for the session`))) %>%
           group_by(`Date for the session`) %>%
           drop_na() %>%
           mutate(Percent = `Number Agree/Disagree`/sum(`Number Agree/Disagree`)*100) %>%
@@ -677,7 +680,7 @@ server <- function(input, output, session) {
       mutate(`Number Agree/Disagree` = n()) %>%
       mutate(Rating = case_when(answer %in% c("Agree", "Strongly agree") ~ "Agree/Strongly Agree",
                                 answer %in% c("Neither agree nor disagree", "Disagree", "Strongly disagree") ~ "Neither/Disagree/Strongly Disagree"),
-             `Date for the session` = paste0(month(`Date for the session`, label = T, abbr = F), ", ", year(`Date for the session`))) %>%
+             `Date for the session` = paste0(lubridate::month(`Date for the session`, label = T, abbr = F), ", ", year(`Date for the session`))) %>%
       ungroup() %>%
       group_by(`Date for the session`, question) %>%
       mutate(Percent = `Number Agree/Disagree`/sum(`Number Agree/Disagree`)*100) %>%
@@ -1208,16 +1211,16 @@ server <- function(input, output, session) {
     res = 80
   )
   
-  # A slice sampled table?
+  # A slice sampled table, needs to add more features
   output$gt_text <- render_gt(
     text_viz_data() %>%
       slice_sample(n = 10) %>%
-      dplyr::arrange(as.numeric(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`)) %>%
+      dplyr::arrange(desc(as.numeric(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`))) %>%
       relocate(c("Professional Training Session", "Name Of Your Facilitator"), .before = Date) %>%
       gt() %>%
       tab_header(
         title = md("&#128202; **Selected Reviews** &#128202;"),
-        subtitle = glue::glue("Sorted worst-best and filtering for {str_to_lower(input$text_filters)} observations between
+        subtitle = glue::glue("Sorted best-worst and filtering for {str_to_lower(input$text_filters)} observations between
                               {input$date[1]} and {input$date[2]}")
       ) %>%
       cols_label(
@@ -1247,38 +1250,6 @@ server <- function(input, output, session) {
       ),
     align = "center"
   )
-  
-# A beautiful table
-  # output$gt_text <- render_gt(
-    # text_viz_data() %>%
-      # select(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`) %>%
-      # gt::gt() %>%
-      # fmt_ggplot(columns = vars(`Likert Plot Scale`), height = px(400), aspect_ratio = 1) %>%
-      # tab_header(
-      #   title = md("&#128202; **Selected Reviews** &#128202;"),
-      #   subtitle = md("Sorted *Worst-Best*")
-      # ) %>%
-      # tab_options(
-      #   summary_row.background.color = "#ACEACE80",
-      #   grand_summary_row.background.color = "#990000",
-      #   row_group.background.color = "#FFEFDB80",
-      #   heading.background.color = "#04ABEB", # Main Heading Background
-      #   column_labels.background.color = "#EFFBFC",
-      #   stub.background.color = "#EFFBFC",
-      #   table.font.color = "#323232",
-      #   table.font.names = "Oswald",
-      #   table_body.hlines.color = "#989898",
-      #   table_body.border.top.color = "#989898",
-      #   heading.border.bottom.color = "#989898",
-      #   row_group.border.top.color = "#989898",
-      #   row_group.border.bottom.style = "none",
-      #   stub.border.style = "dashed",
-      #   stub.border.color = "#989898",
-      #   stub.border.width = "1px",
-      #   summary_row.border.color = "#989898"),
-  #   width = px(700), 
-  #   height = px(400)
-  # )
   
   # Right most table for time series
   output$tableData <- DT::renderDT({

@@ -11,7 +11,9 @@ ui <- bs4DashPage(
   title = "Teaching Lab Payment Calculator",
   sidebar_mini = F,
   sidebar = bs4DashSidebar(
-    width = 500,
+    elevation = 5,
+    src = here("Images/teachinglab_logo.png"),
+    url = "https://www.teachinglab.org/",
     bs4SidebarMenu(
       bs4SidebarHeader(HTML("<h3><center>Payment Rates Calculator</center></h3>")),
       bs4SidebarMenuItem(
@@ -89,6 +91,9 @@ ui <- bs4DashPage(
               status = "primary",
               collapsible = TRUE,
               fluidRow(
+                column(6, 
+                       h4("Enter the requested information for a calculation of total payment, see below & right cards for itemization of pay by session."),
+                       gaugeOutput("new_plot")),
                 column(
                   6,
                   radioButtons("first_time", "Is this your first time facilitating a course (i.e. will you need to attend content training)?",
@@ -102,10 +107,7 @@ ui <- bs4DashPage(
                     choices = c("Moodle", "Google Sites"),
                     selected = NULL
                   )
-                ),
-                column(6, 
-                       p("Enter requested information for a calculation of total payment, see below card for itemization of pay by session."),
-                       gaugeOutput("new_plot"))
+                )
               )
             ),
             bs4Card(
@@ -155,6 +157,12 @@ ui <- bs4DashPage(
             collapsible = TRUE,
             fluidRow(
               column(6, 
+                     h4("Enter the requested information for a calculation of total payment, see below & right cards for itemization of pay by session."),
+                     gaugeOutput("return_plot")),
+              column(6,
+                     radioButtons("first_time_return", "Is this your first time facilitating a course (i.e. will you need to attend content training)?",
+                                  selected = character(0), choices = c("Yes", "No"), inline = T
+                     ),
                      numericInput("hours_return", "How many total hours in the course?",
                 min = 0, max = 10, value = 0
               ),
@@ -162,8 +170,7 @@ ui <- bs4DashPage(
                                  label = "Select the course platform:",
                                  choices = c("Moodle", "Google Sites", "Whetstone", "Office Hours", "N/A or No Platform"),
                                  selected = NULL
-              )),
-              column(6, gaugeOutput("return_plot"))
+              ))
             )
           ),
           bs4Card(
@@ -197,51 +204,58 @@ ui <- bs4DashPage(
           )
           )
         )
-      ),
-      bs4TabItem(
-        tabName = "item3",
-        bs4Card(
-          title = "Card 3",
-          closable = TRUE,
-          width = 6,
-          solidHeader = TRUE,
-          status = "danger",
-          collapsible = TRUE,
-          p("Box Content")
-        )
-      ),
-      bs4TabItem(
-        tabName = "item4",
-        bs4Card(
-          title = "Card 4",
-          closable = TRUE,
-          width = 6,
-          solidHeader = TRUE,
-          status = "info",
-          collapsible = TRUE,
-          p("Box Content")
-        )
-      ),
-      bs4TabItem(
-        tabName = "item5",
-        bs4Card(
-          title = "Card 5",
-          closable = TRUE,
-          width = 6,
-          solidHeader = TRUE,
-          status = "success",
-          collapsible = TRUE,
-          p("Box Content")
-        )
-      )
+      )#,
+      # bs4TabItem(
+      #   tabName = "item3",
+      #   bs4Card(
+      #     title = "Card 3",
+      #     closable = TRUE,
+      #     width = 6,
+      #     solidHeader = TRUE,
+      #     status = "danger",
+      #     collapsible = TRUE,
+      #     p("Box Content")
+      #   )
+      # ),
+      # bs4TabItem(
+      #   tabName = "item4",
+      #   bs4Card(
+      #     title = "Card 4",
+      #     closable = TRUE,
+      #     width = 6,
+      #     solidHeader = TRUE,
+      #     status = "info",
+      #     collapsible = TRUE,
+      #     p("Box Content")
+      #   )
+      # ),
+      # bs4TabItem(
+      #   tabName = "item5",
+      #   bs4Card(
+      #     title = "Card 5",
+      #     closable = TRUE,
+      #     width = 6,
+      #     solidHeader = TRUE,
+      #     status = "success",
+      #     collapsible = TRUE,
+      #     p("Box Content")
+      #   )
+      # )
     )
   )
 )
 server <- function(input, output) {
   return_data <- reactive({
+    learning_time <- if (is.null(input$first_time_return)) {
+      0
+    } else if (input$first_time_return == "No") {
+      0
+    } else {
+      100
+    }
     return_df <- tibble(
       hours = input$hours_return,
-      pay = 165 * hours
+      pay = 165 * hours + learning_time
     )
   })
 
@@ -299,19 +313,33 @@ server <- function(input, output) {
 
   gt_data_returning <- reactive({
     return_df <- tibble(
-      group = c("Support", rep("Session", 10)),
+      group = c("Training", "Support", rep("Session", 10)),
       session = c(
-        "Site Contact Support", "Session 1", "Session 2", "Session 3", "Session 4",
+        "Content Training", "Site Contact Support", "Session 1", "Session 2", "Session 3", "Session 4",
         "Session 5", "Session 6", "Session 7", "Session 8",
         "Session 9", "Session 10"
       ),
       hours = c(
+        if (is.null(input$first_time_return)) {
+          0
+        } else if (input$first_time_return == "No") {
+          0
+        } else {
+          1
+        },
         1,
         input$session1_hours, input$session2_hours, input$session3_hours,
         input$session4_hours, input$session5_hours, input$session6_hours,
         input$session7_hours, input$session8_hours, input$session9_hours, input$session10_hours
       ),
       pay = c(
+        if (is.null(input$first_time_return)) {
+          0
+        } else if (input$first_time_return == "No") {
+          0
+        } else {
+          100
+        },
         100,
         input$session1_hours * 165, input$session2_hours * 165, input$session3_hours * 165,
         input$session4_hours * 165, input$session5_hours * 165, input$session6_hours * 165,
@@ -323,9 +351,9 @@ server <- function(input, output) {
   output$return_plot <- renderGauge({
     gauge(return_data()$pay,
       min = 0,
-      max = 165 * 10,
+      max = 165 * 10 + 100,
       symbol = "$"
-    ) # Max is 165*100
+    )
   })
 
   output$new_plot <- renderGauge({
@@ -333,7 +361,7 @@ server <- function(input, output) {
       min = 0,
       max = 150 * 10 + 100,
       symbol = "$"
-    ) # Max is 150*100+100
+    )
   })
 
   output$itemized_payment_new <- render_gt({
@@ -368,7 +396,7 @@ server <- function(input, output) {
     gt_data_returning() %>%
       rename(Source = session, Hours = hours, Pay = pay) %>%
       # Delete content training from data
-      filter(Source != "Content Training") %>%
+      # filter(Source != "Content Training") %>%
       gt(groupname_col = "group") %>%
       fmt_currency(
         columns = vars(Pay)

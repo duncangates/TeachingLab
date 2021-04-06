@@ -45,8 +45,6 @@ newcols <- str_to_title(c(
 teaching_df_readin <- teaching_df_readin %>%
   select(-`Select the grade-band(s) you focused on.`,
          -`Select the best description for your role.`) %>%
-  mutate_if(is.character, funs(replace_na(., "No Response"))) %>%
-  mutate_if(is.numeric, funs(replace_na(., "No Response"))) %>%
   rename_with(~ newcols[which(oldcols == .x)], .cols = oldcols) %>%
   mutate(`Date for the session` = lubridate::ymd(`Date for the session`)) %>%
   mutate(Portfolio = case_when(!str_detect(`Professional Training Session`, c("EL|IM|Guidebooks|GuideBooks")) == T ~ "State-Level",
@@ -87,7 +85,7 @@ name_replace <- c("Octavia" = "Octavia Nixon", "Vaishali" = "Vaishali Joshi", "R
                   "Fitz" = "Andrea Fitzgerald")
 
 # Bind it to original dataframe
-teaching_df <- teaching_df_readin %>%
+teaching_df_merge <- teaching_df_readin %>%
   dplyr::select(-c(`S/He Facilitated The Content Clearly (Second Facilitator)`,
                    `S/He Effectively Built A Community Of Learners (Second Facilitator)`,
                    `Name Of Your Second Facilitator.`,
@@ -99,9 +97,18 @@ teaching_df <- teaching_df_readin %>%
   mutate(`Name Of Your Facilitator` = str_replace_all(`Name Of Your Facilitator`, name_replace))
 
 # Moodle data merge
-moodle_data <- read_rds(here("Data/moodle_export_reformat.rds"))
+moodle_data <- read_rds(here("Data/moodle_export_reformat.rds")) %>%
+  mutate(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?` = as.numeric(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`))
+# Sheets Data Merge
+sheets_data <- read_rds(here("Data/sheets_data_merge.rds")) %>%
+  mutate(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?` = as.numeric(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`),
+         `Date for the session` = as.Date(`Date for the session`))
 
-teaching_df <- full_join(teaching_df, moodle_data)
+teaching_df <- full_join(teaching_df_merge, moodle_data) %>%
+  full_join(sheets_data) %>%
+  mutate(across(c(4:18, 20:24), ~ replace_na(., "No Response"))) %>%
+  mutate(across(c(4:18, 20:24), ~ replace_na(., "No Response"))) %>%
+  mutate(across(c(4:18, 20:24), ~ str_replace_all(.x, "NULL", "No Response")))
 
 
 write_rds(teaching_df, here("Data/dashboard_data.rds"))
