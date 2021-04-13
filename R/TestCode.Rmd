@@ -5,6 +5,11 @@ date: "3/24/2021"
 output: html_document
 ---
 
+```{r}
+teaching_df <- read_rds(here("Data/dashboard_data.rds"))
+```
+
+
 ##### TESTING
 For all time
 ```{r}
@@ -39,7 +44,7 @@ test %>%
           mutate(question = factor(question, levels = unique(question))) %>%
           # arrange(desc(percent)) %>%
           # ungroup() %>%
-          ggplot2::ggplot(aes(x = question, y = n, fill = n)) + # Pie chart input, ordered by n
+          ggplot2::ggplot(aes(x = question, y = n, fill = reorder(n, answer))) + # Pie chart input, ordered by n
           labs(
             fill = "Type", x = NULL, y = NULL
           ) +

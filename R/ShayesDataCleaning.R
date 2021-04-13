@@ -130,28 +130,28 @@ spring_averages_ela <- spring_df %>%
 spring_averages_math <- spring_df %>%
   select(48:68) %>%
   summarise(
-    post24a = sum(post24a == "Yes", na.rm = T)/sum(!is.na(post24a)),
-    post24b = sum(post24b == "Yes", na.rm = T)/sum(!is.na(post24b)),
-    post24c = sum(post24c == "No", na.rm = T)/sum(!is.na(post24c)),
-    post24d = sum(post24d == "No", na.rm = T)/sum(!is.na(post24d)),
-    post25 = sum(post25 == "Giving students opportunities to develop deep commands of the how, why, and when of mathematical concepts.", na.rm = T)/sum(!is.na(post25)),
-    post26a = sum(post26a == "Yes", na.rm = T)/sum(!is.na(post26a)),
-    post26b = sum(post26b == "Yes", na.rm = T)/sum(!is.na(post26b)),
-    post26c = sum(post26c == "No", na.rm = T)/sum(!is.na(post26c)),
-    post26d = sum(post26d == "No", na.rm = T)/sum(!is.na(post26d)),
-    post27 = sum(post27 == "Students’ beliefs about whether or not they are a “math person” influences their performance in math class.", na.rm = T)/sum(!is.na(post27)),
-    post28 = sum(post28 == "Students need to receive on grade-level instruction every year in order to graduate high school ready for college and career.", na.rm = T)/sum(!is.na(post28)),
-    post29 = sum(post29 == "Having the teacher simplify the language and task complexity for students who are English learners.", na.rm = T)/sum(!is.na(post29)),
-    post30a = sum(post30a == "Yes", na.rm = T)/sum(!is.na(post30a)),
-    post30b = sum(post30b == "Yes", na.rm = T)/sum(!is.na(post30b)),
-    post30c = sum(post30c == "No", na.rm = T)/sum(!is.na(post30c)),
-    post30d = sum(post30d == "No", na.rm = T)/sum(!is.na(post30d)),
-    post31a = sum(post31a == "Yes", na.rm = T)/sum(!is.na(post31a)),
-    post31b = sum(post31b == "Yes", na.rm = T)/sum(!is.na(post31b)),
-    post31c = sum(post31c == "No", na.rm = T)/sum(!is.na(post31c)),
-    post31d = sum(post31d == "No", na.rm = T)/sum(!is.na(post31d)),
-    post32 = sum(post32 == "They describe how students will demonstrate their understanding.", na.rm = T)/sum(!is.na(post32))
-  ) %>%
+    post24a = c(sum(post24a == "Yes", na.rm = T)/sum(!is.na(post24a)), length(which(!is.na(post24a)))),
+    post24b = c(sum(post24b == "Yes", na.rm = T)/sum(!is.na(post24b)), length(which(!is.na(post24b)))),
+    post24c = c(sum(post24c == "No", na.rm = T)/sum(!is.na(post24c)), length(which(!is.na(post24c)))),
+    post24d = c(sum(post24d == "No", na.rm = T)/sum(!is.na(post24d)), length(which(!is.na(post24d)))),
+    post25 = c(sum(post25 == "Giving students opportunities to develop deep commands of the how, why, and when of mathematical concepts.", na.rm = T)/sum(!is.na(post25)), length(which(!is.na(post25)))),
+    post26a = c(sum(post26a == "Yes", na.rm = T)/sum(!is.na(post26a)), length(which(!is.na(post26a)))),
+    post26b = c(sum(post26b == "Yes", na.rm = T)/sum(!is.na(post26b)), length(which(!is.na(post26b)))),
+    post26c = c(sum(post26c == "No", na.rm = T)/sum(!is.na(post26c)), length(which(!is.na(post26c)))),
+    post26d = c(sum(post26d == "No", na.rm = T)/sum(!is.na(post26d)), length(which(!is.na(post26d)))),
+    post27 = c(sum(post27 == "Students’ beliefs about whether or not they are a “math person” influences their performance in math class.", na.rm = T)/sum(!is.na(post27)), length(which(!is.na(post27)))),
+    post28 = c(sum(post28 == "Students need to receive on grade-level instruction every year in order to graduate high school ready for college and career.", na.rm = T)/sum(!is.na(post28)), length(which(!is.na(post28)))),
+    post29 = c(sum(post29 == "Having the teacher simplify the language and task complexity for students who are English learners.", na.rm = T)/sum(!is.na(post29)), length(which(!is.na(post29)))),
+    post30a = c(sum(post30a == "Yes", na.rm = T)/sum(!is.na(post30a)), length(which(!is.na(post30a)))),
+    post30b = c(sum(post30b == "Yes", na.rm = T)/sum(!is.na(post30b)), length(which(!is.na(post30b)))),
+    post30c = c(sum(post30c == "No", na.rm = T)/sum(!is.na(post30c)), length(which(!is.na(post30c)))),
+    post30d = c(sum(post30d == "No", na.rm = T)/sum(!is.na(post30d)), length(which(!is.na(post30d)))),
+    post31a = c(sum(post31a == "Yes", na.rm = T)/sum(!is.na(post31a)), length(which(!is.na(post31a)))),
+    post31b = c(sum(post31b == "Yes", na.rm = T)/sum(!is.na(post31b)), length(which(!is.na(post31b)))),
+    post31c = c(sum(post31c == "No", na.rm = T)/sum(!is.na(post31c)), length(which(!is.na(post31c)))),
+    post31d = c(sum(post31d == "No", na.rm = T)/sum(!is.na(post31d)), length(which(!is.na(post31d)))),
+    post32 = c(sum(post32 == "They describe how students will demonstrate their understanding.", na.rm = T)/sum(!is.na(post32)), length(which(!is.na(post32))))
+  )# %>%
   mutate(across(everything(), ~ .x * 100))
 
 ### JOINING FALL AND SPRING
@@ -192,8 +192,16 @@ fall_spring_math_averages <- bind_rows(fall_averages_math %>% rename_with( ~ str
     columns = vars(Fall, Spring, Improvement),
     decimals = 2,
     scale_values = F
+  ) %>%
+  grand_summary_rows(
+    columns = vars(Fall, Spring, Improvement),
+    fns = list(
+      Average = ~ mean(.)
+    ),
+    formatter = fmt_percent,
+    scale_values = F
   ))
-math_table %>%
+el_table %>%
   gtsave(here("Images/SY19-20ELScores.png"))
 ## Math
 (math_table <- fall_spring_math_averages %>%
@@ -212,9 +220,17 @@ math_table %>%
     columns = vars(Fall, Spring, Improvement),
     decimals = 2,
     scale_values = F
+  ) %>%
+  grand_summary_rows(
+    columns = vars(Fall, Spring, Improvement),
+    fns = list(
+      Average = ~ mean(.)
+    ),
+    formatter = fmt_percent,
+    scale_values = F
   ))
 math_table %>%
-  gtsave(here("Images/SY19-20MathScores.png"))
+  gtsave(filename = "SY19-20MathScores.png", path = here("Images/"))
 
 ### ALSO BY CONSTRUCT WHICH IS FLUENCY, RACE & ETHNICITY, ETC.
 ###

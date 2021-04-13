@@ -1,0 +1,12 @@
+name: ExternalShare
+title: ExternalShare
+username:
+account: teachinglabhq
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3953831
+bundleId: 4464392
+url: https://teachinglabhq.shinyapps.io/ExternalShare/
+when: 1618296871.85093
+asMultiple: FALSE
+asStatic: FALSE

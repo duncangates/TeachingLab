@@ -12,17 +12,17 @@ suppressPackageStartupMessages(library(shinyjs)) # Clickability
 suppressPackageStartupMessages(library(semantic.dashboard)) # Custom themeing
 suppressPackageStartupMessages(library(shiny.semantic)) # Custom themeing
 # suppressPackageStartupMessages(library(Cairo))
-suppressPackageStartupMessages(library(showtext)) # Not sure
+suppressPackageStartupMessages(library(showtext)) # Rendering fonts
 suppressPackageStartupMessages(library(waffle)) # Waffle charts
 suppressPackageStartupMessages(library(treemap)) # Tree maps
 # suppressPackageStartupMessages(library(wordcloud2)) # Wordclouds if I decide to add them
 suppressPackageStartupMessages(library(tidytext)) # Sentiment modelling
 suppressPackageStartupMessages(library(gt)) # Table making
 suppressPackageStartupMessages(library(bslib)) # Not sure
-# font_add_google(name = "Open Sans", family = "Open Sans") # Adds font for ggplot
-# font_add("Open Sans", "~/Library/Fonts/OpenSans-Regular.ttf")
-# font_add("Open Sans ExtraBold", "~/Library/Fonts/OpenSans-ExtraBold.ttf")
-# showtext_auto()
+# font_add("Open Sans", here("www/OpenSans-Regular.ttf"))
+# font_add("Open Sans ExtraBold", here("www/OpenSans-ExtraBold.ttf"))
+font_add_google(name = "Open Sans", family = "Open Sans") # Adds font for ggplot
+showtext_auto()
 showtext_opts(dpi = 150) # Changes ggplot font size
 options(semantic.themes = T) # Use semantic themes
 # library(shinyalert)
@@ -45,6 +45,16 @@ options(semantic.themes = T) # Use semantic themes
 # extrafont::ttf_import(pattern = "OpenSans-ExtraBold.ttf", paths = here("ParticipantFeedback/www"))
 
 teaching_df <- read_rds(here("Data/dashboard_data.rds")) # See R/InternalDashboardDataSetup.R for information on data manipulation
+
+factor_cols <- c("% Satisfied With The Overall Quality Of Today's Professional Learning Session", 
+                 "% Who Say Today's Topic Was Relevant For My Role", "% Who Say Activities Of Today's Session Were Well-Designed To Help Me Learn", 
+                 "How Likely Are You To Apply This Learning To Your Practice In The Next 4-6 Weeks?", 
+                 "S/He Facilitated The Content Clearly", 
+                 "S/He Effectively Built A Community Of Learners", 
+                 "The independent online work activities were well-designed to help me meet the learning targets.", 
+                 "The Zoom meeting activities were well-designed to help me meet the learning targets.", 
+                 "I felt a sense of community with the other participants in this course even though we were meeting virtually.", 
+                 "This course helped me navigate remote and/or hybrid learning during COVID-19.")
 
 # Teaching Lab theme
 # theme_tl <- function(){
@@ -195,7 +205,7 @@ ui <-
           ),
         conditionalPanel(condition = "input.viz_type == 'Text Visualization'",
                           selectInput("text_filters",
-                                      choices = c("Random", "Positive Statements", "Areas for Improvement"),
+                                      choices = c("Random", "Areas of Strength", "Areas for Improvement"),
                                       selected = NULL, 
                                       label = h3("Select a Method of Text Filtration", style = "font-family:'Open Sans ExtraBold';"),
                                       width = 400)),
@@ -254,6 +264,21 @@ ui <-
         br()
       ),
       menu_item("",
+                icon = shiny::icon("globe"),
+                selectizeInput("facilitator",
+                               choices = unique(teaching_df$`Name Of Your Facilitator`) %>% 
+                                 sort() %>%
+                                 purrr::prepend("All"),
+                               selected = "All",
+                               # options = list(
+                               #   placeholder = 'Please select an option below',
+                               #   onInitialize = I('function() { this.setValue(""); }')
+                               # ),
+                               label = h3("Select a Facilitator:", style = "font-family:'Open Sans ExtraBold';"),
+                               width = 400
+                )
+      ),
+      menu_item("",
         icon = shiny::icon("globe"),
         selectizeInput("portfolio",
           choices = unique(teaching_df$Portfolio) %>% purrr::prepend("All") %>% sort(),
@@ -303,22 +328,6 @@ ui <-
           label = h3("Select a Client:", style = "font-family:'Open Sans ExtraBold';"),
           width = 400
         )
-      ),
-      # br(),
-      menu_item("",
-                icon = shiny::icon("globe"),
-                selectizeInput("facilitator",
-                               choices = unique(teaching_df$`Name Of Your Facilitator`) %>% 
-                                 sort() %>%
-                                 purrr::prepend("All"),
-                               selected = "All",
-                               # options = list(
-                               #   placeholder = 'Please select an option below',
-                               #   onInitialize = I('function() { this.setValue(""); }')
-                               # ),
-                               label = h3("Select a Facilitator:", style = "font-family:'Open Sans ExtraBold';"),
-                               width = 400
-                )
       )
     )
   ),
@@ -470,18 +479,6 @@ server <- function(input, output, session) {
                    col <- grDevices::colorRampPalette(c("#040404", "#04ABEB"))
                  }
                })
-  
-  # col <- reactive({
-  #   if(input$color == "Blue") {
-  #     col <- grDevices::colorRampPalette(c("#040404", "#04ABEB"))
-  #   } else if (input$color == "Green") {
-  #     col <- grDevices::colorRampPalette(c("#040404", "#43c6b9"))
-  #   } else if (input$color == "Orange") {
-  #     col <- grDevices::colorRampPalette(c("#040404", "#ff7b43"))
-  #   } else if (input$color == "Purple") {
-  #     col <- grDevices::colorRampPalette(c("#040404", "#d17df7"))
-  #   }
-  # })
   
   # Data for second pie chart and table (rightmost)
   mydata <- reactive({
@@ -722,14 +719,14 @@ server <- function(input, output, session) {
       teaching_df %>% dplyr::filter(`Name Of Your Facilitator` == input$facilitator)
     }
     # Filter for positive
-    teaching_df <- if(input$text_filters == "Positive Statements") {
-      teaching_df %>% dplyr::filter(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?` > 7)
+    teaching_df <- if(input$text_filters == "Areas of Strength") {
+      teaching_df %>% dplyr::filter(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?` > 8)
     } else {
       teaching_df
     }
     # Filter for negative
     teaching_df <- if(input$text_filters == "Areas for Improvement") {
-      teaching_df %>% dplyr::filter(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?` <= 2)
+      teaching_df %>% dplyr::filter(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?` <= 6)
     } else {
       teaching_df
     }
@@ -785,12 +782,18 @@ server <- function(input, output, session) {
       } else if (input$data == "All") {
         all_data_ts() %>%
           mutate(`Date for the session` = paste0(`Date for the session`, ", 01")) %>%
+          # mutate(`Date for the session` = myd(`Date for the session`)) %>%
+          # group_by(`Date for the session`) %>%
           ggplot(aes(x = myd(`Date for the session`), y = Percent)) +
           geom_area(color = "gray50", aes(fill = Rating), alpha = 0.6) +
+          # geom_rect(aes(xmin = `Date for the session`, xmax = lead(`Date for the session`),
+          #                                 ymin = 0, ymax = Percent), alpha = 0.6, fill = "blue") +
+          # geom_rect(color = "transparent", aes(xmin = `Date for the session`, xmax = lead(`Date for the session`),
+          #               ymin = Percent, ymax = 100), alpha = 0.85, fill = "gray") +
           geom_ribbon(color = "transparent", aes(ymin = Percent, ymax = 100,
                                                  fill = "Neither Agree nor Disagree/Disagree/Strongly Disagree"), alpha = 0.85) +
           geom_line(size = 1.5, alpha = 0.9) +
-          geom_point(size = 1.5, alpha = 0.9) +
+          # geom_point(size = 1.5, alpha = 0.9) +
           facet_wrap( ~ question) +
           coord_cartesian() +
           # Doesn't work right now
@@ -828,7 +831,7 @@ server <- function(input, output, session) {
           geom_ribbon(color = "transparent", aes(ymin = Percent, ymax = 100,
                                                  fill = "Neither Agree nor Disagree/Disagree/Strongly Disagree"), alpha = 0.85) +
           geom_line(size = 3, alpha = 0.9) +
-          geom_point(size = 3, alpha = 0.9) +
+          # geom_point(size = 3, alpha = 0.9) +
           coord_cartesian() +
           scale_x_date(date_breaks = "1 month", date_labels = "%b, %y", expand = c(0, 0)) +
           scale_y_continuous(breaks = pretty_breaks(n = 10), limits = c(0, 100), 
@@ -861,10 +864,18 @@ server <- function(input, output, session) {
   output$piePlotNA <- renderPlot(
     {
       if (input$viz_type == "Pie Chart" & input$data != "All") {
-        g2 <- ggplot2::ggplot(mydata2(), aes(x = 0, y = n, fill = reorder(`get(input$data)`, n))) + # Pie chart input, ordered by n
+        g2 <- if (input$viz_type == "Pie Chart" & input$data == "How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?") {
+          ggplot2::ggplot(mydata2(), aes(x = 0, y = n, fill = reorder(`get(input$data)`, n))) + # Pie chart input, ordered by n
           labs(
             fill = "Type", x = NULL, y = NULL,
-            title = paste(str_to_title(as.character(input$data)))
+            title = paste(str_to_title(as.character(input$data))),
+            subtitle = paste0("Average NPS from ", input$date[1], " to ", input$date[2], ": ", 
+                              sum(mydata2() %>% 
+                                    filter(`get(input$data)` == 10 | `get(input$data)` == 9) %>%
+                                    select(percent)) - 
+                                sum(mydata2() %>%
+                                      filter(`get(input$data)` == 0:6) %>%
+                                      select(percent)))
           ) +
           geom_bar(stat = "identity", width = 0.5, color = "gray10", size = ifelse(nrow(mydata2()) > 10,
             0.1,
@@ -894,8 +905,50 @@ server <- function(input, output, session) {
           theme_void() +
           theme(
             legend.position = "none",
-            plot.title = element_text(hjust = 0.5, family = "Open Sans", face = "bold")
+            plot.title = element_text(hjust = 0.5, family = "Open Sans", face = "bold"),
+            plot.subtitle = element_text(hjust = 0.5, family = "Open Sans")
           )
+        } else {
+          ggplot2::ggplot(mydata2(), aes(x = 0, y = n, fill = reorder(`get(input$data)`, n))) + # Pie chart input, ordered by n
+            labs(
+              fill = "Type", x = NULL, y = NULL,
+              title = paste(str_to_title(as.character(input$data))),
+              subtitle = paste0(sum(mydata2() %>% 
+                                                 dplyr::filter(`get(input$data)` == "Agree" | `get(input$data)` == "Strongly agree") %>%
+                                                 select(percent)) ,"% of people rated agree or strongly agree")
+            ) +
+            geom_bar(stat = "identity", width = 0.5, color = "gray10", size = ifelse(nrow(mydata2()) > 10,
+                                                                                     0.1,
+                                                                                     0.6
+            )) + # Using bar columns put in polar coordinates later
+            geom_text(aes(
+              label = ifelse(percent > 5,
+                             paste0(percent, "%\n", ifelse(
+                               str_length(`get(input$data)`) > 10,
+                               gsub("(.{9,}?)\\s", "\\1\n\\2", `get(input$data)`),
+                               `get(input$data)`
+                             )),
+                             paste("")
+              ),
+              x = 0.4, # Distance outwards from pie chart
+              color = reorder(`get(input$data)`, n)
+            ),
+            position = position_stack(vjust = 0.5), # position stack normally stacks bars, but here it keeps the text in the right place once put in polar
+            size = 3,
+            fontface = "bold",
+            family = "Open Sans"
+            ) + # Add bold text with percentage and variable label
+            scale_x_continuous(expand = c(0, 0)) + # Change x so expand is not default and adds no padding so the bars will produce a circle
+            coord_polar(theta = "y", direction = -1) + # Make bars polar
+            scale_fill_manual(values = c(col()(nrow(mydata2())))) + # custom colors
+            scale_color_manual(values = c(col()(nrow(mydata2())))) +
+            theme_void() +
+            theme(
+              legend.position = "none",
+              plot.title = element_text(hjust = 0.5, family = "Open Sans", face = "bold"),
+              plot.subtitle = element_text(hjust = 0.5, family = "Open Sans")
+            )
+        }
         cowplot::ggdraw(g2)
       } else if (input$data == "All" & input$viz_type == "Pie Chart") {
         g2 <- all_data() %>%
@@ -969,10 +1022,18 @@ server <- function(input, output, session) {
         #   geom_point()
         cowplot::ggdraw(g2)
       } else if (input$viz_type == "Donut Chart" & input$data != "All") {
-        g2 <- ggplot2::ggplot(mydata2(), aes(x = 0, y = n, fill = reorder(`get(input$data)`, n))) + # Pie chart input, ordered by n
+        g2 <- if (input$viz_type == "Donut Chart" & input$data == "How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?") {
+          ggplot2::ggplot(mydata2(), aes(x = 0, y = n, fill = reorder(`get(input$data)`, n))) + # Pie chart input, ordered by n
           labs(
             fill = "Type", x = NULL, y = NULL,
-            title = paste(str_to_title(as.character(input$data)))
+            title = paste(str_to_title(as.character(input$data))),
+            subtitle = paste0("Average NPS from ", input$date[1], " to ", input$date[2], ": ", 
+                              sum(mydata2() %>% 
+                                    filter(`get(input$data)` == 10 | `get(input$data)` == 9) %>%
+                                    select(percent)) - 
+                                sum(mydata2() %>%
+                                      filter(`get(input$data)` == 0:6) %>%
+                                      select(percent)))
           ) +
           geom_bar(stat = "identity", width = 1.5, color = "gray10", size = ifelse(nrow(mydata2()) > 10,
                                                                                    0.1,
@@ -1003,14 +1064,110 @@ server <- function(input, output, session) {
           theme(
             legend.position = "none",
             plot.title = element_text(hjust = 0.5, family = "Open Sans", face = "bold"),
-            text = element_text(family = "Open Sans", face = "bold")
+            text = element_text(family = "Open Sans"),
+            plot.subtitle = element_text(hjust = 0.5, family = "Open Sans", face = "plain")
           )
+        } else {
+          ggplot2::ggplot(mydata2(), aes(x = 0, y = n, fill = reorder(`get(input$data)`, n))) + # Pie chart input, ordered by n
+            labs(
+              fill = "Type", x = NULL, y = NULL,
+              title = paste(str_to_title(as.character(input$data))),
+              subtitle = paste0(sum(mydata2() %>% 
+                                      dplyr::filter(`get(input$data)` == "Agree" | `get(input$data)` == "Strongly agree") %>%
+                                      select(percent)) ,"% of people rated agree or strongly agree")
+            ) +
+            geom_bar(stat = "identity", width = 1.5, color = "gray10", size = ifelse(nrow(mydata2()) > 10,
+                                                                                     0.1,
+                                                                                     0.6
+            )) + # Using bar columns put in polar coordinates later
+            geom_text(aes(
+              label = ifelse(percent > 5,
+                             paste0(percent, "%\n", ifelse(
+                               str_length(`get(input$data)`) > 10,
+                               gsub("(.{9,}?)\\s", "\\1\n\\2", `get(input$data)`),
+                               `get(input$data)`
+                             )),
+                             paste("")
+              ),
+              x = 2, # Distance outwards from pie chart
+              color = reorder(`get(input$data)`, n)
+            ),
+            position = position_stack(vjust = 0.5), # position stack normally stacks bars, but here it keeps the text in the right place once put in polar
+            size = 3,
+            fontface = "bold",
+            family = "Open Sans"
+            ) + # Add bold text with percentage and variable label
+            scale_x_continuous(expand = c(0, 1)) + # Change x so expand is not default and adds no padding so the bars will produce a circle not a donut
+            coord_polar(theta = "y", direction = -1) + # Make bars polar
+            scale_fill_manual(values = c(col()(nrow(mydata2())))) + # custom colors
+            scale_color_manual(values = c(col()(nrow(mydata2())))) +
+            theme_void() +
+            theme(
+              legend.position = "none",
+              plot.title = element_text(hjust = 0.5, family = "Open Sans", face = "bold"),
+              text = element_text(family = "Open Sans"),
+              plot.subtitle = element_text(hjust = 0.5, family = "Open Sans", face = "plain")
+            )
+        }
         cowplot::ggdraw(g2)
       } else if (input$viz_type == "Column Chart" & input$data != "All") {
-        g2 <- ggplot2::ggplot(mydata2(), aes(x = 0, y = n, fill = reorder(`get(input$data)`, n))) + # Pie chart input, ordered by n
+        g2 <- if (input$viz_type == "Column Chart" & input$data == "How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?") {
+          mydata2() %>%
+            dplyr::arrange(desc(`get(input$data)`)) %>%
+            ggplot2::ggplot(aes(x = 0, y = n, fill = reorder(`get(input$data)`, n))) + 
+            labs(
+              fill = "Type", x = NULL, y = NULL,
+              title = paste(str_to_title(as.character(input$data))),
+              subtitle = paste0("Average NPS from ", input$date[1], " to ", input$date[2], ": ",
+                                sum(mydata2() %>%
+                                      filter(`get(input$data)` == 10 | `get(input$data)` == 9) %>%
+                                      select(percent)) -
+                                  sum(mydata2() %>%
+                                        filter(`get(input$data)` == 0:6) %>%
+                                        select(percent)))
+            ) +
+            geom_bar(stat = "identity", width = 0.1, color = "gray10"
+            ) + 
+            geom_text(aes(x = 0.125, label = "some text that won't show up"), color = "transparent") + # This adjusts the column size
+            geom_text(aes(x = -0.125, label = "some text that won't show up"), color = "transparent") + # This adjusts the column size
+            geom_text(aes(
+              label = ifelse(percent > 5,
+                             paste0(percent, "% (", n, ")\n", ifelse(
+                               str_length(`get(input$data)`) > 10,
+                               gsub("(.{9,}?)\\s", "\\1\n\\2", `get(input$data)`),
+                               `get(input$data)`
+                             )),
+                             paste("")
+              ),
+              x = 0.075, # Distance outwards from bar
+              color = reorder(`get(input$data)`, n)
+              # angle = 90
+            ),
+            position = position_stack(vjust = 0.5), # position stack normally stacks bars, but here it keeps the text in the right place once put in polar
+            size = 3,
+            fontface = "bold",
+            family = "Open Sans",
+            # color = "white"
+            ) + # Add bold text with percentage and variable label
+            scale_x_continuous() + 
+            coord_flip() +
+            scale_fill_manual(values = c(col()(nrow(mydata2())))) + # custom colors
+            scale_color_manual(values = c(col()(nrow(mydata2())))) +
+            theme_void() +
+            # ggpubr::theme_transparent() +
+            theme(
+              legend.position = "none",
+              plot.title = element_text(hjust = 0.5, family = "Open Sans", face = "bold"),
+              plot.subtitle = element_text(hjust = 0.5, family = "Open Sans")
+            )
+        } else { 
+          ggplot2::ggplot(mydata2(), aes(x = 0, y = n, fill = reorder(`get(input$data)`, n))) + # Pie chart input, ordered by n
           labs(
             fill = "Type", x = NULL, y = NULL,
-            title = paste(str_to_title(as.character(input$data)))
+            title = paste(str_to_title(as.character(input$data))),
+            subtitle = paste0(sum(mydata2() %>% 
+                                    dplyr::filter(`get(input$data)` == "Agree" | `get(input$data)` == "Strongly agree") %>%
+                                    select(percent)) ,"% of people rated agree or strongly agree")
           ) +
           geom_bar(stat = "identity", width = 0.1, color = "gray10"#, 
           #          size = ifelse(nrow(mydata2()) > 10,
@@ -1047,23 +1204,21 @@ server <- function(input, output, session) {
           # ggpubr::theme_transparent() +
           theme(
             legend.position = "none",
-            plot.title = element_text(hjust = 0.5, family = "Open Sans", face = "bold")
+            plot.title = element_text(hjust = 0.5, family = "Open Sans", face = "bold"),
+            plot.subtitle = element_text(hjust = 0.5, family = "Open Sans")
           )
+        }
         cowplot::ggdraw(g2)
       } else if (input$data == "All" & input$viz_type == "Column Chart") {
-        # all_data() %>%
-        #   dplyr::filter(answer == "Strongly agree") %>%
-        #   mutate(question = factor(question, levels = question[order(n)])) %>%
-        #   pull(question) %>%
-        #   levels -> question_levels
-        
         g2 <- all_data() %>%
           mutate(answer = str_replace_all(answer, "Neither agree nor disagree", "Neither")) %>%
           group_by(as.factor(question)) %>%
           # mutate(question = factor(question, levels = unique(question_levels))) %>%
           arrange(desc(percent)) %>%
           ungroup() %>%
-          ggplot2::ggplot(aes(x = question, y = n, fill = reorder(percent, n))) + # Pie chart input, ordered by n
+          drop_na() %>%
+          dplyr::mutate(answer = factor(answer, levels = c("Strongly agree", "Agree", "Neither", "Disagree", "Strongly disagree"))) %>%
+          ggplot2::ggplot(aes(x = fct_reorder(question, percent, .desc = T), y = percent, fill = fct_reorder(answer, percent))) + # Pie chart input, ordered by n
           labs(
             fill = "Type", x = NULL, y = NULL
           ) +
@@ -1090,8 +1245,8 @@ server <- function(input, output, session) {
           coord_flip() +
           # scale_y_discrete() +
           # scale_x_continuous() + # Change x so expand is not default and adds no padding so the bars will produce a circle
-          scale_fill_manual(values = c(col()(nrow(all_data())))) + # custom colors
-          scale_color_manual(values = c(col()(nrow(all_data())))) +
+          scale_fill_manual(values = c(col()(5))) + # custom colors
+          scale_color_manual(values = c(col()(5))) +
           theme_bw() +
           theme(
             legend.position = "none",
@@ -1146,15 +1301,18 @@ server <- function(input, output, session) {
                 labs(
                   fill = "Type", x = NULL, y = NULL,
                   title = paste(str_to_title(as.character(input$data))),
-                  subtitle = paste0(sum(mydata2() %>% 
+                  subtitle = paste0("Average NPS from ", input$date[1], " to ", input$date[2], ": ", sum(mydata2() %>% 
                                      filter(`get(input$data)` == 10 | `get(input$data)` == 9) %>%
-                                     select(percent)), "% of people gave a rating of 9 or higher")
+                                     select(percent)) - sum(mydata2() %>%
+                                                              filter(`get(input$data)` == 0:6) %>%
+                                                              select(percent)))
                 ) +
                 coord_equal() +
                 theme_void() +
                 theme(
                   legend.title = element_blank(),
-                  plot.title = element_text(hjust = 0.5, family = "Open Sans", face = "bold")
+                  plot.title = element_text(hjust = 0.5, family = "Open Sans", face = "bold"),
+                  plot.subtitle = element_text(hjust = 0.5, family = "Open Sans")
                 )
           } else {
             mydata2() %>%
@@ -1177,7 +1335,8 @@ server <- function(input, output, session) {
                 theme(
                   legend.title = element_blank(),
                   plot.title = element_text(hjust = 0.5, family = "Open Sans", face = "bold"),
-                  text = element_text(family = "Open Sans")
+                  text = element_text(family = "Open Sans"),
+                  plot.subtitle = element_text(hjust = 0.5, family = "Open Sans")
                 )
           }
           detach("package:plyr", unload = TRUE)
@@ -1289,8 +1448,8 @@ server <- function(input, output, session) {
       page_length <- 10
       conditional_dt <- all_data_ts() %>%
         mutate(`Date for the session` = myd(paste0(`Date for the session`, ", 01"))) %>%
-        arrange(`Date for the session`) %>%
-        mutate(`Date for the session` = format(`Date for the session`, format = "%B, %Y")) %>%
+        arrange(desc(`Date for the session`)) %>%
+        # mutate(`Date for the session` = format(`Date for the session`, format = "%B, %Y")) %>%
         ungroup() %>%
         select(-Rating) %>%
         DT::datatable(
@@ -1318,7 +1477,13 @@ server <- function(input, output, session) {
                     backgroundSize = "95% 50%",
                     backgroundRepeat = "no-repeat",
                     backgroundPosition = "right"
-        )
+        ) %>%
+        formatDate(columns = 1,
+                   method = "toLocaleDateString",
+                   params = list(
+                     'en-US',
+                     list(year = 'numeric', month = 'long')
+                   ))
     } else {
       page_length <- 5 # Adjust for other table
       conditional_dt <- mydata() %>%
@@ -1408,8 +1573,8 @@ server <- function(input, output, session) {
     } else {
       page_length <- 10
       all_data() %>%
-        dplyr::mutate(answer = factor(answer, levels = c("Strongly agree", "Agree", "Neither agree nor disagree", "Disagree", "Strongly disagree"))) %>%
-        arrange(desc(question, n)) %>%
+        dplyr::mutate(answer = factor(answer, levels = rev(c("Strongly agree", "Agree", "Neither agree nor disagree", "Disagree", "Strongly disagree")))) %>%
+        arrange(question, desc(n)) %>%
         DT::datatable(
         colnames = c("Likert Rating", "Question", "Percent", "Number"), # Column names
         extensions = c("Buttons", "RowGroup"), # Add buttons
