@@ -19,6 +19,7 @@ suppressPackageStartupMessages(library(treemap)) # Tree maps
 suppressPackageStartupMessages(library(tidytext)) # Sentiment modelling
 suppressPackageStartupMessages(library(gt)) # Table making
 suppressPackageStartupMessages(library(bslib)) # Not sure
+suppressPackageStartupMessages(library(shinycssloaders))
 # font_add("Open Sans", here("www/OpenSans-Regular.ttf"))
 # font_add("Open Sans ExtraBold", here("www/OpenSans-ExtraBold.ttf"))
 font_add_google(name = "Open Sans", family = "Open Sans") # Adds font for ggplot
@@ -28,7 +29,6 @@ options(semantic.themes = T) # Use semantic themes
 # library(shinyalert)
 # extrafont::ttf_import(pattern = "OpenSans-Regular.ttf", paths = here("ParticipantFeedback/www"))
 # extrafont::loadfonts()
-
 
 #### FOR SHINY SERVER ONLY NEEDED TO BE RUN ONCE
 # dir.create('~/.fonts')
@@ -151,9 +151,10 @@ ui <-
   # id = "nav_bar",
   # tabPanel("MAIN", value = "viz_panel",
   dashboard_page(
-  title = "Teaching Lab Data Visualization",
+    
+  title = "Teaching Lab PL Internal Dashboard",
 
-  theme = "solar", # Best theme so far, need to see if Open Sans can be integrated throughout app
+  theme = "solar",
 
   suppress_bootstrap = F,
 
@@ -188,12 +189,12 @@ ui <-
         conditionalPanel(condition = "input.viz_type != 'Text Visualization'",
             selectInput("data",
               c("All", 
+                "How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?",
                 "% Satisfied With The Overall Quality Of Today's Professional Learning Session", 
                 "% Who Say Today's Topic Was Relevant For My Role", "% Who Say Activities Of Today's Session Were Well-Designed To Help Me Learn", 
                 "How Likely Are You To Apply This Learning To Your Practice In The Next 4-6 Weeks?", 
                 "S/He Facilitated The Content Clearly", 
                 "S/He Effectively Built A Community Of Learners", 
-                "How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?",
                 "The independent online work activities were well-designed to help me meet the learning targets.", 
                 "The Zoom meeting activities were well-designed to help me meet the learning targets.", 
                 "I felt a sense of community with the other participants in this course even though we were meeting virtually.", 
@@ -270,10 +271,6 @@ ui <-
                                  sort() %>%
                                  purrr::prepend("All"),
                                selected = "All",
-                               # options = list(
-                               #   placeholder = 'Please select an option below',
-                               #   onInitialize = I('function() { this.setValue(""); }')
-                               # ),
                                label = h3("Select a Facilitator:", style = "font-family:'Open Sans ExtraBold';"),
                                width = 400
                 )
@@ -283,51 +280,39 @@ ui <-
         selectizeInput("portfolio",
           choices = unique(teaching_df$Portfolio) %>% purrr::prepend("All") %>% sort(),
           selected = "All",
-          # options = list(
-          #   placeholder = 'Please select an option below',
-          #   onInitialize = I('function() { this.setValue(""); }')
-          # ),
           label = h3("Select a Portfolio:", style = "font-family:'Open Sans ExtraBold';"),
           width = 400,
           size = 200
         )
       ),
-      # br(),
-      # menu_item("",
-      #           icon = shiny::icon("globe"),
-      #           uiOutput("portfolio")),
-      # menu_item("",
-      #           icon = shiny::icon("globe"),
-      #           uiOutput("course")),
-      # menu_item("",
-      #           icon = shiny::icon("globe"),
-      #           uiOutput("client")),
       menu_item("",
         icon = shiny::icon("globe"),
-        selectizeInput("course",
-          choices = unique(teaching_df$`Professional Training Session`) %>% sort() %>% purrr::prepend("All"),
-          selected = "All",
-          # options = list(
-          #   placeholder = 'Please select an option below',
-          #   onInitialize = I('function() { this.setValue(""); }')
-          # ),
-          label = h3("Select a Course:", style = "font-family:'Open Sans ExtraBold';"),
-          width = 400
-        )
+        uiOutput("course"),
+        # selectizeInput("course",
+        #   choices = list("All",
+        #                  "EL" = teaching_df %>% filter(Portfolio == "EL") %>% select(`Professional Training Session`) %>% unique() %>% arrange() %>% pull(),
+        #                  "Guidebooks" = teaching_df %>% filter(Portfolio == "Guidebooks") %>% select(`Professional Training Session`) %>% unique() %>% arrange() %>% pull(),
+        #                  "IM" = teaching_df %>% filter(Portfolio == "Illustrative Mathematics") %>% select(`Professional Training Session`) %>% unique() %>% arrange() %>% pull(),
+        #                  "State-Level" = teaching_df %>% filter(Portfolio == "State-Level") %>% select(`Professional Training Session`) %>% unique() %>% arrange() %>% pull()),
+        #     # unique(teaching_df$`Professional Training Session`) %>% sort() %>% purrr::prepend("All"),
+        #   selected = "All",
+        #   label = h3("Select a Course:", style = "font-family:'Open Sans ExtraBold';"),
+        #   width = 400
+        # )
       ),
-      # br(),
       menu_item("",
         icon = shiny::icon("globe"),
         selectizeInput("client",
           choices = unique(teaching_df$`District, Parish, Or Network`) %>% sort() %>% purrr::prepend("All"),
           selected = "All",
-          # options = list(
-          #   placeholder = 'Please select an option below',
-          #   onInitialize = I('function() { this.setValue(""); }')
-          # ),
           label = h3("Select a Client:", style = "font-family:'Open Sans ExtraBold';"),
           width = 400
         )
+      ),
+      menu_item("",
+                icon = shiny::icon("globe"),
+                tags$a(href = "https://www.youtube.com/watch?v=vfqhLSImpLs", "Dashboard Tutorial"),
+                tags$a(href = "https://docs.google.com/forms/d/e/1FAIpQLSey0OlydXDvgZfpieYfsLG9kc4sn8zUOzuxP2gxT3O0ZcGdRA/viewform?usp=sf_link", "Feedback Form", style = "margin-left:75px;color:#ff6961;")
       )
     )
   ),
@@ -345,14 +330,14 @@ ui <-
         8,
         style='margin-top:-30px', # Shifts plots up 
         conditionalPanel(condition = "input.viz_type != 'Text Visualization'",
-                          plotOutput("piePlotNA", width = "100%")
+                          withSpinner(plotOutput("piePlotNA", width = "100%"), type = 3, color.background = "white")
                          )
       ),
       # Right-most plot
       column(8, 
              style='margin-top:-30px', # Shifts plots up
              conditionalPanel(condition = "input.viz_type != 'Text Visualization'",
-              plotOutput("piePlot", width = "100%")
+              withSpinner(plotOutput("piePlot", width = "100%"), type = 3, color.background = "white")
               )
              )
     ),
@@ -362,33 +347,25 @@ ui <-
         8,
         style='padding-left:5px; padding-right:5px; padding-top:38px; padding-bottom:5px', # Add padding to the top of table and left-right
         conditionalPanel(condition = "input.viz_type != 'Text Visualization'",
-          DTOutput("tableData2")
+          withSpinner(DTOutput("tableData2"), type = 3, color.background = "white")
         )
       ),
       # Right-most table
       column(8, 
              style='padding-left:5px; padding-right:5px; padding-top:38px; padding-bottom:5px', # Add padding to the top of table and left-right
              conditionalPanel(condition = "input.viz_type != 'Text Visualization'",
-              DTOutput("tableData")
+              withSpinner(DTOutput("tableData"), type = 3, color.background = "white")
               )
              )
     )
   )
-  # )
 )
-# )
-# )
 
 # Define server logic
 server <- function(input, output, session) {
-
-  # Update tab set
-  # observeEvent(input$changetab,{
-  #   update_tabset(session, "exampletabset", "first_tab")
-  # })
   
   # Reactive dropdowns
-  # Portfolio Reactive
+  ## Portfolio Reactive
   # output$portfolio <- renderUI({
   #   selectizeInput("portfolio",
   #                  choices = c("All", unique(teaching_df$`Portfolio`)),
@@ -401,17 +378,63 @@ server <- function(input, output, session) {
   #                  width = 400
   #   )
   # })
-  # # Course reactive
-  # # APPEARS TO NOT WORK BECAUSE ALL ISN'T IN DATA OF COURSE
-  # output$course <- renderUI({
-  #   selectizeInput("course",
-  #                  choices = c("All", unique(
-  #                    teaching_df$`Professional Training Session`[teaching_df$Portfolio %in% input$portfolio])), # Somehow filter for in portfolio post unique
-  #                  selected = "All",
-  #                  label = h3("Select a Course:", style = "font-family:'Open Sans ExtraBold';"),
-  #                  width = 400
-  #   )
+  ## Course reactive
+  output$course <- renderUI({
+    if (input$portfolio == "All") {
+      selectizeInput("course",
+                     choices = list("All",
+                                    "EL" = teaching_df %>% filter(Portfolio == "EL") %>% select(`Professional Training Session`) %>% unique() %>% arrange() %>% pull(),
+                                    "Guidebooks" = teaching_df %>% filter(Portfolio == "Guidebooks") %>% select(`Professional Training Session`) %>% unique() %>% arrange() %>% pull(),
+                                    "IM" = teaching_df %>% filter(Portfolio == "Illustrative Mathematics") %>% select(`Professional Training Session`) %>% unique() %>% arrange() %>% pull(),
+                                    "State-Level" = teaching_df %>% filter(Portfolio == "State-Level") %>% select(`Professional Training Session`) %>% unique() %>% arrange() %>% pull()),
+                     # unique(teaching_df$`Professional Training Session`) %>% sort() %>% purrr::prepend("All"),
+                     selected = "All",
+                     label = h3("Select a Course:", style = "font-family:'Open Sans ExtraBold';"),
+                     width = 400
+      )
+    } else if (input$portfolio == "EL") {
+      selectizeInput("course",
+                     choices = teaching_df %>% filter(Portfolio == "EL") %>% select(`Professional Training Session`) %>% 
+                       unique() %>% prepend("All"),
+                     # unique(teaching_df$`Professional Training Session`) %>% sort() %>% purrr::prepend("All"),
+                     selected = "All",
+                     label = h3("Select a Course:", style = "font-family:'Open Sans ExtraBold';"),
+                     width = 400
+      )
+    } else if (input$portfolio == "Guidebooks") {
+      selectizeInput("course",
+                     choices = teaching_df %>% filter(Portfolio == "Guidebooks") %>% select(`Professional Training Session`) %>% 
+                       unique() %>% prepend("All"),
+                     # unique(teaching_df$`Professional Training Session`) %>% sort() %>% purrr::prepend("All"),
+                     selected = "All",
+                     label = h3("Select a Course:", style = "font-family:'Open Sans ExtraBold';"),
+                     width = 400
+      )
+    } else if (input$portfolio == "IM") {
+      selectizeInput("course",
+                     choices = teaching_df %>% filter(Portfolio == "IM") %>% select(`Professional Training Session`) %>% 
+                       unique() %>% prepend("All"),
+                     # unique(teaching_df$`Professional Training Session`) %>% sort() %>% purrr::prepend("All"),
+                     selected = "All",
+                     label = h3("Select a Course:", style = "font-family:'Open Sans ExtraBold';"),
+                     width = 400
+      )
+    } else if (input$portfolio == "State-Level") {
+      selectizeInput("course",
+                     choices = teaching_df %>% filter(Portfolio == "State-Level") %>% select(`Professional Training Session`) %>% 
+                       unique() %>% prepend("All"),
+                     # unique(teaching_df$`Professional Training Session`) %>% sort() %>% purrr::prepend("All"),
+                     selected = "All",
+                     label = h3("Select a Course:", style = "font-family:'Open Sans ExtraBold';"),
+                     width = 400
+      )
+    }
+  })
+  ## Client Reactive
+  # output$client <- renderUI({
+  #   
   # })
+  
   # # Client reactive
   # output$client <- renderUI({
   #   selectizeInput("client",
@@ -430,8 +453,10 @@ server <- function(input, output, session) {
   
   # Facilitator reactive
   
+  # Prevent errors in if statements, should work but doesn't
+  outputOptions(output, "course", suspendWhenHidden = FALSE)
+  
   # Make dates stay the same
-
   ## Avoid chain reaction
   reactdelay <- 1
   change_slider <- reactiveVal(Sys.time())
@@ -479,6 +504,12 @@ server <- function(input, output, session) {
                    col <- grDevices::colorRampPalette(c("#040404", "#04ABEB"))
                  }
                })
+  
+  options(spinner.color = "#04ABEB")
+  # Update spinner color
+  # eventReactive(input$color, {
+    # options(spinner.color = col()(2)[2])
+  #   })
   
   # Data for second pie chart and table (rightmost)
   mydata <- reactive({
@@ -737,14 +768,14 @@ server <- function(input, output, session) {
              `What could have improved your experience?`,
              `Professional Training Session`,
              `Date for the session`,
-             `Name Of Your Facilitator`,
+             # `Name Of Your Facilitator`,
              `How, if in any way, this course helped you prepare for school opening after COVID-19?`,
              `Overall, what went well in this professional learning?`,
              `Which activities best supported your learning?`) %>%
       drop_na(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`) %>%
       mutate(Date = format(`Date for the session`, '%b, %d %Y')) %>%
       select(-`Date for the session`) %>%
-      dplyr::filter(if_any(c(2,3,7,8,9), ~ str_detect(., input$string_filters)))
+      dplyr::filter(if_any(c(2,3,5,6,7), ~ str_detect(., input$string_filters)))
   })
 
   # options(shiny.usecairo = T) # I don't think this does anything, need to read about it
@@ -755,7 +786,6 @@ server <- function(input, output, session) {
         mydata() %>%
           mutate(`Date for the session` = paste0(`Date for the session`, ", 01")) %>%
           ggplot(aes(x = myd(`Date for the session`), y = Percent)) +
-          # geom_area(color = "black", aes(y = Percent)) +
           geom_hline(yintercept = 0, linetype = "solid", color = "black", size = 1.1) +
           geom_segment(aes(x = myd(`Date for the session`), xend = myd(`Date for the session`), y = 0, yend = Percent), 
                        color = "gray70", size = 2) +
@@ -792,9 +822,9 @@ server <- function(input, output, session) {
           #               ymin = Percent, ymax = 100), alpha = 0.85, fill = "gray") +
           geom_ribbon(color = "transparent", aes(ymin = Percent, ymax = 100,
                                                  fill = "Neither Agree nor Disagree/Disagree/Strongly Disagree"), alpha = 0.85) +
-          geom_line(size = 1.5, alpha = 0.9) +
-          # geom_point(size = 1.5, alpha = 0.9) +
-          facet_wrap( ~ question) +
+          geom_line(size = 1.25, alpha = 0.9) +
+          geom_point(size = 1, alpha = 0.9) +
+          facet_wrap( ~ fct_reorder(question, .x = `Percent`, .fun = mean, .desc = T)) +
           coord_cartesian() +
           # Doesn't work right now
           scale_x_date(date_breaks = if_else((max(teaching_df$`Date for the session`, na.rm = T) - min(teaching_df$`Date for the session`, na.rm = T)) > 365,
@@ -830,8 +860,8 @@ server <- function(input, output, session) {
           geom_area(color = "gray50", aes(fill = Rating), alpha = 0.6) +
           geom_ribbon(color = "transparent", aes(ymin = Percent, ymax = 100,
                                                  fill = "Neither Agree nor Disagree/Disagree/Strongly Disagree"), alpha = 0.85) +
-          geom_line(size = 3, alpha = 0.9) +
-          # geom_point(size = 3, alpha = 0.9) +
+          geom_line(size = 2, alpha = 0.9) +
+          geom_point(size = 1, alpha = 0.9) +
           coord_cartesian() +
           scale_x_date(date_breaks = "1 month", date_labels = "%b, %y", expand = c(0, 0)) +
           scale_y_continuous(breaks = pretty_breaks(n = 10), limits = c(0, 100), 
@@ -1375,7 +1405,7 @@ server <- function(input, output, session) {
     text_viz_data() %>%
       slice_sample(n = 10) %>%
       dplyr::arrange(desc(as.numeric(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`))) %>%
-      relocate(c("Professional Training Session", "Name Of Your Facilitator"), .before = Date) %>%
+      relocate(c("Professional Training Session"), .before = Date) %>%
       gt() %>%
       tab_header(
         title = md("&#128202; **Selected Reviews** &#128202;"),
@@ -1388,7 +1418,7 @@ server <- function(input, output, session) {
         `What could have improved your experience?` = md("**What could have improved your experience?**"),
         `Professional Training Session` = md("**Professional training session**"),
         Date = md("**Date**"),
-        `Name Of Your Facilitator` = md("**Facilitator**"),
+        # `Name Of Your Facilitator` = md("**Facilitator**"),
         `How, if in any way, this course helped you prepare for school opening after COVID-19?` = md("**How, if in any way, this course helped you prepare for school opening after COVID-19?**"),
         `Overall, what went well in this professional learning?` = md("**Overall, what went well in this professional learning?**"),
         `Which activities best supported your learning?` = md("**Which activities best supported your learning?**")

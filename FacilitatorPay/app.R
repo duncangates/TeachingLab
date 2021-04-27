@@ -1,61 +1,34 @@
+# library(shinyjs)
 library(shiny)
 library(bs4Dash)
 library(tidyverse)
-library(flexdashboard)
 library(gt)
 library(ggforce)
 library(ggfx)
+library(shinycssloaders)
 
-# Note: This calculator applies to facilitating our core professional learning content- not for observations, office hours, coaching etc.
+####################################################################################
+# Values for the dashboard
+# Remove 1000 for REAL VALUES
+new_fac_pay_hourly <- 150 #* 1000
+return_fac_pay_hourly <- 165 #* 1000
+new_tech_hourly <- 50 #* 1000
+returning_tech_hourly <- 50 #* 1000
+lead_constant <- 100 #* 1000
+tech_constant <- 75 #* 1000
+content_train <- 100 #* 1000
+####################################################################################
 ui <- bs4DashPage(
+  title = "Teaching Lab Payment Calculator",
   navbar = bs4DashNavbar(
     skin = "dark",
     status = "gray-light"
   ),
-  title = "Teaching Lab Payment Calculator",
   sidebar = bs4DashSidebar(
     disable = T
   ),
-  # sidebar_mini = F,
-  # sidebar_collapsed = T,
-  # sidebar = bs4DashSidebar(
-  #   disable = T,
-  #   elevation = 5,
-  #   src = here("Images/teachinglab_logo.png"),
-  #   url = "https://www.teachinglab.org/",
-  #   bs4SidebarMenu(
-  #     bs4SidebarHeader(HTML("<h3><center>Payment Rates Calculator</center></h3>")),
-  #     bs4SidebarMenuItem(
-  #       text = "Facilitator Type",
-  #       icon = "bars",
-  #       startExpanded = FALSE,
-  #       bs4SidebarMenuSubItem(
-  #         text = "New Facilitator",
-  #         tabName = "item1",
-  #         icon = "circle-thin"
-  #       ),
-  #       bs4SidebarMenuSubItem(
-  #         text = "Returning Facilitator \n(Began work before SY2020)",
-  #         tabName = "item2",
-  #         icon = "circle-thin"
-  #       )
-  #     )
-  #   )
-  # ),
   controlbar = bs4DashControlbar(
     disable = T
-    # id = "controlbar",
-    # collapsed = FALSE,
-    # overlay = FALSE,
-    # title = "FAQ",
-    # bs4SidebarMenu(
-    #   bs4SidebarMenuItem(
-    #     text = "How do I change Facilitator Type?"
-    #   ),
-    #   bs4SidebarMenuItem(
-    #     text = "Click the button on the sidebar"
-    #   )
-    # )
   ),
   footer = bs4DashFooter(
     a(
@@ -65,6 +38,7 @@ ui <- bs4DashPage(
     right_text = "© Teaching Lab, 2021"
   ),
   body = bs4DashBody(
+    shinyjs::useShinyjs(),
     bs4TabItems(
       bs4TabItem(
         tabName = "item1",
@@ -72,10 +46,11 @@ ui <- bs4DashPage(
           column(
             12,
             bs4Card(
-              title = h4("Complete the information below to generate calculations of your per course and/or per session pay:",
+              title = h4("Complete the information below to generate calculations of your per course (top right) and/or per session (bottom right) pay:",
                 style = "font-weight:bold;",
                 align = "center"
               ),
+              footer = HTML("<em>Note: This calculator applies to facilitating our core professional learning content- not for observations, office hours, coaching etc.</em>"),
               closable = TRUE,
               width = 12,
               solidHeader = TRUE,
@@ -84,21 +59,33 @@ ui <- bs4DashPage(
               fluidRow(
                 column(
                   6,
-                  radioButtons("facilitator_type", "I am a",
-                    selected = character(0),
-                    choiceNames = list(
-                      tags$span(style = "font-weight: normal;", "New Facilitator (Began SY21)"),
-                      tags$span(style = "font-weight: normal;", "Returning Facilitator (Began before SY21)")
-                    ),
-                    choiceValues = list("New Facilitator (Began SY21)", "Returning Facilitator (Began before SY21)")
+                  div(
+                    style = "white-space: nowrap;",
+                    div(style = "display: inline-block; width: 100%;", radioButtons("facilitator_type", "I am a",
+                      selected = character(0),
+                      choiceNames = list(
+                        tags$span(style = "font-weight: normal;", "New Facilitator (Began SY21)"),
+                        tags$span(style = "font-weight: normal;", "Returning Facilitator (Began before SY21)")
+                      ),
+                      choiceValues = list("New Facilitator (Began SY21)", "Returning Facilitator (Began before SY21)")
+                    )),
+                    # HTML elements that appear conditionally
+                    p(id = "element", "* $165", style = "display:inline-block; margin-left: -575px; color: green;"),
+                    p(id = "element2", "* $150", style = "display:inline-block; margin-left: -660px; margin-top: 23px; vertical-align: top; color: green;")
                   ),
-                  radioButtons("facilitator_type2", "I will be the",
+                  div(
+                    style = "white-space: nowrap;",
+                    div(style = "display: inline-block; width: 100%;", radioButtons("facilitator_type2", "I will be the",
                     selected = character(0),
                     choiceNames = list(
                       tags$span(style = "font-weight: normal;", "Lead Facilitator"),
                       tags$span(style = "font-weight: normal;", "Tech/Support Facilitator")
                     ),
                     choiceValues = list("Lead Facilitator", "Tech/Support Facilitator")
+                  )),
+                  # HTML elements that appear conditionally
+                  p(id = "element3", "+ $100", style = "display:inline-block; margin-left: -685px; color: green;"),
+                  p(id = "element4", "+ $75", style = "display:inline-block; margin-left: -745px; margin-top: 23px; vertical-align: top; color: green;")
                   ),
                   uiOutput("content_training"),
                   shiny::selectInput("session_count", "How many sessions are in the course?",
@@ -108,7 +95,9 @@ ui <- bs4DashPage(
                 ),
                 column(
                   6,
-                  plotOutput("new_plot", width = "100%")
+                  withSpinner(
+                    plotOutput("new_plot", width = "100%")
+                  )
                 )
               )
             )
@@ -138,9 +127,11 @@ ui <- bs4DashPage(
               solidHeader = TRUE,
               status = "primary",
               collapsible = TRUE,
-              gt_output("itemized_payment_new")
+              withSpinner(
+                gt_output("itemized_payment_new")
+              )
             )
-          ),
+          )
         )
       )
     )
@@ -148,33 +139,88 @@ ui <- bs4DashPage(
 )
 server <- function(input, output, session) {
   
+  # Enable further buttons for each press
+  observe({
+    if (is.null(input$facilitator_type)) {
+      shinyjs::disable("facilitator_type2")
+    } else {
+      shinyjs::enable("facilitator_type2")
+    }
+    if (is.null(input$facilitator_type2)) {
+      shinyjs::disable("session_count")
+    } else if (input$facilitator_type2 == "Tech/Support Facilitator") {
+      shinyjs::enable("session_count")
+    } else if (input$facilitator_type2 == "Lead Facilitator" & is.null(input$first_time)) {
+      shinyjs::disable("session_count")
+    } else if (input$facilitator_type2 == "Lead Facilitator" & !is.null(input$first_time)) {
+      shinyjs::enable("session_count")
+    }
+  })
+  
+  # Enable HTML encoded multipliers
+  observe({
+    # First Question
+    if (is.null(input$facilitator_type)) {
+      hide("element")
+      hide("element2")
+    } else if (input$facilitator_type == "Returning Facilitator (Began before SY21)") {
+      show("element", anim = T, animType = "fade")
+      hide("element2")
+    } else if (input$facilitator_type == "New Facilitator (Began SY21)") {
+      hide("element")
+      show("element2", anim = T, animType = "fade")
+    }
+    # Second Question
+    if (is.null(input$facilitator_type2)) {
+      hide("element3")
+      hide("element4")
+    } else if (input$facilitator_type2 == "Tech/Support Facilitator") {
+      show("element3", anim = T, animType = "fade")
+      hide("element4")
+    } else if (input$facilitator_type2 == "Lead Facilitator") {
+      hide("element3")
+      show("element4", anim = T, animType = "fade")
+    }
+    # Third Question
+    req(input$facilitator_type2)
+    if (is.null(input$first_time)) {
+      hide("element5")
+    } else if (input$first_time == "Yes") {
+      show("element5", anim = T, animType = "fade")
+    } else if (input$first_time == "No") {
+      hide("element5")
+    }
+  })
+  
+  
+# Make data based on user inputs, different multipliers and additives
   new_data <- reactive({
     returning_fac <- if (is.null(input$facilitator_type) | is.null(input$facilitator_type2)) {
       0
     } else if (input$facilitator_type == "New Facilitator (Began SY21)" & input$facilitator_type2 == "Lead Facilitator") {
-      150
+      new_fac_pay_hourly
     } else if (input$facilitator_type == "Returning Facilitator (Began before SY21)" & input$facilitator_type2 == "Lead Facilitator") {
-      165
+      return_fac_pay_hourly
     } else if (input$facilitator_type2 == "Tech/Support Facilitator" & input$facilitator_type == "New Facilitator (Began SY21)") {
-      50
+      new_tech_hourly
     } else if (input$facilitator_type2 == "Tech/Support Facilitator" & input$facilitator_type == "Returning Facilitator (Began before SY21)") {
-      50
+      returning_tech_hourly
     }
     learning_time <- if (is.null(input$first_time)) {
       0
     } else if (input$first_time == "No") {
       0
     } else if (input$first_time == "Yes" & input$facilitator_type2 == "Lead Facilitator") {
-      100
+      content_train
     } else {
       0
     }
     flat_pay <- if (is.null(input$facilitator_type2)) {
       0
     } else if (input$facilitator_type2 == "Lead Facilitator") {
-      100
+      lead_constant
     } else if (input$facilitator_type2 == "Tech/Support Facilitator") {
-      75
+      tech_constant
     }
     hours <- if (input$session_count == 0) {
       0
@@ -182,7 +228,8 @@ server <- function(input, output, session) {
       sum(
         map(1:input$session_count, ~ as.numeric(eval(parse(text = paste0("input$session", .x, "_session_count"))))) %>%
           as_vector(),
-        na.rm = T)
+        na.rm = T
+      )
     }
     return_df <- tibble(
       hours,
@@ -193,10 +240,10 @@ server <- function(input, output, session) {
   })
 
   ## NEW DATA PAY NEEDS TO CALCULATE BASED EXCLUSIVELY ON ITEMIZED PAYMENT ADDITIONS
-  
+
   ## TECH/SUPPORT 50*NUMBER OF SESSION HOURS + 75
   ## LEAD DEPENDENT ON RETURNING OR NEW AND IS 165/150 + 100
-  
+
   output$new_plot <- renderPlot({
     cat(new_data()$returning_fac, sep = "\n")
     cat(new_data()$hours, sep = "\n")
@@ -205,7 +252,7 @@ server <- function(input, output, session) {
       geom_text(aes(x = 0, y = 0.5, label = "fake text"), color = "transparent") +
       geom_text(aes(x = -0.5, y = 0.5, label = "fake text"), color = "transparent") +
       with_outer_glow(
-        geom_text(aes(x = 0, y = 0, label = paste0("$", new_data()$pay)), size = 35),
+        geom_text(aes(x = 0, y = 0, label = scales::dollar_format()(new_data()$pay)), size = 30),
         colour = "green",
         sigma = 5,
         expand = 5
@@ -221,31 +268,37 @@ server <- function(input, output, session) {
       coord_fixed() +
       theme_void()
   })
-  
+
   output$content_training <- renderUI({
     req(input$facilitator_type2)
     if (input$facilitator_type2 == "Lead Facilitator") {
-      radioButtons("first_time", "Is this your first time facilitating a course (i.e. will you need to attend content training)?",
-                   selected = character(0),
-                   choiceNames = list(
-                     tags$span(style = "font-weight: normal;", "Yes"),
-                     tags$span(style = "font-weight: normal;", "No")
-                   ),
-                   choiceValues = list("Yes", "No")
+      div(
+        style = "white-space: nowrap;",
+        div(style = "display: inline-block; width: 100%;", radioButtons("first_time", "Is this your first time facilitating a course (i.e. will you need to attend content training)?",
+        selected = character(0),
+        choiceNames = list(
+          tags$span(style = "font-weight: normal;", "Yes"),
+          tags$span(style = "font-weight: normal;", "No")
+        ),
+        choiceValues = list("Yes", "No")
+      )),
+      p(id = "element5", "+ $100", style = "display:inline-block; margin-left: -830px; margin-top: 23px; vertical-align: top; color: green;")
       )
-    } 
+    }
   })
-  
+
   # Figure out how to hide unless double condition not null and lead facilitator is true
   output$numeric_inputs <- renderUI({
     if (!is.null(input$facilitator_type) & !is.null(input$facilitator_type2)) {
-      map(1:input$session_count, ~ shiny::numericInput(inputId = paste0("session", .x, "_session_count"), 
-                                                   label = paste0("Session ", .x, " Hours:"), min = 0, max = 100, value = 0, step = 0.25))
+      map(1:input$session_count, ~ shiny::numericInput(
+        inputId = paste0("session", .x, "_session_count"),
+        label = paste0("Session ", .x, " Hours:"), min = 0, max = 100, value = 0, step = 0.25
+      ))
     } else {
       print(HTML("Please Enter <em><b>ALL</b></em> of The Above Information"))
     }
-   })
-  
+  })
+
   outputOptions(output, "numeric_inputs", suspendWhenHidden = FALSE)
   gt_data_new <- reactive({
     # cat(names(input), sep = ", ")
@@ -254,7 +307,7 @@ server <- function(input, output, session) {
     return_df <- tibble(
       group = c("Training", "Support", rep("Session", input$session_count)),
       session = c(
-        "Content Training", "Site and Context Support", 
+        "Content Training", "Site and Context Support",
         map(1:input$session_count, ~ paste0("Session ", .x))
       ),
       hours = c(
@@ -274,25 +327,24 @@ server <- function(input, output, session) {
         } else if (input$first_time == "No") {
           0
         } else {
-          100
+          content_train
         },
         if (is.null(input$facilitator_type2)) {
           0
         } else if (input$facilitator_type2 == "Lead Facilitator") {
-          100
+          lead_constant
         } else if (input$facilitator_type2 == "Tech/Support Facilitator") {
-          75
+          tech_constant
         },
         map(1:input$session_count, ~ eval(parse(text = paste0("input$session", .x, "_session_count"))) * (if (input$facilitator_type2 == "Lead Facilitator" & input$facilitator_type == "Returning Facilitator (Began before SY21)") {
-          165
+          return_fac_pay_hourly
         } else if (input$facilitator_type2 == "Lead Facilitator" & input$facilitator_type == "New Facilitator (Began SY21)") {
-          150
-        } else if (input$facilitator_type2 == "Tech/Support Facilitator") {
-          50
+          new_fac_pay_hourly
+        } else if (input$facilitator_type2 == "Tech/Support Facilitator" & input$facilitator_type == "New Facilitator (Began SY21)") {
+          new_tech_hourly
         } else if (input$facilitator_type2 == "Tech/Support Facilitator" & input$facilitator_type == "Returning Facilitator (Began before SY21)") {
-          50
-        })
-        )
+          returning_tech_hourly
+        }))
       )
     )
   })
@@ -300,8 +352,10 @@ server <- function(input, output, session) {
   output$itemized_payment_new <- render_gt({
     gt_data_new() %>%
       rename(Source = session, Hours = hours, Pay = pay) %>%
-      mutate(Pay = as.numeric(Pay),
-             Hours = as.numeric(Hours)) %>%
+      mutate(
+        Pay = as.numeric(Pay),
+        Hours = as.numeric(Hours)
+      ) %>%
       gt(groupname_col = "group") %>%
       fmt_currency(
         columns = vars(Pay)

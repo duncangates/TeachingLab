@@ -1,5 +1,6 @@
 library(tidyverse)
 library(googlesheets4)
+library(here)
 
 # Read in data
 
@@ -109,6 +110,7 @@ sheets_data_merge <- sheets_data %>%
   mutate(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?` = as.numeric(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`))
 
 sheets_data_merge_final <- sheets_data_merge %>%
+  mutate(`Date for the session` = str_replace(`Date for the session`, "0021-04-21", "2021-04-21")) %>%
   mutate(across(c(4, 5, 6, 7, 8, 9, 12, 14, 15), ~ str_replace_all(.x, "5", "Strongly agree"))) %>%
   mutate(across(c(4, 5, 6, 7, 8, 9, 12, 14, 15), ~ str_replace_all(.x, "4", "Agree"))) %>%
   mutate(across(c(4, 5, 6, 7, 8, 9, 12, 14, 15), ~ str_replace_all(.x, "3", "Neither agree nor disagree"))) %>%

@@ -90,20 +90,64 @@ test %>%
 Time series
 ```{r}
 test <- teaching_df %>%
-      select(`Date for the session`, newcols[c(5:8, 10:11, 14:15)]) %>%
+      select(`Date for the session`, `% Satisfied With The Overall Quality Of Today's Professional Learning Session`, 
+             `% Who Say Today's Topic Was Relevant For My Role`, 
+             `% Who Say Activities Of Today's Session Were Well-Designed To Help Me Learn`, 
+             `How Likely Are You To Apply This Learning To Your Practice In The Next 4-6 Weeks?`, 
+             `S/He Facilitated The Content Clearly`, 
+             `S/He Effectively Built A Community Of Learners`,
+             `The independent online work activities were well-designed to help me meet the learning targets.`, 
+             `The Zoom meeting activities were well-designed to help me meet the learning targets.`, 
+             `I felt a sense of community with the other participants in this course even though we were meeting virtually.`, 
+             `This course helped me navigate remote and/or hybrid learning during COVID-19.`) %>%
+      # Rename with line breaks every 24 characters
+      rename_with( ~ gsub("(.{25,}?)\\s", "\\1\n", .x)) %>%
       pivot_longer(!`Date for the session`, names_to = "question", values_to = "answer") %>%
       dplyr::filter(`answer` != "No Response") %>% # Filter out non-responses
       dplyr::group_by(question, `Date for the session`) %>% # Group by input variable
       mutate(`Number Agree/Disagree` = n()) %>%
       mutate(Rating = case_when(answer %in% c("Agree", "Strongly agree") ~ "Agree/Strongly Agree",
-                                  answer %in% c("Neither agree nor disagree", "Disagree", "Strongly disagree") ~ "Neither/Disagree/Strongly Disagree"),
-               `Date for the session` = paste0(month(`Date for the session`, label = T, abbr = F), ", ", year(`Date for the session`))) %>%
-  ungroup() %>%
-        group_by(`Date for the session`, question) %>%
-        mutate(Percent = `Number Agree/Disagree`/sum(`Number Agree/Disagree`)*100) %>%
-        filter(Rating == "Agree/Strongly Agree") %>%
-        group_by(`Date for the session`, Rating, question) %>%
-        summarise(Percent = round(sum(Percent), 2))
+                                answer %in% c("Neither agree nor disagree", "Disagree", "Strongly disagree") ~ "Neither/Disagree/Strongly Disagree"),
+             `Date for the session` = paste0(lubridate::month(`Date for the session`, label = T, abbr = F), ", ", year(`Date for the session`))) %>%
+      ungroup() %>%
+      group_by(`Date for the session`, question) %>%
+      mutate(Percent = `Number Agree/Disagree`/sum(`Number Agree/Disagree`)*100) %>%
+      filter(Rating == "Agree/Strongly Agree") %>%
+      group_by(`Date for the session`, Rating, question) %>%
+      summarise(Percent = round(sum(Percent), 2))
+
+test_step <- bind_rows(old = test, 
+                         new = test %>% group_by(question) %>% mutate(Percent = lag(Percent)) %>% ungroup(),
+                         .id = "source") %>%
+  mutate(`Date for the session` = myd(paste0(`Date for the session`, ", 01"))) %>%
+               arrange(`Date for the session`, source)
+
+test %>%
+  mutate(`Date for the session` = paste0(`Date for the session`, ", 01")) %>%
+  ggplot(aes(x = myd(`Date for the session`), y = Percent)) +
+  geom_step() +
+  # geom_area(color = "gray50", aes(fill = Rating), alpha = 0.6) +
+  geom_ribbon(data = test_step,
+            color = "gray50", aes(x = `Date for the session`, ymin = 0, ymax = Percent, fill = Rating), alpha = 0.6) +
+  # geom_col() +
+  geom_ribbon(color = "transparent", aes(ymin = Percent, ymax = 100,
+                                                 fill = "Neither Agree nor Disagree/Disagree/Strongly Disagree"), alpha = 0.85) +
+  facet_wrap( ~ question) +
+  coord_cartesian() +
+  theme_bw() + # BW Panel panel elements
+  theme(
+            legend.position = "bottom",
+            legend.title = element_blank(),
+            legend.text = element_text(family = "Open Sans"),
+            text = element_text(family = "Open Sans", face = "bold"),
+            # panel.grid.major.x = element_blank(),
+            panel.grid.minor.x = element_blank(),
+            axis.text.x = element_text(size = 6),
+            axis.title.x = element_blank(),
+            axis.title.y = element_blank(),
+            # axis.title.y = element_text(margin = margin(l = -10)),
+            plot.title = element_text(hjust = 0.5, family = "Open Sans"),
+            axis.line = element_line(size = 1.5))
 ```
 
 Joining first and second facilitators

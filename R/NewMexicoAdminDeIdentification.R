@@ -3,7 +3,7 @@ library(googledrive)
 library(googlesheets4)
 # Read in google sheet
 admin_data <- read_sheet("https://docs.google.com/spreadsheets/d/1V-tnR9CtI0E8WB8tZjNo1NL7CR8khFB2t6BjTGkGL-A/edit#gid=0", 
-                         range = "Admin Responses!D1:GN23") %>%
+                         range = "Admin Responses!D1:GN25") %>%
   select(1:189)
 # Admin replacement vector
 colnames(admin_data) <- c("column_1", "column_2", "column_3", "column_4", "column_5", 
@@ -55,7 +55,8 @@ admin_replace <- c("Stephanie Gardner" = "admin_1_school2_district2_2",
                    "Jamie Watson" = "admin8_school7_district7_2", 
                    "Christina Hidalgo" = "admin9_school14_district14_2",
                    "Sam Morerod" = "admin10_school3_district_district3_2",
-                   "Kristie Medina" = "admin11_school6_district6_2")
+                   "Kristie Medina" = "admin11_school6_district6_2",
+                   "Jesus Moncada" = "admin12_school17_district17_2")
 # Teacher replacement vector from NewMexicoDeIdentification.R
 teacher_replace <- c("Lynne McDonald's" = "teacher_1_school1_district1_1", "Meredith Grant's" = "teacher_2_school2_district2_1", 
                      "Javier Viera's" = "teacher_3_school3_district3_1", "Jennifer Sears'" = "teacher_4_school4_district2_1", 
@@ -70,7 +71,7 @@ teacher_replace <- c("Lynne McDonald's" = "teacher_1_school1_district1_1", "Mere
                      "Tommy Barksdale's" = "teacher_21_school6_district6_1", "Sydney Main's" = "teacher_22_school6_district6_1", 
                      "Dolores Lopez's" = "teacher_23_school8_district8_1", "Julia Geffroy's" = "teacher_24_school9_district9_1", 
                      "Elana Sobol's" = "teacher_25_school5_district5_1", "Ronda Davis'" = "teacher_26_school10_district2_1", 
-                     "Phihoang Nelson's" = "teacher_27_school5_district5_1", "Sue Holland's" = "teacher_28_school6_district6_1", 
+                     "Phihaong Nelson's" = "teacher_27_school5_district5_1", "Sue Holland's" = "teacher_28_school6_district6_1", 
                      "Patricia Resendiz's" = "teacher_29_school3_district3_1", "Shelby Padilla's" = "teacher_30_school6_district6_1", 
                      "Joleene Starr's" = "teacher_31_school6_district6_1", "Diana Martinez's" = "teacher_32_school6_district6_1", 
                      "Carolyn Aragon's" = "teacher_33_school6_district6_1", "Carlos Viera's" = "teacher_34_school3_district3_1", 
@@ -97,7 +98,15 @@ teacher_replace <- c("Lynne McDonald's" = "teacher_1_school1_district1_1", "Mere
                      "Meredith Grant's" = "teacher_75_school2_district2_1", "Louisa Maestas'" = "teacher_76_school15_district14_1", 
                      "Julie Crum's" = "teacher_77_school15_district14_1", "Carlos Viera's" = "teacher_78_school3_district3_1", 
                      "Kimberly Tafoya's" = "teacher_79_school14_district14_1", "Dolores Lopez's" = "teacher_80_school8_district8_1", 
-                     "Susan Smith's" = "teacher_81_school14_district14_1", "Samial B. Morerod's" = "teacher_82_school3_district3_1"
+                     "Susan Smith's" = "teacher_81_school14_district14_1", "Samial B. Morerod's" = "teacher_82_school3_district3_1",
+                     "Maria Baca's" = "teacher_109_school17_district17_1", "Cristian Campo-Hernandez's" = "teacher_110_school17_district17_1",
+                     "Toni Chavez Gomez's" = "teacher_111_school17_district17_1", "Ana Fernandez-Garcia's" = "teacher_112_school17_district17_1",
+                     "Rafael Leos-Gonzalez's" = "teacher_113_school17_district17_1", "Gina Gonzalez Young's" = "teacher_114_school17_district17_1",
+                     "Araceli Gutierrez's" = "teacher_115_school17_district17_1", "Melissa Maestas'" = "teacher_116_school17_district17_1",
+                     "Brian Mahieu's" = "teacher_117_school17_district17_1", "George Marquez's" = "teacher_118_school17_district17_1",
+                     "Julio Meza-Quezada's" = "teacher_84_school17_district17_1", "Eva Ornelas'" = "teacher_120_school17_district17_1",
+                     "Sandra Orozco's" = "teacher_121_school17_district17_1", "Joel Sandoval's" = "teacher_122_school17_district17_1",
+                     "Cynthia Toledo's" = "teacher_123_school17_district17_1"
 )
 
 teacher_replace2 <- c("Lynne McDonald" = "teacher_1_school1_district1_1", "Meredith Grant" = "teacher_2_school2_district2_1", 
@@ -113,7 +122,7 @@ teacher_replace2 <- c("Lynne McDonald" = "teacher_1_school1_district1_1", "Mered
                       "Tommy Barksdale" = "teacher_21_school6_district6_1", "Sydney Main" = "teacher_22_school6_district6_1", 
                       "Dolores Lopez" = "teacher_23_school8_district8_1", "Julia Geffroy" = "teacher_24_school9_district9_1", 
                       "Elana Sobol" = "teacher_25_school5_district5_1", "Ronda Davis" = "teacher_26_school10_district2_1", 
-                      "Phihoang Nelson" = "teacher_27_school5_district5_1", "Sue Holland" = "teacher_28_school6_district6_1", 
+                      "Phihaong Nelson" = "teacher_27_school5_district5_1", "Sue Holland" = "teacher_28_school6_district6_1", 
                       "Patricia Resendiz" = "teacher_29_school3_district3_1", "Shelby Padilla" = "teacher_30_school6_district6_1", 
                       "Joleene Starr" = "teacher_31_school6_district6_1", "Diana Martinez" = "teacher_32_school6_district6_1", 
                       "Carolyn Aragon" = "teacher_33_school6_district6_1", "Carlos Viera" = "teacher_34_school3_district3_1", 
@@ -140,11 +149,14 @@ teacher_replace2 <- c("Lynne McDonald" = "teacher_1_school1_district1_1", "Mered
                       "Meredith Grant" = "teacher_75_school2_district2_1", "Louisa Maestas" = "teacher_76_school15_district14_1", 
                       "Julie Crum" = "teacher_77_school15_district14_1", "Carlos Viera" = "teacher_78_school3_district3_1", 
                       "Kimberly Tafoya" = "teacher_79_school14_district14_1", "Dolores Lopez" = "teacher_80_school8_district8_1", 
-                      "Susan Smith" = "teacher_81_school14_district14_1", "Samial B. Morerod" = "teacher_82_school3_district3_1"
+                      "Susan Smith" = "teacher_81_school14_district14_1", "Samial B. Morerod" = "teacher_82_school3_district3_1",
+                      "Anthony Romero's" = "teacher_110_school16_district14_1", 
+                      "Stephanie Del Angel's" = "teacher_111_school7_district7_1", 
+                      "Robert Torrez" = "teacher_112_school3_district3_1"
 )
 
 school_replacement_vector <- c(
-  "Clovis High School" = "school1", "Taylor Middle School" = "school2", "School of Dreams Academy" = "school3", "Curriculum and Instruction" = "school4", "Amy Biehl Charter High School" = "school5", "Raton Intermediate School" = "school6", "Mesa Middle School" = "school7", "Sandoval Academy of Bilingual Education" = "school8", "Peñasco Middle and High School" = "school9", "District Office/District Resource Teachers" = "school10", "Robert F. Kennedy Charter School" = "school11", "La Academia Dolores Huerta" = "school12", "Dora Elementary" = "school13", "Forrester Elementary" = "school14", "Wilferth Elementary" = "school15", "Springer Municipal Schools" = "school16"
+  "Clovis High School" = "school1", "Taylor Middle School" = "school2", "School of Dreams Academy" = "school3", "Curriculum and Instruction" = "school4", "Amy Biehl Charter High School" = "school5", "Raton Intermediate School" = "school6", "Mesa Middle School" = "school7", "Sandoval Academy of Bilingual Education" = "school8", "Peñasco Middle and High School" = "school9", "District Office/District Resource Teachers" = "school10", "Robert F. Kennedy Charter School" = "school11", "La Academia Dolores Huerta" = "school12", "Dora Elementary" = "school13", "Forrester Elementary" = "school14", "Wilferth Elementary" = "school15", "Springer Municipal Schools" = "school16", "Christine Duncan Heritage Academy" = "school17"
 )
 
 # Start at 85 because 82 teacher responses to pre-survey and 2 spanish responses
@@ -171,7 +183,8 @@ noresponse_replacement_vector <- c("Victoria Cardona" = "teacher_85_school9_dist
                                    "Alma Castillo" = "teacher_105_school3_district3_1",
                                    "Tammy Brandt" = "teacher_106_school3_district3_1",
                                    "Robyn Albani" = "teacher_107_school3_district3_1",
-                                   "Brenda Alberts" = "teacher_108_school3_district3_1")
+                                   "Brenda Alberts" = "teacher_108_school3_district3_1",
+                                   "Maria Baca" = "teacher_109_school17_district17_1")
 
 # Replacing data
 admin_deidentified_1 <- admin_data %>%

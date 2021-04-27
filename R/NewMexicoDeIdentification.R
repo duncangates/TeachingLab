@@ -18,7 +18,7 @@ teachers_full <- bind_rows(teachers_english, teachers_spanish)
 #   str_replace_all('(,) (class =)', '\\1\n  \\2') %>%
 #   write_clip(allow_non_interactive = TRUE)
 # This renders to clipboard
-vector_paste_vertical(unique(teachers_english$`Please select your school/department`))
+# vector_paste_vertical(unique(teachers_english$`Please select your school/department`))
 school_list <- c(
   "Clovis High School",
   "Taylor Middle School",
