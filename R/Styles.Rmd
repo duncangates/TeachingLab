@@ -1,0 +1,35 @@
+---
+title: "Teaching Lab Diagram Template"
+author: "Duncan Gates"
+date: "5/6/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(TeachingLab)
+```
+
+
+```{r echo = F}
+
+```
+
+# Percent Charts
+
+```{r}
+
+```
+
+# Pre-Post Comparisons
+
+```{r}
+
+```
+
+# Table Template
+
+```{r}
+
+```
+

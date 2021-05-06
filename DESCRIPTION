@@ -1,0 +1,17 @@
+Package: TeachingLab
+Title: Teaching Lab Custom R Development Package
+Version: 0.0.0.9000
+Authors@R: person(given = "First",
+           family = "Last",
+           role = c("aut", "cre"),
+           email = "first.last@example.com",
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: Analyzes various metrics and components of images. Makes cool plots.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+URL: https://github.com/duncangates/teachinglab-duncan
+BugReports: https://github.com/duncangates/teachinglab-duncan/issues
+Imports: 
+  tidyverse
+RoxygenNote: 7.1.1
