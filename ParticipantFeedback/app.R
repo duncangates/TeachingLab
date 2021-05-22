@@ -287,18 +287,17 @@ ui <-
       ),
       menu_item("",
         icon = shiny::icon("globe"),
-        uiOutput("course"),
-        # selectizeInput("course",
-        #   choices = list("All",
-        #                  "EL" = teaching_df %>% filter(Portfolio == "EL") %>% select(`Professional Training Session`) %>% unique() %>% arrange() %>% pull(),
-        #                  "Guidebooks" = teaching_df %>% filter(Portfolio == "Guidebooks") %>% select(`Professional Training Session`) %>% unique() %>% arrange() %>% pull(),
-        #                  "IM" = teaching_df %>% filter(Portfolio == "Illustrative Mathematics") %>% select(`Professional Training Session`) %>% unique() %>% arrange() %>% pull(),
-        #                  "State-Level" = teaching_df %>% filter(Portfolio == "State-Level") %>% select(`Professional Training Session`) %>% unique() %>% arrange() %>% pull()),
-        #     # unique(teaching_df$`Professional Training Session`) %>% sort() %>% purrr::prepend("All"),
-        #   selected = "All",
-        #   label = h3("Select a Course:", style = "font-family:'Open Sans ExtraBold';"),
-        #   width = 400
-        # )
+        selectizeInput("course",
+          choices = list("All",
+                         "EL" = teaching_df %>% filter(Portfolio == "EL") %>% select(`Professional Training Session`) %>% unique() %>% arrange() %>% pull(),
+                         "Guidebooks" = teaching_df %>% filter(Portfolio == "Guidebooks") %>% select(`Professional Training Session`) %>% unique() %>% arrange() %>% pull(),
+                         "IM" = teaching_df %>% filter(Portfolio == "Illustrative Mathematics") %>% select(`Professional Training Session`) %>% unique() %>% arrange() %>% pull(),
+                         "State-Level" = teaching_df %>% filter(Portfolio == "State-Level") %>% select(`Professional Training Session`) %>% unique() %>% arrange() %>% pull()),
+            # unique(teaching_df$`Professional Training Session`) %>% sort() %>% purrr::prepend("All"),
+          selected = "All",
+          label = h3("Select a Course:", style = "font-family:'Open Sans ExtraBold';"),
+          width = 400
+        )
       ),
       menu_item("",
         icon = shiny::icon("globe"),
@@ -379,57 +378,58 @@ server <- function(input, output, session) {
   #   )
   # })
   ## Course reactive
-  output$course <- renderUI({
-    if (input$portfolio == "All") {
-      selectizeInput("course",
-                     choices = list("All",
-                                    "EL" = teaching_df %>% filter(Portfolio == "EL") %>% select(`Professional Training Session`) %>% unique() %>% arrange() %>% pull(),
-                                    "Guidebooks" = teaching_df %>% filter(Portfolio == "Guidebooks") %>% select(`Professional Training Session`) %>% unique() %>% arrange() %>% pull(),
-                                    "IM" = teaching_df %>% filter(Portfolio == "Illustrative Mathematics") %>% select(`Professional Training Session`) %>% unique() %>% arrange() %>% pull(),
-                                    "State-Level" = teaching_df %>% filter(Portfolio == "State-Level") %>% select(`Professional Training Session`) %>% unique() %>% arrange() %>% pull()),
-                     # unique(teaching_df$`Professional Training Session`) %>% sort() %>% purrr::prepend("All"),
-                     selected = "All",
-                     label = h3("Select a Course:", style = "font-family:'Open Sans ExtraBold';"),
-                     width = 400
-      )
-    } else if (input$portfolio == "EL") {
-      selectizeInput("course",
-                     choices = teaching_df %>% filter(Portfolio == "EL") %>% select(`Professional Training Session`) %>% 
-                       unique() %>% prepend("All"),
-                     # unique(teaching_df$`Professional Training Session`) %>% sort() %>% purrr::prepend("All"),
-                     selected = "All",
-                     label = h3("Select a Course:", style = "font-family:'Open Sans ExtraBold';"),
-                     width = 400
-      )
-    } else if (input$portfolio == "Guidebooks") {
-      selectizeInput("course",
-                     choices = teaching_df %>% filter(Portfolio == "Guidebooks") %>% select(`Professional Training Session`) %>% 
-                       unique() %>% prepend("All"),
-                     # unique(teaching_df$`Professional Training Session`) %>% sort() %>% purrr::prepend("All"),
-                     selected = "All",
-                     label = h3("Select a Course:", style = "font-family:'Open Sans ExtraBold';"),
-                     width = 400
-      )
-    } else if (input$portfolio == "IM") {
-      selectizeInput("course",
-                     choices = teaching_df %>% filter(Portfolio == "IM") %>% select(`Professional Training Session`) %>% 
-                       unique() %>% prepend("All"),
-                     # unique(teaching_df$`Professional Training Session`) %>% sort() %>% purrr::prepend("All"),
-                     selected = "All",
-                     label = h3("Select a Course:", style = "font-family:'Open Sans ExtraBold';"),
-                     width = 400
-      )
-    } else if (input$portfolio == "State-Level") {
-      selectizeInput("course",
-                     choices = teaching_df %>% filter(Portfolio == "State-Level") %>% select(`Professional Training Session`) %>% 
-                       unique() %>% prepend("All"),
-                     # unique(teaching_df$`Professional Training Session`) %>% sort() %>% purrr::prepend("All"),
-                     selected = "All",
-                     label = h3("Select a Course:", style = "font-family:'Open Sans ExtraBold';"),
-                     width = 400
-      )
-    }
-  })
+  # output$course <- renderUI({
+  #   if (input$portfolio == "All") {
+  #     selectizeInput("course",
+  #                    choices = list("All",
+  #                                   "EL" = teaching_df %>% filter(Portfolio == "EL") %>% select(`Professional Training Session`) %>% unique() %>% arrange() %>% pull(),
+  #                                   "Guidebooks" = teaching_df %>% filter(Portfolio == "Guidebooks") %>% select(`Professional Training Session`) %>% unique() %>% arrange() %>% pull(),
+  #                                   "IM" = teaching_df %>% filter(Portfolio == "Illustrative Mathematics") %>% select(`Professional Training Session`) %>% unique() %>% arrange() %>% pull(),
+  #                                   "State-Level" = teaching_df %>% filter(Portfolio == "State-Level") %>% select(`Professional Training Session`) %>% unique() %>% arrange() %>% pull()),
+  #                    # unique(teaching_df$`Professional Training Session`) %>% sort() %>% purrr::prepend("All"),
+  #                    selected = "All",
+  #                    multiple = T,
+  #                    label = h3("Select a Course:", style = "font-family:'Open Sans ExtraBold';"),
+  #                    width = 400
+  #     )
+  #   } else if (input$portfolio == "EL") {
+  #     selectizeInput("course",
+  #                    choices = teaching_df %>% filter(Portfolio == "EL") %>% select(`Professional Training Session`) %>% 
+  #                      unique() %>% prepend("All"),
+  #                    # unique(teaching_df$`Professional Training Session`) %>% sort() %>% purrr::prepend("All"),
+  #                    selected = "All",
+  #                    label = h3("Select a Course:", style = "font-family:'Open Sans ExtraBold';"),
+  #                    width = 400
+  #     )
+  #   } else if (input$portfolio == "Guidebooks") {
+  #     selectizeInput("course",
+  #                    choices = teaching_df %>% filter(Portfolio == "Guidebooks") %>% select(`Professional Training Session`) %>% 
+  #                      unique() %>% prepend("All"),
+  #                    # unique(teaching_df$`Professional Training Session`) %>% sort() %>% purrr::prepend("All"),
+  #                    selected = "All",
+  #                    label = h3("Select a Course:", style = "font-family:'Open Sans ExtraBold';"),
+  #                    width = 400
+  #     )
+  #   } else if (input$portfolio == "IM") {
+  #     selectizeInput("course",
+  #                    choices = teaching_df %>% filter(Portfolio == "IM") %>% select(`Professional Training Session`) %>% 
+  #                      unique() %>% prepend("All"),
+  #                    # unique(teaching_df$`Professional Training Session`) %>% sort() %>% purrr::prepend("All"),
+  #                    selected = "All",
+  #                    label = h3("Select a Course:", style = "font-family:'Open Sans ExtraBold';"),
+  #                    width = 400
+  #     )
+  #   } else if (input$portfolio == "State-Level") {
+  #     selectizeInput("course",
+  #                    choices = teaching_df %>% filter(Portfolio == "State-Level") %>% select(`Professional Training Session`) %>% 
+  #                      unique() %>% prepend("All"),
+  #                    # unique(teaching_df$`Professional Training Session`) %>% sort() %>% purrr::prepend("All"),
+  #                    selected = "All",
+  #                    label = h3("Select a Course:", style = "font-family:'Open Sans ExtraBold';"),
+  #                    width = 400
+  #     )
+  #   }
+  # })
   ## Client Reactive
   # output$client <- renderUI({
   #   
@@ -454,7 +454,7 @@ server <- function(input, output, session) {
   # Facilitator reactive
   
   # Prevent errors in if statements, should work but doesn't
-  outputOptions(output, "course", suspendWhenHidden = FALSE)
+  # outputOptions(output, "course", suspendWhenHidden = FALSE)
   
   # Make dates stay the same
   ## Avoid chain reaction
@@ -1016,30 +1016,37 @@ server <- function(input, output, session) {
         cowplot::ggdraw(g2)
         } else if (input$data == "All" & input$viz_type == "Donut Chart") {
         g2 <- all_data() %>%
-          mutate(answer = str_replace_all(answer, "Neither agree nor disagree", "Neither agree\nnor disagree"),
-                 answer = str_replace_all(answer, "Strongly agree", "Strongly\nagree")) %>%
-          ggplot2::ggplot(aes(x = 0, y = n, fill = reorder(percent, n))) + # Pie chart input, ordered by n
+          mutate(answer = str_replace_all(answer, "Neither agree nor disagree", "Neither")) %>%
+          group_by(as.factor(question)) %>%
+          arrange(desc(percent)) %>%
+          ungroup() %>%
+          drop_na() %>%
+          dplyr::mutate(answer = str_replace_all(answer, c("Strongly agree" = "Strongly\nagree", "Strongly disagree" = "Strongly\ndisagree"))) %>%
+          dplyr::mutate(answer = factor(answer, levels = c("Strongly\nagree", "Agree", "Neither", "Disagree", "Strongly\ndisagree"))) %>%
+          ggplot2::ggplot(aes(x = 2, y = percent, fill = fct_reorder(answer, percent))) + # Pie chart input, ordered by n
           labs(
             fill = "Type", x = NULL, y = NULL
           ) +
-          geom_bar(stat = "identity", width = 1.5, color = "gray10", size = 0.6, position = "fill") +
+          geom_bar(stat = "identity", width = 0.75, color = "gray10", size = 0.5, position = "fill") +
           geom_text(aes(
             label = ifelse(percent > 10,
                            paste0(percent, "%\n", answer),
                            paste("")
             ),
-            x = 2, # Distance outwards from pie chart
-            color = reorder(percent, n)
+            x = 2#, # Distance outwards from pie chart
+            # color = reorder(percent, n)
           ),
           position = position_fill(vjust = 0.5), # position stack normally stacks bars, but here it keeps the text in the right place once put in polar
           size = 2.25,
+          color = "black",
           fontface = "bold",
           family = "Open Sans"
           ) + # Add bold text with percentage and variable label
           facet_wrap( ~ question, nrow = 2) +
-          scale_x_continuous(expand = c(0, 1)) + # Change x so expand is not default and adds no padding so the bars will produce a circle not a donut
+          scale_x_discrete(expand = c(0, 1)) + # Change x so expand is not default and adds no padding so the bars will produce a circle not a donut
           coord_polar(theta = "y", direction = -1) + # Make bars polar
-          scale_fill_manual(values = c(col()(nrow(all_data())))) + # custom colors
+          scale_fill_manual(values = c("Strongly\nagree" = col()(5)[5], "Agree" = col()(5)[4], "Neither" = col()(5)[3], 
+                                       "Disagree" = col()(5)[2], "Strongly\ndisagree" = col()(5)[1])) + # custom colors
           scale_color_manual(values = c(col()(nrow(all_data())))) +
           theme_void() +
           theme(
@@ -1197,7 +1204,7 @@ server <- function(input, output, session) {
             title = paste(str_to_title(as.character(input$data))),
             subtitle = paste0(sum(mydata2() %>% 
                                     dplyr::filter(`get(input$data)` == "Agree" | `get(input$data)` == "Strongly agree") %>%
-                                    select(percent)) ,"% of people rated agree or strongly agree")
+                                    select(percent)), "% of people rated agree or strongly agree")
           ) +
           geom_bar(stat = "identity", width = 0.1, color = "gray10"#, 
           #          size = ifelse(nrow(mydata2()) > 10,
@@ -1243,7 +1250,6 @@ server <- function(input, output, session) {
         g2 <- all_data() %>%
           mutate(answer = str_replace_all(answer, "Neither agree nor disagree", "Neither")) %>%
           group_by(as.factor(question)) %>%
-          # mutate(question = factor(question, levels = unique(question_levels))) %>%
           arrange(desc(percent)) %>%
           ungroup() %>%
           drop_na() %>%
@@ -1275,7 +1281,8 @@ server <- function(input, output, session) {
           coord_flip() +
           # scale_y_discrete() +
           # scale_x_continuous() + # Change x so expand is not default and adds no padding so the bars will produce a circle
-          scale_fill_manual(values = c(col()(5))) + # custom colors
+          scale_fill_manual(values = c("Strongly agree" = col()(5)[5], "Agree" = col()(5)[4], "Neither" = col()(5)[3], 
+                                       "Disagree" = col()(5)[2], "Strongly disagree" = col()(5)[1])) + # custom colors
           scale_color_manual(values = c(col()(5))) +
           theme_bw() +
           theme(

@@ -1,0 +1,84 @@
+---
+title: "D11 Student Data"
+author: "Duncan Gates"
+date: "5/21/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F)
+
+library(tidyverse)
+library(googlesheets4)
+library(ggtext)
+devtools::load_all()
+library(TeachingLab)
+```
+
+# Read in Data
+
+```{r}
+student_data <- read_sheet("https://docs.google.com/spreadsheets/d/1_TcCnkVE3Vfnxjc3cAZXxACPO5FPxRKZOYZ3blUQq7k/edit#gid=0",
+           sheet = "Clean Data")
+```
+
+# Clean
+
+```{r}
+schools_vector <- c("11X089", "11X169", "11X355", "11X567", "11X103", "11X121", "11X189", "11X021", "11X041", "11X483", "11X068", "11X87")
+
+true_false_replace <- c("FALSE" = "Non-Teaching Lab Schools", 
+                                         "TRUE" = "Teaching Lab Schools")
+
+student_data_clean <- student_data %>%
+  mutate(`Teaching Lab School` = if_else(School %in% schools_vector, T, F)) %>%
+  filter(Subject == "ELA") %>%
+  rename(Score = 1) %>%
+  rename(tl = 6) %>%
+  mutate(tl = str_replace_all(tl, true_false_replace)) %>%
+  mutate(Score = as.numeric(Score),
+         Grade = factor(Grade, levels = c(3:8))) %>%
+  distinct()
+```
+
+# Analyze
+
+```{r}
+student_data_clean %>%
+  dplyr::group_by(Grade, Season, tl) %>%
+  dplyr::summarise(Score_Group = mean(Score)) %>%
+  ggplot(aes(x = Grade, y = Score_Group, color = Grade, fill = Grade)) +
+  geom_col() +
+  geom_richtext(fill = NA, label.color = NA,
+                aes(x = Grade, y = Score_Group, color = Grade, label = paste0(round(Score_Group), "%")), hjust = -0.1) +
+  coord_flip() +
+  labs(x = "", y = "", title = "Average Percentile by Grade in Teaching Lab vs. Non-Teaching Lab Schools") +
+  facet_wrap(Season ~ tl, 
+              labeller = label_wrap_gen(multi_line = F, width = 40)) +
+  theme_tl() +
+  scale_fill_manual(values = tl_palette(theme = "dark", n = 7)[2:7]) +
+  scale_color_manual(values = tl_palette(theme = "dark", n = 7)[2:7]) +
+  theme(legend.position = "none",
+        strip.text = element_text(hjust = 0.5))
+```
+
+```{r}
+point_graph <- student_data_clean %>%
+  group_by(Season, tl, School) %>%
+  summarise(Score_Group = mean(Score)) %>%
+  arrange(tl, Season)
+
+
+
+ggplot(point_graph, aes(x = School, y = Score_Group, color = Season)) +
+  geom_point() +
+  coord_flip() +
+  facet_wrap( ~ tl) +
+  labs(x = "", y = "", title = "Scores in Fall and Winter per School") +
+  scale_color_manual(values = tl_palette(n = 2, color = "green", theme = "dark")) +
+  theme_tl() +
+  theme(legend.position = c(0.95, 0.95),
+        strip.text = element_text(hjust = 0.5))
+```
+
+

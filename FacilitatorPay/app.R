@@ -161,34 +161,34 @@ server <- function(input, output, session) {
   observe({
     # First Question
     if (is.null(input$facilitator_type)) {
-      hide("element")
-      hide("element2")
+      shinyjs::hide("element")
+      shinyjs::hide("element2")
     } else if (input$facilitator_type == "Returning Facilitator (Began before SY21)") {
-      show("element", anim = T, animType = "fade")
-      hide("element2")
+      shinyjs::show("element", anim = T, animType = "fade")
+      shinyjs::hide("element2")
     } else if (input$facilitator_type == "New Facilitator (Began SY21)") {
-      hide("element")
-      show("element2", anim = T, animType = "fade")
+      shinyjs::hide("element")
+      shinyjs::show("element2", anim = T, animType = "fade")
     }
     # Second Question
     if (is.null(input$facilitator_type2)) {
-      hide("element3")
-      hide("element4")
+      shinyjs::hide("element3")
+      shinyjs::hide("element4")
     } else if (input$facilitator_type2 == "Tech/Support Facilitator") {
-      show("element3", anim = T, animType = "fade")
-      hide("element4")
+      shinyjs::show("element3", anim = T, animType = "fade")
+      shinyjs::hide("element4")
     } else if (input$facilitator_type2 == "Lead Facilitator") {
-      hide("element3")
-      show("element4", anim = T, animType = "fade")
+      shinyjs::hide("element3")
+      shinyjs::show("element4", anim = T, animType = "fade")
     }
     # Third Question
     req(input$facilitator_type2)
     if (is.null(input$first_time)) {
-      hide("element5")
+      shinyjs::hide("element5")
     } else if (input$first_time == "Yes") {
-      show("element5", anim = T, animType = "fade")
+      shinyjs::show("element5", anim = T, animType = "fade")
     } else if (input$first_time == "No") {
-      hide("element5")
+      shinyjs::hide("element5")
     }
   })
   

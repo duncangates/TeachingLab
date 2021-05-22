@@ -1,7 +1,7 @@
 #' Teaching Lab Custom Ggplot2 Theme
-#' 
 #'
-#' It requires installing Fira Sans fonts unless you change the font parameters
+#'
+#' It requires installing Open Sans fonts unless you change the font parameters
 #'
 #' \url{https://www.google.com/fonts}
 #'
@@ -31,11 +31,11 @@
 #'
 #' @export
 
-theme_tl <- function(base_family="Fira Sans",
+theme_tl <- function(base_family = "Open Sans",
                      base_size = 11,
                      strip_text_family = base_family,
                      strip_text_size = 12,
-                     plot_title_family = "Fira Sans",
+                     plot_title_family = "Open Sans",
                      plot_title_size = 18,
                      plot_title_margin = 10,
                      subtitle_family = "Roboto",
@@ -44,7 +44,7 @@ theme_tl <- function(base_family="Fira Sans",
                      caption_family = "Roboto",
                      caption_size = 9,
                      caption_margin = 10,
-                     axis_title_family = "Fira Sans",
+                     axis_title_family = "Open Sans",
                      axis_title_size = 9,
                      axis_title_just = "mm",
                      dark = FALSE,
@@ -52,46 +52,42 @@ theme_tl <- function(base_family="Fira Sans",
                      axis = FALSE,
                      ticks = FALSE,
                      markdown = FALSE) {
-  
   ret <- ggplot2::theme_minimal(base_family = base_family, base_size = base_size)
-  
+
   ret <- ret + ggplot2::theme(legend.background = ggplot2::element_blank())
   ret <- ret + ggplot2::theme(legend.key = ggplot2::element_blank())
-  
-  
+
+
   if (dark == TRUE) {
-    
-    ret <- ret + ggplot2::theme(plot.background = ggplot2::element_rect(fill ="#2E3440"),
-                                text = ggplot2::element_text(color = "white"),
-                                strip.text = ggplot2::element_text(color = "white"))
-    
+    ret <- ret + ggplot2::theme(
+      plot.background = ggplot2::element_rect(fill = "#2E3440"),
+      text = ggplot2::element_text(color = "white"),
+      strip.text = ggplot2::element_text(color = "white")
+    )
+
     grid_color <- "#E5E9F0"
-    tick_color = "#E5E9F0"
-    
+    tick_color <- "#E5E9F0"
   } else {
-    
     grid_color <- "#cccccc"
     tick_color <- "black"
   }
-  
+
   if (inherits(grid, "character") | grid == TRUE) {
-    
     ret <- ret + ggplot2::theme(panel.grid = ggplot2::element_line(color = grid_color, size = 0.10))
     ret <- ret + ggplot2::theme(panel.grid.major = ggplot2::element_line(color = grid_color, size = 0.10))
     ret <- ret + ggplot2::theme(panel.grid.minor = ggplot2::element_line(color = grid_color, size = 0.05))
-    
+
     if (inherits(grid, "character")) {
       if (regexpr("X", grid)[1] < 0) ret <- ret + ggplot2::theme(panel.grid.major.x = ggplot2::element_blank())
       if (regexpr("Y", grid)[1] < 0) ret <- ret + ggplot2::theme(panel.grid.major.y = ggplot2::element_blank())
       if (regexpr("x", grid)[1] < 0) ret <- ret + ggplot2::theme(panel.grid.minor.x = ggplot2::element_blank())
       if (regexpr("y", grid)[1] < 0) ret <- ret + ggplot2::theme(panel.grid.minor.y = ggplot2::element_blank())
     }
-    
   } else {
     ret <- ret + ggplot2::theme(panel.grid = ggplot2::element_blank())
   }
-  
-  if (inherits(axis, "character") | axis  ==  TRUE) {
+
+  if (inherits(axis, "character") | axis == TRUE) {
     ret <- ret + ggplot2::theme(axis.line = ggplot2::element_line(color = grid_color, size = 0.15))
     if (inherits(axis, "character")) {
       axis <- tolower(axis)
@@ -112,57 +108,52 @@ theme_tl <- function(base_family="Fira Sans",
   } else {
     ret <- ret + ggplot2::theme(axis.line = ggplot2::element_blank())
   }
-  
+
   if (!ticks) {
-    ret <- ret + ggplot2::theme(axis.ticks  =  ggplot2::element_blank())
-    ret <- ret + ggplot2::theme(axis.ticks.x  =  ggplot2::element_blank())
-    ret <- ret + ggplot2::theme(axis.ticks.y  =  ggplot2::element_blank())
+    ret <- ret + ggplot2::theme(axis.ticks = ggplot2::element_blank())
+    ret <- ret + ggplot2::theme(axis.ticks.x = ggplot2::element_blank())
+    ret <- ret + ggplot2::theme(axis.ticks.y = ggplot2::element_blank())
   } else {
-    ret <- ret + ggplot2::theme(axis.ticks  =  ggplot2::element_line(size = 0.15))
-    ret <- ret + ggplot2::theme(axis.ticks.x  =  ggplot2::element_line(size = 0.15))
-    ret <- ret + ggplot2::theme(axis.ticks.y  =  ggplot2::element_line(size = 0.15))
-    ret <- ret + ggplot2::theme(axis.ticks.length  =  grid::unit(5, "pt"))
+    ret <- ret + ggplot2::theme(axis.ticks = ggplot2::element_line(size = 0.15))
+    ret <- ret + ggplot2::theme(axis.ticks.x = ggplot2::element_line(size = 0.15))
+    ret <- ret + ggplot2::theme(axis.ticks.y = ggplot2::element_line(size = 0.15))
+    ret <- ret + ggplot2::theme(axis.ticks.length = grid::unit(5, "pt"))
   }
-  
+
   xj <- switch(tolower(substr(axis_title_just, 1, 1)), b = 0, l = 0, m = 0.5, c = 0.5, r = 1, t = 1)
   yj <- switch(tolower(substr(axis_title_just, 2, 2)), b = 0, l = 0, m = 0.5, c = 0.5, r = 1, t = 1)
-  
-  ret <- ret + ggplot2::theme(axis.text.x = ggplot2::element_text(color = tick_color, margin = ggplot2::margin(t = 0.8 * base_size/2)))
-  ret <- ret + ggplot2::theme(axis.text.y = ggplot2::element_text(color = tick_color, margin = ggplot2::margin(r = 0.8 * base_size/2))) + ggplot2::theme(axis.title = ggplot2::element_text(size = axis_title_size, family = axis_title_family))
+
+  ret <- ret + ggplot2::theme(axis.text.x = ggplot2::element_text(color = tick_color, margin = ggplot2::margin(t = 0.8 * base_size / 2)))
+  ret <- ret + ggplot2::theme(axis.text.y = ggplot2::element_text(color = tick_color, margin = ggplot2::margin(r = 0.8 * base_size / 2))) + ggplot2::theme(axis.title = ggplot2::element_text(size = axis_title_size, family = axis_title_family))
   ret <- ret + ggplot2::theme(axis.title.x = ggplot2::element_text(hjust = xj, size = axis_title_size, family = axis_title_family))
   ret <- ret + ggplot2::theme(axis.title.y = ggplot2::element_text(hjust = yj, size = axis_title_size, family = axis_title_family))
   ret <- ret + ggplot2::theme(strip.text = ggplot2::element_text(hjust = 0, size = strip_text_size, family = strip_text_family))
-  
-  if(!markdown) {
-    
-    ret <- ret + ggplot2::theme(axis.text.x = ggplot2::element_text(color = tick_color, margin = ggplot2::margin(t = 0.8 * base_size/2)))
-    ret <- ret + ggplot2::theme(axis.text.y = ggplot2::element_text(color = tick_color, margin = ggplot2::margin(r = 0.8 * base_size/2))) + ggplot2::theme(axis.title = ggplot2::element_text(size = axis_title_size, family = axis_title_family))
+
+  if (!markdown) {
+    ret <- ret + ggplot2::theme(axis.text.x = ggplot2::element_text(color = tick_color, margin = ggplot2::margin(t = 0.8 * base_size / 2)))
+    ret <- ret + ggplot2::theme(axis.text.y = ggplot2::element_text(color = tick_color, margin = ggplot2::margin(r = 0.8 * base_size / 2))) + ggplot2::theme(axis.title = ggplot2::element_text(size = axis_title_size, family = axis_title_family))
     ret <- ret + ggplot2::theme(axis.title.x = ggplot2::element_text(hjust = xj, size = axis_title_size, family = axis_title_family))
     ret <- ret + ggplot2::theme(axis.title.y = ggplot2::element_text(hjust = yj, size = axis_title_size, family = axis_title_family))
     ret <- ret + ggplot2::theme(strip.text = ggplot2::element_text(hjust = 0, size = strip_text_size, family = strip_text_family))
-    
-    ret <- ret + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0, size = plot_title_size, margin = ggplot2::margin(b = plot_title_margin), family = plot_title_family), hjust = 0.5)
+
+    ret <- ret + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5, size = plot_title_size, margin = ggplot2::margin(b = plot_title_margin), family = plot_title_family))
     ret <- ret + ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0, size = subtitle_size, margin = ggplot2::margin(b = subtitle_margin), family = subtitle_family))
     ret <- ret + ggplot2::theme(plot.caption = ggplot2::element_text(hjust = 1, size = caption_size, margin = ggplot2::margin(t = caption_margin), family = caption_family))
-    
   } else {
-    
-    ret <- ret + ggplot2::theme(axis.text.x = ggtext::element_markdown(color = tick_color, margin = ggplot2::margin(t = 0.8 * base_size/2)))
-    ret <- ret + ggplot2::theme(axis.text.y = ggtext::element_markdown(color = tick_color, margin = ggplot2::margin(r = 0.8 * base_size/2))) + ggplot2::theme(axis.title = ggtext::element_markdown(size = axis_title_size, family = axis_title_family))
+    ret <- ret + ggplot2::theme(axis.text.x = ggtext::element_markdown(color = tick_color, margin = ggplot2::margin(t = 0.8 * base_size / 2)))
+    ret <- ret + ggplot2::theme(axis.text.y = ggtext::element_markdown(color = tick_color, margin = ggplot2::margin(r = 0.8 * base_size / 2))) + ggplot2::theme(axis.title = ggtext::element_markdown(size = axis_title_size, family = axis_title_family))
     ret <- ret + ggplot2::theme(axis.title.x = ggtext::element_markdown(hjust = xj, size = axis_title_size, family = axis_title_family))
     ret <- ret + ggplot2::theme(axis.title.y = ggtext::element_markdown(hjust = yj, size = axis_title_size, family = axis_title_family))
     ret <- ret + ggplot2::theme(strip.text = ggtext::element_markdown(hjust = 0, size = strip_text_size, family = strip_text_family))
-    
-    ret <- ret + ggplot2::theme(plot.title = ggtext::element_markdown(hjust = 0, size = plot_title_size, margin = ggplot2::margin(b = plot_title_margin), family = plot_title_family, hjust = 0.5))
+
+    ret <- ret + ggplot2::theme(plot.title = ggtext::element_markdown(hjust = 0, size = plot_title_size, margin = ggplot2::margin(b = plot_title_margin), family = plot_title_family))
     ret <- ret + ggplot2::theme(plot.subtitle = ggtext::element_markdown(hjust = 0, size = subtitle_size, margin = ggplot2::margin(b = subtitle_margin), family = subtitle_family))
     ret <- ret + ggplot2::theme(plot.caption = ggtext::element_markdown(hjust = 1, size = caption_size, margin = ggplot2::margin(t = caption_margin), family = caption_family))
-    
   }
-  
-  ret <- ret + ggplot2::theme(plot.margin = ggplot2::margin(base_size/2, base_size/2, base_size/2, base_size/2))
-  
+
+  ret <- ret + ggplot2::theme(plot.margin = ggplot2::margin(base_size / 2, base_size / 2, base_size / 2, base_size / 2))
+
   ret
-  
 }
 
 #' gtable_remove_grob
@@ -175,9 +166,9 @@ theme_tl <- function(base_family="Fira Sans",
 #' @return g, with pattern removed.
 gtable_remove_grob <- function(g, pattern = "guide-box") {
   matches <- c(grepl(pattern = pattern, g$layout$name))
-  
+
   g$layout <- g$layout[!matches, , drop = FALSE]
-  
+
   g$grobs <- g$grobs[!matches]
   return(g)
 }
@@ -192,9 +183,9 @@ gtable_remove_grob <- function(g, pattern = "guide-box") {
 #' @return g, a grob matching the specified pattern
 gtable_extract_grob <- function(g, pattern = "guide-box") {
   matches <- grepl(pattern = pattern, g$layout$name)
-  
+
   g$layout <- g$layout[matches, , drop = FALSE]
-  
+
   g$grobs <- g$grobs[matches]
   return(g)
 }
@@ -210,13 +201,11 @@ gtable_extract_grob <- function(g, pattern = "guide-box") {
 #' @return formatted ratio labels
 #' @export
 scale_ratio_labels <- function(labels) {
-  
   labels_out <- as.character(labels)
-  
-  labels_out[length(labels)] <- sprintf("%s:1",as.character(labels[length(labels)]))
-  
+
+  labels_out[length(labels)] <- sprintf("%s:1", as.character(labels[length(labels)]))
+
   return(labels_out)
-  
 }
 
 #' Five thirty-eight style formatter for percentages
@@ -225,14 +214,12 @@ scale_ratio_labels <- function(labels) {
 #'
 #' @return formatted percent labels
 #' @export
-scale_percent_labels <- function(labels){
-  
-  labels <- labels*100
-  
+scale_percent_labels <- function(labels) {
+  labels <- labels * 100
+
   labels[length(labels)] <- paste0(labels[length(labels)], "%")
-  
+
   return(labels)
-  
 }
 
 #' Five thirty-eight style formatter for currency
@@ -241,14 +228,12 @@ scale_percent_labels <- function(labels){
 #'
 #' @return formatted percent labels
 #' @export
-scale_dollar_labels <- function(labels){
-  
+scale_dollar_labels <- function(labels) {
   labels <- labels
-  
+
   labels[length(labels)] <- paste0(labels[length(labels)], "$")
-  
+
   return(labels)
-  
 }
 
 
@@ -256,7 +241,7 @@ scale_dollar_labels <- function(labels){
 #' My ggplot2 theme heavy credits for influencing the theme function
 #' go to @@hrbrmstr (Bob Rudis)
 #'
-#' It requires installing Fira Sans fonts unless you change the font parameters
+#' It requires installing Open Sans fonts unless you change the font parameters
 #'
 #' \url{https://www.google.com/fonts}
 #'
@@ -284,7 +269,7 @@ scale_dollar_labels <- function(labels){
 #'
 #' @export
 
-theme_irp <- function(base_family="Roboto Condensed",
+theme_irp <- function(base_family = "Roboto Condensed",
                       base_size = 11,
                       strip_text_family = "Futura Medium",
                       strip_text_size = 12,
@@ -304,46 +289,42 @@ theme_irp <- function(base_family="Roboto Condensed",
                       grid = TRUE,
                       axis = FALSE,
                       ticks = FALSE) {
-  
   ret <- ggplot2::theme_minimal(base_family = base_family, base_size = base_size)
-  
+
   ret <- ret + ggplot2::theme(legend.background = ggplot2::element_blank())
   ret <- ret + ggplot2::theme(legend.key = ggplot2::element_blank())
-  
-  
+
+
   if (dark == TRUE) {
-    
-    ret <- ret + ggplot2::theme(plot.background = ggplot2::element_rect(fill ="#2E3440"),
-                                text = ggplot2::element_text(color = "white"),
-                                strip.text = ggplot2::element_text(color = "white"))
-    
+    ret <- ret + ggplot2::theme(
+      plot.background = ggplot2::element_rect(fill = "#2E3440"),
+      text = ggplot2::element_text(color = "white"),
+      strip.text = ggplot2::element_text(color = "white")
+    )
+
     grid_color <- "#E5E9F0"
-    tick_color = "#E5E9F0"
-    
+    tick_color <- "#E5E9F0"
   } else {
-    
     grid_color <- "#cccccc"
     tick_color <- "black"
   }
-  
+
   if (inherits(grid, "character") | grid == TRUE) {
-    
     ret <- ret + ggplot2::theme(panel.grid = ggplot2::element_line(color = grid_color, size = 0.10))
     ret <- ret + ggplot2::theme(panel.grid.major = ggplot2::element_line(color = grid_color, size = 0.10))
     ret <- ret + ggplot2::theme(panel.grid.minor = ggplot2::element_line(color = grid_color, size = 0.05))
-    
+
     if (inherits(grid, "character")) {
       if (regexpr("X", grid)[1] < 0) ret <- ret + ggplot2::theme(panel.grid.major.x = ggplot2::element_blank())
       if (regexpr("Y", grid)[1] < 0) ret <- ret + ggplot2::theme(panel.grid.major.y = ggplot2::element_blank())
       if (regexpr("x", grid)[1] < 0) ret <- ret + ggplot2::theme(panel.grid.minor.x = ggplot2::element_blank())
       if (regexpr("y", grid)[1] < 0) ret <- ret + ggplot2::theme(panel.grid.minor.y = ggplot2::element_blank())
     }
-    
   } else {
     ret <- ret + ggplot2::theme(panel.grid = ggplot2::element_blank())
   }
-  
-  if (inherits(axis, "character") | axis  ==  TRUE) {
+
+  if (inherits(axis, "character") | axis == TRUE) {
     ret <- ret + ggplot2::theme(axis.line = ggplot2::element_line(color = grid_color, size = 0.15))
     if (inherits(axis, "character")) {
       axis <- tolower(axis)
@@ -364,64 +345,66 @@ theme_irp <- function(base_family="Roboto Condensed",
   } else {
     ret <- ret + ggplot2::theme(axis.line = ggplot2::element_blank())
   }
-  
+
   if (!ticks) {
-    ret <- ret + ggplot2::theme(axis.ticks  =  ggplot2::element_blank())
-    ret <- ret + ggplot2::theme(axis.ticks.x  =  ggplot2::element_blank())
-    ret <- ret + ggplot2::theme(axis.ticks.y  =  ggplot2::element_blank())
+    ret <- ret + ggplot2::theme(axis.ticks = ggplot2::element_blank())
+    ret <- ret + ggplot2::theme(axis.ticks.x = ggplot2::element_blank())
+    ret <- ret + ggplot2::theme(axis.ticks.y = ggplot2::element_blank())
   } else {
-    ret <- ret + ggplot2::theme(axis.ticks  =  ggplot2::element_line(size = 0.15))
-    ret <- ret + ggplot2::theme(axis.ticks.x  =  ggplot2::element_line(size = 0.15))
-    ret <- ret + ggplot2::theme(axis.ticks.y  =  ggplot2::element_line(size = 0.15))
-    ret <- ret + ggplot2::theme(axis.ticks.length  =  grid::unit(5, "pt"))
+    ret <- ret + ggplot2::theme(axis.ticks = ggplot2::element_line(size = 0.15))
+    ret <- ret + ggplot2::theme(axis.ticks.x = ggplot2::element_line(size = 0.15))
+    ret <- ret + ggplot2::theme(axis.ticks.y = ggplot2::element_line(size = 0.15))
+    ret <- ret + ggplot2::theme(axis.ticks.length = grid::unit(5, "pt"))
   }
-  
+
   xj <- switch(tolower(substr(axis_title_just, 1, 1)), b = 0, l = 0, m = 0.5, c = 0.5, r = 1, t = 1)
   yj <- switch(tolower(substr(axis_title_just, 2, 2)), b = 0, l = 0, m = 0.5, c = 0.5, r = 1, t = 1)
-  
-  ret <- ret + ggplot2::theme(axis.text.x = ggplot2::element_text(color = tick_color, margin = ggplot2::margin(t = 0.8 * base_size/2)))
-  ret <- ret + ggplot2::theme(axis.text.y = ggplot2::element_text(color = tick_color, margin = ggplot2::margin(r = 0.8 * base_size/2))) + ggplot2::theme(axis.title = ggplot2::element_text(size = axis_title_size, family = axis_title_family))
+
+  ret <- ret + ggplot2::theme(axis.text.x = ggplot2::element_text(color = tick_color, margin = ggplot2::margin(t = 0.8 * base_size / 2)))
+  ret <- ret + ggplot2::theme(axis.text.y = ggplot2::element_text(color = tick_color, margin = ggplot2::margin(r = 0.8 * base_size / 2))) + ggplot2::theme(axis.title = ggplot2::element_text(size = axis_title_size, family = axis_title_family))
   ret <- ret + ggplot2::theme(axis.title.x = ggplot2::element_text(hjust = xj, size = axis_title_size, family = axis_title_family))
   ret <- ret + ggplot2::theme(axis.title.y = ggplot2::element_text(hjust = yj, size = axis_title_size, family = axis_title_family))
   ret <- ret + ggplot2::theme(strip.text = ggplot2::element_text(hjust = 0, size = strip_text_size, family = strip_text_family))
   ret <- ret + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0, size = plot_title_size, margin = ggplot2::margin(b = plot_title_margin), family = plot_title_family))
   ret <- ret + ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0, size = subtitle_size, margin = ggplot2::margin(b = subtitle_margin), family = subtitle_family))
   ret <- ret + ggplot2::theme(plot.caption = ggplot2::element_text(hjust = 1, size = caption_size, margin = ggplot2::margin(t = caption_margin), family = caption_family))
-  ret <- ret + ggplot2::theme(plot.margin = ggplot2::margin(base_size/2, base_size/2, base_size/2, base_size/2))
-  
+  ret <- ret + ggplot2::theme(plot.margin = ggplot2::margin(base_size / 2, base_size / 2, base_size / 2, base_size / 2))
+
   ret
-  
 }
 
 
 #' Teaching Lab Color Palette Maker
 #'
 #' @param palette choice of color palette
+#' @param theme if theme is light or dark
+#' @param n number of colors to generate
 #'
 #' @return color ramp palette function
 #' @export
-tl_palette <- function(color = c("blue", "orange", "purple", "green", "teal"), theme = "light", n) {
-  
-  base_color <- if (theme == "light") {
-    "#040404"
+tl_palette <- function(color = c("blue", "orange", "purple", "green", "teal", "tl_colors"), theme = c("light", "dark"), n) {
+  base_color_start <- if (theme == "light") {
+    "#F7FBFD"
   } else if (theme == "dark") {
-    "#FFFFFF"
+    "#040404"
   }
-  
-  if(color == "blue") {
-    col <- grDevices::colorRampPalette(c(base_color, "#04ABEB"))
+
+  if (color == "blue") {
+    col <- grDevices::colorRampPalette(c(base_color_start, "#00acf0"))
   } else if (color == "green") {
-    col <- grDevices::colorRampPalette(c(base_color, "#43c6b9"))
+    col <- grDevices::colorRampPalette(c(base_color_start, "#43c6b9"))
   } else if (color == "orange") {
-    col <- grDevices::colorRampPalette(c(base_color, "#ff7b43"))
+    col <- grDevices::colorRampPalette(c(base_color_start, "#ff7b43"))
   } else if (color == "purple") {
-    col <- grDevices::colorRampPalette(c(base_color, "#d17df7"))
+    col <- grDevices::colorRampPalette(c(base_color_start, "#d17df7"))
   } else if (color == "teal") {
-    col <- grDevices::colorRampPalette(c(base_color, "#55bbc7"))
+    col <- grDevices::colorRampPalette(c(base_color_start, "#55bbc7"))
+  } else if (color == "tl_colors") {
+    col <- grDevices::colorRampPalette(c(base_color_start, "#55bbc7", "#43c6b9", "#ff7b43", "#d17df7", "#FCC2FF", "#FF6961"))
   } else {
-    col <- grDevices::colorRampPalette(c(base_color, "#04ABEB"))
+    col <- grDevices::colorRampPalette(c(base_color_start, "#00acf0"))
   }
-  
+
   col(n)
 }
 
@@ -434,18 +417,20 @@ tl_palette <- function(color = c("blue", "orange", "purple", "green", "teal"), t
 #' @export
 #' @import gt
 
-gt_theme_tl <- function(data,...) {
+gt_theme_tl <- function(data, all_caps = F, ...) {
   data %>%
-    opt_all_caps()  %>%
+    opt_all_caps(all_caps = all_caps) %>%
     opt_table_font(
       font = list(
-        google_font("Chivo"),
+        google_font("Calibri"),
         default_fonts()
       )
     ) %>%
     tab_style(
-      style = cell_borders(
-        sides = "bottom", color = "transparent", weight = px(2)
+      style = list(
+        cell_borders(
+          sides = "bottom", color = "transparent", weight = px(2)
+        )
       ),
       locations = cells_body(
         columns = TRUE,
@@ -453,23 +438,68 @@ gt_theme_tl <- function(data,...) {
         # Regardless of data size
         rows = nrow(data$`_data`)
       )
-    )  %>%
+    ) %>%
+    # Set Table Text Size
+    tab_style(
+      style = list(
+        cell_text(
+          size = "medium",
+          align = "center"
+        )
+      ),
+      locations = cells_body(
+        columns = T,
+        rows = T
+      )
+    ) %>%
     tab_options(
       column_labels.background.color = "white",
       table.border.top.width = px(3),
-      table.border.top.color = "transparent",
-      table.border.bottom.color = "transparent",
+      table.border.top.color = "black",
+      table.border.left.style = "solid",
+      table.border.left.width = px(3),
+      table.border.left.color = "black",
+      table.border.right.style = "solid",
+      table.border.right.width = px(3),
+      table.border.right.color = "black",
+      table.border.bottom.style = "solid",
+      table.border.bottom.color = "black",
       table.border.bottom.width = px(3),
       column_labels.border.top.width = px(3),
       column_labels.border.top.color = "transparent",
       column_labels.border.bottom.width = px(3),
       column_labels.border.bottom.color = "black",
+      column_labels.border.lr.color = "black",
+      column_labels.border.lr.width = px(3),
+      table_body.border.bottom.color = "black",
+      table_body.border.bottom.width = px(3),
       data_row.padding = px(3),
       source_notes.font.size = 12,
       table.font.size = 16,
-      heading.align = "left",
+      heading.title.font.size = 20,
+      heading.align = "center",
       ...
     )
 }
 
+#' Calculate nps score
+#'
+#' @param x A vector of nps scores
+#' @return Returns the nps score
+#' @export
 
+calc_nps <- function(x) {
+  nps <- round(((length(which(x %in% c(9, 10))) / length(x)) - (length(which(x %in% c(0:6))) / length(x))) * 100, 2)
+  return(nps)
+}
+
+#' Find elements x not in a vector y
+#'
+#' @param x A vector of what shouldn't exist
+#' @param y A vector to check against
+#' @return Returns elements not in vector
+#' @export
+
+'%!in%' <- function (x, y) {
+  !('%in%'(x, y))
+}

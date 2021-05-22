@@ -6,7 +6,7 @@ Authors@R: person(given = "First",
            role = c("aut", "cre"),
            email = "first.last@example.com",
            comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: Analyzes various metrics and components of images. Makes cool plots.
+Description: Provides templates, palettes, and useful data analysis for Teaching Lab purposes.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
