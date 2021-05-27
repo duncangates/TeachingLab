@@ -8,6 +8,9 @@ library(fresh)
 library(shinyTime)
 library(shinyWidgets)
 
+# Organize rows as facilitator observation
+# Columns as dates
+
 bs4DashTheme <- create_theme(
   bs_vars_font(family_sans_serif = "Calibri",
                size_base = "20px"),

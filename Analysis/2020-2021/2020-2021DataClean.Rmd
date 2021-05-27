@@ -1,0 +1,136 @@
+---
+title: "2020-2021"
+author: "Duncan Gates"
+date: "5/13/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, message = F, warning = F)
+
+devtools::load_all()
+library(TeachingLab)
+library(tidyverse)
+library(here)
+library(gt)
+library(googlesheets4)
+```
+
+# Read in Data
+
+Note that I read in all data as characters.
+
+```{r}
+# Read in sheets, and slice out second row, get rid of timestamp
+fall <- read_sheet("https://docs.google.com/spreadsheets/d/1DhVmQWqOzXab1EARPuleWSdZirNNuAcENhG2Wn2IVwU/edit#gid=87988906",
+                   sheet = "Form Responses 1",
+                   skip = 1,
+                   col_types = "c") %>%
+  slice(-1) %>%
+  select(-1)
+
+spring <- read_sheet("https://docs.google.com/spreadsheets/d/1e3IvUw36O9jjYqZOU6alOClBsGmA6Sy6Wzr4Bz7fNG4/edit#gid=118561712",
+                     col_types = "c") %>%
+  slice(-1) %>%
+  select(-1)
+```
+# Cleaning Data
+
+```{r}
+fall_df <- fall %>% 
+  mutate(id = str_to_lower(str_trim(id))) %>%
+  rename_with( ~ str_replace_all(.x, "ela", "preela")) %>%
+  janitor::remove_empty(which = "cols") %>%
+  relocate(pre_role, .after = last_col()) %>%
+  relocate(any_of(c("pre_subject", "pre_preelalevel")), .before = last_col())
+
+spring_df <- spring %>% 
+  mutate(id = str_to_lower(str_trim(id))) %>%
+  rename_with( ~ str_replace_all(.x, "ela", "postela")) %>%
+  janitor::remove_empty(which = "cols") %>%
+  relocate(post_role, .after = last_col()) %>%
+  relocate(any_of(c("postschool1", "postschool2", "postschool3", "postschool4")), .after = matheff3) %>%
+  relocate(any_of(c("postobs1", "postobs2", "postobs3", "postadmin1", "postadmin2", 
+"postadmin3", "postadmin4", "postadmin5", "postadmin6", "post_subject", 
+"post_postelalevel")), .after = postschool4)
+
+coalescing_list <- list(prerace1 = c(4, 83), prerace2 = c(5, 84), prehigh2 = c(6, 85), prehigh3 = c(7, 86),
+                        prehigh4 = c(8, 87), prehigh1 = c(9, 88), pregrowth1 = c(10, 89),
+                        pregrowth2 = c(11, 90), preacc1 = c(12, 91), preacc2 = c(13, 92),
+                        preacc3 = c(14, 93))
+
+fall_df[4:14] <- imap_dfc(coalescing_list, ~ fall_df[, .x] %>% 
+                            transmute(!!.y := coalesce(!!!syms(names(fall_df)[.x]))))
+fall_df <- fall_df %>%
+  select(-c(83:93))
+```
+
+# Vectors for Checking Answers
+
+```{r}
+positive_vector <- c("4", "5")
+negative_vector <- c("1", "2")
+```
+
+# Checking for incorrect variables in answers
+
+```{r}
+fall_vars <- purrr::map_df(fall_df, ~ tibble::tibble(class = class(.x), 
+                                                  value = toString(unique(.x))))
+fall_cols <- purrr::map(fall_df, colnames) %>%
+  enframe() %>%
+  select(name)
+
+fall_df_compare <- bind_cols(fall_vars, fall_cols) %>%
+  relocate(name, .before = 1) %>%
+  rename(fall_name = name) %>%
+  bind_rows(tibble(class = rep(NA, 9), value = rep(NA, 9), name = rep(NA, 9))) %>%
+  select(-name)
+
+spring_vars <- purrr::map_df(spring_df, ~ tibble::tibble(class = class(.x), 
+                                                  value = toString(unique(.x))))
+spring_cols <- purrr::map(spring_df, colnames) %>%
+  enframe() %>%
+  select(name)
+
+spring_df_compare <- bind_cols(spring_vars, spring_cols) %>%
+  relocate(name, .before = 1) %>%
+  rename(spring_name = name)
+
+fall_spring_compare <- bind_cols(fall_df_compare, spring_df_compare) %>%
+  select(-2, -5)
+# EXTRAS ARE: post_lableader, post_gain_squal, post_improvequal, post_perm, post_raffle
+
+write_rds(fall_spring_compare, here("Analysis/2020-2021/Data/df_compare.rds"))
+write_csv(fall_spring_compare, here("Analysis/2020-2021/Data/df_compare.csv"))
+```
+
+# Dataframe Making/Saving
+
+```{r}
+full_2021 <- full_join(fall_df, spring_df, by = "id")
+
+write_rds(full_2021, here("Analysis/2020-2021/Data/full_2021.rds"))
+
+matched_filter <- fall_df$id[fall_df$id %in% spring_df$id]
+
+fall_one <- fall_df %>% filter(id %in% matched_filter)
+spring_one <- spring_df %>% filter(id %in% matched_filter)
+
+matched_2021 <- bind_cols(fall_one %>% arrange(id), spring_one %>% arrange(id) %>% select(-id))
+
+write_rds(matched_2021, here("Analysis/2020-2021/Data/matched_2021.rds"))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+

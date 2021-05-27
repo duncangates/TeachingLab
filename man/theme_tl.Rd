@@ -75,7 +75,7 @@ theme_tl(
 \item{palette}{Changes color scheme}
 }
 \description{
-It requires installing Open Sans fonts unless you change the font parameters
+It requires installing Open Sans, Roboto, Calibri fonts unless you change the font parameters
 }
 \details{
 \url{https://www.google.com/fonts}

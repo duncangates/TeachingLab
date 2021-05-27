@@ -1375,7 +1375,7 @@ table_maker_legacy_3 <- function(data, column_names, title, spanner, note1, note
       source_note = html("<i>*No educators in the follow-up survey worked with grades K-2 in ELA/Literacy.</i>")
     ) %>%
     tab_source_note(
-      source_note = html("<i>**This could not be calculated because the four ELA educators who completed the follow-up survey had not taken the diagnostic survey.</i>")
+      source_note = html("<i>**Results not calculated due to small sample size (n < 5) of ELA educators who complated both the diagnostic and follow-up survey.</i>")
     ) %>%
     # Final theming
     gt_theme_tl() %>%
@@ -1466,4 +1466,11 @@ table_maker_legacy(
 )
 ```
 
+# SY20-21 Report
+
+## Table 1
+
+```{r}
+
+```
 

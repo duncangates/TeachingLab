@@ -22,7 +22,8 @@ Note that I read in all data as characters.
 
 ```{r}
 spring <- read_sheet("https://docs.google.com/spreadsheets/d/1e3IvUw36O9jjYqZOU6alOClBsGmA6Sy6Wzr4Bz7fNG4/edit#gid=118561712",
-                     col_types = "c")
+                     col_types = "c") %>%
+  slice(-1)
 fall <- read_sheet("https://docs.google.com/spreadsheets/d/1DhVmQWqOzXab1EARPuleWSdZirNNuAcENhG2Wn2IVwU/edit#gid=87988906",
                    sheet = "Form Responses 1",
                    skip = 1,
@@ -48,7 +49,7 @@ score_question <- function(data, question, coding) {
   
 }
 
-score_question2 <- function(data, question, coding) {
+score_question_number <- function(data, question, coding) {
   
   n <- data %>% summarise(length(which(!is.na(.data[[question]])))) %>% as_vector()
   
@@ -162,10 +163,10 @@ map2_df(index$question, index$coding, ~ score_question(data = legacy_matched, qu
 index <- tibble(question = c("prerace1", "prerace2", "prehigh2", "prehigh3", "prehigh4", "prehigh1", "pregrowth1", "pregrowth2", "preacc1", "preacc2", "preacc3"),
                 coding = list("negative", "negative", "negative", "negative", "negative", "positive", "negative", "negative", "positive", "positive", "positive"))
 
-unmatched_mindsets_pre <- map2_df(index$question, index$coding, ~ score_question2(data = fall_legacy, question = .x, coding = .y)) %>%
+unmatched_mindsets_pre <- map2_df(index$question, index$coding, ~ score_question_number(data = fall_legacy, question = .x, coding = .y)) %>%
   mutate(final_score = score / (n*2))
 # Matched
-matched_mindsets_pre <- map2_df(index$question, index$coding, ~ score_question2(data = fall_legacy %>% filter(id %in% legacy_matched_filter & pre_role == "Teacher"), question = .x, coding = .y)) %>%
+matched_mindsets_pre <- map2_df(index$question, index$coding, ~ score_question_number(data = fall_legacy %>% filter(id %in% legacy_matched_filter & pre_role == "Teacher"), question = .x, coding = .y)) %>%
   mutate(final_score = score / (n*2))
 
 unmatched_mindsets_pre %>%
@@ -191,10 +192,10 @@ unmatched_mindsets_pre %>%
 index <- tibble(question = c("postrace1", "postrace2", "posthigh2", "posthigh3", "posthigh4", "posthigh1", "postgrowth1", "postgrowth2", "postacc1", "postacc2", "postacc3"),
                 coding = list("negative", "negative", "negative", "negative", "negative", "positive", "negative", "negative", "positive", "positive", "positive"))
 
-unmatched_mindsets_post <- map2_df(index$question, index$coding, ~ score_question2(data = spring_legacy, question = .x, coding = .y)) %>%
+unmatched_mindsets_post <- map2_df(index$question, index$coding, ~ score_question_number(data = spring_legacy, question = .x, coding = .y)) %>%
   mutate(final_score = score / (n*2))
 # Matched
-matched_mindsets_post <- map2_df(index$question, index$coding, ~ score_question2(data = spring_legacy %>% filter(id %in% legacy_matched_filter), question = .x, coding = .y)) %>%
+matched_mindsets_post <- map2_df(index$question, index$coding, ~ score_question_number(data = spring_legacy %>% filter(id %in% legacy_matched_filter), question = .x, coding = .y)) %>%
   mutate(final_score = score / (n*2))
 
 unmatched_mindsets_post %>%
@@ -264,26 +265,10 @@ index <- tibble(question_pre = c("prerace1", "prerace2", "prehigh2", "prehigh3",
                 question_post = c("postrace1", "postrace2", "posthigh2", "posthigh3", "posthigh4", "posthigh1", "postgrowth1", "postgrowth2", "postacc1", "postacc2", "postacc3"),
                 coding = list("negative", "negative", "negative", "negative", "negative", "positive", "negative", "negative", "positive", "positive", "positive"))
 
-# unmatched_mindsets_pre <- pmap_dfc(list(index$question_pre, index$question_post, index$coding),
-#                                    ~ score_question3(data = fall_spring_legacy, question_pre = ..1, question_post = ..2, coding = ..3)) %>%
-#   # pivot_longer(!c(score_pre, score_post, n1, n2)) %>%
-#   # pivot_wider(names_from = "name")
-#   mutate(id = row_number()) %>%
-#   relocate(id, .before = 1) %>%
-#   select(1, 2,3,4,5) %>% 
-#   group_by(id) %>%
-#   summarise(score_pre = sum(score_prerace1, score_prerace2),
-#             score_post = sum(score_postrace1, score_postrace2)) %>%
-#   mutate(improve = if_else(score_post >= score_pre & score_post != 0, T, F)) %>%
-#   summarise(improvement = sum(improve)/length(improve))
-
 unmatched_mindsets_pre <- pmap_dfc(list(index$question_pre, index$question_post, index$coding),
                                    ~ score_question3(data = fall_spring_legacy, question_pre = ..1, question_post = ..2, coding = ..3)) %>%
-  # pivot_longer(!c(score_pre, score_post, n1, n2)) %>%
-  # pivot_wider(names_from = "name")
   mutate(id = row_number()) %>%
   relocate(id, .before = 1) %>%
-  # # dplyr::select(id, starts_with("score")) %>%
   pivot_longer(!id, values_to = "score", names_to = "names") %>%
   mutate(prepost = case_when(str_detect(names, "pre") == T ~ "pre",
                              str_detect(names, "post") == T ~ "post")) %>%

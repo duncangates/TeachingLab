@@ -30,6 +30,7 @@ library(glue)
 knitr::include_graphics(here("Images/teachinglab_logo.png"))
 ```
 
+# Reformat as 04/12/1990, 12:00-1:00
 
 Hi `r glue::glue("{data$curriculum[1]}")` facilitators,
 

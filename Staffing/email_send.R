@@ -17,7 +17,7 @@ subject <- glue::glue("Facilitator Request for {paste(data$call_times, collapse 
 
 my_email_object %>%
   smtp_send(
-    to = "duncan.gates@teachinglab.org",
+    to = "spencer.russell@teachinglab.org",
     from = "duncan.gates@teachinglab.org",
     subject = subject,
     credentials = creds_file(here("Staffing/email_creds"))
