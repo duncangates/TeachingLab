@@ -859,8 +859,8 @@ ela_content_segments <- tibble(
   xend = c(68,53,40,62,56,78),
   y = c("Average", "ELA Instructional<br>Shifts", "Fluency", "Text Complexity", "Building Knowledge", "Supporting Students<br>with Unfinished Learning"),
   yend = c("Average", "ELA Instructional<br>Shifts", "Fluency", "Text Complexity", "Building Knowledge", "Supporting Students<br>with Unfinished Learning"),
-  text_fall = c(59,47,50,49,33,78),
-  text_spring = c(68,53,40,62,56,78),
+  text_fall = c(59,47,50,49,33,76),
+  text_spring = c(68,53,40,62,56,80),
 )
 
 ela_content_arrow <- tibble(
@@ -887,7 +887,7 @@ ggplot() +
   scale_color_manual(values = c("#ff7b43", "#00acf0")) +
   scale_x_continuous(labels = scales::percent_format(scale = 1), breaks = scales::pretty_breaks(n = 5)) +
   labs(x = NULL, y = NULL,
-       title = "Educators' Averages Scores on Content and<br>Pedagogical Content Knowledge in <span style = 'color:#ff7b43;'>Fall</span> and <span style = 'color:#00acf0;'>Spring</span>") +
+       title = "Educators' Averages Scores on Content and Pedagogical<br>Content Knowledge on the <span style = 'color:#ff7b43;'>First</span> and <span style = 'color:#00acf0;'>Second</span> Surveys") +
   theme_bw() +
   theme(panel.border = element_blank(),
         legend.position = "none",
@@ -924,18 +924,23 @@ joined_increase <- left_join(fall_join, spring_join, by = "id") %>%
   mutate(across(contains("17"), ~ str_replace_all(.x, "Aligned", "1")))
 
 
-effect_size <- function(percent1, percent2) {
-  size1 <- round((percent1*19))
-  size1_inv <- 19-size1
-  size2 <- round((percent2*19))
-  size2_inv <- 19-size2
+effect_size <- function(percent1, percent2, n) {
+  size1 <- round((percent1*n))
+  size1_inv <- n-size1
+  size2 <- round((percent2*n))
+  size2_inv <- n-size2
   fake_data <- tibble(one = c(rep(1, size1), rep(0, size1_inv)),
                  two = c(rep(1, round(size2)), rep(0, size2_inv)))
   
   (percent2-percent1)/sd_pooled(fake_data$one, fake_data$two, data = fake_data)
 }
 
-effect_size(0.78, 0.78)
+effect_size(0.78, 0.78, 19)
+effect_size(0.5, 0.4, 19)
+effect_size(0.33, 0.57, 19)
+effect_size(0.47, 0.53, 19)
+effect_size(0.49, 0.62, 19)
+effect_size(0.59, 0.68, 19)
 ```
 
 

@@ -225,14 +225,6 @@ rankings %>%
              Winter = md("**Winter Rank**"),
              School = md("**School**"),
              Improve = md("**Change in Ranking**")) %>%
-  # tab_style(
-  #   style = list(
-  #     cell_fill(color = "#04ABEB"),
-  #     cell_text(color = "white", weight = "bold")
-  #     ),
-  #   locations = cells_body(
-  #     rows = School == "Bennington")
-  # ) %>%
   tab_style(
     style = list(
       cell_fill(color = "#04ABEB"),
@@ -242,6 +234,44 @@ rankings %>%
       rows = Winter <= Fall)
   ) %>%
   gtsave(here("Images/D11/StudentScoreRankings.png"))
+
+rankings %>%
+  select(-Score) %>%
+  pivot_wider(names_from = "Season", values_from = "Rank") %>%
+  mutate(Improve = case_when(Winter < Fall ~ "Improved",
+                             Winter == Fall ~ "Maintained",
+                             Winter > Fall ~ "Did not Improve")) %>%
+  mutate(School = str_replace_all(School, real_schools)) %>%
+  filter(tl == "TL") %>%
+  select(-tl) %>%
+  arrange(Winter) %>%
+  gt::gt() %>%
+  tab_header(title = "School Percentile Rankings in Fall and Winter",
+             subtitle = "Ranks show the position of the school as compared to other D11 Schools in measuring the percent of students performing above the 50th percentile") %>%
+  cols_label(Fall = md("**Fall Rank**"),
+             Winter = md("**Winter Rank**"),
+             School = md("**School**"),
+             Improve = md("**Change in Ranking**")) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "#04ABEB"),
+      cell_text(color = "white", weight = "bold")
+      ),
+    locations = cells_body(
+      rows = School == "Bennington")
+  ) %>%
+  gt_theme_tl() %>%
+  tab_options(
+    column_labels.border.lr.style = "solid",
+    column_labels.vlines.style = "solid",
+    # heading.border.lr.style = "solid",
+    heading.border.bottom.width = px(3),
+    heading.border.bottom.color = "black",
+    heading.align = "center"
+    # heading.border.lr.width = px(3),
+    # heading.border.lr.color = "black"
+  ) %>%
+  gtsave(here("Images/D11/StudentScoreBenningtonRankings.png"))
 ```
 
 ```{r}

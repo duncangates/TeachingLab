@@ -146,10 +146,14 @@ moodle_april_may <- moodle_data_fix(moodle_csv3 %>%
 # Add first half of May data
 moodle_april_may <- moodle_data_fix(moodle_csv4 %>%
                                       dplyr::filter(date > max(moodle_csv3$date)))
+# Second half of May data
+moodle_may <- moodle_data_fix(moodle_csv5 %>%
+                                dplyr::filter(date > max(moodle_csv4$date)))
+
 
 
 # All Moodle Data
-moodle_reformat <- bind_rows(moodle_april_may, moodle_april, first_time_df)
+moodle_reformat <- bind_rows(moodle_may, moodle_april_may, moodle_april, first_time_df)
 
 # All New Questions Separately
 new_questions <- read_rds(here("Data/moodle_new_questions.rds")) %>%

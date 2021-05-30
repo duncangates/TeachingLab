@@ -672,7 +672,7 @@ score_question_mindsets <- function(data, question_pre, question_post, coding, n
                                       .data[[question_post]] %in% "3" ~ 1,
                                       .data[[question_post]] %in% "2" ~ 0,
                                       .data[[question_post]] %in% "1" ~ 0)) %>%
-        select(score_pre, score_post)#, .data[[question_pre]], .data[[question_post]])
+        select(score_pre, score_post)
       colnames(score)[1] <- paste0("score_", question_pre)
       colnames(score)[2] <- paste0("score_", question_post)
     } else if (coding == "negative") {
@@ -687,7 +687,7 @@ score_question_mindsets <- function(data, question_pre, question_post, coding, n
                                       .data[[question_post]] %in% "3" ~ 1,
                                       .data[[question_post]] %in% "4" ~ 0,
                                       .data[[question_post]] %in% "5" ~ 0)) %>%
-        select(score_pre, score_post)#, .data[[question_pre]], .data[[question_post]])
+        select(score_pre, score_post)
       colnames(score)[1] <- paste0("score_", question_pre)
       colnames(score)[2] <- paste0("score_", question_post)
     }
@@ -706,7 +706,7 @@ score_question_mindsets <- function(data, question_pre, question_post, coding, n
                                       .data[[question_post]] %in% "3" ~ 1,
                                       .data[[question_post]] %in% "2" ~ 0,
                                       .data[[question_post]] %in% "1" ~ 0)) %>%
-        select(score_pre, score_post)#, .data[[question_pre]], .data[[question_post]])
+        select(score_pre, score_post)
       colnames(score)[1] <- paste0("score_", question_pre)
       colnames(score)[2] <- paste0("score_", question_post)
     } else if (coding == "negative") {
@@ -723,7 +723,7 @@ score_question_mindsets <- function(data, question_pre, question_post, coding, n
                                       .data[[question_post]] %in% "4" ~ 1,
                                       .data[[question_post]] %in% "5" ~ 0,
                                       .data[[question_post]] %in% "6" ~ 0)) %>%
-        select(score_pre, score_post)#, .data[[question_pre]], .data[[question_post]])
+        select(score_pre, score_post)
       colnames(score)[1] <- paste0("score_", question_pre)
       colnames(score)[2] <- paste0("score_", question_post)
     }
