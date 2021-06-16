@@ -1,11 +1,13 @@
 library(tidyverse)
 library(here)
 # Read in data
-moodle_csv <- read_csv(here("Data/Results.csv"))
-moodle_csv2 <- read_csv(here("Data/ResultsApril.csv"))
-moodle_csv3 <- read_csv(here("Data/Results (9).csv"))
-moodle_csv4 <- read_csv(here("Data/Results (10).csv"))
-moodle_csv5 <- read_csv(here("Data/Results (12).csv"))
+moodle_csv <- read_csv(here("Data/Moodle Manual Downloads/Results.csv"))
+moodle_csv2 <- read_csv(here("Data/Moodle Manual Downloads/ResultsApril.csv"))
+moodle_csv3 <- read_csv(here("Data/Moodle Manual Downloads/Results (9).csv"))
+moodle_csv4 <- read_csv(here("Data/Moodle Manual Downloads/Results (10).csv"))
+moodle_csv5 <- read_csv(here("Data/Moodle Manual Downloads/Results (12).csv"))
+moodle_csv6 <- read_csv(here("Data/Moodle Manual Downloads/Results (13).csv"))
+moodle_csv7 <- read_csv(here("Data/Moodle Manual Downloads/Results (15).csv"))
 
 # numbers <- c("5","4","3","2","1")
 # likerts <- c("Strongly agree", "Agree", "Neither agree nor disagree", "Disagree", "Strongly disagree")
@@ -117,6 +119,8 @@ moodle_data_fix <- function(df) {
                                                   TRUE ~ as.character(`Name Of Your Facilitator`))) %>%
     mutate(`Name Of Your Facilitator` = case_when(str_detect(`Name Of Your Facilitator`, "(?<=[:alpha:])Christi") == T ~ 
                                                     str_replace(`Name Of Your Facilitator`, "Christi", "  Christi"),
+                                                  str_detect(`Name Of Your Facilitator`, "(?<=[:alpha:])Erin") == T ~ 
+                                                    str_replace(`Name Of Your Facilitator`, "Erin", "  Erin"),
                                                   str_detect(`Name Of Your Facilitator`, "Silverthorne(?! )") == T ~ 
                                                     str_replace(`Name Of Your Facilitator`, "Silverthorne", "Silverthorne  "),
                                                   str_detect(`Name Of Your Facilitator`, "Rushton(?! )") == T ~ 
@@ -149,18 +153,39 @@ moodle_april_may <- moodle_data_fix(moodle_csv4 %>%
 # Second half of May data
 moodle_may <- moodle_data_fix(moodle_csv5 %>%
                                 dplyr::filter(date > max(moodle_csv4$date)))
+# Early June Data
+moodle_june <- moodle_data_fix(moodle_csv6 %>%
+                                dplyr::filter(date > max(moodle_csv5$date)))
+
+# Mid June Data
+moodle_june <- moodle_data_fix(moodle_csv7 %>%
+                                 dplyr::filter(date > max(moodle_csv6$date)))
 
 
 
 # All Moodle Data
-moodle_reformat <- bind_rows(moodle_may, moodle_april_may, moodle_april, first_time_df)
+moodle_reformat <- bind_rows(moodle_june, moodle_may, moodle_april_may, moodle_april, first_time_df) %>%
+  mutate(`District, Parish, Or Network` = case_when(str_detect(`Professional Training Session`, "Cleveland|Calcasieu") == T ~ 
+                                                      "Cleveland Metropolitan School District, OH",
+                                                    str_detect(`Professional Training Session`, "Coupee") == T ~ 
+                                                      "Providence Public Schools, RI",
+                                                    str_detect(`Professional Training Session`, "Lafayette") == T ~ 
+                                                      "Legacy Early College, SC",
+                                                    str_detect(`Professional Training Session`, "PS121") == T ~ 
+                                                      "NYC District 11, PS 121",
+                                                    str_detect(`Professional Training Session`, "Kankakee") == T ~ 
+                                                      "Louisville School District - Jacob Elementary, KY",
+                                                    str_detect(`Professional Training Session`, "Tangi") == T ~ 
+                                                      "Washington Parish, LA",
+                                                    T ~ as.character(`District, Parish, Or Network`)))
+
 
 # All New Questions Separately
-new_questions <- read_rds(here("Data/moodle_new_questions.rds")) %>%
+new_questions <- read_rds(here("Data/Dashboard Data/moodle_new_questions.rds")) %>%
   bind_rows(new_questions)
 
-write_rds(moodle_reformat, here("Data/moodle_export_reformat.rds"))
-write_rds(new_questions, here("Data/moodle_new_questions.rds"))
+write_rds(moodle_reformat, here("Data/Dashboard Data/moodle_export_reformat.rds"))
+write_rds(new_questions, here("Data/Dashboard Data/moodle_new_questions.rds"))
 
 ### DATA ISSUES - 3 DATES WRONG - FIXED
 ### Missing columns - questions dropped?

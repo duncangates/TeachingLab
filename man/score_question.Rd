@@ -4,7 +4,7 @@
 \alias{score_question}
 \title{Calculate percentage of a question (column) in data (data) that is in the right answer (coding)}
 \usage{
-score_question(data, question, coding)
+score_question(data, question, coding, na_type = c("NA", "NR"))
 }
 \arguments{
 \item{data}{the dataframe to be analyzed}

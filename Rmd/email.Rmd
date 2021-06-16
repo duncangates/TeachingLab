@@ -1,0 +1,79 @@
+---
+title: facilitator email
+output: blastula::blastula_email
+---
+
+```{r include = F}
+# So this will need to be a shiny app that reads the google sheet that the other one writes too I think lol
+# Read Curriculum, Facilitator, Email, Course
+# https://docs.google.com/spreadsheets/d/1nqtFK9_HBMBU6XQwCmmPYkhwBXZUj8wmevF2WGYUlaM/edit?ts=5f5a8a55#gid=435118164
+
+
+library(tidyverse)
+
+# data <- tibble(pm = rep("Quintin Bostic", 2),
+#                curriculum = rep("EL", 2),
+#                site = rep("Fort Dodge", 2),
+#                content = rep("Skills Bootcamp", 2),
+#                call_times = c("2012-01-01 12:00", "2013-01-01 12:00"),
+#                response_time = c("2012-01-05", "2013-01-05"),
+#                lead_facilitators = rep(2, 2),
+#                tech_facilitators = rep(2, 2),
+#                additional_comments = rep("This facilitator should be comfortable engaging in direct conversation about race, given that this has come up several times with this site in the past.", 2))
+
+# data <- tibble(pm = "Quintin Bostic",
+#                curriculum = "EL",
+#                site = "Fort Dodge",
+#                content = "Skills Bootcamp",
+#                call_times = list("2012-01-01 12:00", "2013-01-01 12:00"),
+#                response_time = list("2012-01-05", "2013-01-05"),
+#                lead_facilitators = 2,
+#                tech_facilitators = 2,
+#                additional_comments = "This facilitator should be comfortable engaging in direct conversation about race, given that this has come up several times with this site in the past.")
+
+# data <- read_rds(here("Staffing/data.rds"))
+data <- read_rds(here("Data/new_data.rds")) %>%
+  rename(pm = `PMs`) %>%
+  rename(`curriculum` = Curriculum) %>%
+  rename(`site` = Site) %>%
+  rename(`content` = Content) %>%
+  rename(call_times = `Call Times`) %>%
+  rename(response_time = `Response Time`) %>%
+  rename(lead_facilitators = `Lead Facilitators`) %>%
+  rename(tech_facilitators = `Tech Facilitators`) %>%
+  rename(additional_comments = `Additional Comments`)
+
+library(glue)
+```
+
+```{r echo = F, out.width = "400px"}
+knitr::include_graphics(here("Images/teachinglab_logo.png"))
+```
+
+Hi `r glue::glue("{data$curriculum[1]}")` facilitators,
+
+`r glue::glue("{data$pm[1]}")` is looking for `r glue::glue("{data$lead_facilitators[1]}")` lead facilitator`r if_else(data$lead_facilitators[1] > 1, glue::glue("s"), glue::glue(""))` and `r glue::glue("{data$tech_facilitators[1]}")` tech facilitator`r if_else(data$tech_facilitators[1] > 1, glue::glue("s"), glue::glue(""))` to staff the `r glue::glue("{data$site[1]} ")` `r glue::glue("{data$content[1]}")`.
+
+`r glue::glue("{data$additional_comments[1]}")`
+
+
+<!-- The dates and times are as follows: -->
+
+```{r echo = F, warning = F, message = F}
+# data$call_times %>%
+#   knitr::kable(col.names = "")
+```
+
+If interested please select ALL the dates you would be able to facilitate!
+
+```{r echo = F}
+knitr::include_app("https://teachinglabhq.shinyapps.io/Survey/")
+```
+
+
+`r glue::glue("{data$pm[1]}")` will review facilitator availability on `r glue::glue("{data$response_time[1]}")` and reach out to you directly if you have been selected to facilitate or if he needs more information. Please respond to any communication within 48 hrs. to ensure timely staffing.
+
+Thank you!
+
+`r glue::glue("{data$pm[1]}")`
+

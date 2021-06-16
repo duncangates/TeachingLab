@@ -78,6 +78,10 @@ student_data_clean <- student_data %>%
                       School == "11X566" ~ 374,
                       School == "11X567" ~ 167,
                       School == "11X462" ~ 227))
+
+# write_rds(student_data_clean, here::here("Data-Clean/D11StudentDataCleaned.rds"))
+# 
+# write_sheet(student_data_clean, sheet = "https://docs.google.com/spreadsheets/d/1Zp62EA-LnaU9crXkUbb-IBsd9dGnxf4SwDM5WeghcyM/edit#gid=0")
 ```
 
 # Analyze

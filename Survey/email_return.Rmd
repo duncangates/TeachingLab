@@ -1,0 +1,30 @@
+---
+title: facilitator email
+output: blastula::blastula_email
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning = F, message = F)
+library(tidyverse)
+
+change_type <- c("Lead Facilitate Only" = "Lead Facilitator",
+                 "Tech/Support Facilitate Only" = "Tech/Support Facilitator",
+                 "Available for Either Role" = "facilitator available for either lead or support")
+
+data <- read_rds(here("Data/new_data_return.rds")) %>%
+  mutate(type = str_replace_all(type, change_type))
+
+mypaste <- function(text){
+  paste(gsub(pattern = "\n", replacement = "  \n", x = paste(text, collapse = "\n")))
+}
+```
+
+`r glue::glue("{data$Name}")` has signed up for the following time`r if_else(length(data$call_times) > 1, glue::glue("s"), glue::glue(""))`: 
+
+`r glue::glue("{data$call_times %>% as_vector() %>% mypaste()}")` 
+
+as a `r glue::glue("{data$type}")` at `r glue::glue("{data$Site}")`.
+
+`r if_else(!is.na(data$fac_comments[1]), glue::glue("They also left the following comments:\n {data$fac_comments}"), "")`
+
+-- Teaching Lab Staffing

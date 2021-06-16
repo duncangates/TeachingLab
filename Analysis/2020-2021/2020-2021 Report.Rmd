@@ -130,6 +130,18 @@ unmatched_both_mindsets %>%
               reformat = F)
 ```
 
+#### Matched Mindsets
+
+```{r}
+matched_both_mindsets <- pmap_df(list(index$question_pre, index$question_post, index$coding), 
+                                  ~ score_question_number(data = matched_2021, question_pre = ..1, question_post = ..2, coding = ..3)) %>%
+  mutate(percent_pre = round(100 * score_pre/max_score_pre),
+         percent_post = round(100 * score_post/max_score_post),
+         difference = percent_post - percent_pre) %>%
+  select(percent_pre, n1, percent_post, n2, difference)
+```
+
+
 #### Percent Improved or Sustained
 
 ```{r}
@@ -156,7 +168,7 @@ pmap_dfc(list(index$question_pre, index$question_post, index$coding),
   mutate(names = factor(names, levels = c("race", "high", "growth", "acc"))) %>%
   arrange(names) %>%
   # group_by(names) %>%
-  mutate(max_score = c(rep(4, 11), rep(8, 11), rep(4, 11), rep(6, 11))) %>%
+  mutate(max_score = c(rep(4, length(unique(id))), rep(8, length(unique(id))), rep(4, length(unique(id))), rep(6, length(unique(id))))) %>%
   group_by(names) %>%
   summarise(percent_improve_sustain = sum(score_compare > 0 | post == max_score)/length(score_compare)) %>%
   # mutate(percent_improve_sustain = round(100*percent_improve_sustain)) %>%
@@ -498,6 +510,7 @@ unmatched_ela_both %>%
   mutate(across(everything(), ~ paste0(.x, "%"))) %>%
   mutate(difference = case_when(str_detect(difference, "-") ~ difference,
                                 !str_detect(difference, "-|0") ~ paste0("+", difference),
+                                str_detect(difference, "(?<!-)10") ~ paste0("+", difference),
                                 str_detect(difference, "0") ~ difference)) %>%
   mutate(difference = str_remove_all(difference, "%")) %>%
   range_write(ss = "https://docs.google.com/spreadsheets/d/1Iva12A06pytoD7N4AhGIzV7PlvBHN0trO3SDuTsguCM/edit#gid=1852062847",

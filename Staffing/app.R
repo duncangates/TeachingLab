@@ -1,12 +1,4 @@
-# library(shinyjs)
-library(shiny)
-library(bs4Dash)
-library(tidyverse)
-library(rmarkdown)
-library(shinycssloaders)
-library(fresh)
-library(shinyTime)
-library(shinyWidgets)
+source("global.R", local = T)
 
 # Organize rows as facilitator observation
 # Columns as dates
@@ -14,34 +6,8 @@ library(shinyWidgets)
 bs4DashTheme <- create_theme(
   bs_vars_font(family_sans_serif = "Calibri",
                size_base = "20px"),
-  # bs4dash_vars(
-    # navbar_dark_color = "#bec5cb", #buttons on top of corner in navbar
-    # navbar_dark_active_color = "#FFF",
-    # navbar_dark_hover_color = "#FFF"
-  # ),
-  # bs4dash_yiq(
-  #   contrasted_threshold = 10,
-  #   text_dark = "#00e9e5", #text color
-  #   text_light = "#FFF" #unsure
-  # ), # 00e9e5
   bs4dash_layout(main_bg = "white",
                  sidebar_width = "0px"), #main back ground
-  # bs4dash_sidebar_dark(
-  #   bg = "#242932", #background color of side bar
-  #   color = "#00e9e5", #word headings
-  #   hover_color = "#00e9e5", #hover sidebar menu
-  #   
-  #   submenu_bg = "#272c30",
-  #   submenu_color = "#FFF",
-  #   submenu_hover_color = "#FFF"
-  # ),
-  #change status colors
-  # bs4dash_status(
-  #   dark = "#272c30",
-  #   primary = "#5E81AC",
-  #   danger = "#00e9e5"
-  #   
-  # ),
   bs4dash_color(gray_900 = "#00e9e5", white = "#272c30",
                 green = "#68AF8F",
                 lime = "#93C6AF")
@@ -91,13 +57,13 @@ ui <- bs4DashPage(
               tags$div(
                 class = "inline",
                 shiny::selectInput("pm", label = h5("PM", style = "font-weight:bold;font-size: 20px;"),
-                            choices = c("Quintin Bostic", "Mandi Van Dellen", "Cole Farnum")),
+                            choices = PMs$PMs),
                 selectInput("curriculum", label = h5("Curriculum", style = "font-weight:bold;font-size: 20px;"),
-                            choices = c("EL", "State-Level", "IM", "Guidebooks")),
+                            choices = c("EL", "State Level", "Math" = "IM", "Guidebooks")),
                 selectInput("site", label = h5("Site ", style = "font-weight:bold;font-size: 20px;"),
-                            choices = c("Lafayette", "Fort Dodge")),
+                            choices = Sites$site),
                 selectInput("content", label = h5("Content ", style = "font-weight:bold;font-size: 20px;"),
-                            choices = c("Skills Bootcamp", "Other Stuff")),
+                            choices = Courses$Courses, selected = 1),
                 selectizeInput("calls_count", label = h5("# of Calls ", style = "font-weight:bold;font-size: 20px;"),
                             choices = c(0:10), selected = 0)
               )
@@ -134,15 +100,18 @@ ui <- bs4DashPage(
               collapsible = F,
               tags$div(
                 class = "inline",
-                selectInput("lead_facilitators_needed", label = "# of Lead Facilitators Needed", choices = c(1:2)),
-                selectInput("tech_facilitators_needed", label = "# of Tech/Support Facilitators Needed", choices = c(1:2)),
+                shinyWidgets::numericInputIcon("lead_facilitators_needed", label = "# of Lead Facilitators Needed", value = 1, step = 1), # Weirdly when this is run locally it steps by 2
+                shinyWidgets::numericInputIcon("tech_facilitators_needed", label = "# of Tech/Support Facilitators Needed", value = 1, step = 1),
                 airDatepickerInput("response_needed",
                           "What date do you need responses sent by?",
-                          value = Sys.Date())
+                          value = Sys.Date(),
+                          multiple = F)
               ),
               br(),
               textAreaInput("additional_info", label = "What additional information would you like to provide?",
                             width = "80%", height = "400px"),
+              shinyjs::useShinyjs(),
+              tags$head(tags$script(src = "message-handler.js")),
               actionButton("submit", "Submit", icon("paper-plane"), 
                            style="color: #fff; background-color: #3D9970; border-color: #3D9970")
             )
@@ -156,6 +125,7 @@ server <- function(input, output, session) {
   
   output$call_times_gen <- renderUI({
     
+    # Create a variable length input
     if (input$calls_count > 0) {
       map(1:input$calls_count, ~ airDatepickerInput(
         inputId = paste0("time_", .x),
@@ -169,30 +139,61 @@ server <- function(input, output, session) {
           hoursStep = 1
         )
       ))
-      # fluidRow(
-      #   column(6, 
-      #     map(1:input$calls_count, ~ shiny::dateInput(
-      #       inputId = paste0("date_", .x),
-      #       label = paste0("Date ", .x), 
-      #       value = "2021-05-18"
-      #     ))
-      #   ),
-      #   column(6,
-      #     map(1:input$calls_count, ~ shinyTime::timeInput(
-      #       inputId = paste0("time_", .x),
-      #       label = paste0("Time ", .x),
-      #       value = format(Sys.time(), "%Y-%m-%d %H:%M"),
-      #       seconds = F,
-      #       minute.steps = 1
-      #     )
-      #     )
-      #   )
-      # )
     } else {
       print(HTML("Please Enter the # of Calls Desired"))
     }
     
   })
+  
+  # Restrict submit until there is at least one time entered
+  observeEvent(input$calls_count, {
+    if (input$calls_count < 1) {
+      shinyjs::disable("submit")
+    } else {
+      shinyjs::enable("submit")
+    }
+  })
+  
+  new_data <- reactive({
+    # Create new data
+    if (input$calls_count > 0) {
+     new_data <- tibble(
+        PMs = input$pm,
+        Curriculum = input$curriculum,
+        Site = input$site,
+        Content = input$content,
+        `Call Times` = paste(map(1:input$calls_count, ~ as.character(eval(parse(text = (paste0("input$time_", .x)))))), collapse = ", "),
+        `Response Time` = as.character(input$response_needed),
+        `Lead Facilitators` = as.character(input$lead_facilitators_needed),
+        `Tech Facilitators` = as.character(input$tech_facilitators_needed),
+        `Additional Comments` = input$additional_info
+      )
+      print(new_data)
+      # print(new_data$`Call Times`)
+    }
+  })
+  
+  observeEvent(input$submit, {
+    # Write to data
+    write_rds(new_data(), here("Data/new_data.rds"))
+  })
+  
+  # Create action for submit button
+  observeEvent(input$submit, {
+    # Write to sheet
+    source("sheet_write.R")
+
+    # Send pop-up message
+    session$sendCustomMessage(type = 'testmessage',
+                              message = 'Thank you for your submission!')
+    # Send email
+    # source("email_send.R")
+
+  })
+  
+  # observe({
+    # print(input$time_1)
+  # })
   
 }
 

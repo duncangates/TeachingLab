@@ -1,6 +1,6 @@
 library(tidyverse)
 
-teaching_df_readin <- read_rds(here("Data/original_df.rds")) # Read in the data
+teaching_df_readin <- read_rds(here("Data/Dashboard Data/original_df.rds")) # Read in the data
 # teaching_df <- read_rds("~/Teaching Lab/Coding/TeachingLab/PieCharter/Data/original_df.rds")
 # Relevant columns
 oldcols <- c(
@@ -314,6 +314,35 @@ newcols <- str_to_title(c(
 #                      "Cleveland Cohort 3 Cycle 1" = "", # LITERALLY NO IDEA 
 #                      "Cleveland Cohort 2 EL Modules Bootcamp" = "EL - Bootcamp: Modules (K-8)")
 
+network_replace <- c("NYC District 11 - District-wide, NY" = "NYC District 11 - District wide, NY",
+                     "NYC District 11 - IS 355, NY" = "NYC District 11, IS 355",
+                     "-(?! )" = "NA",
+                     "OTHER" = "NA",
+                     "Robinhood Schools (NYC), NY" = "Robinhood Schools (NYC)",
+                     "Delaware DOE" = "Delaware Department of Education, DE",
+                     "Calcasieu Parish, LA" = "Calcasieu Parish",
+                     "Building 21 - PA" = "Building 21",
+                     "Building 21 NA Allentown, PA" = "Building 21",
+                     "Building 21 NA Philadelphia, PA" = "Building 21",
+                     "Building 21 NA PA" = "Building 21",
+                     "Cincinnati Public Schools/ STRIVE, OH" = "Cincinnati Public Schools/ STRIVE",
+                     "Cleveland Metropolitan School District, OH" = "Cleveland Metropolitan School District",
+                     "Freire Charter Schools, PA/DE" = "Freire Charter Schools",
+                     "Iberia Parish, LA" = "Iberia Parish",
+                     "Louisiana State Content Leader Training, LA" = "Louisiana State Content Leader Training",
+                     "NYC District 11 - PS 96, NY" = "NYC District 11, PS 96",
+                     "Tangipahoa Parish, LA" = "Tangipahoa Parish",
+                     "Washington Parish, LA" = "Washington Parish",
+                     "West Contra Costa USD, CA" = "West Contra Costa USD",
+                     "Fort Dodge Schools, IA" = "Fort Dodge Schools",
+                     "Lafayette Parish, LA" = "Lafayette Parish",
+                     "DeSoto Parish, LA" = "DeSoto Parish",
+                     "East Baton Rouge Parish, LA" = "East Baton Rouge Parish",
+                     "ESU 2, NE" = "ESU 2, Nebraska",
+                     "Ft. Dodge Schools" = "Fort Dodge Schools",
+                     "Pointe Coupee Parish, LA" = "Pt. Coupee Parish",
+                     "Robinhood Schools NA STEAM Bridge, NY" = "Robinhood Schools STEAM Bridge, NY")
+
 # Small data clean
 teaching_df_readin <- teaching_df_readin %>%
   select(-`Select the grade-band(s) you focused on.`,
@@ -347,7 +376,7 @@ community_content_second <- teaching_df_readin %>%
 # Name replacement vector
 name_replace <- c("Octavia" = "Octavia Nixon", "Vaishali" = "Vaishali Joshi", "Ryan C" = "Ryan Colon",
                   "Holli" = "Holli Fears", "Addie" = "Addie Kelley", "Adrienne" = "Adrienne Williams",
-                  "Anita" = "Anita Walls", "Brad" = "Brad Haggerty", "Christi" = "Christi Herring",
+                  "Anita" = "Anita Walls", "Brad" = "Brad Haggerty", "Christi" = "Christi Denning", "Christi Herrigna" = "Christi Denning",
                   "Erin" = "Erin Abraham", "Evan" = "Evan Rushton", "Jalinda" = "Jalinda Soto",
                   "John" = "John Silverthorne", "Justin" = "Justin Endicott", "Katie" = "Katie Endicott",
                   "Lauren" = "Lauren Myer", "Lindsay" = "Lindsay Tomlinson", "Lindsey" = "Lindsey Tomlinson",
@@ -355,7 +384,11 @@ name_replace <- c("Octavia" = "Octavia Nixon", "Vaishali" = "Vaishali Joshi", "R
                   "Rod" = "Rod Naquin", "Sarah" = "Sarah Tierney", "Sheena" = "Sheena Lights", "Ryan S" = "Ryan Mateo Sharnbroich",
                   "Spencer" = "Spencer Russell", "Stacy" = "Stacy Weldon", "Stephanie" = "Stephanie Carpenter",
                   "Tamala" = "Tamala Wiley", "Tara" = "Tara McDonald", "Tia" = "Tiayana Marks", "Zoe" = "Zoe Rind",
-                  "Fitz" = "Andrea Fitzgerald")
+                  "Fitz" = "Andrea Fitzgerald", "Hannah" = "Hannah Lawler", "Auddie" = "Auddie Mastroleo",
+                  "Jill" = "Jill Syvret", "Farren" = "Farren Liben", "Rebecca" = "Rebecca Stephenson",
+                  "Leigh" = "Leigh Topp", "Jen" = "Jen Slavick", "Bennison" = "Bennison Ntsakey", "Tracey" = "Tracey Waters",
+                  "Sable" = "Sable Mensah", "Brett" = "Brett Shield", "Amy Baker-Sheridan" = "Non-TL Facilitators",
+                  "Pamala Alfaro" = "Non-TL Facilitators", "Renee Parsley" = "Non-TL Facilitators")
 
 # Bind it to original dataframe
 teaching_df_merge <- teaching_df_readin %>%
@@ -370,10 +403,10 @@ teaching_df_merge <- teaching_df_readin %>%
   mutate(`Name Of Your Facilitator` = str_replace_all(`Name Of Your Facilitator`, name_replace))
 
 # Moodle data merge
-moodle_data <- read_rds(here("Data/moodle_export_reformat.rds")) %>%
+moodle_data <- read_rds(here("Data/Dashboard Data/moodle_export_reformat.rds")) %>%
   mutate(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?` = as.numeric(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`))
 # Sheets Data Merge
-sheets_data <- read_rds(here("Data/sheets_data_merge.rds")) %>%
+sheets_data <- read_rds(here("Data/Dashboard Data/sheets_data_merge.rds")) %>%
   mutate(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?` = as.numeric(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`),
          `Date for the session` = as.Date(`Date for the session`))
 
@@ -382,10 +415,13 @@ teaching_df <- full_join(teaching_df_merge, moodle_data) %>%
   mutate(across(c(4:18, 20:24), ~ replace_na(., "No Response"))) %>%
   mutate(across(c(4:18, 20:24), ~ replace_na(., "No Response"))) %>%
   mutate(across(c(4:18, 20:24), ~ str_replace_all(.x, "NULL", "No Response"))) %>%
-  select(-Compare, -Concatcomments) #%>%
-  # mutate(`Professional Training Session` = str_replace_all(`Professional Training Session`, session_replace))
+  select(-Compare, -Concatcomments) %>%
+  mutate(`District, Parish, Or Network` = str_replace_all(`District, Parish, Or Network`, network_replace)) %>%
+  mutate(`District, Parish, Or Network` = str_remove_all(`District, Parish, Or Network`, ", NY")) %>%
+  mutate(`Professional Training Session` = str_replace_all(`Professional Training Session`, "NA Guidebooks Abbreviated Bootcamp", "Guidebooks Abbreviated Bootcamp"))
 
 
+write_rds(teaching_df, here("Data/Dashboard Data/dashboard_data.rds"))
 write_rds(teaching_df, here("Data/dashboard_data.rds"))
 
 write_rds(teaching_df, here("ParticipantFeedback/Data/dashboard_data.rds"))

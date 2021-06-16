@@ -509,14 +509,24 @@ calc_nps <- function(x) {
 #' @param data the dataframe to be analyzed
 #' @param question the column to be selected
 #' @param coding the coding to check for
+#' @param na_type the form that NA takes - could be "No Response" as in the Participant Feedback dashboard
 #' @return Returns a dataframe with the percent, correct, number of non-na responses, and question itself
 #' @export
 #' 
-score_question <- function(data, question, coding) {
-  data %>%
-    summarise(percent = 100* (sum(.data[[question]] %in% coding, na.rm = T)/length(which(!is.na(.data[[question]])))),
-              n = length(which(!is.na(.data[[question]])))) %>%
-    mutate(question = question)
+score_question <- function(data, question, coding, na_type = c("NA", "NR")) {
+  
+  if (na_type == "NA") {
+    data %>%
+      summarise(percent = 100 * (sum(.data[[question]] %in% coding, na.rm = T)/length(which(!is.na(.data[[question]])))),
+                n = length(which(!is.na(.data[[question]])))) %>%
+      mutate(question = question)
+  } else if (na_type == "NR") {
+    data %>%
+      summarise(percent = 100 * (sum(.data[[question]] %in% coding, na.rm = T)/length(which(!.data[[question]] == "No Response"))),
+                n = length(which(!.data[[question]] == "No Response"))) %>%
+      mutate(question = question)
+  }
+  
   
 }
 
@@ -732,6 +742,27 @@ score_question_mindsets <- function(data, question_pre, question_post, coding, n
   
   score
   
+}
+
+#' @title Set Color in rmd with HTML or LaTex
+#' @description Creates code to generate a color in x text with color, color.
+#'
+#' @param x the text to be colored
+#' @param color the color of the text
+#' @return Returns a string with code to render the correctly colored text
+#' @export
+
+colorize <- function(x, color) {
+  if (knitr::is_latex_output()) {
+    sprintf("\\textcolor{%s}{%s}", color, x)
+  } else if (knitr::is_html_output()) {
+    sprintf(
+      "<span style='color: %s;font-weight:bold;'>%s</span>", color,
+      x
+    )
+  } else {
+    x
+  }
 }
 
 

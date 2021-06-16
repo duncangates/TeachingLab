@@ -118,7 +118,7 @@ sheets_data_merge_final <- sheets_data_merge %>%
   mutate(across(c(4, 5, 6, 7, 8, 9, 12, 14, 15), ~ str_replace_all(.x, "1", "Strongly disagree")))
 
 
-write_rds(sheets_data_merge_final, here("Data/sheets_data_merge.rds"))
+write_rds(sheets_data_merge_final, here("Data/Dashboard Data/sheets_data_merge.rds"))
 
 write_rds(sheets_data_merge_final, here("ParticipantFeedback/Data/sheets_data_merge.rds"))
 

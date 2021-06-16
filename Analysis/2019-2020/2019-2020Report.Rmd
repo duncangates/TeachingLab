@@ -21,16 +21,9 @@ library(tidyverse)
 library(here)
 library(gt)
 
-og_df <- read_excel(here("Data/SY19-20 Fall Spring merged.xlsx"))
-second_df <- read_excel(here("Data/SY19-20 Fall-Spring Merged Dataset Update.xls"))
-```
+# og_df <- read_excel(here("Data/SY19-20 Fall Spring merged.xlsx"))
+second_df <- read_excel(here("Data/SY19-20/SY19-20 Fall-Spring Merged Dataset Update.xls"))
 
-```{r echo = F}
-htmltools::tagList(rmarkdown::html_dependency_font_awesome()) # Needed so fa's in footer will show
-```
-
-```{r cleaning, echo = F}
-### Work from here
 identifiers <- second_df %>%
   select(district, school, portfolio, id, merge)#, role, role2...10, role_txt)
 
@@ -44,8 +37,14 @@ spring_df <- second_df %>%
   select_at(vars(contains("post"))) %>%
   bind_cols(identifiers) %>%
   relocate(merge, .after = last_col())
+```
+
+```{r echo = F}
+htmltools::tagList(rmarkdown::html_dependency_font_awesome()) # Needed so fa's in footer will show
+```
 
 
+```{r}
 ### ELA CONTENT: 12a-23d
 ## Average Scores
 # 14a-14d, 18a-18d need recoding

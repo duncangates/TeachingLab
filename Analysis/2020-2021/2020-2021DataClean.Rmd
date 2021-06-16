@@ -81,12 +81,6 @@ fall_cols <- purrr::map(fall_df, colnames) %>%
   enframe() %>%
   select(name)
 
-fall_df_compare <- bind_cols(fall_vars, fall_cols) %>%
-  relocate(name, .before = 1) %>%
-  rename(fall_name = name) %>%
-  bind_rows(tibble(class = rep(NA, 9), value = rep(NA, 9), name = rep(NA, 9))) %>%
-  select(-name)
-
 spring_vars <- purrr::map_df(spring_df, ~ tibble::tibble(class = class(.x), 
                                                   value = toString(unique(.x))))
 spring_cols <- purrr::map(spring_df, colnames) %>%
@@ -96,6 +90,14 @@ spring_cols <- purrr::map(spring_df, colnames) %>%
 spring_df_compare <- bind_cols(spring_vars, spring_cols) %>%
   relocate(name, .before = 1) %>%
   rename(spring_name = name)
+
+fall_df_compare <- bind_cols(fall_vars, fall_cols) %>%
+  relocate(name, .before = 1) %>%
+  rename(fall_name = name) %>%
+  bind_rows(tibble(class = rep(NA, nrow(spring_vars) - nrow(fall_vars)), 
+                   value = rep(NA, nrow(spring_vars) - nrow(fall_vars)), 
+                   name = rep(NA, nrow(spring_vars) - nrow(fall_vars)))) %>%
+  select(-name)
 
 fall_spring_compare <- bind_cols(fall_df_compare, spring_df_compare) %>%
   select(-2, -5)
@@ -111,15 +113,17 @@ write_csv(fall_spring_compare, here("Analysis/2020-2021/Data/df_compare.csv"))
 full_2021 <- full_join(fall_df, spring_df, by = "id")
 
 write_rds(full_2021, here("Analysis/2020-2021/Data/full_2021.rds"))
+write_rds(full_2021, here("Data/SY19-20/full_2021.rds"))
 
 matched_filter <- fall_df$id[fall_df$id %in% spring_df$id]
 
-fall_one <- fall_df %>% filter(id %in% matched_filter)
-spring_one <- spring_df %>% filter(id %in% matched_filter)
+fall_one <- fall_df %>% filter(id %in% matched_filter) %>% distinct(id, .keep_all = T)
+spring_one <- spring_df %>% filter(str_detect(id, paste(matched_filter, collapse = "|"))) %>% distinct(id, .keep_all = T)
 
 matched_2021 <- bind_cols(fall_one %>% arrange(id), spring_one %>% arrange(id) %>% select(-id))
 
-write_rds(matched_2021, here("Analysis/2020-2021/Data/matched_2021.rds"))
+write_rds(matched_2021, here("Data/SY19-20/matched_2021.rds"))
+write_rds(matched_2021, here("Data/SY19-20/matched_2021.rds"))
 ```
 
 

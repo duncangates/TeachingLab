@@ -3,6 +3,7 @@
 export("%!in%")
 export(TLDefault)
 export(calc_nps)
+export(colorize)
 export(gt_theme_tl)
 export(html_template)
 export(scale_dollar_labels)

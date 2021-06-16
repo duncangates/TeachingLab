@@ -18,12 +18,6 @@ teaching_df <- read_csv(here("Data/dashboard_data.csv"))
 
 # Create user interface -------------------------------
 ui <- navbarPage(
-  # tags$style("@import url(https://use.fontawesome.com/releases/v4.7.0/css/all.css);"),
-  # htmlDependency(
-  #   name = "font-awesome", version = "99.0",
-  #   src = "./www/fontawesome",
-  #   stylesheet = "css/all.min.css"
-  # ),
   inverse = F,
   windowTitle = "Teaching Lab Data Share",
   position = "fixed-top",
