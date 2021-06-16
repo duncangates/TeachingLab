@@ -20,6 +20,15 @@ library(knitr)
 library(rmdformats)
 library(glue)
 library(TeachingLab)
+library(googlesheets4)
+
+if (params$year == "SY19-20") {
+ data <- readxl::read_excel(here::here("Data/SY19-20/SY19-20 Fall-Spring Merged Dataset Update.xls")) 
+} else if (params$year == "SY20-21") {
+ full_2021 <- read_rds(here::here("Data/SY20-21/full_2021.rds"))
+ matched_2021 <- read_rds(here::here("Data/SY20-21/matched_2021.rds"))
+}
+
 
 ## Global options
 options(max.print = "75")
@@ -39,11 +48,11 @@ opts_knit$set(width = 75)
 htmltools::tagList(rmarkdown::html_dependency_font_awesome()) # Needed so fa's in footer will show
 ```
 
-#### SY20-21 Report
+#### `r params$year` Report
 
 ## Background
 
-In SY20-21, Teaching Lab administered online diagnostic and follow-up surveys of educators participating in Teaching Lab’s professional learning in order to measure growth and improvement in three different areas: 1) Educator Mindsets and Beliefs, 2) School Environment, and 3) Content and Pedagogical Content Knowledge. There were xx educators who completed the diagnostic survey, xx educators who completed the follow-up survey, and xx educators who completed both.
+In SY20-21, Teaching Lab administered online diagnostic and follow-up surveys of educators participating in Teaching Lab’s professional learning in order to measure growth and improvement in three different areas: 1) Educator Mindsets and Beliefs, 2) School Environment, and 3) Content and Pedagogical Content Knowledge. There were `r full_2021 %>% filter(!is.na(pre_site) & pre_site == params$partner) %>% summarise(n()) %>% as_vector()` educators who completed the diagnostic survey, `r full_2021 %>% filter(is.na(pre_site) & post_site == params$partner) %>% summarise(n()) %>% as_vector()` educators who completed the follow-up survey, and `r matched_2021 %>% filter(!is.na(pre_site)) %>% summarise(n()) %>% as_vector()` educators who completed both.
 
 
 ## Summary of Results
@@ -57,6 +66,11 @@ The results in the fourth column reflect the percentage of educators who improve
 Educators were asked a series of questions about their mindsets toward instruction and students on a 5-point Likert scale from 1- Strongly disagree to 5- Strongly agree. The questions focused on four core constructs surrounding mindsets and beliefs, specifically the recognition of race and culture, growth mindsets, high expectations, and taking accountability for equitable instruction.
 
 [INSERT TABLE 1 MINDSETS]
+
+```{r}
+
+```
+
 
 The plot illustrates educators’ average scores from the diagnostic and follow-up surveys, which corresponds to the information in the first three columns of the table. `r colorize("Orange represents the diagnostic scores", "#FF7B43")`, and `r colorize("blue represents the follow-up scores", "#04ABEB")`. The arrows represent the directionality, showing an increase or decrease in the average scores.
 
