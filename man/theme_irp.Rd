@@ -71,7 +71,7 @@ theme_irp(
 \item{ticks}{ticks axis \code{TRUE}, \code{FALSE}}
 }
 \description{
-It requires installing Open Sans fonts unless you change the font parameters
+It requires installing Calibri fonts unless you change the font parameters
 }
 \details{
 \url{https://www.google.com/fonts}

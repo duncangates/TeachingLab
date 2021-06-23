@@ -9,6 +9,8 @@ library(shinydashboard)
 library(shinydashboardPlus)
 library(rmdformats)
 library(fresh)
+library(gt)
+library(TeachingLab)
 
 # Read in data sources ------------------------------------------------
 # teaching_df <- read_csv(here("Data/Dashboard Data/dashboard_data.csv"))

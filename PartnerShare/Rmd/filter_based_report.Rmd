@@ -19,7 +19,6 @@ output:
 library(knitr)
 library(rmdformats)
 library(glue)
-library(TeachingLab)
 library(googlesheets4)
 
 if (params$year == "SY19-20") {
@@ -48,7 +47,7 @@ opts_knit$set(width = 75)
 htmltools::tagList(rmarkdown::html_dependency_font_awesome()) # Needed so fa's in footer will show
 ```
 
-#### `r params$year` Report
+#### 2020-2021 Report
 
 ## Background
 

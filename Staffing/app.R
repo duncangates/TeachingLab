@@ -14,6 +14,7 @@ bs4DashTheme <- create_theme(
 )
 
 ui <- bs4DashPage(
+  enable_preloader = T,
   use_googlefont("Calibri"),
   title = "Teaching Lab Payment Calculator",
   navbar = bs4DashNavbar(
@@ -57,15 +58,16 @@ ui <- bs4DashPage(
               tags$div(
                 class = "inline",
                 shiny::selectInput("pm", label = h5("PM", style = "font-weight:bold;font-size: 20px;"),
-                            choices = PMs$PMs),
+                            choices = purrr::prepend(PMs$PMs, "")),
                 selectInput("curriculum", label = h5("Curriculum", style = "font-weight:bold;font-size: 20px;"),
-                            choices = c("EL", "State Level", "Math" = "IM", "Guidebooks")),
+                            choices = c("", "EL", "State Level", "IM", "Engage/Eureka", "Zearn", "Guidebooks", "Science")),
                 selectInput("site", label = h5("Site ", style = "font-weight:bold;font-size: 20px;"),
-                            choices = Sites$site),
+                            choices = purrr::prepend(Sites$Site, "")),
                 selectInput("content", label = h5("Content ", style = "font-weight:bold;font-size: 20px;"),
-                            choices = Courses$Courses, selected = 1),
+                            choices = purrr::prepend(Courses$Courses, "")),
                 selectizeInput("calls_count", label = h5("# of Calls ", style = "font-weight:bold;font-size: 20px;"),
-                            choices = c(0:10), selected = 0)
+                            choices = c(0:10), selected = 0),
+                uiOutput("specific_yes")
               )
             )
           ),
@@ -100,8 +102,8 @@ ui <- bs4DashPage(
               collapsible = F,
               tags$div(
                 class = "inline",
-                shinyWidgets::numericInputIcon("lead_facilitators_needed", label = "# of Lead Facilitators Needed", value = 1, step = 1), # Weirdly when this is run locally it steps by 2
-                shinyWidgets::numericInputIcon("tech_facilitators_needed", label = "# of Tech/Support Facilitators Needed", value = 1, step = 1),
+                shinyWidgets::numericInputIcon("lead_facilitators_needed", label = "# of Lead Facilitators Needed", value = 1, step = 1, min = 0), # Weirdly when this is run locally it steps by 2
+                shinyWidgets::numericInputIcon("tech_facilitators_needed", label = "# of Tech/Support Facilitators Needed", value = 1, step = 1, min = 0),
                 airDatepickerInput("response_needed",
                           "What date do you need responses sent by?",
                           value = Sys.Date(),
@@ -123,7 +125,34 @@ ui <- bs4DashPage(
 )
 server <- function(input, output, session) {
   
+  output$specific_yes <- renderUI({
+    req(input$curriculum)
+    shinyWidgets::pickerInput("specific_facilitator", 
+                              label = "Select the facilitators you would like to email:", 
+                              choices = Facilitators_Emails %>%
+                                drop_na(Name) %>%
+                                pivot_longer(!c(1, 2), names_to = "Curriculum") %>% 
+                                filter(Curriculum == input$curriculum & value == 1) %>% 
+                                select(Name) %>% 
+                                arrange(),
+                              multiple = T,
+                              width = "400px",
+                              options = list(
+                                `actions-box` = TRUE
+                              )
+                              )
+  })
+  
   output$call_times_gen <- renderUI({
+    
+    req(input$site)
+    
+    local_zone <- Sites %>%
+      filter(Site == input$site) %>%
+      mutate(`Time Zone` = str_replace_all(`Time Zone`, c("CST" = "America/Chicago", "EST" = "America/New_York", "PST" = "America/Los_Angeles"))) %>%
+      mutate(`Time Zone` = replace_na(`Time Zone`, "America/New_York")) %>%
+      select(`Time Zone`) %>%
+      as_vector()
     
     # Create a variable length input
     if (input$calls_count > 0) {
@@ -131,8 +160,11 @@ server <- function(input, output, session) {
         inputId = paste0("time_", .x),
         label = paste0("Date and Time ", .x),
         multiple = F,
-        value = as.POSIXct(format(Sys.time(), "%Y-%m-%d %H:%M")),
+        value = force_tz(as.POSIXct(format(Sys.time(), "%Y-%m-%d %H:%M")), local_zone),
+        # value = as.POSIXct(format(Sys.time(), "%Y-%m-%d %H:%M")),
         timepicker = TRUE,
+        addon = "left",
+        width = "100px",
         timepickerOpts = timepickerOptions(
           dateTimeSeparator = " at ",
           minutesStep = 5,

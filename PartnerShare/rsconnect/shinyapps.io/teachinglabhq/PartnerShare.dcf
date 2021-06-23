@@ -5,8 +5,8 @@ account: teachinglabhq
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 4225950
-bundleId: 4722045
+bundleId: 4747644
 url: https://teachinglabhq.shinyapps.io/PartnerShare/
-when: 1623829890.47391
+when: 1624455415.49797
 asMultiple: FALSE
 asStatic: FALSE

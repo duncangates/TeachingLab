@@ -12,6 +12,8 @@ score_question(data, question, coding, na_type = c("NA", "NR"))
 \item{question}{the column to be selected}
 
 \item{coding}{the coding to check for}
+
+\item{na_type}{the form that NA takes - could be "No Response" as in the Participant Feedback dashboard}
 }
 \value{
 Returns a dataframe with the percent, correct, number of non-na responses, and question itself

@@ -5,7 +5,7 @@ library(glue)
 # data <- read_rds(here("Staffing/data.rds"))
 data <- read_rds(here("Data/new_data.rds"))
 
-here("Rmd") %>% dir() %>% print()
+# here("Rmd") %>% dir() %>% print()
 
 # Create rmd to be sent
 my_email_object <- render_email(

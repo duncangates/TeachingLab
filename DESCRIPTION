@@ -13,5 +13,13 @@ LazyData: true
 URL: https://github.com/duncangates/teachinglab-duncan
 BugReports: https://github.com/duncangates/teachinglab-duncan/issues
 Imports: 
-  tidyverse
+  tibble,
+  dplyr,
+  purrr,
+  tidyr,
+  ggplot2,
+  rmarkdown,
+  gt,
+  magrittr,
+  knitr
 RoxygenNote: 7.1.1

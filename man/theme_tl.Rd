@@ -5,11 +5,11 @@
 \title{Teaching Lab Custom Ggplot2 Theme}
 \usage{
 theme_tl(
-  base_family = "Open Sans",
+  base_family = "Calibri",
   base_size = 11,
   strip_text_family = base_family,
   strip_text_size = 12,
-  plot_title_family = "Open Sans",
+  plot_title_family = "Calibri",
   plot_title_size = 18,
   plot_title_margin = 10,
   subtitle_family = "Roboto",
@@ -18,7 +18,7 @@ theme_tl(
   caption_family = "Roboto",
   caption_size = 9,
   caption_margin = 10,
-  axis_title_family = "Open Sans",
+  axis_title_family = "Calibri",
   axis_title_size = 9,
   axis_title_just = "mm",
   dark = FALSE,
@@ -75,7 +75,7 @@ theme_tl(
 \item{palette}{Changes color scheme}
 }
 \description{
-It requires installing Open Sans, Roboto, Calibri fonts unless you change the font parameters
+It requires installing Roboto, Calibri fonts unless you change the font parameters
 }
 \details{
 \url{https://www.google.com/fonts}

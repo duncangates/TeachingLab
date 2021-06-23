@@ -7,7 +7,7 @@
 gtable_extract_grob(g, pattern = "guide-box")
 }
 \arguments{
-\item{g, }{the gtabel to extract the grob}
+\item{g, }{the gtable to extract the grob}
 
 \item{pattern, }{grob name or pattern to match}
 }

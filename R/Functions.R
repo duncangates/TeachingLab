@@ -1,7 +1,7 @@
 #' Teaching Lab Custom Ggplot2 Theme
 #'
 #'
-#' It requires installing Open Sans, Roboto, Calibri fonts unless you change the font parameters
+#' It requires installing Roboto, Calibri fonts unless you change the font parameters
 #'
 #' \url{https://www.google.com/fonts}
 #'
@@ -31,11 +31,11 @@
 #'
 #' @export
 
-theme_tl <- function(base_family = "Open Sans",
+theme_tl <- function(base_family = "Calibri",
                      base_size = 11,
                      strip_text_family = base_family,
                      strip_text_size = 12,
-                     plot_title_family = "Open Sans",
+                     plot_title_family = "Calibri",
                      plot_title_size = 18,
                      plot_title_margin = 10,
                      subtitle_family = "Roboto",
@@ -44,7 +44,7 @@ theme_tl <- function(base_family = "Open Sans",
                      caption_family = "Roboto",
                      caption_size = 9,
                      caption_margin = 10,
-                     axis_title_family = "Open Sans",
+                     axis_title_family = "Calibri",
                      axis_title_size = 9,
                      axis_title_just = "mm",
                      dark = FALSE,
@@ -177,7 +177,7 @@ gtable_remove_grob <- function(g, pattern = "guide-box") {
 #'
 #' Helper function to extract a grob from gtables by name.
 #'
-#' @param g, the gtabel to extract the grob
+#' @param g, the gtable to extract the grob
 #' @param pattern, grob name or pattern to match
 #'
 #' @return g, a grob matching the specified pattern
@@ -189,9 +189,6 @@ gtable_extract_grob <- function(g, pattern = "guide-box") {
   g$grobs <- g$grobs[matches]
   return(g)
 }
-
-
-
 
 
 #' Five thirty-eight style formatter for Ratios
@@ -241,7 +238,7 @@ scale_dollar_labels <- function(labels) {
 #' My ggplot2 theme heavy credits for influencing the theme function
 #' go to @@hrbrmstr (Bob Rudis)
 #'
-#' It requires installing Open Sans fonts unless you change the font parameters
+#' It requires installing Calibri fonts unless you change the font parameters
 #'
 #' \url{https://www.google.com/fonts}
 #'
@@ -414,25 +411,25 @@ tl_palette <- function(color = c("blue", "orange", "purple", "green", "teal", "t
 #' @param ... Optional additional arguments to gt::table_options()
 #' @return Returns a tibble
 #' @importFrom dplyr %>%
-#' @export
 #' @import gt
+#' @export
 
 gt_theme_tl <- function(data, all_caps = F, ...) {
   data %>%
-    opt_all_caps(all_caps = all_caps) %>%
-    opt_table_font(
+    gt::opt_all_caps(all_caps = all_caps) %>%
+    gt::opt_table_font(
       font = list(
-        google_font("Calibri"),
-        default_fonts()
+        gt::google_font("Calibri"),
+        gt::default_fonts()
       )
     ) %>%
-    tab_style(
+    gt::tab_style(
       style = list(
-        cell_borders(
+        gt::cell_borders(
           sides = "bottom", color = "transparent", weight = px(2)
         )
       ),
-      locations = cells_body(
+      locations = gt::cells_body(
         columns = TRUE,
         # This is a relatively sneaky way of changing the bottom border
         # Regardless of data size
@@ -440,19 +437,19 @@ gt_theme_tl <- function(data, all_caps = F, ...) {
       )
     ) %>%
     # Set Table Text Size
-    tab_style(
+    gt::tab_style(
       style = list(
-        cell_text(
+        gt::cell_text(
           size = "medium",
           align = "center"
         )
       ),
-      locations = cells_body(
+      locations = gt::cells_body(
         columns = T,
         rows = T
       )
     ) %>%
-    tab_options(
+    gt::tab_options(
       column_labels.background.color = "white",
       table.border.top.width = px(3),
       table.border.top.color = "black",
@@ -517,14 +514,14 @@ score_question <- function(data, question, coding, na_type = c("NA", "NR")) {
   
   if (na_type == "NA") {
     data %>%
-      summarise(percent = 100 * (sum(.data[[question]] %in% coding, na.rm = T)/length(which(!is.na(.data[[question]])))),
+      dplyr::summarise(percent = 100 * (sum(.data[[question]] %in% coding, na.rm = T)/length(which(!is.na(.data[[question]])))),
                 n = length(which(!is.na(.data[[question]])))) %>%
-      mutate(question = question)
+      dplyr::mutate(question = question)
   } else if (na_type == "NR") {
     data %>%
-      summarise(percent = 100 * (sum(.data[[question]] %in% coding, na.rm = T)/length(which(!.data[[question]] == "No Response"))),
+      dplyr::summarise(percent = 100 * (sum(.data[[question]] %in% coding, na.rm = T)/length(which(!.data[[question]] == "No Response"))),
                 n = length(which(!.data[[question]] == "No Response"))) %>%
-      mutate(question = question)
+      dplyr::mutate(question = question)
   }
   
   
@@ -541,11 +538,11 @@ score_question <- function(data, question, coding, na_type = c("NA", "NR")) {
 
 score_question_number <- function(data, question_pre, question_post, coding, likert = c(5, 6)) {
   
-  n1 <- data %>% summarise(length(which(!is.na(.data[[question_pre]])))) %>% as_vector()
-  n2 <- data %>% summarise(length(which(!is.na(.data[[question_post]])))) %>% as_vector()
+  n1 <- data %>% dplyr::summarise(length(which(!is.na(.data[[question_pre]])))) %>% as_vector()
+  n2 <- data %>% dplyr::summarise(length(which(!is.na(.data[[question_post]])))) %>% as_vector()
   
   data_count <- data %>%
-    summarise(one_pre = sum(.data[[question_pre]] %in% "1", na.rm = T),
+    dplyr::summarise(one_pre = sum(.data[[question_pre]] %in% "1", na.rm = T),
               two_pre = sum(.data[[question_pre]] %in% "2", na.rm = T),
               three_pre = sum(.data[[question_pre]] %in% "3", na.rm = T),
               four_pre = sum(.data[[question_pre]] %in% "4", na.rm = T),
@@ -622,11 +619,11 @@ score_question_number <- function(data, question_pre, question_post, coding, lik
 score_question_improved <- function(data, question_pre, question_post, coding) {
   
   data1 <- data %>%
-    summarise(pre_percent = 100* (sum(.data[[question_pre]] %in% coding, na.rm = T)/length(which(!is.na(.data[[question_pre]])))),
+    dplyr::summarise(pre_percent = 100* (sum(.data[[question_pre]] %in% coding, na.rm = T)/length(which(!is.na(.data[[question_pre]])))),
               n1 = length(which(!is.na(.data[[question_pre]]))),
               post_percent = 100* (sum(.data[[question_post]] %in% coding, na.rm = T)/length(which(!is.na(.data[[question_post]])))),
               n2 = length(which(!is.na(.data[[question_post]])))) %>%
-    mutate(question = str_remove(question_pre, "pre"))
+    dplyr::mutate(question = str_remove(question_pre, "pre"))
   
   n <- tibble(data1$n1,
               data1$n2) %>%
@@ -637,13 +634,13 @@ score_question_improved <- function(data, question_pre, question_post, coding) {
   coding_with_3 <- append(coding, 3)
   
   data2 <- data %>%
-    mutate(increase = 0) %>%
-    mutate(increase = case_when(.data[[question_pre]] %in% "3" & .data[[question_post]] %in% "3" ~ increase,
+    dplyr::mutate(increase = 0) %>%
+    dplyr::mutate(increase = case_when(.data[[question_pre]] %in% "3" & .data[[question_post]] %in% "3" ~ increase,
                                 .data[[question_pre]] %in% coding & .data[[question_post]] %in% coding ~ increase + 1,
                                 .data[[question_pre]] %!in% coding & .data[[question_post]] %in% coding_with_3 ~ increase + 1,
                                 .data[[question_pre]] %!in% coding & .data[[question_post]] %!in% coding ~ increase,
                                 .data[[question_pre]] %in% coding & .data[[question_post]] %!in% coding ~ increase)) %>%
-    summarise(percent_improve_sustain = 100 * sum(increase, na.rm = T)/n)
+    dplyr::summarise(percent_improve_sustain = 100 * sum(increase, na.rm = T)/n)
   
   data3 <- bind_cols(data1, data2)
   
@@ -672,12 +669,12 @@ score_question_mindsets <- function(data, question_pre, question_post, coding, n
   if (likert == 5) {
     if (coding == "positive") {
       score <- data %>%
-        mutate(score_pre = case_when(.data[[question_pre]] %in% "5" ~ 2,
+        dplyr::mutate(score_pre = case_when(.data[[question_pre]] %in% "5" ~ 2,
                                      .data[[question_pre]] %in% "4" ~ 2,
                                      .data[[question_pre]] %in% "3" ~ 1,
                                      .data[[question_pre]] %in% "2" ~ 0,
                                      .data[[question_pre]] %in% "1" ~ 0)) %>%
-        mutate(score_post = case_when(.data[[question_post]] %in% "5" ~ 2,
+        dplyr::mutate(score_post = case_when(.data[[question_post]] %in% "5" ~ 2,
                                       .data[[question_post]] %in% "4" ~ 2,
                                       .data[[question_post]] %in% "3" ~ 1,
                                       .data[[question_post]] %in% "2" ~ 0,
@@ -687,12 +684,12 @@ score_question_mindsets <- function(data, question_pre, question_post, coding, n
       colnames(score)[2] <- paste0("score_", question_post)
     } else if (coding == "negative") {
       score <- data %>%
-        mutate(score_pre = case_when(.data[[question_pre]] %in% "1" ~ 2,
+        dplyr::mutate(score_pre = case_when(.data[[question_pre]] %in% "1" ~ 2,
                                      .data[[question_pre]] %in% "2" ~ 2,
                                      .data[[question_pre]] %in% "3" ~ 1,
                                      .data[[question_pre]] %in% "4" ~ 0,
                                      .data[[question_pre]] %in% "5" ~ 0)) %>%
-        mutate(score_post = case_when(.data[[question_post]] %in% "1" ~ 2,
+        dplyr::mutate(score_post = case_when(.data[[question_post]] %in% "1" ~ 2,
                                       .data[[question_post]] %in% "2" ~ 2,
                                       .data[[question_post]] %in% "3" ~ 1,
                                       .data[[question_post]] %in% "4" ~ 0,
@@ -704,13 +701,13 @@ score_question_mindsets <- function(data, question_pre, question_post, coding, n
   } else if (likert == 6) {
     if (coding == "positive") {
       score <- data %>%
-        mutate(score_pre = case_when(.data[[question_pre]] %in% "6" ~ 2,
+        dplyr::mutate(score_pre = case_when(.data[[question_pre]] %in% "6" ~ 2,
                                      .data[[question_pre]] %in% "5" ~ 2,
                                      .data[[question_pre]] %in% "4" ~ 1,
                                      .data[[question_pre]] %in% "3" ~ 1,
                                      .data[[question_pre]] %in% "2" ~ 0,
                                      .data[[question_pre]] %in% "1" ~ 0)) %>%
-        mutate(score_post = case_when(.data[[question_post]] %in% "6" ~ 2,
+        dplyr::mutate(score_post = case_when(.data[[question_post]] %in% "6" ~ 2,
                                       .data[[question_post]] %in% "5" ~ 2,
                                       .data[[question_post]] %in% "4" ~ 1,
                                       .data[[question_post]] %in% "3" ~ 1,
@@ -721,13 +718,13 @@ score_question_mindsets <- function(data, question_pre, question_post, coding, n
       colnames(score)[2] <- paste0("score_", question_post)
     } else if (coding == "negative") {
       score <- data %>%
-        mutate(score_pre = case_when(.data[[question_pre]] %in% "1" ~ 2,
+        dplyr::mutate(score_pre = case_when(.data[[question_pre]] %in% "1" ~ 2,
                                      .data[[question_pre]] %in% "2" ~ 2,
                                      .data[[question_pre]] %in% "3" ~ 1,
                                      .data[[question_pre]] %in% "4" ~ 1,
                                      .data[[question_pre]] %in% "5" ~ 0,
                                      .data[[question_pre]] %in% "6" ~ 0)) %>%
-        mutate(score_post = case_when(.data[[question_post]] %in% "1" ~ 2,
+        dplyr::mutate(score_post = case_when(.data[[question_post]] %in% "1" ~ 2,
                                       .data[[question_post]] %in% "2" ~ 2,
                                       .data[[question_post]] %in% "3" ~ 1,
                                       .data[[question_post]] %in% "4" ~ 1,

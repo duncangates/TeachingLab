@@ -32,7 +32,8 @@ library(tidyverse)
 #                additional_comments = "This facilitator should be comfortable engaging in direct conversation about race, given that this has come up several times with this site in the past.")
 
 # data <- read_rds(here("Staffing/data.rds"))
-data <- read_rds(here("Data/new_data.rds")) %>%
+# SOULD BE new_data.rds
+data <- read_rds(here("Data/fake_data.rds")) %>%
   rename(pm = `PMs`) %>%
   rename(`curriculum` = Curriculum) %>%
   rename(`site` = Site) %>%
@@ -66,9 +67,10 @@ Hi `r glue::glue("{data$curriculum[1]}")` facilitators,
 
 If interested please select ALL the dates you would be able to facilitate!
 
-```{r echo = F}
-knitr::include_app("https://teachinglabhq.shinyapps.io/Survey/")
-```
+
+
+[Fill out the form here.](https://docs.google.com/forms/d/e/1FAIpQLSfCaemMwSksGmCXuc7WBOiK-OcjJYwyxd0Muugz8mCQlHz4xg/viewform?usp=sf_link)
+
 
 
 `r glue::glue("{data$pm[1]}")` will review facilitator availability on `r glue::glue("{data$response_time[1]}")` and reach out to you directly if you have been selected to facilitate or if he needs more information. Please respond to any communication within 48 hrs. to ensure timely staffing.
