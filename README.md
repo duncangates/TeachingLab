@@ -1,6 +1,12 @@
 # OfficialTeachingLab
 Official github for all Teaching Lab software development
 
+## Installation
+
+``` r
+devtools::install_github("https://github.com/duncangates/TeachingLab")
+```
+
 ## File organization will be as such
 
 - Analysis: All files for analysis of Teaching Lab work
