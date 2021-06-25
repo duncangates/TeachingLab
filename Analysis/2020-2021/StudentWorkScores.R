@@ -2,10 +2,18 @@ library(googlesheets4)
 library(tidyverse)
 library(TeachingLab)
 library(ggtext)
+library(gt)
 
 data <- read_sheet("https://docs.google.com/spreadsheets/d/1ZZnizhPVjL8BBenwAeSKcTU1GYKpZYdEUe_-95V5Ej0/edit#gid=239657167",
                    sheet = "Scoring2",
                    col_names = c("Link", "ID", "Score", "Name", "Prepost", "Grade", "Curriculum"))
+
+data_clean <- data %>% 
+  filter(!str_detect(Score, "No Response|Below|Not|N/A")) %>%
+  mutate(Score = as.numeric(as.character(Score))) %>%
+  drop_na(Score) %>%
+  select(-1) %>%
+  mutate(Name = unlist(Name))
 
 
 data_compare <- data %>% 

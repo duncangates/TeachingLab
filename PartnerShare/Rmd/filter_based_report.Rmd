@@ -19,7 +19,8 @@ output:
 library(knitr)
 library(rmdformats)
 library(glue)
-library(googlesheets4)
+library(gt)
+library(TeachingLab)
 
 if (params$year == "SY19-20") {
  data <- readxl::read_excel(here::here("Data/SY19-20/SY19-20 Fall-Spring Merged Dataset Update.xls")) 

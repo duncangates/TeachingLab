@@ -371,40 +371,6 @@ theme_irp <- function(base_family = "Roboto Condensed",
 }
 
 
-#' Teaching Lab Color Palette Maker
-#'
-#' @param palette choice of color palette
-#' @param theme if theme is light or dark
-#' @param n number of colors to generate
-#'
-#' @return color ramp palette function
-#' @export
-tl_palette <- function(color = c("blue", "orange", "purple", "green", "teal", "tl_colors"), theme = c("light", "dark"), n) {
-  base_color_start <- if (theme == "light") {
-    "#F7FBFD"
-  } else if (theme == "dark") {
-    "#040404"
-  }
-
-  if (color == "blue") {
-    col <- grDevices::colorRampPalette(c(base_color_start, "#00acf0"))
-  } else if (color == "green") {
-    col <- grDevices::colorRampPalette(c(base_color_start, "#43c6b9"))
-  } else if (color == "orange") {
-    col <- grDevices::colorRampPalette(c(base_color_start, "#ff7b43"))
-  } else if (color == "purple") {
-    col <- grDevices::colorRampPalette(c(base_color_start, "#d17df7"))
-  } else if (color == "teal") {
-    col <- grDevices::colorRampPalette(c(base_color_start, "#55bbc7"))
-  } else if (color == "tl_colors") {
-    col <- grDevices::colorRampPalette(c(base_color_start, "#55bbc7", "#43c6b9", "#ff7b43", "#d17df7", "#FCC2FF", "#FF6961"))
-  } else {
-    col <- grDevices::colorRampPalette(c(base_color_start, "#00acf0"))
-  }
-
-  col(n)
-}
-
 #' Create Teaching Lab theme to a gt table
 #'
 #' @param data An existing gt table object
@@ -426,14 +392,14 @@ gt_theme_tl <- function(data, all_caps = F, ...) {
     gt::tab_style(
       style = list(
         gt::cell_borders(
-          sides = "bottom", color = "transparent", weight = px(2)
+          sides = "bottom", color = "black", weight = px(2)
         )
       ),
       locations = gt::cells_body(
-        columns = TRUE,
+        columns = everything(),
         # This is a relatively sneaky way of changing the bottom border
         # Regardless of data size
-        rows = nrow(data$`_data`)
+        rows = nrow(data)
       )
     ) %>%
     # Set Table Text Size
@@ -445,8 +411,8 @@ gt_theme_tl <- function(data, all_caps = F, ...) {
         )
       ),
       locations = gt::cells_body(
-        columns = T,
-        rows = T
+        columns = everything(),
+        rows = everything()
       )
     ) %>%
     gt::tab_options(
@@ -479,7 +445,7 @@ gt_theme_tl <- function(data, all_caps = F, ...) {
     )
 }
 
-#' Calculate nps score
+#' @title Calculate nps score
 #'
 #' @param x A vector of nps scores
 #' @return Returns the nps score
@@ -490,8 +456,10 @@ calc_nps <- function(x) {
   return(nps)
 }
 
-#' Find elements x not in a vector y
+#' @title Find elements x not in a vector y
 #'
+#' @name notin
+#' @aliases notin
 #' @param x A vector of what shouldn't exist
 #' @param y A vector to check against
 #' @return Returns elements not in vector

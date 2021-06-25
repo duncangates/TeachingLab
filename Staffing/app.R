@@ -16,7 +16,7 @@ bs4DashTheme <- create_theme(
 ui <- bs4DashPage(
   enable_preloader = T,
   use_googlefont("Calibri"),
-  title = "Teaching Lab Payment Calculator",
+  title = "Teaching Lab Staffing Site",
   navbar = bs4DashNavbar(
     skin = "light",
     status = "olive"
@@ -57,15 +57,15 @@ ui <- bs4DashPage(
               tags$head(tags$style(HTML(".selectize-input {height: 40px; width: 400px; font-size: 17px; margin-top: 20px;}"))),
               tags$div(
                 class = "inline",
-                shiny::selectInput("pm", label = h5("PM", style = "font-weight:bold;font-size: 20px;"),
+                shiny::selectInput("pm", label = h5(labelMandatory("PM"), style = "font-weight:bold;font-size: 20px;"),
                             choices = purrr::prepend(PMs$PMs, "")),
-                selectInput("curriculum", label = h5("Curriculum", style = "font-weight:bold;font-size: 20px;"),
+                selectInput("curriculum", label = h5(labelMandatory("Curriculum"), style = "font-weight:bold;font-size: 20px;"),
                             choices = c("", "EL", "State Level", "IM", "Engage/Eureka", "Zearn", "Guidebooks", "Science")),
-                selectInput("site", label = h5("Site ", style = "font-weight:bold;font-size: 20px;"),
+                selectInput("site", label = h5(labelMandatory("Site "), style = "font-weight:bold;font-size: 20px;"),
                             choices = purrr::prepend(Sites$Site, "")),
-                selectInput("content", label = h5("Content ", style = "font-weight:bold;font-size: 20px;"),
+                selectInput("content", label = h5(labelMandatory("Content "), style = "font-weight:bold;font-size: 20px;"),
                             choices = purrr::prepend(Courses$Courses, "")),
-                selectizeInput("calls_count", label = h5("# of Calls ", style = "font-weight:bold;font-size: 20px;"),
+                selectizeInput("calls_count", label = h5(labelMandatory("# of Calls "), style = "font-weight:bold;font-size: 20px;"),
                             choices = c(0:10), selected = 0),
                 uiOutput("specific_yes")
               )
@@ -125,6 +125,21 @@ ui <- bs4DashPage(
 )
 server <- function(input, output, session) {
   
+  # Enable the Submit button when all mandatory fields are filled out
+  observe({
+    mandatoryFilled <-
+      vapply(fieldsMandatory,
+             function(x) {
+               !is.null(input[[x]]) && input[[x]] != "" && input[[x]] != 0
+               length(input[["specific_facilitator"]]) > 0
+             },
+             logical(1))
+    mandatoryFilled <- all(mandatoryFilled)
+    
+    shinyjs::toggleState(id = "submit", condition = mandatoryFilled)
+  })
+  
+  # Create dropdown with facilitators who should be emailed
   output$specific_yes <- renderUI({
     req(input$curriculum)
     shinyWidgets::pickerInput("specific_facilitator", 
@@ -143,6 +158,7 @@ server <- function(input, output, session) {
                               )
   })
   
+  # Generate call times selection
   output$call_times_gen <- renderUI({
     
     req(input$site)
@@ -178,14 +194,15 @@ server <- function(input, output, session) {
   })
   
   # Restrict submit until there is at least one time entered
-  observeEvent(input$calls_count, {
-    if (input$calls_count < 1) {
-      shinyjs::disable("submit")
-    } else {
-      shinyjs::enable("submit")
-    }
-  })
+  # observeEvent(input$calls_count, {
+  #   if (input$calls_count < 1) {
+  #     shinyjs::disable("submit")
+  #   } else {
+  #     shinyjs::enable("submit")
+  #   }
+  # })
   
+  # Track new line of submitted data
   new_data <- reactive({
     # Create new data
     if (input$calls_count > 0) {
