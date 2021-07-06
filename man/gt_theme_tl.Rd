@@ -9,11 +9,16 @@ gt_theme_tl(data, all_caps = F, ...)
 \arguments{
 \item{data}{An existing gt table object}
 
+\item{all_caps}{Whether or not to capitalize titles}
+
 \item{...}{Optional additional arguments to gt::table_options()}
 }
 \value{
-Returns a tibble
+Creates a gt theme as a pipeable function
 }
 \description{
 Create Teaching Lab theme to a gt table
+}
+\examples{
+mtcars \%>\% head() \%>\% gt::gt() \%>\% TeachingLab::gt_theme_tl()
 }

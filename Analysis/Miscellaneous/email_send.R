@@ -2,14 +2,13 @@ library(blastula)
 library(glue)
 
 # Fake data for test emails
-# data <- read_rds(here("Staffing/data.rds"))
-data <- read_rds(here("Data/new_data.rds"))
+data <- read_rds("Data/new_data.rds")
 
 # here("Rmd") %>% dir() %>% print()
 
 # Create rmd to be sent
 my_email_object <- render_email(
-  input = here("Rmd/email.rmd"),
+  input = "Rmd/email.rmd",
   output_options = list(
     runtime = "shiny"
   )
@@ -36,5 +35,5 @@ my_email_object %>%
     to = email,
     from = "staffing@teachinglab.org",
     subject = subject,
-    credentials = creds_file(here("email_creds_staffing"))
+    credentials = creds_file("email_creds_staffing")
   )

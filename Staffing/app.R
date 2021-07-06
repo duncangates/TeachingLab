@@ -1,4 +1,11 @@
 source("global.R", local = T)
+source("sheet_read.R")
+
+# Read in necessary data
+PMs <- read_rds("Data/PMs.rds")
+Courses <- read_rds("Data/Courses.rds")
+Facilitators_Emails <- read_rds("Data/Facilitators.rds")
+Sites <- read_rds("Data/Sites.rds")
 
 # Organize rows as facilitator observation
 # Columns as dates
@@ -106,7 +113,7 @@ ui <- bs4DashPage(
                 shinyWidgets::numericInputIcon("tech_facilitators_needed", label = "# of Tech/Support Facilitators Needed", value = 1, step = 1, min = 0),
                 airDatepickerInput("response_needed",
                           "What date do you need responses sent by?",
-                          value = Sys.Date(),
+                          value = Sys.Date() + 1,
                           multiple = F)
               ),
               br(),
@@ -145,10 +152,9 @@ server <- function(input, output, session) {
     shinyWidgets::pickerInput("specific_facilitator", 
                               label = "Select the facilitators you would like to email:", 
                               choices = Facilitators_Emails %>%
-                                drop_na(Name) %>%
                                 pivot_longer(!c(1, 2), names_to = "Curriculum") %>% 
                                 filter(Curriculum == input$curriculum & value == 1) %>% 
-                                select(Name) %>% 
+                                select(Facilitators) %>% 
                                 arrange(),
                               multiple = T,
                               width = "400px",
@@ -215,20 +221,28 @@ server <- function(input, output, session) {
         `Response Time` = as.character(input$response_needed),
         `Lead Facilitators` = as.character(input$lead_facilitators_needed),
         `Tech Facilitators` = as.character(input$tech_facilitators_needed),
-        `Additional Comments` = input$additional_info
+        `Additional Comments` = input$additional_info,
+        ID = ids::random_id(n = 1),
+        Emails = Facilitators_Emails %>%
+          filter(Facilitators %in% input$specific_facilitator) %>% 
+          pull(Emails) %>%
+          paste(collapse = ", "),
+        Names = Facilitators_Emails %>%
+          filter(Facilitators %in% input$specific_facilitator) %>% 
+          pull(Facilitators) %>%
+          paste(collapse = ", ")
       )
       print(new_data)
       # print(new_data$`Call Times`)
     }
   })
   
-  observeEvent(input$submit, {
-    # Write to data
-    write_rds(new_data(), here("Data/new_data.rds"))
-  })
-  
   # Create action for submit button
   observeEvent(input$submit, {
+    
+    # Write New RDS first
+    write_rds(new_data(), "Data/new_data.rds")
+    
     # Write to sheet
     source("sheet_write.R")
 

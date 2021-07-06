@@ -4,7 +4,13 @@
 \alias{score_question_improved}
 \title{Does something}
 \usage{
-score_question_improved(data, question_pre, question_post, coding)
+score_question_improved(
+  data,
+  question_pre,
+  question_post,
+  coding,
+  middle_value
+)
 }
 \arguments{
 \item{data}{the dataframe to be analyzed}

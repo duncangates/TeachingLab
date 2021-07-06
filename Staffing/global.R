@@ -12,11 +12,9 @@ library(googledrive)
 library(here)
 library(lubridate)
 
-# write_rds(PMs, here("Staffing/Data/PMs.rds")) # Format for adding to these
-PMs <- read_rds(here("Data/PMs.rds"))
-Courses <- read_rds(here("Data/Courses.rds"))
-Facilitators_Emails <- read_rds(here("Data/Facilitators.rds"))
-Sites <- read_rds(here("Data/Sites.rds"))
+# Immediately set authorization for google drive
+drive_auth(path = here("Data/thermal-cathode-310719-1445194b99c7.json"))
+gs4_auth(token = drive_token()) # REMEMBER YOU JUST CHANGED THIS
 
 # add an asterisk to an input label
 labelMandatory <- function(label) {

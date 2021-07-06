@@ -10,7 +10,7 @@ options(httr_oob_default = TRUE,
 # token <- read_rds(here::here("Tokens/gs4_token.rds"))
 
 # Authorize google drive
-drive_auth(path = here("Data/thermal-cathode-310719-1445194b99c7.json"))
+drive_auth(path = "Data/thermal-cathode-310719-1445194b99c7.json")
 gs4_auth(token = drive_token()) # REMEMBER YOU JUST CHANGED THIS
 
 # Register sheet

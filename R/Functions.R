@@ -374,10 +374,14 @@ theme_irp <- function(base_family = "Roboto Condensed",
 #' Create Teaching Lab theme to a gt table
 #'
 #' @param data An existing gt table object
+#' @param all_caps Whether or not to capitalize titles
 #' @param ... Optional additional arguments to gt::table_options()
-#' @return Returns a tibble
+#' @return Creates a gt theme as a pipeable function
 #' @importFrom dplyr %>%
 #' @import gt
+#' 
+#' @examples 
+#' mtcars %>% head() %>% gt::gt() %>% TeachingLab::gt_theme_tl()
 #' @export
 
 gt_theme_tl <- function(data, all_caps = F, ...) {
@@ -389,19 +393,19 @@ gt_theme_tl <- function(data, all_caps = F, ...) {
         gt::default_fonts()
       )
     ) %>%
-    gt::tab_style(
-      style = list(
-        gt::cell_borders(
-          sides = "bottom", color = "black", weight = px(2)
-        )
-      ),
-      locations = gt::cells_body(
-        columns = everything(),
-        # This is a relatively sneaky way of changing the bottom border
-        # Regardless of data size
-        rows = nrow(data)
-      )
-    ) %>%
+    # gt::tab_style(
+    #   style = list(
+    #     gt::cell_borders(
+    #       sides = "bottom", color = "black", weight = px(2)
+    #     )
+    #   ),
+    #   locations = gt::cells_body(
+    #     columns = everything(),
+    #     # This is a relatively sneaky way of changing the bottom border
+    #     # Regardless of data size
+    #     rows = nrow(data)
+    #   )
+    # ) %>%
     # Set Table Text Size
     gt::tab_style(
       style = list(
@@ -415,6 +419,8 @@ gt_theme_tl <- function(data, all_caps = F, ...) {
         rows = everything()
       )
     ) %>%
+    # Set default to center align everything
+    cols_align(align = "center") %>%
     gt::tab_options(
       column_labels.background.color = "white",
       table.border.top.width = px(3),
@@ -429,7 +435,7 @@ gt_theme_tl <- function(data, all_caps = F, ...) {
       table.border.bottom.color = "black",
       table.border.bottom.width = px(3),
       column_labels.border.top.width = px(3),
-      column_labels.border.top.color = "transparent",
+      column_labels.border.top.color = "black",
       column_labels.border.bottom.width = px(3),
       column_labels.border.bottom.color = "black",
       column_labels.border.lr.color = "black",
@@ -584,7 +590,7 @@ score_question_number <- function(data, question_pre, question_post, coding, lik
 #' @return Returns a dataframe with the percent, correct, number of non-na responses, the question itself, and the percent that sustained/improved
 #' @export
 
-score_question_improved <- function(data, question_pre, question_post, coding) {
+score_question_improved <- function(data, question_pre, question_post, coding, middle_value) {
   
   data1 <- data %>%
     dplyr::summarise(pre_percent = 100* (sum(.data[[question_pre]] %in% coding, na.rm = T)/length(which(!is.na(.data[[question_pre]])))),
@@ -599,11 +605,11 @@ score_question_improved <- function(data, question_pre, question_post, coding) {
     filter(value == min(value)) %>%
     pull(value)
   
-  coding_with_3 <- append(coding, 3)
+  coding_with_3 <- append(coding, middle_value)
   
   data2 <- data %>%
     dplyr::mutate(increase = 0) %>%
-    dplyr::mutate(increase = case_when(.data[[question_pre]] %in% "3" & .data[[question_post]] %in% "3" ~ increase,
+    dplyr::mutate(increase = case_when(.data[[question_pre]] %in% middle_value & .data[[question_post]] %in% middle_value ~ increase,
                                 .data[[question_pre]] %in% coding & .data[[question_post]] %in% coding ~ increase + 1,
                                 .data[[question_pre]] %!in% coding & .data[[question_post]] %in% coding_with_3 ~ increase + 1,
                                 .data[[question_pre]] %!in% coding & .data[[question_post]] %!in% coding ~ increase,
