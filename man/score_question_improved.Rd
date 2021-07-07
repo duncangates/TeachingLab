@@ -2,7 +2,7 @@
 % Please edit documentation in R/Functions.R
 \name{score_question_improved}
 \alias{score_question_improved}
-\title{Does something}
+\title{Scores pre and post and percent improved/sustained}
 \usage{
 score_question_improved(
   data,

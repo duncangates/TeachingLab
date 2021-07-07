@@ -579,7 +579,7 @@ score_question_number <- function(data, question_pre, question_post, coding, lik
   
 }
 
-#' @title Does something
+#' @title Scores pre and post and percent improved/sustained
 #' @description Calculate percentage of a pre question (column) and post question (column) in data (data) 
 #' that is in the right answer (coding). 
 #'
@@ -652,10 +652,7 @@ score_question_mindsets <- function(data, question_pre, question_post, coding, n
                                       .data[[question_post]] %in% "4" ~ 2,
                                       .data[[question_post]] %in% "3" ~ 1,
                                       .data[[question_post]] %in% "2" ~ 0,
-                                      .data[[question_post]] %in% "1" ~ 0)) %>%
-        select(score_pre, score_post)
-      colnames(score)[1] <- paste0("score_", question_pre)
-      colnames(score)[2] <- paste0("score_", question_post)
+                                      .data[[question_post]] %in% "1" ~ 0))
     } else if (coding == "negative") {
       score <- data %>%
         dplyr::mutate(score_pre = case_when(.data[[question_pre]] %in% "1" ~ 2,
@@ -667,10 +664,7 @@ score_question_mindsets <- function(data, question_pre, question_post, coding, n
                                       .data[[question_post]] %in% "2" ~ 2,
                                       .data[[question_post]] %in% "3" ~ 1,
                                       .data[[question_post]] %in% "4" ~ 0,
-                                      .data[[question_post]] %in% "5" ~ 0)) %>%
-        select(score_pre, score_post)
-      colnames(score)[1] <- paste0("score_", question_pre)
-      colnames(score)[2] <- paste0("score_", question_post)
+                                      .data[[question_post]] %in% "5" ~ 0))
     }
   } else if (likert == 6) {
     if (coding == "positive") {
@@ -686,10 +680,7 @@ score_question_mindsets <- function(data, question_pre, question_post, coding, n
                                       .data[[question_post]] %in% "4" ~ 1,
                                       .data[[question_post]] %in% "3" ~ 1,
                                       .data[[question_post]] %in% "2" ~ 0,
-                                      .data[[question_post]] %in% "1" ~ 0)) %>%
-        select(score_pre, score_post)
-      colnames(score)[1] <- paste0("score_", question_pre)
-      colnames(score)[2] <- paste0("score_", question_post)
+                                      .data[[question_post]] %in% "1" ~ 0))
     } else if (coding == "negative") {
       score <- data %>%
         dplyr::mutate(score_pre = case_when(.data[[question_pre]] %in% "1" ~ 2,
@@ -703,15 +694,86 @@ score_question_mindsets <- function(data, question_pre, question_post, coding, n
                                       .data[[question_post]] %in% "3" ~ 1,
                                       .data[[question_post]] %in% "4" ~ 1,
                                       .data[[question_post]] %in% "5" ~ 0,
-                                      .data[[question_post]] %in% "6" ~ 0)) %>%
-        select(score_pre, score_post)
-      colnames(score)[1] <- paste0("score_", question_pre)
-      colnames(score)[2] <- paste0("score_", question_post)
+                                      .data[[question_post]] %in% "6" ~ 0))
     }
   }
   
   
-  score
+  score_pre <- score %>%
+    drop_na(score_pre) %>%
+    summarise(
+      score_pre = (sum(score_pre, na.rm = T)/(n()*2))*100,
+      n1 = n()
+    )
+  score_post <- score %>%
+    drop_na(score_post) %>%
+    summarise(
+      score_post = (sum(score_post, na.rm = T)/(n()*2))*100,
+      n2 = n()
+      )
+  final_score <- bind_cols(score_pre, score_post)
+  
+  final_score
+  
+}
+
+#' @title Mindsets scoring 
+#' @description Calculate percentage correct for mindsets & expectations for just pre or post
+#'
+#' @param data the dataframe to be analyzed
+#' @param question the initial column to be selected
+#' @param coding the coding to check for
+#' @return Returns a dataframe with the percent, correct, number of non-na responses, the question itself, and the percent that sustained/improved
+#' @export
+
+score_one_question_mindsets <- function(data, question, coding, na_remove = F, likert = c(5, 6)) {
+  
+  if (na_remove == T) {
+    data <- data %>%
+      # Select only observations that have no NAs
+      drop_na(.data[[question]])
+  }
+  
+  if (likert == 5) {
+    if (coding == "positive") {
+      score <- data %>%
+        dplyr::mutate(score = case_when(.data[[question]] %in% "5" ~ 2,
+                                            .data[[question]] %in% "4" ~ 2,
+                                            .data[[question]] %in% "3" ~ 1,
+                                            .data[[question]] %in% "2" ~ 0,
+                                            .data[[question]] %in% "1" ~ 0))
+    } else if (coding == "negative") {
+      score <- data %>%
+        dplyr::mutate(score = case_when(.data[[question]] %in% "1" ~ 2,
+                                            .data[[question]] %in% "2" ~ 2,
+                                            .data[[question]] %in% "3" ~ 1,
+                                            .data[[question]] %in% "4" ~ 0,
+                                            .data[[question]] %in% "5" ~ 0))
+    }
+  } else if (likert == 6) {
+    if (coding == "positive") {
+      score <- data %>%
+        dplyr::mutate(score = case_when(.data[[question]] %in% "6" ~ 2,
+                                            .data[[question]] %in% "5" ~ 2,
+                                            .data[[question]] %in% "4" ~ 1,
+                                            .data[[question]] %in% "3" ~ 1,
+                                            .data[[question]] %in% "2" ~ 0,
+                                            .data[[question]] %in% "1" ~ 0))
+    } else if (coding == "negative") {
+      score <- data %>%
+        dplyr::mutate(score = case_when(.data[[question]] %in% "1" ~ 2,
+                                            .data[[question]] %in% "2" ~ 2,
+                                            .data[[question]] %in% "3" ~ 1,
+                                            .data[[question]] %in% "4" ~ 1,
+                                            .data[[question]] %in% "5" ~ 0,
+                                            .data[[question]] %in% "6" ~ 0))
+    }
+  }
+  
+  
+  score %>%
+    summarise(score = (sum(score)/(n()*2))*100,
+              n = n())
   
 }
 
