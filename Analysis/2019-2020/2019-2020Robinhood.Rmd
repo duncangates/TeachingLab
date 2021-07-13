@@ -21,8 +21,8 @@ library(tidyverse)
 library(here)
 library(gt)
 
-og_df <- read_excel(here("Data/SY19-20 Fall Spring merged.xlsx"))
-second_df <- read_excel(here("Data/SY19-20 Fall-Spring Merged Dataset Update.xls"))
+og_df <- read_excel(here("Data/SY19-20/SY19-20 Fall Spring merged.xlsx"))
+second_df <- read_excel(here("Data/SY19-20/SY19-20 Fall-Spring Merged Dataset Update.xls"))
 ```
 
 ```{r echo = F}
@@ -706,6 +706,32 @@ joined_increase <- left_join(fall_join, spring_join, by = "id") %>%
 
 # Tibble Making
 
+
+```{r}
+both_culture <- tibble(
+  ed_fall = c(63,83,72,33),
+  ed_spring = c(78,89,83,61),
+  increase = c(15,6,11,28),
+  percent_improve = c(78,89,83,61)
+)
+
+
+bennington_culture <- tibble(
+  ed_fall = c(56,75,67,25),
+  ed_spring = c(81,92,83,67),
+  increase = c(25,17,17,42),
+  percent_improve = c(654,61,56,44)
+)
+
+steam_culture <- tibble(
+  ed_fall = c(78,100,83,50),
+  ed_spring = c(72,83,83,50),
+  increase = c(-5,-17,0,0),
+  percent_improve = c(24,28,28,17)
+)
+
+```
+
 ```{r tibbles}
 mindsets <- tibble(
   ed = c(82,96,50,68,82,97,67,66),
@@ -735,29 +761,6 @@ mindsets_segments <- tibble(
   text_spring = c(98,67,65.5),
   size = c(0.4, 0.4, 0.4)
 )
-
-both_culture <- tibble(
-  ed_fall = c(63,83,72,33),
-  ed_spring = c(78,89,83,61),
-  increase = c(15,6,11,28),
-  percent_improve = c(78,89,83,61)
-)
-
-
-bennington_culture <- tibble(
-  ed_fall = c(56,75,67,25),
-  ed_spring = c(81,92,83,67),
-  increase = c(25,17,17,42),
-  percent_improve = c(654,61,56,44)
-)
-
-steam_culture <- tibble(
-  ed_fall = c(78,100,83,50),
-  ed_spring = c(72,83,83,50),
-  increase = c(-5,-17,0,0),
-  percent_improve = c(24,28,28,17)
-)
-
 ```
 
 # Graph making
@@ -789,6 +792,65 @@ ggplot() +
         axis.text.x = element_markdown(size = 14))
 
 ggsave(here("Images/mindsets_expecations_increase.png"), width = 12.5)
+
+```
+
+```{r ggplots1-3}
+mindsets <- tibble(
+  ed = c(82,96,50,68,82,92,94,71),
+  season = c(rep("Fall", 4), rep("Spring", 4)),
+  obs = c("Average", "Growth Mindsets", "**High Expectations<br>(Scaffolding)**", "High Expectations<br>and Beliefs",
+          "Average", "Growth Mindsets", "**High Expectations<br>(Scaffolding)**", "High Expectations<br>and Beliefs")
+  # increase = c(4,2,19,-8),
+  # percent_improve = c(62,89,53,44)
+)
+
+mindsets_text <- tibble(
+  x = c(82,96,50,68),
+  xend = c(82,92,94,71),
+  y = c("Average", "Growth Mindsets", "**High Expectations<br>(Scaffolding)**", "High Expectations<br>and Beliefs"),
+  yend = c("Average", "Growth Mindsets", "**High Expectations<br>(Scaffolding)**", "High Expectations<br>and Beliefs"),
+  text_fall = c(80.5,95,50,68.5),
+  text_spring = c(83.5,92,94,71),
+  size = c(0, 0.4, 0.4, 0.4)
+)
+
+mindsets_segments <- tibble(
+  x = c(96,50,68),
+  xend = c(92,94,71),
+  y = c("Growth Mindsets", "**High Expectations<br>(Scaffolding)**", "High Expectations<br>and Beliefs"),
+  yend = c("Growth Mindsets", "**High Expectations<br>(Scaffolding)**", "High Expectations<br>and Beliefs"),
+  text_fall = c(95,50,68.5),
+  text_spring = c(92,94,71),
+  size = c(0.4, 0.4, 0.4)
+)
+
+library(scales)
+library(ggtext)
+mindsets$obs <- factor(mindsets$obs, levels = c("**High Expectations<br>(Scaffolding)**", "High Expectations<br>and Beliefs", "Growth Mindsets", "Average"))
+ggplot() +
+  geom_point(data = mindsets, mapping = aes(color = season, x = ed, y = obs, size = ed), alpha = 0.75) +
+  geom_segment(data = mindsets_segments, mapping = aes(x = x, xend = xend, y = y, yend = yend, size = size), 
+               color = "black", arrow = arrow(length = unit(0.1, "inches")), size = 0.4) +
+  geom_richtext(data = mindsets_text, fill = NA, label.color = NA,
+                aes(x = text_fall, y = y, label = paste0(x, "%")), 
+                color = "#ff7b43", vjust = -0.5, size = 4.85) +
+  geom_richtext(data = mindsets_text, fill = NA, label.color = NA,
+                aes(x = text_spring, y = y, label = paste0(xend, "%")), 
+                color = "#00acf0", vjust = -0.5, size = 4.85) +
+  scale_color_manual(values = c("#ff7b43", "#00acf0")) +
+  scale_x_continuous(labels = scales::percent_format(scale = 1), breaks = scales::pretty_breaks(n = 5)) +
+  labs(x = NULL, y = NULL,
+       title = "Educators' Average Scores on Growth Mindsets and High Expectations<br>on <span style = 'color:#ff7b43;'>First</span> and <span style = 'color:#00acf0;'>Third</span> Surveys") +
+  theme_bw() +
+  theme(panel.border = element_blank(),
+        legend.position = "none",
+        plot.title = element_markdown(hjust = 0.5, family = "Fira Sans", size = 20, lineheight = 1.15),
+        text = element_text(family = "Open Sans"),
+        axis.text.y = element_markdown(hjust = 0.5, lineheight = 1.1, size = 14),
+        axis.text.x = element_markdown(size = 14))
+
+ggsave(here("Images/2020-2021/Robinhood/mindsets_first_to_third.png"), width = 12.5, height = 8)
 
 ```
 

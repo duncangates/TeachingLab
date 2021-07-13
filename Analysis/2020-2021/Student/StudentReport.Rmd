@@ -9,6 +9,7 @@ output:
 ```{r setup, include=FALSE}
 library(knitr)
 library(TeachingLab)
+
 ## Global options
 options(max.print="75")
 opts_chunk$set(echo=FALSE,
@@ -17,14 +18,14 @@ opts_chunk$set(echo=FALSE,
                tidy=TRUE,
                comment=NA,
                message=FALSE,
-               warning=FALSE)
+               warning=FALSE,
+               fig.align = "center")
 opts_knit$set(width=75)
 ```
 
 ```{r}
 library(googlesheets4)
 library(tidyverse)
-library(TeachingLab)
 library(ggtext)
 library(gt)
 library(here)
@@ -34,7 +35,7 @@ data <- read_sheet("https://docs.google.com/spreadsheets/d/1ZZnizhPVjL8BBenwAeSK
                    col_names = c("Link", "ID", "Score", "Name", "Prepost", "Grade", "Curriculum"))
 
 data_clean <- data %>% 
-  filter(!str_detect(Score, "No Response|NULL|Not|No response")) %>%
+  filter(!str_detect(Score, "No")) %>%
   # mutate(Score = as.numeric(as.character(Score))) %>%
   # drop_na(Score) %>%
   select(-1) %>%
@@ -47,168 +48,63 @@ As a brief introduction we provide the following tables that summarise the data:
 
 ### Table 1: N Sizes
 
-```{r fig.width = "100px"}
+```{r out.width = "200px"}
 knitr::include_graphics(path = here::here("Images/StudentWork/2020-2021/Table1.png"))
 ```
 
 ### TABLE 2 % ON GRADE LEVEL CREATION
 
-```{r fig.width = 6, fig.height = 6}
-gt2 <- data_clean %>%
-  group_by(Curriculum, Prepost) %>%
-  summarise(Percent = round((n() - sum(Score == "Below grade-level"))/n(), 2)) %>%
-  mutate(Prepost = str_replace_all(Prepost, c("Pre" = "Fall", "Post" = "Spring"))) %>%
-  pivot_wider(names_from = "Prepost", values_from = "Percent", names_sort = T) %>%
-  ungroup()
-
-gt2 %>%
-  gt(rowname_col = "Curriculum") %>%
-  fmt_percent(
-    columns = c(Spring, Fall),
-    scale_values = T,
-    decimals = 0
-  ) %>%
-  data_color(
-    columns = c(Spring),
-    colors = scales::col_numeric(
-      palette = paletteer::paletteer_d(
-        palette = "ggsci::blue_material"
-      ) %>% as.character(),
-      domain = NULL
-    )
-  ) %>%
-  tab_source_note(source_note = "Fall ELA n = 68, Spring ELA n = 22, Fall Math n = 30, Spring Math n = 14") %>%
-  tab_header(title = "\U1F605    Table 2: % On-grade Level Tasks    \U1F605") %>%
-  gt_theme_tl(all_caps = T) %>%
-  gtsave(here::here("Images/StudentWork/2020-2021/Table2.png"))
+```{r}
+knitr::include_graphics(here::here("Images/StudentWork/2020-2021/Table2.png"))
 ```
 
 ### TABLE 3 AVERAGE SCORE (ALL)
 
-```{r fig.width = 6, fig.height = 6}
-gt3 <- data_clean %>%
-  mutate(Score = as.numeric(unlist(Score))) %>%
-  mutate(Score = replace_na(Score, 0)) %>%
-  group_by(Curriculum, Prepost) %>%
-  summarise(Score = round(mean(Score), 2)) %>%
-  mutate(Prepost = str_replace_all(Prepost, c("Pre" = "Fall", "Post" = "Spring"))) %>%
-  pivot_wider(names_from = "Prepost", values_from = "Score", names_sort = T) %>%
-  ungroup()
-
-gt3 %>%
-  gt(rowname_col = "Curriculum") %>%
-  tab_header(title = "\U1F605    Table 3: Average Score (All)     \U1F605") %>%
-  data_color(
-    columns = c(Spring),
-    colors = scales::col_numeric(
-      palette = paletteer::paletteer_d(
-        palette = "ggsci::blue_material"
-      ) %>% as.character(),
-      domain = NULL
-    )
-  ) %>%
-  tab_source_note(source_note = "Fall ELA n = 68, Spring ELA n = 22, Fall Math n = 30, Spring Math n = 14") %>%
-  gt_theme_tl(all_caps = T) %>%
-  gtsave(here::here("Images/StudentWork/2020-2021/Table3.png"))
+```{r}
+knitr::include_graphics(here::here("Images/StudentWork/2020-2021/Table3.png"))
 ```
 
 ### TABLE 4 AVERAGE SCORE (MATCHED)
 
-```{r fig.width = 6, fig.height = 6}
-gt4 <- data_clean %>%
-  mutate(Score = as.numeric(unlist(Score))) %>%
-  mutate(Score = replace_na(Score, 0)) %>%
-  group_by(ID) %>% 
-  filter(n() > 1) %>% 
-  ungroup() %>%
-  mutate(Score = unlist(Score)) %>%
-  group_by(Curriculum, Prepost) %>%
-  summarise(Score = round(mean(Score), 2)) %>%
-  mutate(Prepost = str_replace_all(Prepost, c("Pre" = "Fall", "Post" = "Spring"))) %>%
-  pivot_wider(names_from = "Prepost", values_from = "Score", names_sort = T) %>%
-  ungroup() %>%
-  mutate(across(c(2), ~ if_else(.x == 2, 0, .x))) %>%
-  mutate(Spring = replace_na(Spring, 2))
-
-gt4 %>%
-  gt(rowname_col = "Curriculum") %>%
-  tab_header(title = "\U1F605    Table 4: Average Score (Matched)    \U1F605") %>%
-  tab_footnote(
-    footnote = "n = 5",
-    locations = cells_body(
-      columns = c(Fall, Spring),
-      rows = c(2)
-    )
-  ) %>%
-  tab_footnote(
-    footnote = "n = 18",
-    locations = cells_body(
-      columns = c(Fall, Spring),
-      rows = c(1)
-    )
-  ) %>%
-  data_color(
-    columns = c(Spring),
-    colors = scales::col_numeric(
-      palette = paletteer::paletteer_d(
-        palette = "ggsci::blue_material"
-      ) %>% as.character(),
-      domain = NULL
-    )
-  ) %>%
-  gt_theme_tl(all_caps = T) %>%
-  gtsave(here::here("Images/StudentWork/2020-2021/Table4.png"))
+```{r}
+knitr::include_graphics(here::here("Images/StudentWork/2020-2021/Table4.png"))
 ```
 
 ### TABLE 5 AVERAGE SCORE (% WHO SCORE 2)
 
-```{r fig.width = 6, fig.height = 6}
-gt5 <- data_clean %>%
-  mutate(Score = as.numeric(unlist(Score))) %>%
-  mutate(Score = replace_na(Score, 0)) %>%
-  group_by(Curriculum, Prepost) %>%
-  summarise(Score = round(sum(Score == 2)/n(), 2)) %>%
-  mutate(Prepost = str_replace_all(Prepost, c("Pre" = "Fall", "Post" = "Spring"))) %>%
-  pivot_wider(names_from = "Prepost", values_from = "Score", names_sort = T) %>%
-  ungroup()
-
-gt5 %>%
-  gt(rowname_col = "Curriculum") %>%
-  tab_header(title = "\U1F605    Table 5: % Who Score a 2 (All)    \U1F605") %>%
-  data_color(
-    columns = c(Spring),
-    colors = scales::col_numeric(
-      palette = paletteer::paletteer_d(
-        palette = "ggsci::blue_material"
-      ) %>% as.character(),
-      domain = NULL
-    )
-  ) %>%
-  tab_source_note(source_note = "Fall ELA n = 68, Spring ELA n = 22, Fall Math n = 30, Spring Math n = 14") %>%
-  gt_theme_tl(all_caps = T) %>%
-  gtsave(here::here("Images/StudentWork/2020-2021/Table5.png"))
+```{r}
+knitr::include_graphics(here::here("Images/StudentWork/2020-2021/Table5.png"))
 ```
 
 ### TABLE 6 AVERAGE SCORE (% WHO SCORE 2 MATCHED)
 
-```{r fig.width = 6, fig.height = 6}
-gt6 <- data_clean %>%
-  mutate(Score = as.numeric(unlist(Score))) %>%
+```{r}
+knitr::include_graphics(here::here("Images/StudentWork/2020-2021/Table6.png"))
+```
+
+### Table 7: Scores that moved out of 0, Percent that Improved/Sustained
+
+```{r}
+gt7 <- data_clean %>%
+  mutate(Score = as.numeric(unlist(as.character(Score)))) %>%
   mutate(Score = replace_na(Score, 0)) %>%
   group_by(ID) %>% 
-  filter(n() > 1) %>% 
+  filter(n() > 1) %>%
   ungroup() %>%
-  group_by(Curriculum, Prepost) %>%
-  summarise(Score = round(sum(Score == 2)/n(), 2)) %>%
-  mutate(Prepost = str_replace_all(Prepost, c("Pre" = "Fall", "Post" = "Spring"))) %>%
-  pivot_wider(names_from = "Prepost", values_from = "Score", names_sort = T) %>%
-  ungroup()
+  # summarise(Score = round(sum(Score == 2)/n(), 2)) %>%
+  # mutate(Prepost = str_replace_all(Prepost, c("Pre" = "Fall", "Post" = "Spring"))) %>%
+  pivot_wider(names_from = "Prepost", values_from = "Score", names_sort = F) %>%
+  mutate(Improve = case_when(Post > Pre ~ 1,
+                             Post == Pre ~ 1,
+                             Pre > Post ~ 0)) %>%
+  group_by(Curriculum) %>%
+  summarise(Average = mean(Improve, na.rm = T))
 
-gt6 %>%
-  gt(rowname_col = "Curriculum") %>%
-  tab_header(title = "\U1F605    Table 6: % Who Score a 2 (Matched)    \U1F605") %>%
+gt7 %>%
+  gt() %>%
+  tab_header(title = "\U1F605    Table 7: % Students Who Score Maintained or Improved    \U1F605") %>%
   data_color(
-    columns = c(Spring),
+    columns = c(Average),
     colors = scales::col_numeric(
       palette = paletteer::paletteer_d(
         palette = "ggsci::blue_material"
@@ -216,9 +112,10 @@ gt6 %>%
       domain = NULL
     )
   ) %>%
+  fmt_percent(decimals = 0, columns = c(Average)) %>%
   tab_source_note(source_note = "ELA n = 18, Math n = 5") %>%
   gt_theme_tl(all_caps = T) %>%
-  gtsave(here::here("Images/StudentWork/2020-2021/Table6.png"))
+  gtsave(here::here("Images/StudentWork/2020-2021/Table7.png"))
 ```
 
 ## Analysis
@@ -338,8 +235,6 @@ data_compare2 %>%
 ggsave(here::here("Images/StudentScoresJitteredCurriculum.png"), bg = "white")
 ```
 
-
-### Figure 4: Scores that moved out of 0, Percent that Improved/Sustained
 
 ## Conclusions
 

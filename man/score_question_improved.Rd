@@ -20,6 +20,8 @@ score_question_improved(
 \item{question_post}{the comparison column to be selected}
 
 \item{coding}{the coding to check for}
+
+\item{middle_value}{the middle value to check for when calculating scores}
 }
 \value{
 Returns a dataframe with the percent, correct, number of non-na responses, the question itself, and the percent that sustained/improved

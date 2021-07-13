@@ -837,7 +837,7 @@ server <- function(input, output, session) {
           scale_y_continuous(breaks = pretty_breaks(n = 5), limits = c(0, 100), 
                              labels = scales::percent_format(scale = 1), expand = c(0, 0)) +
           scale_fill_manual(values = c(rev(col()(2)))) +
-          labs(x = "Date", title = "Monthly Percentage that Agree/Strongly Disagree") +
+          labs(x = "Date", title = "Monthly Percentage that Agree/Strongly Agree") +
           theme_bw() + # BW Panel panel elements
           theme(
             legend.position = "bottom",
@@ -867,7 +867,7 @@ server <- function(input, output, session) {
           scale_y_continuous(breaks = pretty_breaks(n = 10), limits = c(0, 100), 
                              labels = scales::percent_format(scale = 1), expand = c(0, 0)) +
           scale_fill_manual(values = c(rev(col()(2)))) +
-          labs(x = "Date", title = "Monthly Percentage that Agree/Strongly Disagree",
+          labs(x = "Date", title = "Monthly Percentage that Agree/Strongly Agree",
                y = paste(gsub("(.{40,}?)\\s", "\\1\n", str_to_title(as.character(input$data))))) +
           theme_bw() + # BW Panel panel elements
           theme(

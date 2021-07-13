@@ -156,6 +156,11 @@ gt5 %>%
       domain = NULL
     )
   ) %>%
+  fmt_percent(
+    columns = c(Spring, Fall),
+    scale_values = T,
+    decimals = 0
+  ) %>%
   tab_source_note(source_note = "Fall ELA n = 68, Spring ELA n = 22, Fall Math n = 30, Spring Math n = 14") %>%
   gt_theme_tl(all_caps = T) %>%
   gtsave(here::here("Images/StudentWork/2020-2021/Table5.png"))
@@ -185,6 +190,11 @@ gt6 %>%
       ) %>% as.character(),
       domain = NULL
     )
+  ) %>%
+  fmt_percent(
+    columns = c(Spring, Fall),
+    scale_values = T,
+    decimals = 0
   ) %>%
   tab_source_note(source_note = "ELA n = 18, Math n = 5") %>%
   gt_theme_tl(all_caps = T) %>%

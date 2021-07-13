@@ -5,7 +5,8 @@ library(TeachingLab)
 
 
 round3 <- readxl::read_excel(here::here("Data/Spring 2021 Survey Data Sent to TL.xlsx")) %>%
-  slice(-1)
+  slice(-1) #%>%
+  # filter(ID %!in% c(2, 27))
 
 index1 <- tibble(question = c("school", "school_role", "BennK2"),
                 coding = list("Bennington", "Teacher", "Yes"))
@@ -19,50 +20,49 @@ negative_vector <- c("Untrue", "Very Untrue")
 
 
 ## Mindsets
-index2 <- tibble(question_pre = c("TL_mindsets_1", "TL_mindsets_2", "TL_mindsets_3", "TL_mindsets_4", "TL_mindsets_5"),
-                question_post = c("TL_instshifts_1", "TL_instshifts_2", "TL_instshifts_3", "TL_instshifts_4", "TL_designshifts"),
-                coding = list(negative_vector, negative_vector, positive_vector, negative_vector, negative_vector))
+index2 <- tibble(question = c("TL_mindsets_1", "TL_mindsets_2", "TL_mindsets_3", "TL_mindsets_4", "TL_mindsets_5"),
+                coding = list("negative", "negative", "positive", "negative", "negative"))
 
-mindsets <- pmap_df(list(index2$question_pre, index2$question_post, index2$coding), 
-                                   ~ score_question_improved(round3, question_pre = ..1, question_post = ..2, 
-                                                             coding = ..3, middle_value = "3")) %>%
-  select(-c(n2, percent_improve_sustain, post_percent))
+mindsets <- map2_df(.x = index2$question, .y = index2$coding, 
+                                   ~ score_one_question_mindsets(data = round3, question = .x, coding = .y, na_remove = T, likert = 5))
 # Growth
 mindsets_growth <- mindsets %>%
   slice(c(1:2)) %>%
-  select(percent = pre_percent) %>%
+  select(percent = score) %>%
   summarise(average = mean(percent))
 mindsets_growth
 # High Expectations and Beliefs
 mindsets_expectations <- mindsets %>%
-  slice(c(3:4)) %>%
-  select(percent = pre_percent) %>%
+  slice(c(3:5)) %>%
+  select(percent = 1) %>%
   summarise(average = mean(percent))
 mindsets_expectations
 
 ## Instructional Shifts
-index3 <- tibble(question_pre = c("TL_instshifts_1", "TL_instshifts_2", "TL_instshifts_3", "TL_instshifts_4", "TL_designshifts"),
-                 question_post = c("TL_instshifts_1", "TL_instshifts_2", "TL_instshifts_3", "TL_instshifts_4", "TL_designshifts"),
+round3 %>% 
+  select(TL_instshifts_4) %>% 
+  drop_na() %>% 
+  group_by(TL_instshifts_4) %>% 
+  summarise(n = n()) %>%
+  mutate(percent = n/sum(n))
+            
+
+index3 <- tibble(question = c("TL_instshifts_1", "TL_instshifts_2", "TL_instshifts_3", "TL_instshifts_4", "TL_designshifts"),
                  coding = list("Literacy Instructional Shift", "Literacy Instructional Shift", "Not a Literacy Instructional Shift", "Not a Literacy Instructional Shift", "A complex text that is worthy of reading multiple times."))
 
-inst_shifts <- pmap_df(list(index3$question_pre, index3$question_post, index3$coding), 
-                    ~ score_question_improved(round3, question_pre = ..1, question_post = ..2, 
-                                              coding = ..3, middle_value = "I'm not sure")) %>%
-  select(-c(n2, percent_improve_sustain, post_percent))
+inst_shifts <- map2_df(index3$question, index3$coding, 
+                    ~ score_question(data = round3, question = .x, coding = .y, na_type = "NA"))
 inst_shifts %>%
   select(percent = 1) %>%
   slice(c(1, 3, 5, 7, 9)) %>%
   summarise(mean = mean(percent))
 
 ## Fluency
-index4 <- tibble(question_pre = c("TL_fluency_1", "TL_fluency_2", "TL_fluency_3", "TL_fluency_4"),
-                 question_post = c("TL_instshifts_1", "TL_instshifts_2", "TL_instshifts_3", "TL_instshifts_4"),
+index4 <- tibble(question = c("TL_fluency_1", "TL_fluency_2", "TL_fluency_3", "TL_fluency_4"),
                  coding = list("True", "True", "False", "False"))
 
-fluency <- pmap_df(list(index4$question_pre, index4$question_post, index4$coding), 
-                       ~ score_question_improved(round3, question_pre = ..1, question_post = ..2, 
-                                                 coding = ..3, middle_value = "I'm not sure")) %>%
-  select(-c(n2, percent_improve_sustain, post_percent))
+fluency <- map2_df(index4$question, index4$coding, 
+                       ~ score_question(data = round3, question = .x, coding = .y, na_type = "NA"))
 
 fluency %>%
   select(percent = 1) %>%
@@ -85,14 +85,11 @@ text_comp %>%
 
 ## Building Knowledge
 
-index6 <- tibble(question_pre = c("TL_buildknow"),
-                 question_post = c("TL_buildknow"),
+index6 <- tibble(question = c("TL_buildknow"),
                  coding = list("Students with low reading ability and a lot of knowledge about the food chain."))
 
-build <- pmap_df(list(index6$question_pre, index6$question_post, index6$coding), 
-                     ~ score_question_improved(round3, question_pre = ..1, question_post = ..2, 
-                                               coding = ..3, middle_value = "I'm not sure")) %>%
-  select(-c(n2, percent_improve_sustain, post_percent))
+build <- map2_df(index6$question, index6$coding, 
+                     ~ score_question(round3, question = .x, coding = .y))
 
 build %>%
   select(percent = 1) %>%
@@ -100,15 +97,27 @@ build %>%
 
 ## Supporting Students
 
-index7 <- tibble(question_pre = c("TL_supstud"),
-                 question_post = c("TL_supstud"),
+index7 <- tibble(question = c("TL_supstud"),
                  coding = list("Provide students with lower reading abilities an audio version of the main text"))
 
-sup <- pmap_df(list(index7$question_pre, index7$question_post, index7$coding), 
-                 ~ score_question_improved(round3, question_pre = ..1, question_post = ..2, 
-                                           coding = ..3, middle_value = "I'm not sure")) %>%
-  select(-c(n2, percent_improve_sustain, post_percent))
+sup <- map2_df(index7$question, index7$coding, 
+                 ~ score_question(round3, question = .x, coding = .y))
 
 sup %>%
   select(percent = 1) %>%
   summarise(mean = mean(percent))
+
+# Teachers
+
+index8 <- tibble(question = c("TL_teachers_1", "TL_teachers_2", "TL_teachers_3", "TL_teachers_4"),
+                 coding = list(c("Agree", "Strongly Agree"), c("Agree", "Strongly Agree"), c("Agree", "Strongly Agree"), c("Agree", "Strongly Agree")))
+
+teachers <- map2_df(index8$question, index8$coding, 
+               ~ score_question(round3, question = .x, coding = .y, na_type = "NA"))
+
+teachers
+
+# Collab
+
+
+

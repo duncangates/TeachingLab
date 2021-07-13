@@ -488,6 +488,7 @@ score_question <- function(data, question, coding, na_type = c("NA", "NR")) {
   
   if (na_type == "NA") {
     data %>%
+      drop_na(.data[[question]]) %>%
       dplyr::summarise(percent = 100 * (sum(.data[[question]] %in% coding, na.rm = T)/length(which(!is.na(.data[[question]])))),
                 n = length(which(!is.na(.data[[question]])))) %>%
       dplyr::mutate(question = question)
@@ -587,6 +588,7 @@ score_question_number <- function(data, question_pre, question_post, coding, lik
 #' @param question_pre the initial column to be selected
 #' @param question_post the comparison column to be selected
 #' @param coding the coding to check for
+#' @param middle_value the middle value to check for when calculating scores
 #' @return Returns a dataframe with the percent, correct, number of non-na responses, the question itself, and the percent that sustained/improved
 #' @export
 
@@ -737,18 +739,18 @@ score_one_question_mindsets <- function(data, question, coding, na_remove = F, l
   if (likert == 5) {
     if (coding == "positive") {
       score <- data %>%
-        dplyr::mutate(score = case_when(.data[[question]] %in% "5" ~ 2,
-                                            .data[[question]] %in% "4" ~ 2,
-                                            .data[[question]] %in% "3" ~ 1,
-                                            .data[[question]] %in% "2" ~ 0,
-                                            .data[[question]] %in% "1" ~ 0))
+        dplyr::mutate(score = case_when(.data[[question]] %in% c("5", "Very True") ~ 2,
+                                            .data[[question]] %in% c("4", "True") ~ 2,
+                                            .data[[question]] %in% c("3", "Neither True Nor Untrue") ~ 1,
+                                            .data[[question]] %in% c("2", "Untrue") ~ 0,
+                                            .data[[question]] %in% c("1", "Very Untrue") ~ 0))
     } else if (coding == "negative") {
       score <- data %>%
-        dplyr::mutate(score = case_when(.data[[question]] %in% "1" ~ 2,
-                                            .data[[question]] %in% "2" ~ 2,
-                                            .data[[question]] %in% "3" ~ 1,
-                                            .data[[question]] %in% "4" ~ 0,
-                                            .data[[question]] %in% "5" ~ 0))
+        dplyr::mutate(score = case_when(.data[[question]] %in% c("1", "Very Untrue") ~ 2,
+                                            .data[[question]] %in% c("2", "Untrue") ~ 2,
+                                            .data[[question]] %in% c("3", "Neither True Nor Untrue") ~ 1,
+                                            .data[[question]] %in% c("4", "True") ~ 0,
+                                            .data[[question]] %in% c("5", "Very True") ~ 0))
     }
   } else if (likert == 6) {
     if (coding == "positive") {
@@ -772,6 +774,7 @@ score_one_question_mindsets <- function(data, question, coding, na_remove = F, l
   
   
   score %>%
+    drop_na(score) %>%
     summarise(score = (sum(score)/(n()*2))*100,
               n = n())
   
@@ -798,6 +801,64 @@ colorize <- function(x, color) {
   }
 }
 
+
+
+#' @title Round
+#' @description round that actually round up 0.5 as it should be
+#' @param x the vector to round
+#' @param n the number of digits to round
+#' @return the vector provided rounded
+
+round2 = function(x, n) {
+  posneg = sign(x)
+  z = abs(x)*10^n
+  z = z + 0.5 + sqrt(.Machine$double.eps)
+  z = trunc(z)
+  z = z/10^n
+  z*posneg
+}
+
+#' @title Quote Visualization
+#' @description takes a dataframe and makes a gt table or ggplot that shows a quote
+#' @param data the dataframe
+#' @param text_col the text to visualize
+#' @param viz_type ggplot or gt visualization
+#' @return a ggplot/gt that visualizes text
+#' 
+#' @examples
+#' quote_viz(data = iris, text_col = Species, viz_type = "ggplot")
+#' @export
+
+quote_viz <- function(data, text_col, viz_type = c("ggplot", "gt")) {
+  
+  text_col <- enquo(text_col)
+  
+  if (viz_type == "ggplot") {
+    data %>%
+      dplyr::mutate(text = str_replace_all(str_wrap(.data[[text_col]], width = 60), "\n", "<br>")) %>%
+      dplyr::mutate(text = paste0("\"<i>", text, "\"")) %>%
+      dplyr::mutate(x = 0,
+                    y = row_number()) %>%
+      ggplot() +
+      ggtext::geom_richtext(fill = NA, label.color = NA, family = "Calibri",
+                            aes(label = text, x = x, y = y)) + 
+      scale_y_discrete(expand = c(0, 0.3)) +
+      theme_void() + 
+      theme(text = element_text(family = "Calibri"))
+  } else if (viz_type == "gt") {
+    data %>%
+      dplyr::mutate(text = str_replace_all(str_wrap(.data[[text_col]], width = 60), "\n", "<br>")) %>%
+      dplyr::mutate(text = paste0("\"<i>", text, "\"")) %>%
+      select(text) %>%
+      gt() %>%
+        cols_label(
+          text = md("**Quotes**")
+        ) %>%
+        fmt_markdown(columns = everything()) %>%
+        gt_theme_tl()
+  }
+  
+}
 
 
 
