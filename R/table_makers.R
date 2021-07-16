@@ -209,3 +209,143 @@ table_maker <- function(data, column_names, title, spanner, n1, n2, rows_positiv
   
   gt_table
 }
+
+
+#' @title General Table Maker
+#' @description Makes a gt table with teaching lab color style
+#'
+#' @param data the gt table to color
+#' @param color the color style to apply
+#' @param column The column to apply the color to
+#' @param scale the scale to apply to
+#' @return a colored gt table
+#' @export
+
+gt_tl_color <- function(gt_table, color, column, scale = 1) {
+  
+  column_quo <- rlang::quo_name(rlang::enquo(column))
+  
+  value_one <- 40*scale
+  value_two <- 80*scale
+  cat(paste(value_one, value_two, "\n"))
+  
+  if (color == "blue") {
+    gt_table %>%
+      gt::tab_style(
+        style = list(
+          gt::cell_fill(color = "#89d7f7")
+        ),
+        locations = gt::cells_body(
+          columns = c(`column_quo`),
+          rows = `column_quo` < value_one
+        )
+      ) %>%
+      gt::tab_style(
+        style = list(
+          gt::cell_fill(color = "#52c6f4")
+        ),
+        locations = gt::cells_body(
+          columns = c(`column_quo`),
+          rows = `column_quo` >= value_one
+        )
+      ) %>%
+      gt::tab_style(
+        style = list(
+          gt::cell_fill(color = "#00ACF0")
+        ),
+        locations = gt::cells_body(
+          columns = c(`column_quo`),
+          rows = `column_quo` > value_two
+        )
+      )
+  } else if (color == "green") {
+    gt_table %>%
+      gt::tab_style(
+      style = list(
+        gt::cell_fill(color = "#A7E3DE")
+      ),
+      locations = gt::cells_body(
+        columns = c(`column_quo`),
+        rows = `column_quo` > value_one
+      )
+    ) %>%
+      gt::tab_style(
+        style = list(
+          gt::cell_fill(color = "#7FD7CF")
+        ),
+        locations = gt::cells_body(
+          columns = c(`column_quo`),
+          rows = `column_quo` > value_one
+        )
+      ) %>%
+      gt::tab_style(
+        style = list(
+          gt::cell_fill(color = "#43C6B9")
+        ),
+        locations = gt::cells_body(
+          columns = c(`column_quo`),
+          rows = `column_quo` > value_two
+        )
+      )
+  }
+  
+}
+
+  
+#' @title Arrow maker for gt table
+#' @description Makes an html column for a gt table
+#'
+#' @param data the gt table to make arrows for
+#' @param colors the color style to apply
+#' @param columns The columns to compare
+#' @return a colored gt table
+#' 
+#' @examples gt_arrow(data = gt_table, colors = c("red", "blue"), columns = c("First", "Second"))
+#' @export
+
+gt_arrow <- function(data, colors = c("#800000", "#98AFC7"), column_one, column_two) {
+  
+  rank_chg <- function(change_dir){
+    
+    if (change_dir == "increase") {
+      logo_out <- fontawesome::fa("arrow-up", fill = "#98AFC7")
+    } else if (change_dir == "decrease"){
+      logo_out <- fontawesome::fa("arrow-down", fill = "#800000")
+    } else if (change_dir == "equal"){
+      logo_out <- "<strong>≈"
+    }
+    
+    logo_out %>% 
+      as.character() %>% 
+      gt::html()
+    
+  }
+  
+  score_1 <- rlang::enquo(column_one)
+  score_2 <- rlang::enquo(column_two)
+  score_pre <- rlang::quo_name(score_1)
+  score_post <- rlang::quo_name(score_2)
+
+  data %>%
+    mutate(rank_change = case_when(.data[[score_pre]] < .data[[score_post]] ~ "increase",
+                                   .data[[score_post]] < .data[[score_pre]] ~ "decrease",
+                                   abs(.data[[score_pre]] - .data[[score_post]]) < 3 ~ "equal")) %>%
+    mutate(rank_change = purrr::map(rank_change, ~ rank_chg(change_dir = .x))) %>%
+    rename(Improvement = rank_change)
+  
+}
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+

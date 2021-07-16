@@ -25,7 +25,8 @@ theme_tl(
   grid = TRUE,
   axis = FALSE,
   ticks = FALSE,
-  markdown = FALSE
+  markdown = FALSE,
+  legend = F
 )
 }
 \arguments{

@@ -1,0 +1,342 @@
+---
+title: "Impact Report Visualizations"
+author: "Duncan Gates"
+date: "7/13/2021"
+output:
+  html_document:
+  theme: paper
+highlight: kate
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, message = F, warning = F)
+library(tidyverse)
+library(here)
+library(ggtext)
+library(systemfonts)
+devtools::load_all()
+library(TeachingLab)
+```
+
+# Average Math and ELA Scores
+
+```{r}
+math_and_ela <- tibble(
+  score = c(55, 54, 71, 67),
+  type = c("ELA", "Math", "ELA", "Math"),
+  year = factor(c("2019", "2019", "2020", "2020"))
+)
+
+math_and_ela %>%
+  ggplot() +
+  geom_point(aes(x = year, y = score, color = type, size = score)) +
+  geom_curve(aes(x = math_and_ela$year[1], y = math_and_ela$score[1],
+                 xend = math_and_ela$year[3], yend = math_and_ela$score[3]), 
+             linetype = "dashed", color = "#04abeb", angle = 0) +
+  geom_curve(aes(x = math_and_ela$year[2], y = math_and_ela$score[2],
+                 xend = math_and_ela$year[4], yend = math_and_ela$score[4]), 
+             linetype = "dashed", color = "#d17df7", angle = 0) +
+  ggrepel::geom_text_repel(aes(x = year, y = score, size = sqrt(score)*10, label = paste0(score, "%"), color = type),
+                segment.color = NA, force = 1, nudge_y = 1) +
+  scale_x_discrete(labels = c("2019-2020", "2020-2021")) +
+  labs(x = "", y = "", title = "Average <span style = 'color:#04abeb;'>ELA</span> and <span style = 'color:#d17df7;'>Math</span> scores in 2019-2020 and 2020-2021") +
+  scale_color_manual(values = c("#04abeb", "#d17df7")) +
+  scale_y_continuous(labels = scales::percent_format(scale = 1), limits = c(50, 80)) +
+  theme_tl() +
+  theme(plot.title = element_markdown(),
+        axis.text = element_text(size = 12))
+
+ggsave(here("Images/2020-2021/ImpactReport/ELAandMathAverage.png"), width = 10, height = 8)
+```
+
+# Quotes
+
+```{r}
+dashboard_data <- read_rds(here("Data/Dashboard Data/dashboard_data.rds"))
+comments <- dashboard_data %>%
+  filter(`How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?` == 9 |
+           `How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?` == 10) %>%
+  select(`Date for the session`,
+         `Do you have additional comments?`,
+         `Overall, what went well in this professional learning?`#,
+         # `Why did you choose this rating?`
+         ) %>%
+  pivot_longer(!c(`Date for the session`), names_to = "Question", values_to = "Response") %>%
+  filter(!is.na(Response) & 
+           Response != "No Response" &
+           str_length(Response) > 150 &
+           `Date for the session` > "2020-06-30") %>%
+  select(-1) %>%
+  distinct(Response, .keep_all = T)
+```
+
+# Quote Sampling
+
+```{r}
+comments_10 <- comments %>%
+  slice(c(122, 119, 99, 94, 81, 51, 39, 57, 45, 27))
+
+
+TeachingLab::quote_viz(comments_10, Response, "gt", highlight = c("teacher", "time", "learning"))
+
+gtsave(here("Images/2020-2021/ImpactReport/quotes10.png"))
+```
+
+# Tidy Text Based
+
+```{r}
+library(tidytext)
+data("stop_words")
+words <- comments %>%
+  select(-1) %>%
+  unnest_tokens(word, Response) %>%
+  anti_join(stop_words) %>%
+  group_by(word) %>%
+  count(sort = T)
+
+wordcloud <- comments %>%
+  filter(str_detect(Response, paste(words$word[1:3], collapse = "|")))
+
+tl_wordcloud(data = wordcloud, text_col = "Response", colors = c(tl_palette(theme = "dark", n = 8, color = "blue")[2],
+                                                                 tl_palette(theme = "dark", n = 2, color = "blue")[2]), 
+             n_min = 3,
+             size = 15,
+             shape = "circle")
+
+ggsave(here("Images/2020-2021/ImpactReport/quoteswordcloud.png"))
+```
+
+# Comments Already in Report
+
+```{r}
+library(tidytext)
+data("stop_words")
+
+comments <- tibble(Response = c("“Efficient and no nonsense approach to learning about guidebooks. Teacher's time is valuable and precious and this method honored that.”-Guidebooks Abbreviated Bootcamp",
+  "“I feel prepare to use EL, but even more so I understand HOW to incorporate the shifts into instruction and WHY they are important.”-EL EL Bootcamp: Modules (K-8)",
+  "“Very informative and provides a clear roadmap to instructionally plan.”- Accelerating Learning in Math",
+  "“Eureka math can be quite intimidating when you first look at the curriculum. This bootcamp really helps you understand why Eureka is laid out the way it is and how it nurtures all levels of math learners in your classroom.”-EngageNY K-5 Bootcamp",
+  "“The information was priceless and you get to talk with other professionals.”-Math Curriculum Flexible Day 2",
+  "“This is extremely valuable in furthering my knowledge and abilities.”-DE Curriculum Flexible Cycle 1 - Opening",
+  "“It was a great course - learning was to help us best support our student needs. I loved how much we were required to reflect on our teaching”-Fort Dodge K-2 Skills Cycle 1: Using Data to Inform Instruction",
+  "“The boot camp was informative and meaningful. I have a greater understanding of EL education and will apply my learning to my practice.”-EL EL Bootcamp: Modules (K-8)",
+  "“Informative and able to apply to my teaching. This PD wasn't selling a product they were giving practices.”-Illustrative Mathematics EngageNY 6-12 Bootcamp",
+  "“Engaging, content rich, community environment of learners, skilled facilitators.”-EL Bootcamp: Modules (K-8)",
+  "“The topics are relevant and in high stakes areas that aid in the development of a great teacher.”-Calcasieu Diverse Learners Teacher Bootcamp")
+)
+
+words <- comments %>%
+  unnest_tokens(word, Response) %>%
+  anti_join(stop_words) %>%
+  group_by(word) %>%
+  count(sort = T)
+
+wordcloud <- comments %>%
+  filter(str_detect(Response, paste(words$word[1:3], collapse = "|")))
+
+tl_wordcloud(data = wordcloud, text_col = "Response", colors = c(tl_palette(theme = "dark", n = 8, color = "blue")[2],
+                                                                 tl_palette(theme = "dark", n = 2, color = "blue")[2]), 
+             n_min = 1,
+             size = 15,
+             shape = "cardioid")
+
+ggsave(here("Images/2020-2021/ImpactReport/impactreport_quoteswordcloud.png"))
+```
+
+```{r}
+TeachingLab::quote_viz(comments, Response, viz_type = "gt", highlight = c("informative", "learning",
+                                                                          "teaching", "information",
+                                                                          "learners"), width = 90) %>% gtsave(here("Images/2020-2021/ImpactReport/Quotes.png"))
+```
+
+
+# Testing for html text coloring
+
+```{r}
+fake_data <- tibble(number = c(1, 2, 3, 4, 5),
+                    text = c("blah blah yes and no", "something or other no", "hahahahaa maybe", "dfasdffd", "dfasdfafddf"))
+
+highlight = c("yes", "no", "maybe")
+check <- map(highlight, ~ str_replace_all(fake_data$text, .x, paste0("<span style='color:#04abeb'>", .x, "</span>"))) %>%
+  enframe()
+```
+
+```{r}
+v<- c("kpX_43", "kpX_10", "kpX_11")
+
+strings<- as.matrix(c(seq(1:3), "a1"))
+
+v %>% map(., ~str_c(., letters[seq(from = 1, to = 2)])) %>%
+      map(. %>% map(.,~str_replace_all(.,'X',strings))) %>% unlist()
+```
+
+```{r}
+x <- comments$Response
+highlight = c("informative", "learning", "learners", "teachers", "instruction")
+map(x, ~ map_chr(highlight, ~ str_replace_all(x, .x, paste0("<span style='color:#04abeb'>", .x, "</span>"))))
+map(highlight, ~ str_replace_all(x, .x, paste0("<span style='color:#04abeb'>", .x, "</span>")))
+```
+
+
+
+# Comparing First and Second Year Participants
+
+```{r}
+data_one <- readxl::read_excel(here("Data/SY19-20/SY19-20 Fall-Spring Merged Dataset Update.xls"))
+
+data_two <- read_rds(here("Data/SY20-21/full_2021.rds"))
+
+participants19and20 <- data_one$id[which(data_one$id %in% data_two$id)]
+```
+
+```{r}
+negative_vector <- c("Very untrue", "Untrue")
+positive_vector <- c("Very true", "True")
+mindsets_one <- data_one %>% 
+  filter(id %in% participants19and20)
+
+mindsets_index_one <- tibble(question_pre = c("pre1", "pre2", "pre3", "pre4", 
+                                              "pre5", "pre6", "pre7", "pre8", 
+"pre9"),
+                question_post = c("pre1", "pre2", "pre3", "pre4", 
+                                  "pre5", "pre6", "pre7", "pre8", 
+"pre9"),
+                coding = list(negative_vector, positive_vector, negative_vector, negative_vector, positive_vector,
+                              positive_vector, positive_vector, negative_vector, negative_vector))
+
+mindsets_data_two <- pmap_df(list(mindsets_index_one$question_pre, 
+                                  mindsets_index_one$question_post, 
+                                  mindsets_index_one$coding), 
+                                   ~ score_question_improved(mindsets_one, 
+                                                             question_pre = ..1, question_post = ..2, coding = ..3, middle_value = "Somewhat true"))
+mindsets_data_two %>% slice(c(1:2)) %>% summarise(mean(pre_percent))
+mindsets_data_two %>% slice(c(3:4)) %>% summarise(mean(pre_percent))
+mindsets_data_two %>% slice(c(5, 7:9)) %>% summarise(mean(pre_percent))
+```
+
+```{r}
+mindsets_two <- data_two %>%
+  filter(id %in% participants19and20)
+
+positive_vector <- c("4", "5")
+negative_vector <- c("1", "2")
+
+mindsets_index_two <- tibble(question_pre = c("prerace1", "prerace2", "prehigh2", "prehigh3", "prehigh4", "prehigh1", "pregrowth1", "pregrowth2", "preacc1", "preacc2", "preacc3"),
+                question_post = c("postrace1", "postrace2", "posthigh2", "posthigh3", "posthigh4", "posthigh1", "postgrowth1", "postgrowth2", "postacc1", "postacc2", "postacc3"),
+                coding = list(negative_vector, negative_vector, negative_vector, negative_vector, negative_vector, positive_vector, negative_vector, negative_vector, positive_vector, positive_vector, positive_vector))
+
+mindsets_data_two <- pmap_df(list(mindsets_index_two$question_pre, mindsets_index_two$question_post, mindsets_index_two$coding), 
+                                   ~ score_question_improved(mindsets_two, 
+                                                             question_pre = ..1, question_post = ..2, coding = ..3, middle_value = "3"))
+mindsets_data_two %>% slice(c(1:2)) %>% summarise(mean(pre_percent))
+mindsets_data_two %>% slice(c(3:6)) %>% summarise(mean(pre_percent))
+mindsets_data_two %>% slice(c(7:8)) %>% summarise(mean(pre_percent))
+mindsets_data_two %>% slice(c(9:11)) %>% summarise(mean(pre_percent))
+```
+
+# Second Try
+
+```{r}
+data_2021 <- read_rds(here("Data/SY20-21/full_2021.rds"))
+
+prior_part <- data_2021 %>%
+  filter(pre_priorpart == "Yes") %>%
+  distinct(id, .keep_all = T)
+
+no_priorpart <- data_2021 %>%
+  filter(pre_priorpart == "No") %>%
+  distinct(id, .keep_all = T)
+
+positive_vector <- c("4", "5")
+negative_vector <- c("1", "2")
+
+mindsets_index <- tibble(question_pre = c("prerace1", "prerace2", "prehigh2", "prehigh3", "prehigh4", "prehigh1", "pregrowth1", "pregrowth2", "preacc1", "preacc2", "preacc3"),
+                question_post = c("postrace1", "postrace2", "posthigh2", "posthigh3", "posthigh4", "posthigh1", "postgrowth1", "postgrowth2", "postacc1", "postacc2", "postacc3"),
+                coding = list(negative_vector, negative_vector, negative_vector, negative_vector, negative_vector, positive_vector, negative_vector, negative_vector, positive_vector, positive_vector, positive_vector))
+
+mindsets_data_one <- pmap_df(list(mindsets_index$question_pre, mindsets_index$question_post, mindsets_index$coding), 
+                                   ~ score_question_improved(prior_part, 
+                                                             question_pre = ..1, question_post = ..2, coding = ..3, middle_value = "3"))
+
+mindsets_data_two <- pmap_df(list(mindsets_index$question_pre, mindsets_index$question_post, mindsets_index$coding), 
+                                   ~ score_question_improved(no_priorpart, 
+                                                             question_pre = ..1, question_post = ..2, coding = ..3, middle_value = "3"))
+
+full_mindsets_score <- bind_cols(mindsets_data_two, mindsets_data_one)
+
+
+one <- full_mindsets_score %>% slice(c(1:2)) %>% 
+  summarise(across(contains("pre"), ~ mean(.x))) %>%
+  rename(`First Year Participants` = 1, `Second Year Participants` = 2)
+two <- full_mindsets_score %>% slice(c(3:6)) %>% 
+  summarise(across(contains("pre"), ~ mean(.x))) %>% 
+  rename(`First Year Participants` = 1, `Second Year Participants` = 2)
+three <- full_mindsets_score %>% slice(c(7:8)) %>% 
+  summarise(across(contains("pre"), ~ mean(.x))) %>% 
+  rename(`First Year Participants` = 1, `Second Year Participants` = 2)
+four <- full_mindsets_score %>% slice(c(9:11)) %>% 
+  summarise(across(contains("pre"), ~ mean(.x))) %>% 
+  rename(`First Year Participants` = 1, `Second Year Participants` = 2)
+
+gt_data_compare <- bind_rows(one, two, three, four) %>%
+  map_df( ~ c(.x, mean(.x))) %>%
+  mutate(across(everything(), ~ round2(.x, n = 0))) %>%
+  mutate(`Mindset` = c("Overall", "Recognition of Race and Ethnicity", "Growth Mindsets", "High Expectations", "Accountability for Requitable Instruction")) %>%
+  mutate(across(where(is.double), ~ as.integer(.x)))
+
+gt_data_compare %>%
+  TeachingLab::gt_arrow(colors = c("#800000", "#98AFC7"), 
+                        column_one = "First Year Participants", 
+                        column_two = "Second Year Participants") %>%
+  gt(rowname_col = "Mindset") %>%
+  # gt_tl_color(color = "blue", column = "Second Year Participants", scale = 1) %>%
+  gt::tab_style(
+      style = list(
+        cell_fill(color = "#89d7f7")
+      ),
+      locations = cells_body(
+        columns = c(`Second Year Participants`),
+        rows = c(`Second Year Participants`) < 40
+      )
+    ) %>%
+  gt::cols_label(
+    Improvement = "2nd Year Participants vs. 1st Year"
+  ) %>%
+  gt::tab_style(
+      style = list(
+        cell_fill(color = "#52c6f4")
+      ),
+      locations = cells_body(
+        columns = c(`Second Year Participants`),
+        rows = c(`Second Year Participants`) >= 40
+      )
+    ) %>%
+  gt::tab_style(
+      style = list(
+        cell_fill(color = "#00ACF0")
+      ),
+      locations = cells_body(
+        columns = c(`Second Year Participants`),
+        rows = c(`Second Year Participants`) > 80
+      )
+    ) %>%
+  tab_header(
+    title = html("<strong>Difference in scores for 1st year vs 2nd year participants<br> in Teaching Lab professional learning")
+  ) %>%
+  fmt_percent(
+    columns = c(1, 2),
+    scale_values = F,
+    decimals = 0
+  ) %>%
+  fmt_markdown(
+    columns = c(3)
+  ) %>%
+  gt_theme_tl() %>%
+  gtsave(here("Images/2020-2021/ImpactReport/1stvs2ndyear.png"))
+```
+
+
+
+

@@ -51,7 +51,8 @@ theme_tl <- function(base_family = "Calibri",
                      grid = TRUE,
                      axis = FALSE,
                      ticks = FALSE,
-                     markdown = FALSE) {
+                     markdown = FALSE,
+                     legend = F) {
   ret <- ggplot2::theme_minimal(base_family = base_family, base_size = base_size)
 
   ret <- ret + ggplot2::theme(legend.background = ggplot2::element_blank())
@@ -153,6 +154,10 @@ theme_tl <- function(base_family = "Calibri",
 
   ret <- ret + ggplot2::theme(plot.margin = ggplot2::margin(base_size / 2, base_size / 2, base_size / 2, base_size / 2))
 
+  if (legend == F) {
+    ret <- ret + ggplot2::theme(legend.position = "none")
+  }
+  
   ret
 }
 
@@ -440,12 +445,14 @@ gt_theme_tl <- function(data, all_caps = F, ...) {
       column_labels.border.bottom.color = "black",
       column_labels.border.lr.color = "black",
       column_labels.border.lr.width = px(3),
+      column_labels.font.weight = "bold",
       table_body.border.bottom.color = "black",
       table_body.border.bottom.width = px(3),
       data_row.padding = px(3),
       source_notes.font.size = 12,
       table.font.size = 16,
       heading.title.font.size = 20,
+      heading.title.font.weight = "bold",
       heading.align = "center",
       ...
     )
@@ -827,9 +834,14 @@ round2 = function(x, n) {
 #' 
 #' @examples
 #' quote_viz(data = iris, text_col = Species, viz_type = "ggplot")
+#' 
 #' @export
 
-quote_viz <- function(data, text_col, viz_type = c("ggplot", "gt")) {
+quote_viz <- function(data, text_col, viz_type = c("ggplot", "gt"), highlight, width = 60) {
+  
+  # highlight_mutate <- function(x) {
+  #   dplyr::mutate(color_text = str_replace_all(color_text, x, paste0("<a style='color:#04abeb'>", x, "</a>")))
+  # }
   
   text_col <- enquo(text_col)
   
@@ -846,21 +858,98 @@ quote_viz <- function(data, text_col, viz_type = c("ggplot", "gt")) {
       theme_void() + 
       theme(text = element_text(family = "Calibri"))
   } else if (viz_type == "gt") {
-    data %>%
-      dplyr::mutate(text = str_replace_all(str_wrap(.data[[text_col]], width = 60), "\n", "<br>")) %>%
-      dplyr::mutate(text = paste0("\"<i>", text, "\"")) %>%
-      select(text) %>%
+    data_text <- data %>%
+      dplyr::mutate(text = str_replace_all(str_wrap(.data[[text_col]], width = width), "\n", "<br>")) #%>%
+      # dplyr::mutate(text = paste0("\"<i>", text, "\""))
+    
+    data_text %>%
+      dplyr::mutate(color_text = text) %>%
+      dplyr::mutate(color_text = str_replace_all(color_text, highlight[1], paste0("<a style='color:#04abeb; font-weight:bold;'>", highlight[1], "</a>"))) %>%
+      dplyr::mutate(color_text = str_replace_all(color_text, highlight[2], paste0("<a style='color:#04abeb; font-weight:bold;'>", highlight[2], "</a>"))) %>%
+      dplyr::mutate(color_text = str_replace_all(color_text, highlight[3], paste0("<a style='color:#04abeb; font-weight:bold;'>", highlight[3], "</a>"))) %>%
+      dplyr::mutate(color_text = str_replace_all(color_text, highlight[4], paste0("<a style='color:#04abeb; font-weight:bold;'>", highlight[4], "</a>"))) %>%
+      dplyr::mutate(color_text = str_replace_all(color_text, highlight[5], paste0("<a style='color:#04abeb; font-weight:bold;'>", highlight[5], "</a>"))) %>%
+      dplyr::mutate(color_text = str_replace_all(color_text, "”-", "” <br><i>-")) %>%
+      select(color_text) %>%
       gt() %>%
         cols_label(
-          text = md("**Quotes**")
+          color_text = md("**Quotes**")
         ) %>%
-        fmt_markdown(columns = everything()) %>%
-        gt_theme_tl()
+      # text_transform(
+      #   locations = cells_body(
+      #     columns = everything()
+      #   ),
+      #   fn = function(x) {
+      #     map_chr(highlight, ~ stringr::str_replace_all(x, .x, paste0("<span style='color:#04abeb'>", .x, "</span>")))
+      #   }
+      # ) %>%
+      fmt_markdown(columns = everything()) %>%
+      tab_style(
+        style = cell_fill(color = "gray85"),
+        locations = cells_body(
+          rows = c(1, 3, 5, 7, 9)
+        )
+      ) %>%
+      gt_theme_tl()
   }
   
 }
 
+#' @title Wordcloud Teaching Lab Visualization
+#' @description takes a dataframe and makes a wordcloud
+#' @param data the dataframe
+#' @param text_col the text to visualize
+#' @param colors the color gradient
+#' @param n_min the minimum n to accept
+#' @param size the wordcloud size
+#' @param shape the wordcloud shape
+#' @return a wordcloud
+#' 
+#' @examples
+#' tl_wordcloud(data = iris, text_col = Species)
+#' @export
 
+tl_wordcloud <- function(data, text_col, colors = c("blue", "orange"), n_min = 2, size = 20,
+                         shape = c(
+                           "circle", "cardioid", "diamond",
+                           "square", "triangle-forward", "triangle-upright",
+                           "pentagon", "star"
+                         )) {
+  
+  # text_col <- enquo(text_col)
+  
+  data("stop_words")
+  
+  words <- data %>%
+    unnest_tokens(word, text_col) %>%
+    anti_join(stop_words) %>%
+    group_by(word) %>%
+    count(sort = T) %>%
+    filter(n >= n_min) %>%
+    mutate(angle = 90 * sample(c(0, 1), n(), replace = TRUE, prob = c(60, 40)))
+  
+  ggplot(words, aes(label = word, size = n, angle = angle, color = n)) +
+    ggwordcloud::geom_text_wordcloud_area() +
+    scale_size_area(max_size = size) +
+    theme_minimal() +
+    scale_color_gradient(low = colors[1], high = colors[2])
+  
+}
+
+
+#' @title HTML Text Wrapping
+#' @description Takes a string and inserts <br> at the requested intervals
+#' @param string the string
+#' @param interval the width of the string before a <br> tag
+#' @return the same string with <br> inserted at the requested interval
+#' 
+#' @examples
+#' html_wrap(string, interval)
+#' @export
+
+html_wrap <- function(string, interval = 40) {
+  stringr::str_replace_all(stringr::str_wrap(string = string, width = interval), "\n", "<br>")
+}
 
 
 

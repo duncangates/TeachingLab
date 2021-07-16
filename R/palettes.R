@@ -6,13 +6,13 @@
 #'
 #' @return color ramp palette function
 #' @export
-tl_palette <- function(color = c("blue", "orange", "purple", "green", "teal", "tl_colors"), theme = c("light", "dark"), n) {
+tl_palette <- function(color = c("blue", "orange", "purple", "green", "teal", "tl_colors"), theme = c("dark", "light"), n) {
   base_color_start <- if (theme == "light") {
     "#F7FBFD"
   } else if (theme == "dark") {
     "#040404"
   }
-  
+
   if (color == "blue") {
     col <- grDevices::colorRampPalette(c(base_color_start, "#00acf0"))
   } else if (color == "green") {
@@ -28,7 +28,7 @@ tl_palette <- function(color = c("blue", "orange", "purple", "green", "teal", "t
   } else {
     col <- grDevices::colorRampPalette(c(base_color_start, "#00acf0"))
   }
-  
+
   col(n)
 }
 
@@ -40,7 +40,9 @@ tl_pal_blue <- c("#040404", "#031C25", "#023447", "#024C69", "#01648A", "#017CAC
 #' @examples
 #' library(scales)
 #' scales::show_col(tl_pal_blue()(9))
-tl_pal <- function() { manual_pal(tl_pal_blue) }
+tl_pal <- function() {
+  scales::manual_pal(tl_pal_blue)
+}
 
 #' Discrete color & fill scales based on the Teaching Lab palette
 #'
@@ -50,7 +52,10 @@ tl_pal <- function() { manual_pal(tl_pal_blue) }
 #' @inheritDotParams ggplot2::discrete_scale -expand -position
 #' @rdname scale_tl
 #' @export
-scale_colour_tl <- function(...) { discrete_scale("colour", "tl", tl_pal(), ...) }
+scale_colour_tl <- function(n, color) {
+  # ggplot2::discrete_scale("colour", "tl", tl_pal(), ...)
+  scale_color_manual(values = tl_palette(color = "blue", theme = "dark", n = n))
+}
 
 #' @export
 #' @rdname scale_tl
@@ -58,4 +63,7 @@ scale_color_tl <- scale_colour_tl
 
 #' @export
 #' @rdname scale_tl
-scale_fill_tl <- function(...) { discrete_scale("fill", "tl", tl_pal(), ...) }
+scale_fill_tl <- function(n, color = c("blue", "orange", "purple", "green", "teal", "tl_colors")) {
+  # ggplot2::discrete_scale("fill", "tl", tl_pal(), ...)
+  scale_fill_manual(values = tl_palette(color = "blue", theme = "dark", n = n))
+}

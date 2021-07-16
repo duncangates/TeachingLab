@@ -144,7 +144,15 @@ write_csv(fall_spring_compare, here("Analysis/2020-2021/Data/df_compare.csv"))
 # Dataframe Making/Saving
 
 ```{r}
-full_2021 <- full_join(fall_df, spring_df, by = "id")
+# Merge Some of the Locations
+loc_rename <- c("Building 21 - Philadelphia, PA" = "Building 21",
+                "Building 21 - Allentown, PA" = "Building 21")
+
+# Make Unmatched Dataframe
+full_2021 <- full_join(fall_df, spring_df, by = "id") %>%
+  mutate(pre_site = str_replace_all(pre_site, loc_rename)) %>%
+  mutate(post_site = str_replace_all(post_site, loc_rename)) %>%
+  mutate(pre_site = post_site)
 
 write_rds(full_2021, here("Analysis/2020-2021/Data/full_2021.rds"))
 write_rds(full_2021, here("Data/SY19-20/full_2021.rds"))
@@ -212,7 +220,10 @@ rename_vector <- c("mathgen1a...47" = "mathgen1a.x",
                    "matheff3...167" ="matheff3.y")
 
 matched_2021 <- bind_cols(fall_one %>% arrange(id), spring_one %>% arrange(id) %>% select(-id)) %>%
-  rename_with( ~ str_replace_all(.x, rename_vector))
+  rename_with( ~ str_replace_all(.x, rename_vector)) %>%
+  mutate(pre_site = str_replace_all(pre_site, loc_rename)) %>%
+  mutate(post_site = str_replace_all(post_site, loc_rename)) %>%
+  mutate(pre_site = post_site)
 
 write_rds(matched_2021, here("Data/SY19-20/matched_2021.rds"))
 write_rds(matched_2021, here("Data/SY20-21/matched_2021.rds"))

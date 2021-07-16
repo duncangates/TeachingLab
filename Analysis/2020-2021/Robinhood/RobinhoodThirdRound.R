@@ -117,7 +117,32 @@ teachers <- map2_df(index8$question, index8$coding,
 
 teachers
 
-# Collab
+# Bennington Table 4
+
+Bennington_Culture <- round3 %>% filter(school == "Bennington") %>% select(25:28) %>%
+  drop_na()
+
+bennington_index <- tibble(questions = colnames(Bennington_Culture),
+                           coding = list(c("Agree", "Strongly Agree"), c("Agree", "Strongly Agree"), 
+                                         c("Agree", "Strongly Agree"), c("Agree", "Strongly Agree")))
+
+map2_df(.x = bennington_index$questions, .y = bennington_index$coding, ~ TeachingLab::score_question(data = Bennington_Culture,
+                                                                                                    question = .x,
+                                                                                                    coding = .y,
+                                                                                                    na_type = "NA"))
+
+# Steam Table 5
+Steam_Culture <- round3 %>% filter(school == "STEAM Bridge") %>% select(25:28) %>%
+  drop_na()
+
+steam_index <- tibble(questions = colnames(Steam_Culture),
+                           coding = list(c("Agree", "Strongly Agree"), c("Agree", "Strongly Agree"), 
+                                         c("Agree", "Strongly Agree"), c("Agree", "Strongly Agree")))
+
+map2_df(.x = steam_index$questions, .y = steam_index$coding, ~ TeachingLab::score_question(data = Steam_Culture,
+                                                                                                     question = .x,
+                                                                                                     coding = .y,
+                                                                                                     na_type = "NA"))
 
 
 

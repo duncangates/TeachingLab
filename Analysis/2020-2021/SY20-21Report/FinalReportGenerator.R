@@ -1,11 +1,11 @@
-
+library(tidyverse)
 params_list <- list(
   partner = list(
     "All Partners",
     "Evangeline Parish, LA", "Louisiana State Content Leader Training, LA",
-    "Lafayette Parish, LA", "East Baton Rouge Parish, LA", "Building 21 - Philadelphia, PA",
+    "Lafayette Parish, LA", "East Baton Rouge Parish, LA",
     "Freire Charter Schools, PA/DE", "Pointe Coupee Parish, LA",
-    "Building 21 - Allentown, PA", "NYC District 11 - District-wide, NY",
+    "Building 21", "NYC District 11 - District-wide, NY",
     "NYC District 11 - PS 89, NY", "NYC District 11 - PS 21, NY",
     "NYC District 11 - IS 355, NY", "NYC District 11 - PS 96, NY",
     "NYC District 11 - PS 87, NY", "Legacy Early College, SC", "NYC District 11 - PS 103, NY",
@@ -17,7 +17,10 @@ params_list <- list(
   matched = list("matched", "unmatched")
 )
 
-groups <- crossing(partner = params_list$partner, matched = params_list$matched)
+groups <- crossing(partner = params_list$partner, matched = params_list$matched) %>%
+  filter(matched != "matched") %>%
+  mutate(across(everything(), ~ as.character(.x))) %>%
+  add_row(matched = "matched", partner = "All Partners")
 
 partner <- groups$partner
 matched <- groups$matched

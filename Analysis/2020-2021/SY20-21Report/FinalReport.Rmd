@@ -2,7 +2,7 @@
 params:
   matched: "unmatched"
   partner: "All Partners"
-title: "`r paste0('Teaching Lab All Partners Report: ', stringr::str_to_title(params$matched))`"
+title: "`r if_else(params$matched == 'matched', paste0('Teaching Lab ', params$partner, ' Report: Matched'), paste0('Teaching Lab ', params$partner, ' Report'))`"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
   TeachingLab::TLDefault:
@@ -88,7 +88,7 @@ In SY20-21, Teaching Lab administered online diagnostic and follow-up surveys of
 
 We have provided two types of results for each section:
 The results in the `r colorize("first three columns", "#04ABEB")` of the table refer to the `r colorize("overall group averages", "#04ABEB")`. We provide the `r colorize("group average for the diagnostic", "#04ABEB")` and `r colorize("follow-up", "#04ABEB")` surveys as well as the `r colorize("percentage point change", "#04ABEB")` (increase or decrease) over this time. It is important to note that the group that completed the diagnostic survey and the group that completed the follow-up survey are different in size.
-The results in the fourth column reflect the percentage of educators who improved their responses or sustained the highest level response from the diagnostic to follow-up survey. This group of educators is the same for both surveys and is smaller in size.
+The results in the `r colorize("fourth column", "#55BBC7")` reflect the percentage of educators who improved their responses or sustained the highest level response from the diagnostic to follow-up survey. This group of educators is the same for both surveys and is smaller in size.
 
 ### Section 1: Mindsets and Beliefs
 Educators were asked a series of questions about their mindsets toward instruction and students on a 5-point Likert scale from 1- Strongly disagree to 5- Strongly agree. The questions focused on four core constructs surrounding mindsets and beliefs, specifically the recognition of race and culture, growth mindsets, high expectations, and taking accountability for equitable instruction.
@@ -181,12 +181,13 @@ mindsets_gt <- tibble(
 
 n2 <- mindsets$n1[1]
 n1 <- mindsets$n2[1]
+n3 <- sum(!is.na(matched_2021$prerace1))
 
 table_maker(data = mindsets_gt, 
             column_names = colnames(data)[2:5], 
             title = "Educators’ Averages Scores on Equitable Mindsets and Beliefs", 
             spanner = "Average Scores on Equitable Mindsets & Beliefs", 
-            n1 = n1, n2 = c(n1, n2), 
+            n1 = n3, n2 = c(n1, n2), 
             rows_positive = c(which(!str_detect(mindsets_gt$`Percentage point change of educators who held growth mindsets and/or high expectations Fall to Spring`, "-"))),
             rows_negative = c(which(str_detect(mindsets_gt$`Percentage point change of educators who held growth mindsets and/or high expectations Fall to Spring`, "-"))),
             improve_col = "% of Educators that Improved or Sustained High Scores")
@@ -357,12 +358,13 @@ environment_gt <- tibble(
 
 n2 <- environment$n1[1]
 n1 <- environment$n2[1]
+n3 <- sum(!is.na(matched_2021$preschool1))
 
 table_maker(data = environment_gt, 
             column_names = colnames(data)[2:5], 
             title = "Educators’ Perceptions of School Culture and Climate, by Survey Administration", 
             spanner = "% of Educators with Positive Perceptions of School Culture and Climate", 
-            n1 = n1, n2 = c(n1, n2), 
+            n1 = n3, n2 = c(n1, n2), 
             rows_positive = c(which(!str_detect(environment_gt$`Percentage point change of educators who held growth mindsets and/or high expectations Fall to Spring`, "-"))),
             rows_negative = c(which(str_detect(environment_gt$`Percentage point change of educators who held growth mindsets and/or high expectations Fall to Spring`, "-"))),
             improve_col = "% of Educators that Improved or Sustained Positive Perceptions")
@@ -587,12 +589,13 @@ ela_gt <- tibble(
 
 n2 <- ela$n1[1]
 n1 <- ela$n2[1]
+n3 <- sum(!is.na(matched_2021$postelagen1a))
 
 table_maker(data = ela_gt, 
             column_names = colnames(data)[2:5], 
             title = "Educators’ Average Scores on ELA Content and Pedagogical Content Knowledge", 
             spanner = "Average Scores of Educators with ELA Content & Pedagogical Content Knowledge", 
-            n1 = n1, n2 = c(n1, n2), 
+            n1 = n3, n2 = c(n1, n2), 
             rows_positive = c(which(!str_detect(ela_gt$`Percentage point change of educators who held growth mindsets and/or high expectations Fall to Spring`, "-"))),
             rows_negative = c(which(str_detect(ela_gt$`Percentage point change of educators who held growth mindsets and/or high expectations Fall to Spring`, "-"))),
             improve_col = "% of Educators that Improved or Sustained High Scores")
@@ -666,14 +669,16 @@ ggplot() +
                        limits = c(0, 100)) +
     scale_y_discrete(expand = c(0, 1)) +
     labs(x = NULL, y = NULL,
-         title = "Educators' Average Scores on ELA Content and Pedagogical <br> Content Knowledge in the <span style = 'color:#ff7b43;'>Diagnostic</span> and <span style = 'color:#00acf0;'>Follow-up<span> Surveys") +
+         title = "Educators' Average Scores on<br> ELA Content and Pedagogical Content Knowledge<br>in the <span style = 'color:#ff7b43;'>Diagnostic</span> and <span style = 'color:#00acf0;'>Follow-up<span> Surveys") +
     theme_bw() +
     theme(panel.border = element_blank(),
           legend.position = "none",
           plot.title = element_markdown(hjust = 0.5, family = "Calibri", size = 20, lineheight = 1.15),
           text = element_text(family = "Calibri"),
-          axis.text.y = element_markdown(hjust = 0.5, lineheight = 1.1, size = 12),
+          axis.text.y = element_markdown(hjust = 0.5, lineheight = 1.1, size = 14),
           axis.text.x = element_markdown(size = 14))
+
+# ggsave(here::here("Images/2020-2021/ImpactReport/ELAImprove.png"), width = 12, height = 8)
 ```
 
 
@@ -794,12 +799,13 @@ math_gt <- tibble(
 
 n2 <- math$n1[1]
 n1 <- math$n2[1]
+n3 <- sum(!is.na(matched_2021$mathgen1a.y))
 
 table_maker(data = math_gt, 
             column_names = colnames(data)[2:5], 
             title = "Educators’ Average Scores on Math Content and Pedagogical Content Knowledge", 
             spanner = "Average Scores of Educators with Math Content & Pedagogical Content Knowledge", 
-            n1 = n1, n2 = c(n1, n2), 
+            n1 = n3, n2 = c(n1, n2), 
             rows_positive = c(which(!str_detect(math_gt$`Percentage point change of educators who held growth mindsets and/or high expectations Fall to Spring`, "-"))),
             rows_negative = c(which(str_detect(math_gt$`Percentage point change of educators who held growth mindsets and/or high expectations Fall to Spring`, "-"))),
             improve_col = "% of Educators that Improved or Sustained")
@@ -871,8 +877,10 @@ ggplot() +
           legend.position = "none",
           plot.title = element_markdown(hjust = 0.5, family = "Calibri", size = 20, lineheight = 1.15),
           text = element_text(family = "Calibri"),
-          axis.text.y = element_markdown(hjust = 0.5, lineheight = 1.1, size = 12),
+          axis.text.y = element_markdown(hjust = 0.5, lineheight = 1.1, size = 14),
           axis.text.x = element_markdown(size = 14))
+
+# ggsave(here::here("Images/2020-2021/ImpactReport/MathImprove.png"), width = 12, height = 8)
 ```
 
 
@@ -958,12 +966,13 @@ admin_gt <- tibble(
 
 n2 <- admin$n1[1]
 n1 <- admin$n2[1]
+n3 <- sum(!is.na(matched_2021$postobs2))
 
 table_maker(data = admin_gt, 
             column_names = colnames(data)[2:5], 
             title = "Observation Practices of Coaches, Leaders, and Administrators, by Survey Administration", 
             spanner = "% of Coaches, Leaders, and Administrators who Agreed or Strongly Agreed", 
-            n1 = n1, n2 = c(n1, n2), 
+            n1 = n3, n2 = c(n1, n2), 
             rows_positive = c(which(!str_detect(admin_gt$`Percentage point change of educators who held growth mindsets and/or high expectations Fall to Spring`, "-"))),
             rows_negative = c(which(str_detect(admin_gt$`Percentage point change of educators who held growth mindsets and/or high expectations Fall to Spring`, "-"))),
             improve_col = "% of Educators that Improved or Sustained")
@@ -1146,23 +1155,27 @@ teacher_graph <- teacher %>%
   relocate(question, .before = 1) %>%
   pivot_longer(!c(1), names_to = "TL", values_to = "Percent") %>%
   mutate(Percent = round(Percent)) %>%
-  mutate(question = str_replace_all(str_wrap(question, 20), "\n", "<br>"))
+  mutate(question = str_replace_all(str_wrap(question, 30), "\n", "<br>"))
 
 ggplot(teacher_graph) +
   geom_col(aes(y = Percent, x = question, fill = TL), position = "dodge") +
   geom_text(aes(y = Percent, x = question, color = TL, label = paste0(Percent, "%")), 
             position = position_dodge(width = 1), vjust = -0.5) +
+  # geom_text(aes(x = 3.5, y = 100, label = paste0("*n = ", n2_teacher)), size = 5, family = "Calibri") +
   labs(x = "",
        y = "",
-       title = "Comparison of Administrators Reviews of <br> <span style = 'color:#00acf0;'>Teaching Lab</span> and <span style = 'color:#000000;'>Non-Teaching Lab<span> Teachers",
+       title = "Comparison of Teacher Practices of <span style = 'color:#00acf0;'>Teaching Lab Participants</span> and <span style = 'color:#000000;'>Non-Participants<span>, <br>as Reported by Coaches, Leaders, and Administrators",
        fill = "") +
-  scale_y_continuous(labels = percent_format(scale = 1), expand = c(0.1, 0)) +
+  scale_y_continuous(labels = scales::percent_format(scale = 1), expand = c(0.1, 0), limits = c(0, 100)) +
   scale_fill_manual(values = tl_palette(color = "blue", n = 2, theme = "dark")) +
   scale_color_manual(values = tl_palette(color = "blue", n = 2, theme = "dark")) +
   theme_tl() +
-  theme(axis.text.x = element_markdown(lineheight = 1.1),
-        plot.title = element_markdown(),
+  theme(axis.text.x = element_markdown(lineheight = 1.1, size = 10),
+        axis.text.y = element_text(size = 10),
+        plot.title = element_markdown(lineheight = 1.1, size = 14),
         legend.position = "none")
+
+# ggsave(here::here("Images/2020-2021/ImpactReport/AdministratorComparison.png"), width = 12, height = 8)
 ```
 
 
@@ -1176,19 +1189,36 @@ lableaders <- data %>%
   summarise(n()) %>%
   as_vector()
 
-lab_replace <- c("Improve my" = "Improved their",
-                 "Lead" = "Led",
-                 "Coach" = "Coached",
-                 "Share" = "Shared")
-
-lableader_df <- data %>%
-  drop_na(post_ll4a) %>%
-  group_by(post_ll4a) %>%
-  summarise(n()/lableaders) %>%
-  mutate(post_ll4a = str_replace_all(post_ll4a, lab_replace))
+# lableader_df <- data %>%
+#   drop_na(post_ll4a) %>%
+#   select(post_ll4a) %>%
+#   group_by(post_ll4a) %>%
+#   summarise(n()/lableaders)
 
 
-if (nrow(lableader_df) > 0) {
+
+lableader_df <- tibble(post_ll4a = c("Improved my own instructional practice",
+                            "Led PLC meetings for teachers", 
+                            "Coached teachers",
+                            "Shared information or resources with teachers"),
+                       `n()/lableaders` = c(0.33333333, 0.16666667, 0.5, 0.5))
+
+# Improve <- lableader_df %>%
+#   mutate(Improve = 0) %>%
+#   mutate(Improve = case_when(str_detect("Improved", post_ll4a) ~ Improve + 1,
+#                              !str_detect("Improved", post_ll4a) ~ Improve)) %>%
+#   summarise(sum = sum(Improve)) %>% as_vector()
+# 
+# Lead_PLC <- data %>%
+#   drop_na(post_ll4a) %>%
+#   select(post_ll4a) %>%
+#   mutate(Improve = 0) %>%
+#   mutate(Improve = case_when(str_detect("Lead PLC", post_ll4a) ~ Improve + 1,
+#                              !str_detect("Lead PLC", post_ll4a) ~ Improve)) %>%
+#   summarise(sum = sum(Improve)) %>% as_vector()
+
+
+if (lableaders > 0) {
   lableader_df %>%
     gt(rowname_col = "post_ll4a") %>%
     cols_label(
@@ -1217,7 +1247,7 @@ The graph below illustrates the Lab Leaders participation in different activitie
 
 
 ```{r}
-if (nrow(lableader_df) > 0) {
+if (lableaders > 0) {
   lableader_df %>%
     select(Percent = `n()/lableaders`, question = post_ll4a) %>%
     mutate(Percent = round(100*Percent)) %>%
@@ -1255,9 +1285,9 @@ if (nrow(lableader_df) > 0) {
 ```{r, results = "asis"}
 files <- list.files(here("Images/2020-2021/StudentWork"), full.names = T)[-4]
 
-if (params$partner %in% c("All Partners")) {
-  knitr::include_graphics("/Users/dunk/Teaching Lab/Coding/TeachingLab/Images/2020-2021/StudentWork/Table1.png")
-}
+# if (params$partner %in% c("All Partners")) {
+#   knitr::include_graphics("/Users/dunk/Teaching Lab/Coding/TeachingLab/Images/2020-2021/StudentWork/Table1.png")
+# }
 
 if (params$partner %in% c("All Partners")) {
   knitr::include_graphics(files)
@@ -1293,7 +1323,7 @@ dashboard_gt <- dashboard_data %>%
 dashboard_gt %>%
   gt() %>%
   tab_header(
-    html(glue::glue("Teaching Lab Performance on Participant Feedback Questions for {params$partner}"))
+    html(glue::glue("<strong>Teaching Lab Performance on Participant Feedback Questions for {params$partner}"))
   ) %>%
   cols_label(
   `How Likely Are You To Apply This Learning To Your Practice In The Next 4-6 Weeks?` = 

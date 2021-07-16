@@ -3,6 +3,8 @@ title: "D11 Analysis"
 author: "Duncan Gates"
 date: "5/4/2021"
 output: html_document
+editor_options:
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -16,7 +18,7 @@ library(ggfx)
 library(ggforce)
 library(here)
 
-data <- read_csv(here("Data/D11 CRT PLC End of Course Survey 2.csv"), skip = 1)
+data <- read_csv(here("Data/D11/D11 CRT PLC End of Course Survey 2.csv"), skip = 1)
 
 col <- grDevices::colorRampPalette(c("#040404", "#04ABEB"))
 ```
@@ -200,8 +202,8 @@ ggplot(data = faceted, aes(
       panel.grid.minor.y = element_blank(),
       strip.text = element_markdown(size = 13),
       strip.background = element_rect(fill = NA, color = NA),
-    ) +
-  ggsave(here("Images/FacetedPLCD11.png"), width = 12, height = 18)
+    )
+# ggsave(here("Images/FacetedPLCD11.png"), width = 12, height = 18)
 ```
 
 ```{r version2}
@@ -250,8 +252,8 @@ ggplot(data = faceted, aes(
       panel.grid.minor.y = element_blank(),
       strip.text = element_markdown(size = 13),
       strip.background = element_rect(fill = NA, color = NA),
-    ) +
-  ggsave(here("Images/Faceted2PLCD11.png"), width = 12, height = 18)
+    )
+# ggsave(here("Images/Faceted2PLCD11.png"), width = 12, height = 18)
 ```
 
 ```{r version3}
@@ -323,8 +325,8 @@ dotplot +
   geom_curve(data = arrows,
              aes(x = x1, y = y1, xend = x2, yend = y2),
              arrow = arrow(length = unit(0.07, "inch")), size = 0.4,
-    color = "gray20", curvature = -0.3) +
-  ggsave(here("Images/AppendixD11.png"), width = 12, height = 14)
+    color = "gray20", curvature = -0.3)
+ggsave(here("Images/AppendixD11.png"), width = 12, height = 14)
 ```
 
 
@@ -332,9 +334,9 @@ dotplot +
 ```{r}
 fall_spring <- bind_rows(
   before_data %>%
-    rename_with(~ str_remove(., " - Before the PLC")),
+    rename_with(~ str_remove_all(., " - Before the PLC")),
   after_data %>%
-    rename_with(~ str_remove(., " - After the PLC"))
+    rename_with(~ str_remove_all(., " - After the PLC"))
 ) %>%
   mutate(season = c(rep("Before PLC", 23), rep("After PLC", 23))) %>%
   group_by(season) %>%
@@ -376,7 +378,7 @@ ggplot() +
   guides(color = guide_legend(override.aes = list(size = 8), reverse = T)) +
   labs(
     x = NULL, y = NULL,
-    title = "Participants' Perceived Knowledge about CRT Practices<br><span style = 'color:#00acf0;'>Before PLC</span> and <span style = 'color:#ff7b43;'>After PLC</span>"
+    title = "Participants' perceived knowledge about CRT practices<br><span style = 'color:#00acf0;'>before PLC</span> and <span style = 'color:#ff7b43;'>after PLC</span>"
   ) +
   theme_bw() +
   theme(
@@ -396,7 +398,7 @@ ggplot() +
     axis.ticks.length.y = unit(0.2, "cm")
   )
 
-ggsave(here("Images/D11Beliefs.png"), width = 12, height = 8)
+ggsave(here("Images/2020-2021/ImpactReport/D11Beliefs.png"), width = 12, height = 8)
 ```
 
 
