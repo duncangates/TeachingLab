@@ -1,8 +1,7 @@
-# course_list <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1yJinWbTyMZf0R8FiFiAUk1RBC7thwuUVSRGW8YGjEdg/edit#gid=307365662", 
-#                             range = "A:A") %>%
-#   dplyr::rename(Courses = 1) %>%
-#   unique()
-# readr::write_rds(course_list, here::here("Staffing/Data/Courses.rds"))
+course_list <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1yJinWbTyMZf0R8FiFiAUk1RBC7thwuUVSRGW8YGjEdg/edit#gid=307365662",
+                            range = "A:A") %>%
+  dplyr::rename(Courses = 1) %>%
+  unique()
 
 pm_list <- read_sheet("https://docs.google.com/spreadsheets/d/1nqtFK9_HBMBU6XQwCmmPYkhwBXZUj8wmevF2WGYUlaM/edit?ts=5f5a8a55#gid=1933413518",
                       sheet = "PMs",
@@ -11,7 +10,7 @@ pm_list <- read_sheet("https://docs.google.com/spreadsheets/d/1nqtFK9_HBMBU6XQwC
 
 sites_list <- read_sheet("https://docs.google.com/spreadsheets/d/1nqtFK9_HBMBU6XQwCmmPYkhwBXZUj8wmevF2WGYUlaM/edit#gid=1070048971",
                          sheet = "Sites") %>%
-  select(c(1, 3))
+  select(c(1, 2))
   
 
 facilitator_names_emails_list <- read_sheet("https://docs.google.com/spreadsheets/d/1nqtFK9_HBMBU6XQwCmmPYkhwBXZUj8wmevF2WGYUlaM/edit?ts=5f5a8a55#gid=1933413518",

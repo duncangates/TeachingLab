@@ -6,13 +6,14 @@
 \alias{scale_fill_tl}
 \title{Discrete color & fill scales based on the Teaching Lab palette}
 \usage{
-scale_colour_tl(n, color)
+scale_colour_tl(n, color, ...)
 
-scale_color_tl(n, color)
+scale_color_tl(n, color, ...)
 
 scale_fill_tl(
   n,
-  color = c("blue", "orange", "purple", "green", "teal", "tl_colors")
+  color = c("blue", "orange", "purple", "green", "teal", "tl_colors"),
+  ...
 )
 }
 \arguments{

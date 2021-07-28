@@ -1,4 +1,6 @@
 library(tidyverse)
+library(encryptedRmd) # For passwords
+
 params_list <- list(
   partner = list(
     "All Partners",
@@ -20,15 +22,45 @@ params_list <- list(
 groups <- crossing(partner = params_list$partner, matched = params_list$matched) %>%
   filter(matched != "matched") %>%
   mutate(across(everything(), ~ as.character(.x))) %>%
-  add_row(matched = "matched", partner = "All Partners")
+  add_row(matched = "matched", partner = "All Partners") %>%
+  mutate(password = paste0(map2(partner, matched, ~ tolower(paste0(substring(.x, 1, 1), substring(.y, 1, 1), collapse = ""))), row_number()))
 
 partner <- groups$partner
 matched <- groups$matched
+password <- groups$password
 
+# Test
+
+# Output to folder in R Teaching Lab
 walk2(partner, matched, ~ rmarkdown::render(
   input = here::here("Analysis/2020-2021/SY20-21Report/FinalReport.rmd"),
   output_file = paste0("2021 Report_", .y, "_", .x),
   output_dir = here::here("Analysis/2020-2021/SY20-21Report/Reports"),
   params = list(partner = .x, matched = .y)
 ))
+
+
+# Test File
+
+# rmd_full <- list.files(here::here("Analysis/2020-2021/SY20-21Report/Reports"), full.names = T, pattern = "*.html")
+# rmd_partial <- list.files(here::here("Analysis/2020-2021/SY20-21Report/Reports"), pattern = "*.html")
+
+# Looping
+
+# walk2(.x = list.files(here::here("Analysis/2020-2021/SY20-21Report/Reports"), full.names = T, pattern = "*.html"), 
+#       .y = list.files(here::here("Analysis/2020-2021/SY20-21Report/Reports"), pattern = "*.html"),
+#      ~ encryptedRmd::encrypt_html_file(path = .x, message_key = T,
+#                                        output_path = paste0(here::here("Analysis/2020-2021/SY20-21Report/Encrypted"),
+#                                                             .y)))
+
+# Output to website folder Teaching Lab
+walk(list.files(here::here("Analysis/2020-2021/SY20-21Report/Reports"), full.names = T, pattern = "*.html"), 
+     ~ file.copy(from = .x, to = "/Users/dunk/Projects/NewWebsite.io/2021Reports", overwrite = T))
+
+walk(list.files(here::here("Analysis/2020-2021/SY20-21Report/Reports"), full.names = T, pattern = "*.html"), 
+     ~ file.copy(from = .x, to = "/Users/dunk/Teaching Lab/Coding/teachinglab.github.io/2021Reports", overwrite = T))
+
+
+
+
 

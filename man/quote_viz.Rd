@@ -4,7 +4,15 @@
 \alias{quote_viz}
 \title{Quote Visualization}
 \usage{
-quote_viz(data, text_col, viz_type = c("ggplot", "gt"))
+quote_viz(
+  data,
+  text_col,
+  viz_type = c("ggplot", "gt"),
+  custom_highlight = F,
+  width = 60,
+  title,
+  ...
+)
 }
 \arguments{
 \item{data}{the dataframe}
@@ -12,6 +20,10 @@ quote_viz(data, text_col, viz_type = c("ggplot", "gt"))
 \item{text_col}{the text to visualize}
 
 \item{viz_type}{ggplot or gt visualization}
+
+\item{custom_highlight}{Whether to provide custom highlight arguments through `highlight =` or auto highlight 3 most frequent words}
+
+\item{title}{the title of the ggplot or gt}
 }
 \value{
 a ggplot/gt that visualizes text

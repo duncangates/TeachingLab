@@ -13,7 +13,7 @@
 #' @return Returns an unsaved gt table
 #' @export
 
-table_maker <- function(data, column_names, title, spanner, n1, n2, rows_positive, rows_negative, improve_col) {
+table_maker <- function(data, column_names, title, spanner, n1, n2, rows_positive, rows_negative, improve_col, bottom_row) {
   colnames(data)[2:5] <- c("name_1", "name_2", "name_3", "name_4")
   
   gt_table <- data %>%
@@ -47,20 +47,20 @@ table_maker <- function(data, column_names, title, spanner, n1, n2, rows_positiv
       decimals = 0
     ) %>%
     # Add + symbol where needed
-    fmt_percent(
-      columns = c(4),
-      scale_values = F,
-      decimals = 0,
-      rows = rows_positive,
-      pattern = "+{x}"
-    ) %>%
+    # fmt_percent(
+    #   columns = c(4),
+    #   scale_values = F,
+    #   decimals = 0,
+    #   rows = rows_positive,
+    #   pattern = "+{x}"
+    # ) %>%
     # For - make percent as well
-    fmt_percent(
-      columns = c(4),
-      scale_values = F,
-      decimals = 0,
-      rows = rows_negative
-    ) %>%
+    # fmt_percent(
+    #   columns = c(4),
+    #   scale_values = F,
+    #   decimals = 0,
+    #   rows = rows_negative
+    # ) %>%
   # Color by gradation, < 40 is light, 40-80 is medium, > 80 is dark
   # Blue
   tab_style(
@@ -182,19 +182,39 @@ table_maker <- function(data, column_names, title, spanner, n1, n2, rows_positiv
         columns = c(4)
       )
     ) %>%
+    # Make last row n row
+    tab_style(
+      style = list(
+        cell_fill(color = "#FFFFFF")
+      ),
+      locations = cells_body(
+        rows = bottom_row
+      )
+    ) %>%
+    fmt_number(
+      columns = c(2, 3, 5),
+      rows = c(bottom_row),
+      pattern = "n = {x}",
+      decimals = 0
+    ) %>%
+    fmt_missing(
+      columns = c(4),
+      rows = c(bottom_row),
+      missing_text = ""
+    ) %>%
     # Footnotes
-    tab_footnote(
-      footnote = md(glue::glue("Note: The number of observations varies between items from {n2[1]} to {n2[2]}")),
-      locations = cells_column_labels(
-        columns = c(1:4)
-      )
-    ) %>%
-    tab_footnote(
-      footnote = md(glue::glue("n = {n1}")),
-      locations = cells_column_labels(
-        columns = c(5)
-      )
-    ) %>%
+    # tab_footnote(
+    #   footnote = md(glue::glue("Note: The number of observations varies between items from {n2[1]} to {n2[2]}")),
+    #   locations = cells_column_labels(
+    #     columns = c(1:4)
+    #   )
+    # ) %>%
+    # tab_footnote(
+    #   footnote = md(glue::glue("n = {n1}")),
+    #   locations = cells_column_labels(
+    #     columns = c(5)
+    #   )
+    # ) %>%
     # Final theming
     gt_theme_tl() %>%
     tab_options(

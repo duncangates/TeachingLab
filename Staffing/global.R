@@ -26,3 +26,18 @@ labelMandatory <- function(label) {
 
 # which fields are mandatory
 fieldsMandatory <- c("pm", "curriculum", "site", "content", "calls_count")
+
+
+
+# invalidate_function <- function() {
+#   validate(
+#     need(input$time_1 != input$time_2, session$sendCustomMessage(type = 'errormessage',
+#                                                                  message = 'Please enter non-duplicate times'))
+#   )
+#   req(input$time_1 != input$time_2)
+# }
+
+
+
+
+

@@ -4,7 +4,7 @@
 \alias{score_question}
 \title{Calculate percentage of a question (column) in data (data) that is in the right answer (coding)}
 \usage{
-score_question(data, question, coding, na_type = c("NA", "NR"))
+score_question(data, question, coding, na_type = "NA")
 }
 \arguments{
 \item{data}{the dataframe to be analyzed}
@@ -13,7 +13,7 @@ score_question(data, question, coding, na_type = c("NA", "NR"))
 
 \item{coding}{the coding to check for}
 
-\item{na_type}{the form that NA takes - could be "No Response" as in the Participant Feedback dashboard}
+\item{na_type}{the form that NA takes - could be "No Response" as in the Participant Feedback dashboard, or any other form of "NA"}
 }
 \value{
 Returns a dataframe with the percent, correct, number of non-na responses, and question itself

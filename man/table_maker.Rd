@@ -13,7 +13,8 @@ table_maker(
   n2,
   rows_positive,
   rows_negative,
-  improve_col
+  improve_col,
+  bottom_row
 )
 }
 \arguments{

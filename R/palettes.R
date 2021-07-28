@@ -52,7 +52,7 @@ tl_pal <- function() {
 #' @inheritDotParams ggplot2::discrete_scale -expand -position
 #' @rdname scale_tl
 #' @export
-scale_colour_tl <- function(n, color) {
+scale_colour_tl <- function(n, color, ...) {
   # ggplot2::discrete_scale("colour", "tl", tl_pal(), ...)
   scale_color_manual(values = tl_palette(color = "blue", theme = "dark", n = n))
 }
@@ -63,7 +63,7 @@ scale_color_tl <- scale_colour_tl
 
 #' @export
 #' @rdname scale_tl
-scale_fill_tl <- function(n, color = c("blue", "orange", "purple", "green", "teal", "tl_colors")) {
+scale_fill_tl <- function(n, color = c("blue", "orange", "purple", "green", "teal", "tl_colors"), ...) {
   # ggplot2::discrete_scale("fill", "tl", tl_pal(), ...)
   scale_fill_manual(values = tl_palette(color = "blue", theme = "dark", n = n))
 }

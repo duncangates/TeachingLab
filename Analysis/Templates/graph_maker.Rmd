@@ -72,8 +72,8 @@ ggplot() +
         plot.title = element_markdown(hjust = 0.5, family = "Calibri", size = 20, lineheight = 1.15),
         text = element_text(family = "Calibri"),
         axis.text.y = element_markdown(hjust = 0.5, lineheight = 1.1, size = 14),
-        axis.text.x = element_markdown(size = 14)) +
-    ggsave(here("Images/Legacy Graphs/Graph 4.png"), width = 12, height = 8)
+        axis.text.x = element_markdown(size = 14))
+  ggsave(here("Images/Legacy Graphs/Graph 4.png"), width = 12, height = 8)
 ```
 ## Graph 3
 

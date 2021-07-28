@@ -1,0 +1,163 @@
+---
+title: "Race and Culture Survey Analysis"
+author: "Duncan Gates"
+date: "7/13/2021"
+output:
+  html_document:
+  theme: paper
+highlight: kate
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, message = F, warning = F)
+library(tidyverse)
+library(here)
+library(ggtext)
+library(systemfonts)
+devtools::load_all()
+library(TeachingLab)
+library(googlesheets4)
+library(janitor)
+```
+
+# Read in Data
+
+```{r}
+march2019 <- read_sheet("https://docs.google.com/spreadsheets/d/1q9jlAVS_iKUdgLWT9TAhDZ5b2RUhyei0XxwNjDHwPkM/edit#gid=160629191", sheet = "Form Responses 1", skip = 1) %>%
+  mutate(time = "March 2019") %>%
+  select(-Timestamp) %>%
+  mutate(across(everything(), ~ as.character(unlist(.x))))
+july2019 <- read_sheet("https://docs.google.com/spreadsheets/d/1GaGYf0RtPNmzOGFM1XB27H5eyP4T9lMCMH3MTjAUupI/edit#gid=674715077", sheet = "Form Responses 1", skip = 1) %>%
+  select(-c(47:49)) %>%
+  mutate(time = "July 2019") %>%
+  select(-Timestamp) %>%
+  mutate(across(everything(), ~ as.character(unlist(.x))))
+february2020 <- read_sheet("https://docs.google.com/spreadsheets/d/19jbdok4Lh7iOf-UlJFA_sXC80a8fmQ_lIgxiEJhhjxs/edit#gid=394003930", sheet = "Form Responses 1", skip = 1) %>%
+  mutate(time = "February 2020") %>%
+  select(-Timestamp) %>%
+  mutate(across(everything(), ~ as.character(.x))) %>%
+  select(-c(50:51))
+november2020 <- read_sheet("https://docs.google.com/spreadsheets/d/1zLUuycxMKxMPZ-VoFzwCLgpY2qfKcgyimUdrww2ehAQ/edit#gid=1438011169", sheet = "Form Responses 1", skip = 1) %>%
+  mutate(time = "November 2020") %>%
+  select(-Timestamp) %>%
+  mutate(across(everything(), ~ as.character(.x)))
+```
+
+# Compare columns
+
+```{r}
+compare_cols <- janitor::compare_df_cols(march2019, july2019, february2020, november2020)
+```
+
+
+# Rename data for join
+
+```{r}
+column_rename <- function(data) {
+  
+  rename <- c("What is your role?" = "tl_role",
+  "What is your role?...2" = "tl_role",
+  "Are you a full-time team member or Fellow at Teaching Lab?...2" = "tl_role",
+  "Are you a full-time team member or Fellow at Teaching Lab?...34" = "tl_role",
+  "Are you a people manager at Teaching Lab?" = "tl_manager",
+  "Are you currently a Chief or Director at Teaching Lab?...4" = "tl_manager",
+  "Are you currently a Director, Managing Director, or Chief at Teaching Lab?...5" = "tl_manager",
+  "Are you currently a Director, Managing Director, or Chief at Teaching Lab?...51" = "tl_manager",
+  "Are you part of the Leadership Team at Teaching Lab?" = "tl_manager",
+  "Do you know any candidates who would be great for roles at Teaching Lab? If so, please share names, contact information, and how you think they could contribute." = "tl_prospect",
+  "Do you know any prospects who would be great for roles at Teaching Lab? If so, please share names, contact information, and areas of professional interest." = "tl_prospect",
+  "How do you identify racially or ethnically?" = "identify",
+  "How do you identify racially or ethnically?...3" = "identify",
+  "How do you identify racially or ethnically?...50" = "identify",
+  "If you have comments or feedback about the statements above, please share with us....35" = "feedback1",
+  "If you have comments or feedback about the statements above, please share with us....43" = "feedback2",
+  "To what degree does the Teaching Lab community uphold our values of Habits?" = "hold_habits",
+  "To what degree does the Teaching Lab community uphold our values of Head?" = "hold_head",
+  "To what degree does the Teaching Lab community uphold our values of Heart?" = "hold_heart",
+  "To what degree does the Teaching Lab community uphold our values of Racial Equity?" = "hold_equity",
+  "We’d appreciate any comments, questions, or feedback you want to share about this survey or about your work at Teaching Lab." = "feedback3",
+  "We’d appreciate any comments, questions, or feedback you want to share about this survey or about your work here at Teaching Lab." = "feedback3",
+  "Over the past three months, how happy have you been working for Teaching Lab?" = "three_months_happy",
+  "Over the past three months, how would you rate your morale (defined as your sense of well being) at work at Teaching Lab?" = "three_months_happy"
+  )
+  
+  rename2 <- c("I am satisfied with the logistics of working for Teaching Lab (contracting, invoices, reimbursements, payment, etc.)." = "working_logistics",
+               "I am satisfied with the logistics of working for Teaching Lab (contracting, invoices, reimbursements, payment, etc.)" = "working_logistics",
+               "I can bring my \"whole self\" to work." = "whole_self",
+               "I expect to be working at Teaching Lab organization three years from now." = "three_years",
+               "I expect to be working at Teaching Lab three years from now." = "three_years",
+               "I feel the work I am doing at Teaching Lab will lead to impact on students." = "student_impact",
+               "I feel the work I am doing at Teaching Lab will lead to positive impact on students." = "student_impact",
+               "My associates (fellow employees) are committed to doing quality work." = "quality_work",
+               "My associates (fellow team members) are committed to doing quality work." = "quality_work",
+               "My manager is clear about where the organization is going." = "manager_clear_org",
+               "My manager(s) are clear about where the organization is going." = "manager_clear_org",
+               "Our Executive Team (CEO Sarah Johnson, COO Chris Daniels, MD - Content Design Vaishali Joshi, MD - Partnerships Sheena Lights, MD - Learning and Research HaMy Vu) communicates well with the organization." = "executive_team_comm",
+               "Our Executive Team (CEO Sarah Johnson, MD - Content Design Vaishali Joshi, MD - Partnerships Sheena Lights, MD - Learning and Research HaMy Vu) communicates well with the organization." = "executive_team_comm",
+               "Our leadership team communicates well with the organization." = "executive_team_comm",
+               "Our leadership team communicates well with the organization" = "executive_team_comm",
+               "Our organization has an explicit commitment to racial equity." = "racial_equity",
+               "Our organization has an explicit commitment to equity" = "racial_equity",
+               "Our organization has an explicit commitment to inclusion" = "inclusion",
+               "Our organization has an explicit commitment to inclusiveness." = "inclusion",
+               "We have free and open expression of ideas, opinions and beliefs." = "free_beliefs",
+               "We have free and open expression of ideas, opinions and beliefs" = "free_beliefs",
+               "We have frequent conversations about how power and privilege impact our work at Teaching Lab." = "power_conversations",
+               "We have frequent conversations about power and privilege." = "power_conversations",
+               "We have frequent conversations about power and privilege" = "power_conversations",
+               "We have frequent conversations about race/ethnicity re: how we work." = "race_conversations",
+               "We have frequent conversations about race/ethnicity re: how we work" = "race_conversations",
+               "We have frequent conversations about how race/ethnicity impacts our work at Teaching Lab." = "race_conversations"
+               )
+  
+  string <- deparse(substitute(data))
+  
+  data2 <- data %>%
+    dplyr::rename_with( ~ str_replace_all(.x, rename)) %>%
+    dplyr::rename_with( ~ str_remove_all(.x, "\\?")) %>%
+    dplyr::rename_with( ~ str_remove_all(.x, "Please rate your agreement with the following items. \\[")) %>%
+    dplyr::rename_with( ~ str_remove_all(.x, "\\]")) %>%
+    dplyr::rename_with( ~ str_replace_all(.x, rename2)) %>%
+    dplyr::rename_with( ~ str_replace_all(.x, c("identify...3" = "identify",
+                                                "identify...50" = "identify")))
+    
+  
+  assign(string, data2, envir = .GlobalEnv)
+  
+}
+
+
+column_rename(march2019)
+column_rename(july2019)
+column_rename(february2020)
+column_rename(november2020)
+
+
+# map(.x = c(march2019, july2019, february2020, november2020), ~ column_rename(.x))
+```
+
+
+```{r}
+compare_cols <- janitor::compare_df_cols(march2019, july2019, february2020, november2020)
+# compare_cols_agreement <- compare_cols %>% 
+#   select(1) %>% 
+#   slice(c(25:88)) %>%
+#   mutate(column_name = str_remove_all(column_name, "Please rate your agreement with the following items. \\[")) %>%
+#   mutate(column_name = str_remove_all(column_name, "\\]"))
+```
+
+
+# Join Data
+
+```{r}
+full_data <- full_join(march2019, july2019) %>%
+  full_join(february2020) %>%
+  full_join(november2020)
+```
+
+
+
+
+

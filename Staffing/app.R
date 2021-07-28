@@ -81,7 +81,7 @@ ui <- bs4DashPage(
           column(
             6,
             bs4Card(
-              title = h4("Call Times", style = "font-weight:bold; color:#3D9970;", align = "center"),
+              title = h4("Call Times (All times are EST)", style = "font-weight:bold; color:#3D9970;", align = "center"),
               closable = F,
               width = 12,
               # height = 414,
@@ -114,6 +114,7 @@ ui <- bs4DashPage(
                 airDatepickerInput("response_needed",
                           "What date do you need responses sent by?",
                           value = Sys.Date() + 1,
+                          minDate = Sys.Date() + 1,
                           multiple = F)
               ),
               br(),
@@ -150,12 +151,13 @@ server <- function(input, output, session) {
   output$specific_yes <- renderUI({
     req(input$curriculum)
     shinyWidgets::pickerInput("specific_facilitator", 
-                              label = "Select the facilitators you would like to email:", 
+                              label = labelMandatory("Select the facilitators you would like to email:"), 
                               choices = Facilitators_Emails %>%
                                 pivot_longer(!c(1, 2), names_to = "Curriculum") %>% 
+                                arrange(Facilitators) %>%
                                 filter(Curriculum == input$curriculum & value == 1) %>% 
                                 select(Facilitators) %>% 
-                                arrange(),
+                                distinct(),
                               multiple = T,
                               width = "400px",
                               options = list(
@@ -167,24 +169,29 @@ server <- function(input, output, session) {
   # Generate call times selection
   output$call_times_gen <- renderUI({
     
+    # Require all times 
     req(input$site)
+    req(input$curriculum)
+    req(input$pm)
     
-    local_zone <- Sites %>%
-      filter(Site == input$site) %>%
-      mutate(`Time Zone` = str_replace_all(`Time Zone`, c("CST" = "America/Chicago", "EST" = "America/New_York", "PST" = "America/Los_Angeles"))) %>%
-      mutate(`Time Zone` = replace_na(`Time Zone`, "America/New_York")) %>%
-      select(`Time Zone`) %>%
-      as_vector()
+    # local_zone <- Sites %>%
+    #   filter(Site == input$site) %>%
+    #   mutate(`Time Zone` = str_replace_all(`Time Zone`, c("CST" = "America/Chicago", "EST" = "America/New_York", "PST" = "America/Los_Angeles"))) %>%
+    #   mutate(`Time Zone` = replace_na(`Time Zone`, "America/New_York")) %>%
+    #   select(`Time Zone`) %>%
+    #   as_vector()
     
     # Create a variable length input
     if (input$calls_count > 0) {
       map(1:input$calls_count, ~ airDatepickerInput(
         inputId = paste0("time_", .x),
-        label = paste0("Date and Time ", .x),
+        label = h5(paste0("Date and Time ", .x, (" (EST)")), style = "width: 400px;font-weight:bold;"),
         multiple = F,
-        value = force_tz(as.POSIXct(format(Sys.time(), "%Y-%m-%d %H:%M")), local_zone),
+        value = force_tz(as.POSIXct(format(as_datetime(paste0(today(), " 12:00:00 UTC")), "%Y-%m-%d %H:%M")), "America/New_York"),
         # value = as.POSIXct(format(Sys.time(), "%Y-%m-%d %H:%M")),
         timepicker = TRUE,
+        minDate = Sys.Date() + 1,
+        update_on = "change",
         addon = "left",
         width = "100px",
         timepickerOpts = timepickerOptions(
@@ -240,6 +247,19 @@ server <- function(input, output, session) {
   # Create action for submit button
   observeEvent(input$submit, {
     
+    # Ensure no duplicate date/times based on length of uniques and length of original dataframe
+    times <- tibble(names = map(1:input$calls_count, ~ as.character(eval(parse(text = (paste0("input$time_", .x)))))))
+    # 
+    print(crossing(times))
+    crossing_number <- nrow(crossing(times))
+    # 
+    # validate(
+    #   need(crossing_number == input$calls_count, session$sendCustomMessage(type = 'testmessage',
+    #                                                                message = 'Please enter non-duplicate times'))
+    # )
+
+    req(crossing_number == input$calls_count)
+    
     # Write New RDS first
     write_rds(new_data(), "Data/new_data.rds")
     
@@ -249,6 +269,7 @@ server <- function(input, output, session) {
     # Send pop-up message
     session$sendCustomMessage(type = 'testmessage',
                               message = 'Thank you for your submission!')
+    
     # Send email
     # source("email_send.R")
 

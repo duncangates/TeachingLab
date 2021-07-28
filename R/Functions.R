@@ -487,23 +487,27 @@ calc_nps <- function(x) {
 #' @param data the dataframe to be analyzed
 #' @param question the column to be selected
 #' @param coding the coding to check for
-#' @param na_type the form that NA takes - could be "No Response" as in the Participant Feedback dashboard
+#' @param na_type the form that NA takes - could be "No Response" as in the Participant Feedback dashboard, or any other form of "NA"
 #' @return Returns a dataframe with the percent, correct, number of non-na responses, and question itself
 #' @export
 #' 
-score_question <- function(data, question, coding, na_type = c("NA", "NR")) {
+score_question <- function(data, question, coding, na_type = "NA") {
   
   if (na_type == "NA") {
     data %>%
-      drop_na(.data[[question]]) %>%
+      tidyr::drop_na(.data[[question]]) %>%
+      dplyr::filter(.data[[question]] != "NULL") %>%
       dplyr::summarise(percent = 100 * (sum(.data[[question]] %in% coding, na.rm = T)/length(which(!is.na(.data[[question]])))),
                 n = length(which(!is.na(.data[[question]])))) %>%
-      dplyr::mutate(question = question)
-  } else if (na_type == "NR") {
+      dplyr::mutate(question = question,
+                    answer = list(coding))
+  } else {
     data %>%
-      dplyr::summarise(percent = 100 * (sum(.data[[question]] %in% coding, na.rm = T)/length(which(!.data[[question]] == "No Response"))),
-                n = length(which(!.data[[question]] == "No Response"))) %>%
-      dplyr::mutate(question = question)
+      dplyr::filter(.data[[question]] != "NULL") %>%
+      dplyr::summarise(percent = 100 * (sum(.data[[question]] %in% coding, na.rm = T)/length(which(!.data[[question]] == na_type))),
+                n = length(which(!.data[[question]] == na_type))) %>%
+      dplyr::mutate(question = question, 
+                    answer = list(coding))
   }
   
   
@@ -608,15 +612,17 @@ score_question_improved <- function(data, question_pre, question_post, coding, m
               n2 = length(which(!is.na(.data[[question_post]])))) %>%
     dplyr::mutate(question = str_remove(question_pre, "pre"))
   
-  n <- tibble(data1$n1,
-              data1$n2) %>%
-    pivot_longer(everything()) %>%
-    filter(value == min(value)) %>%
-    pull(value)
+  n <- data %>%
+    filter(prepost == T) %>%
+    drop_na(.data[[question_post]], .data[[question_pre]]) %>%
+    ungroup() %>%
+    nrow()
   
   coding_with_3 <- append(coding, middle_value)
   
   data2 <- data %>%
+    filter(prepost == T) %>%
+    drop_na(.data[[question_post]], .data[[question_pre]]) %>%
     dplyr::mutate(increase = 0) %>%
     dplyr::mutate(increase = case_when(.data[[question_pre]] %in% middle_value & .data[[question_post]] %in% middle_value ~ increase,
                                 .data[[question_pre]] %in% coding & .data[[question_post]] %in% coding ~ increase + 1,
@@ -649,8 +655,19 @@ score_question_mindsets <- function(data, question_pre, question_post, coding, n
       drop_na(.data[[question_pre]], .data[[question_post]])
   }
   
+  n <- data %>%
+    filter(prepost == T) %>%
+    nrow()
+  
+  
   if (likert == 5) {
+    
+    middle_value <- "3"
+    positive_vector <- c("4", "5")
+    negative_vector <- c("1", "2")
+    
     if (coding == "positive") {
+      coding_with_3 <- append(positive_vector, middle_value)
       score <- data %>%
         dplyr::mutate(score_pre = case_when(.data[[question_pre]] %in% "5" ~ 2,
                                      .data[[question_pre]] %in% "4" ~ 2,
@@ -662,7 +679,19 @@ score_question_mindsets <- function(data, question_pre, question_post, coding, n
                                       .data[[question_post]] %in% "3" ~ 1,
                                       .data[[question_post]] %in% "2" ~ 0,
                                       .data[[question_post]] %in% "1" ~ 0))
+      
+      data2 <- data %>%
+        filter(prepost == T) %>%
+        dplyr::mutate(increase = 0) %>%
+        dplyr::mutate(increase = case_when(.data[[question_pre]] %in% positive_vector & .data[[question_post]] %in% middle_value ~ increase,
+                                           .data[[question_pre]] %in% positive_vector & .data[[question_post]] %in% positive_vector ~ increase + 1,
+                                           .data[[question_pre]] %!in% positive_vector & .data[[question_post]] %in% coding_with_3 ~ increase + 1,
+                                           .data[[question_pre]] %!in% positive_vector & .data[[question_post]] %!in% positive_vector ~ increase,
+                                           .data[[question_pre]] %in% positive_vector & .data[[question_post]] %!in% positive_vector ~ increase)) %>%
+        dplyr::summarise(percent_improve_sustain = 100 * sum(increase, na.rm = T)/n)
+      
     } else if (coding == "negative") {
+      coding_with_3 <- append(negative_vector, middle_value)
       score <- data %>%
         dplyr::mutate(score_pre = case_when(.data[[question_pre]] %in% "1" ~ 2,
                                      .data[[question_pre]] %in% "2" ~ 2,
@@ -674,9 +703,28 @@ score_question_mindsets <- function(data, question_pre, question_post, coding, n
                                       .data[[question_post]] %in% "3" ~ 1,
                                       .data[[question_post]] %in% "4" ~ 0,
                                       .data[[question_post]] %in% "5" ~ 0))
+      
+      data2 <- data %>%
+        filter(prepost == T) %>%
+        dplyr::mutate(increase = 0) %>%
+        dplyr::mutate(increase = case_when(.data[[question_pre]] %in% negative_vector & .data[[question_post]] %in% middle_value ~ increase,
+                                           .data[[question_pre]] %in% negative_vector & .data[[question_post]] %in% negative_vector ~ increase + 1,
+                                           .data[[question_pre]] %!in% negative_vector & .data[[question_post]] %in% coding_with_3 ~ increase + 1,
+                                           .data[[question_pre]] %!in% negative_vector & .data[[question_post]] %!in% negative_vector ~ increase,
+                                           .data[[question_pre]] %in% negative_vector & .data[[question_post]] %!in% negative_vector ~ increase)) %>%
+        dplyr::summarise(percent_improve_sustain = 100 * sum(increase, na.rm = T)/n)
+      
     }
   } else if (likert == 6) {
+    
+    middle_value <- c("3", "4")
+    positive_vector <- c("5", "6")
+    negative_vector <- c("1", "2")
+    
     if (coding == "positive") {
+      
+      coding_with_3 <- append(positive_vector, middle_value)
+      
       score <- data %>%
         dplyr::mutate(score_pre = case_when(.data[[question_pre]] %in% "6" ~ 2,
                                      .data[[question_pre]] %in% "5" ~ 2,
@@ -690,7 +738,21 @@ score_question_mindsets <- function(data, question_pre, question_post, coding, n
                                       .data[[question_post]] %in% "3" ~ 1,
                                       .data[[question_post]] %in% "2" ~ 0,
                                       .data[[question_post]] %in% "1" ~ 0))
+      
+      data2 <- data %>%
+        filter(prepost == T) %>%
+        dplyr::mutate(increase = 0) %>%
+        dplyr::mutate(increase = case_when(.data[[question_pre]] %in% positive_vector & .data[[question_post]] %in% middle_value ~ increase,
+                                           .data[[question_pre]] %in% positive_vector & .data[[question_post]] %in% positive_vector ~ increase + 1,
+                                           .data[[question_pre]] %!in% positive_vector & .data[[question_post]] %in% coding_with_3 ~ increase + 1,
+                                           .data[[question_pre]] %!in% positive_vector & .data[[question_post]] %!in% positive_vector ~ increase,
+                                           .data[[question_pre]] %in% positive_vector & .data[[question_post]] %!in% positive_vector ~ increase)) %>%
+        dplyr::summarise(percent_improve_sustain = 100 * sum(increase, na.rm = T)/n)
+      
     } else if (coding == "negative") {
+      
+      coding_with_3 <- append(negative_vector, middle_value)
+      
       score <- data %>%
         dplyr::mutate(score_pre = case_when(.data[[question_pre]] %in% "1" ~ 2,
                                      .data[[question_pre]] %in% "2" ~ 2,
@@ -704,6 +766,17 @@ score_question_mindsets <- function(data, question_pre, question_post, coding, n
                                       .data[[question_post]] %in% "4" ~ 1,
                                       .data[[question_post]] %in% "5" ~ 0,
                                       .data[[question_post]] %in% "6" ~ 0))
+      
+      data2 <- data %>%
+        filter(prepost == T) %>%
+        dplyr::mutate(increase = 0) %>%
+        dplyr::mutate(increase = case_when(.data[[question_pre]] %in% negative_vector & .data[[question_post]] %in% middle_value ~ increase,
+                                           .data[[question_pre]] %in% negative_vector & .data[[question_post]] %in% negative_vector ~ increase + 1,
+                                           .data[[question_pre]] %!in% negative_vector & .data[[question_post]] %in% coding_with_3 ~ increase + 1,
+                                           .data[[question_pre]] %!in% negative_vector & .data[[question_post]] %!in% negative_vector ~ increase,
+                                           .data[[question_pre]] %in% negative_vector & .data[[question_post]] %!in% negative_vector ~ increase)) %>%
+        dplyr::summarise(percent_improve_sustain = 100 * sum(increase, na.rm = T)/n)
+      
     }
   }
   
@@ -720,7 +793,8 @@ score_question_mindsets <- function(data, question_pre, question_post, coding, n
       score_post = (sum(score_post, na.rm = T)/(n()*2))*100,
       n2 = n()
       )
-  final_score <- bind_cols(score_pre, score_post)
+  final_score <- bind_cols(score_pre, score_post) %>%
+    bind_cols(data2)
   
   final_score
   
@@ -830,14 +904,16 @@ round2 = function(x, n) {
 #' @param data the dataframe
 #' @param text_col the text to visualize
 #' @param viz_type ggplot or gt visualization
+#' @param title the title of the ggplot or gt
+#' @param custom_highlight Whether to provide custom highlight arguments through `highlight =` or auto highlight 3 most frequent words
 #' @return a ggplot/gt that visualizes text
 #' 
 #' @examples
 #' quote_viz(data = iris, text_col = Species, viz_type = "ggplot")
-#' 
+#' @import tidytext
 #' @export
 
-quote_viz <- function(data, text_col, viz_type = c("ggplot", "gt"), highlight, width = 60) {
+quote_viz <- function(data, text_col, viz_type = c("ggplot", "gt"), custom_highlight = F, width = 60, title, ...) {
   
   # highlight_mutate <- function(x) {
   #   dplyr::mutate(color_text = str_replace_all(color_text, x, paste0("<a style='color:#04abeb'>", x, "</a>")))
@@ -858,36 +934,65 @@ quote_viz <- function(data, text_col, viz_type = c("ggplot", "gt"), highlight, w
       theme_void() + 
       theme(text = element_text(family = "Calibri"))
   } else if (viz_type == "gt") {
-    data_text <- data %>%
-      dplyr::mutate(text = str_replace_all(str_wrap(.data[[text_col]], width = width), "\n", "<br>")) #%>%
-      # dplyr::mutate(text = paste0("\"<i>", text, "\""))
+    # Automated highlighting extract most frequent words
+    if (custom_highlight == F) {
+      
+      library(tidytext)
+      data("stop_words")
+      
+      highlight <- data %>%
+        tidytext::unnest_tokens(word, .data[[text_col]]) %>%
+        filter(is.na(as.numeric(word))) %>%
+        dplyr::count(word, sort = T) %>%
+        dplyr::anti_join(stop_words) %>%
+        head(3) %>%
+        dplyr::pull(word)
+    } else if (custom_highlight == T) {
+      highlight <- highlight # Custom highlighting
+    }
     
-    data_text %>%
+    # print(highlight)
+    
+    data_text <- data %>%
+      dplyr::mutate(text = str_replace_all(str_wrap(.data[[text_col]], width = width), "\n", "<br>")) %>%
+      dplyr::mutate(text = paste0("\"<i>", text, "\""))
+    
+    # Make a new column for the data
+    data_text <- data_text %>%
       dplyr::mutate(color_text = text) %>%
-      dplyr::mutate(color_text = str_replace_all(color_text, highlight[1], paste0("<a style='color:#04abeb; font-weight:bold;'>", highlight[1], "</a>"))) %>%
-      dplyr::mutate(color_text = str_replace_all(color_text, highlight[2], paste0("<a style='color:#04abeb; font-weight:bold;'>", highlight[2], "</a>"))) %>%
-      dplyr::mutate(color_text = str_replace_all(color_text, highlight[3], paste0("<a style='color:#04abeb; font-weight:bold;'>", highlight[3], "</a>"))) %>%
-      dplyr::mutate(color_text = str_replace_all(color_text, highlight[4], paste0("<a style='color:#04abeb; font-weight:bold;'>", highlight[4], "</a>"))) %>%
-      dplyr::mutate(color_text = str_replace_all(color_text, highlight[5], paste0("<a style='color:#04abeb; font-weight:bold;'>", highlight[5], "</a>"))) %>%
-      dplyr::mutate(color_text = str_replace_all(color_text, "”-", "” <br><i>-")) %>%
+      dplyr::mutate(color_text = stringr::str_replace_all(color_text, paste0(highlight[1]), paste0("<span style='color:#04abeb; font-weight:bold;'>", highlight[1], "</span>"))) %>%
+      dplyr::mutate(color_text = stringr::str_replace_all(color_text, paste0(highlight[2]), paste0("<span style='color:#04abeb; font-weight:bold;'>", highlight[2], "</span>"))) %>%
+      dplyr::mutate(color_text = stringr::str_replace_all(color_text, paste0(highlight[3]), paste0("<span style='color:#04abeb; font-weight:bold;'>", highlight[3], "</span>")))
+    
+    # Highlight most common words
+    # data_text <- map_df(highlight, ~ data_text %>% 
+    #       transmute(color_text = str_replace_all(color_text, 
+    #                                           .x, 
+    #                                           paste0("<a style='color:#04abeb; font-weight:bold;'>", .x, "</a>"))))
+    # Make gt table with all HTML Formatting
+    data_text %>%
       select(color_text) %>%
       gt() %>%
         cols_label(
-          color_text = md("**Quotes**")
+          color_text = glue::glue("{title}")
         ) %>%
       # text_transform(
       #   locations = cells_body(
       #     columns = everything()
       #   ),
       #   fn = function(x) {
-      #     map_chr(highlight, ~ stringr::str_replace_all(x, .x, paste0("<span style='color:#04abeb'>", .x, "</span>")))
-      #   }
-      # ) %>%
+          # stringr::str_replace_all(x, paste0(" ", highlight[1], " "), paste0("<span style='color:#04abeb; font-weight:bold;'> ", highlight[1], " </span>"))
+          # stringr::str_replace_all(x, paste0(" ", highlight[2], " "), paste0("<span style='color:#04abeb; font-weight:bold;'> ", highlight[2], " </span>"))
+          # stringr::str_replace_all(x, paste0(" ", highlight[3], " "), paste0("<span style='color:#04abeb; font-weight:bold;'> ", highlight[3], " </span>"))
+          # map_chr(highlight, ~ stringr::str_replace_all(x, .x, paste0("<span style='color:#04abeb'>", .x, "</span>")))
+        # }
+      #) %>%
       fmt_markdown(columns = everything()) %>%
       tab_style(
         style = cell_fill(color = "gray85"),
         locations = cells_body(
-          rows = c(1, 3, 5, 7, 9)
+          # Highlights every other cell to be gray
+          rows = c(1:length(data[[quo_name(text_col)]]))[c(T, F)]
         )
       ) %>%
       gt_theme_tl()
@@ -951,7 +1056,77 @@ html_wrap <- function(string, interval = 40) {
   stringr::str_replace_all(stringr::str_wrap(string = string, width = interval), "\n", "<br>")
 }
 
+#' Encrypt an html file
+#'
+#' This function takes an html file, encrypts the complete file using \code{\link[sodium:data_encrypt]{sodium::data_encrypt}}
+#' and a given key. It then injects the encrypted content into an html template that
+#' contains the \code{sodium} decryption code compiled to javascript.
+#' The resulting file is fully self contained as it can decrypt itself.
+#' When the user enters the correct key, the DOM of the html files gets replaced with
+#' the initially encrypted html file.
+#'
+#' @param path the file you want to encrypt
+#' @param output_path optional, the output path
+#' @param key optional, the encryption key
+#' @param message_key optional, print the encryption key to the console
+#' @param write_key_file optional, write a key file in the same directory
+#' @param output_template_path a path to the output template.
+#' The output template needs have the same html form elements (same ids) and the same placeholders as the default template. Everything else can be customized.
+#'
+#' @details
+#' Warning: You are using this at your own risk. Make sure your encryption key is
+#' strong enough. For serious use cases, please also review the code of the functions.
+#' Any feedback is appreciated. This is an early package version.
+#'
+#' @return
+#' The key used to encrypt the file as an invisible raw vector.
+#'
+#' @references
+#' The package follows the same approach as the node module \href{https://github.com/derhuerst/self-decrypting-html-page}{self-decrypting-html-page}.
+#' The decryption code is based on a number of great node modules.
+#' All licenses are also bundled with each encrypted html file.
+#'
+#' @export
+encrypt_html_file <- function(path,
+                              output_path = paste0(path, ".enc.html"),
+                              key = sodium::random(32L),
+                              message_key = TRUE,
+                              write_key_file = FALSE,
+                              output_template_path = system.file("html-template.html", package = "encryptedRmd")) {
+  stopifnot(file.exists(path), is.raw(key), length(key) >= 32L)
+  content <- charToRaw(readr::read_file(path))
+  nonce <- sodium::random(24L)
+  encrypted_content <- sodium::data_encrypt(content, key, nonce)
+  tpl <- readr::read_file(output_template_path)
+  js <- read_pkg_file("html-template.js")
+  tpl <- inject_raw_data(tpl, "encrypted", encrypted_content)
+  tpl <- inject_raw_data(tpl, "nonce", nonce)
+  tpl <- inject_raw_data(tpl, "js", js, to_hex = FALSE)
+  # BREAKS HERE
+  readr::write_file(tpl, output_path)
+  hex_key <- sodium::bin2hex(key)
+  if (message_key) {
+    message("The key to your file is: ", hex_key)
+    message("Your file has been encrypted and saved at ", output_path)
+  }
+  if (write_key_file) {
+    readr::write_file(paste0(output_path, ".key"), x = hex_key)
+  }
+  invisible(key)
+}
 
+inject_raw_data <- function(template, key, content, to_hex = TRUE) {
+  gsub(
+    x = template,
+    pattern = paste0("{{", key, "}}"),
+    replacement = if (to_hex) sodium::bin2hex(content) else content,
+    fixed = TRUE
+  )
+}
+
+read_pkg_file <- function(path) {
+  readr::read_file(system.file(path, package = "encryptedRmd"))
+}
 
 
 
