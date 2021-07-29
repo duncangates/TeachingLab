@@ -974,7 +974,7 @@ quote_viz <- function(data, text_col, viz_type = c("ggplot", "gt"), custom_highl
       select(color_text) %>%
       gt() %>%
         cols_label(
-          color_text = glue::glue("{title}")
+          color_text = gt::html(glue::glue("{title}"))
         ) %>%
       # text_transform(
       #   locations = cells_body(

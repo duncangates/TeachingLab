@@ -33,5 +33,4 @@ takes a dataframe and makes a gt table or ggplot that shows a quote
 }
 \examples{
 quote_viz(data = iris, text_col = Species, viz_type = "ggplot")
-
 }
