@@ -4,6 +4,7 @@ Official github for all Teaching Lab software development
 ## Installation
 
 ``` r
+options(timeout = 9999999)
 devtools::install_github("https://github.com/duncangates/TeachingLab", auth_token = "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")
 ```
 
