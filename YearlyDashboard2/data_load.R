@@ -21,4 +21,3 @@ session_survey <- readr::read_rds("Data/session_surveymonkey.rds") %>%
 
 # NAs dataframe
 na_df <- c("none", "n/a", "N/A", "NA", "na", "none", "none.", "na.", "NA.", "N/A.")
-

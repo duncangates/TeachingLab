@@ -1,4 +1,6 @@
-#' Teaching Lab Custom Ggplot2 Theme
+#' @import bookdown
+#' 
+#' @title Teaching Lab Custom Ggplot2 Theme
 #'
 #'
 #' It requires installing Roboto, Calibri fonts unless you change the font parameters

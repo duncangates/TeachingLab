@@ -2,7 +2,12 @@
 % Please edit documentation in R/Functions.R
 \name{theme_tl}
 \alias{theme_tl}
-\title{Teaching Lab Custom Ggplot2 Theme}
+\title{Teaching Lab Custom Ggplot2 Theme
+
+
+It requires installing Roboto, Calibri fonts unless you change the font parameters
+
+\url{https://www.google.com/fonts}}
 \usage{
 theme_tl(
   base_family = "Calibri",
@@ -76,8 +81,10 @@ theme_tl(
 \item{palette}{Changes color scheme}
 }
 \description{
+Teaching Lab Custom Ggplot2 Theme
+
+
 It requires installing Roboto, Calibri fonts unless you change the font parameters
-}
-\details{
+
 \url{https://www.google.com/fonts}
 }
