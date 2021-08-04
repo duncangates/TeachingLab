@@ -10,6 +10,7 @@ library(TeachingLab)
 library(ggtext)
 library(gt)
 library(shinyWidgets)
+library(bookdown)
 
 source("data_load.R")
 source("module_agree.R")

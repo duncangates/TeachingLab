@@ -1,6 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
-*.json
+^.*\.json$
 Images/
 Analysis/
 PartnerShare/
