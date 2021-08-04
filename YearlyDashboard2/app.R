@@ -11,6 +11,7 @@ library(ggtext)
 library(gt)
 library(shinyWidgets)
 library(bookdown)
+library(tidytext)
 
 source("data_load.R")
 source("module_agree.R")
