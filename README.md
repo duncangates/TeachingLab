@@ -5,7 +5,7 @@ Official Github for all Teaching Lab software development, dashboards, data, ima
 <br />
 <p align="center">
   <a href="https://www.teachinglab.org/">
-    <img src="https://images.squarespace-cdn.com/content/v1/5ef2087220c7256a8632676b/86dbfc41-323a-4550-9eb6-3d9bb7358ad6/20160223+Teaching+Lab+Logo+Final_SM+HORIZONTAL+v3.png?format=1500w" alt="Logo" width="180" height="120">
+    <img src="https://images.squarespace-cdn.com/content/v1/5ef2087220c7256a8632676b/86dbfc41-323a-4550-9eb6-3d9bb7358ad6/20160223+Teaching+Lab+Logo+Final_SM+HORIZONTAL+v3.png?format=1500w" alt="Logo" width="220" height="120">
   </a>
 
   <h3 align="center">Table of Contents Below</h3>
@@ -128,9 +128,9 @@ Distributed under the MIT License. See `LICENSE` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Your Name - [@your_twitter](https://twitter.com/your_username) - email@example.com
+Your Name - [@teachinglabHQ](https://twitter.com/teachinglabHQ) - duncan.gates@teachinglab.org
 
-Project Link: [https://github.com/your_username/repo_name](https://github.com/your_username/repo_name)
+Project Link: [https://github.com/duncangates/TeachingLab](Github)
 
 
 
