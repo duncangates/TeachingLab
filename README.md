@@ -38,6 +38,21 @@ Official Github for all Teaching Lab software development, dashboards, data, ima
   </ol>
 </details>
 
+<!-- ABOUT THE PROJECT -->
+## About The Project
+
+The Challenge: America’s teaching force needs better support.
+
+New college- and career -ready standards and the accelerating demands of the knowledge economy require students to have access to engaging and rigorous instruction every day. Teachers work hard to meet these demands, but accountability efforts place pressure on them without the support they need. 
+
+Meanwhile, inequities persist: students of color, students from low-income families, English language learners, and students with disabilities are the least likely to benefit from access to engaging and rigorous instruction.
+
+A large body of research shows that teachers are our most important resource. Despite spending $18 billion a year on teacher professional development, however, the vast majority of these efforts do not improve teacher practice. Most teachers agree, voicing frustration and lack of support from traditional “one and done” professional development. 
+
+Our teachers and our nation’s children deserve better. We know that teachers want to inspire students to learn and grow. And we believe teachers deserve to lead their own learning. 
+
+Teaching Lab seeks to dramatically improve instruction through teacher professional learning based in great instructional materials, teacher-led communities, and ongoing structures for learning and improvement. 
+
 <!-- GETTING STARTED -->
 ## Getting Started
 
