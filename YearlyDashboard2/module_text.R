@@ -28,6 +28,7 @@ uiText <- function(id, label = "Counter") {
   shiny::tagList(
     shiny.semantic::sidebar_layout(
       sidebar_panel = shiny.semantic::sidebar_panel(
+        style = "position:fixed;width:inherit;",
         shiny.semantic::menu_item(
           tabName = "facilitator_menu",
           shiny.semantic::selectInput(
@@ -134,9 +135,7 @@ uiText <- function(id, label = "Counter") {
         area_styles = list(
           btn1 = "margin:auto",
           btn2 = "margin:auto",
-          btn3 = "margin:auto",
-          btn4 = "margin:auto",
-          btn5 = "margin:auto"
+          btn3 = "margin:auto"
         ),
         btn1 = shinyWidgets::actionBttn(
           inputId = ns("refresh1"),

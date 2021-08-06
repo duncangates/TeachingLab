@@ -1,0 +1,13 @@
+name: DiagnosticComplete
+title: DiagnosticComplete
+username:
+account: teachinglabhq
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4458125
+bundleId: 4892583
+url: https://teachinglabhq.shinyapps.io/DiagnosticComplete/
+when: 1628191534.19718
+lastSyncTime: 1628191534.19719
+asMultiple: FALSE
+asStatic: FALSE

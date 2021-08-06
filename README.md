@@ -11,6 +11,7 @@ devtools::install_github("https://github.com/duncangates/TeachingLab", auth_toke
 ## File organization will be as such
 
 - Analysis: All files for analysis of Teaching Lab work
+	- 2021-2022	- 2020-2021	- DashboardData	- District 11	- Footer/Styles	- Miscellaneous	- New Mexico	- Templates	- 2019-2020
 - Data-Clean: All cleaned data that needs to be stored
 - Data: All read-in data that should be stored
 - ExternalShare: An incomplete shiny app at the moment

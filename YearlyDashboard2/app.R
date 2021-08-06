@@ -8,6 +8,8 @@ library(lubridate)
 library(scales)
 library(TeachingLab)
 library(ggtext)
+library(showtext)
+font_add(family = "Calibri", regular = "www/Calibri.ttf")
 library(gt)
 library(shinyWidgets)
 library(bookdown)
@@ -21,11 +23,10 @@ options(spinner.color = "#04ABEB")
 
 info_page <- div(class = "ui container",
     div(class = "ui center aligned header",
-        h2("Please watch the video below to understand the full functionality of this dashboard. "),
-         h2("The information below also provided a basic overview of its purposes."),
+        h2("Please watch the video below to learn how to use this dashboard."),
         div(class="ui center aligned", style = "text-align: center;",
             br(),
-            HTML('<iframe src="https://www.youtube.com/embed/LuQrLsTUcN0" width="50%" height="500" frameborder="1"></iframe>')
+            HTML('<iframe src="https://www.youtube.com/embed/bjZVeSNtQdI" width="50%" height="500" frameborder="1"></iframe>')
         )),
     div(class = "ui two column stackable grid container",
         div(class = "eight wide column",
@@ -40,16 +41,16 @@ info_page <- div(class = "ui container",
         div(class = "eight wide column",
             div(class="ui center aligned big header", 
                 h2("Session Survey Dashboard Information")),
-            p("This app was created for the purposes of illustrating and ennumerating ",
+            p("This app was created to visualize participant perception data of ",
               a(tags$b("Teaching Lab"), href = "https://www.teachinglab.org"),
-              " data for understanding and improving our impact. The dashboard automatically pulls from",
-              a("SurveyMonkey", href = "https://www.surveymonkey.com/r/TLendofsession"), "responses and integrates ",
-              "the data in three different tabs; one to show answers to the percent that agree/strongly agree with", 
-              "questions, to show this percentage over time, and one to show quotes and textual feedback. The sidebar",
-              "that appears in teach tab on the left hand side allows one to filter for the optimal data."),
+              " professional learning sessions, specifically related to facilitation. The dashboard automatically pulls from ",
+              a("SurveyMonkey", href = "https://www.surveymonkey.com/r/TLendofsession"), " responses and integrates ",
+              "the data in two different tabs: the first tab visualizes the percent that agree/strongly agree with questions, and",
+              "the second tab pulls quotes from the open-ended feedback questions. The sidebar that appears on the left hand side of",
+              "each tab allows one to filter for the optimal data."),
             p("The first image on the left depicts the \"Strongly Agree/Agree\" tab which shows",
               "the percent of people who have responded either Strongly Agree, Agree, Neither Agree or Disagree, Disagree, or Strongly Disagree",
-              "in response to questions about the quality of facilitation provided on different aspects"),
+              "in response to questions about the quality of facilitation."),
             br(),
             br(),
             br(),
@@ -65,7 +66,7 @@ info_page <- div(class = "ui container",
       tags$li("\"What additional feedback do you have about their facilitation skills?\""),
       tags$li("\"What went well in today’s session?\""),
       tags$li("\"What could have been better about today’s session?\""),
-             p("are displayed. The tables sample 10 responses from each question based on the filters applied, and the",
+             p("are displayed. The tables sample 10 responses from each question based on the applied filters, and the",
               " refresh button above extracts 10 new responses when you click it."),
              br(),
              p("Lastly, the highlighting simply indicates the 3 most frequent words in the particular extracted data",
@@ -84,7 +85,7 @@ ui <- semanticPage(
     title = "End of Session Feedback",
     
     tags$head(
-        tags$link(rel="stylesheet", href="style.css", type="text/css" )
+        tags$link(rel="stylesheet", href="www/style.css", type="text/css")
     ),
     
     theme = "united",

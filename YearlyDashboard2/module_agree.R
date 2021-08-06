@@ -3,6 +3,7 @@ uiAgree <- function(id, label = "Counter") {
   shiny::tagList(
     shiny.semantic::sidebar_layout(
       sidebar_panel = shiny.semantic::sidebar_panel(
+        style = "position:fixed;width:inherit;",
         shiny.semantic::menu_item(
           tabName = "facilitator_menu",
           shiny.semantic::selectInput(
@@ -87,19 +88,38 @@ uiAgree <- function(id, label = "Counter") {
             timeFormat = "%b %d, %Y"
           ),
           icon = shiny.semantic::icon("calendar alternate")
-        )#,
-        # shiny.semantic::menu_item(
-        #   tabName = "text_length_menu",
-        #   shiny.semantic::numeric_input(
-        #     input_id = ns("quote_length"),
-        #     label = h3("Select a text length to filter for"),
-        #     value = 30,
-        #     min = 0,
-        #     max = 100,
-        #     step = 5
-        #   ),
-        #   icon = shiny.semantic::icon("text width")
-        # ),
+        ),
+        br(),
+        shiny.semantic::menu_item(
+          tabName = "download_menu",
+          div(style = "display:inline-block",
+              shiny.semantic::selectInput(inputId = ns("download_option"),
+                                          label = "Download as",
+                                          choices = c("pdf", "png"))),
+          div(style = "display:inline-block;margin-left:5px;",
+              shiny.semantic::numericInput(
+                inputId = ns("width"),
+                label = NULL,
+                value = 12,
+                step = 1,
+                min = 2,
+                max = 20
+              )),
+          div(style = "display:inline-block;margin-left:5px;",
+              shiny.semantic::numericInput(
+                inputId = ns("height"),
+                label = NULL,
+                value = 7,
+                step = 1,
+                min = 2,
+                max = 20
+              )),
+          div(style = "display:inline-block;margin-left:10px;",
+              shiny::downloadButton(
+                outputId = ns("down"),
+                label = ""
+              ))
+        )
       ),
       main_panel = shiny.semantic::main_panel(
         width = 4,
@@ -224,7 +244,7 @@ agreeServer <- function(id) {
           axis.text.x = element_text(size = 6),
           axis.title.x = element_blank(),
           axis.title.y = element_blank(),
-          plot.title = element_markdown(hjust = 0.5, family = "Calibri", face = "bold"),
+          plot.title = element_text(hjust = 0.5, family = "Calibri", face = "bold"),
           axis.line = element_line(size = 1.5)
         )
     })
@@ -265,7 +285,7 @@ agreeServer <- function(id) {
         count() %>%
         ungroup() %>%
         group_by(Question) %>%
-        mutate(Question = html_wrap(Question, interval = 30)) %>%
+        mutate(Question = str_wrap(Question, width = 30)) %>%
         summarise(
           n = n,
           Response = Response,
@@ -284,7 +304,7 @@ agreeServer <- function(id) {
           "(3) Neither agree nor disagree" = "#02587A", "(4) Agree" = "#0182B4", "(5) Strongly agree" = "#00ACF0"
         )) +
         labs(
-          fill = "", title = "Percent that Agree/Strongly Agree with<br>Each of the Following Statements",
+          fill = "", title = "Percent that Agree/Strongly Agree with\nEach of the Following Statements",
           x = "", y = ""
         ) +
         coord_flip() +
@@ -292,14 +312,50 @@ agreeServer <- function(id) {
         scale_y_continuous(labels = scales::percent_format(scale = 1)) +
         theme_tl(legend = T) +
         theme(
-          axis.text.y = element_markdown(lineheight = 1.1, size = 14),
-          # axis.text.x = element_text(size = 14),
           axis.text.x = element_blank(),
+          axis.text.y = element_text(lineheight = 1.1, size = 14),
           legend.position = "bottom",
-          plot.title = element_markdown(lineheight = 1.1, size = 20, face = "bold"),
+          plot.title = element_text(lineheight = 1.1, size = 20, face = "bold"),
           legend.key.size = unit(1.25, "cm"),
           legend.text = element_text(size = 9)
         )
     })
+    
+    downloadGraph <- reactive({
+      ggplot(data = data_plot_agree(), aes(x = Question, y = Percent, fill = factor(Response))) +
+        geom_col() +
+        geom_text(aes(label = if_else(Percent >= 3, paste0(round(Percent), "%"), "")), position = position_stack(vjust = 0.5)) +
+        scale_fill_manual(values = c(
+          "(1) Strongly disagree" = "#040404", "(2) Disagree" = "#032E3F",
+          "(3) Neither agree nor disagree" = "#02587A", "(4) Agree" = "#0182B4", "(5) Strongly agree" = "#00ACF0"
+        )) +
+        labs(
+          fill = "", title = "Percent that Agree/Strongly Agree with\nEach of the Following Statements",
+          x = "", y = ""
+        ) +
+        coord_flip() +
+        guides(fill = guide_legend(reverse = T)) +
+        scale_y_continuous(labels = scales::percent_format(scale = 1)) +
+        theme_tl(legend = T) +
+        theme(
+          axis.text.x = element_blank(),
+          axis.text.y = element_text(lineheight = 1.1, size = 14),
+          legend.position = "bottom",
+          plot.title = element_text(lineheight = 1.1, size = 20, face = "bold"),
+          legend.key.size = unit(1.25, "cm"),
+          legend.text = element_text(size = 9)
+        )
+    })
+    
+    output$down <- downloadHandler(
+      filename = function() {
+        paste0("agree_plot.", input$download_option)
+      },
+      content = function(file) {
+        ggsave(file, downloadGraph(), device = input$download_option, height = input$height, width = input$width)
+      }
+    )
+    
+    
   })
 }
