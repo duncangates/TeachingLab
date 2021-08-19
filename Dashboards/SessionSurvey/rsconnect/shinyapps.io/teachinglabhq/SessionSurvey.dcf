@@ -1,0 +1,13 @@
+name: SessionSurvey
+title: SessionSurvey
+username:
+account: teachinglabhq
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4505754
+bundleId: 4935514
+url: https://teachinglabhq.shinyapps.io/SessionSurvey/
+when: 1629269245.74252
+lastSyncTime: 1629269245.74253
+asMultiple: FALSE
+asStatic: FALSE

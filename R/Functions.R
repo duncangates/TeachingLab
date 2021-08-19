@@ -427,7 +427,7 @@ gt_theme_tl <- function(data, all_caps = F, ...) {
       )
     ) %>%
     # Set default to center align everything
-    cols_align(align = "center") %>%
+    gt::cols_align(align = "center") %>%
     gt::tab_options(
       column_labels.background.color = "white",
       table.border.top.width = px(3),
@@ -1079,7 +1079,18 @@ get_season <- function(input_date){
   return(cuts)
 }
 
+#' @title Round to nearest even number
+#' @description Takes a whole number and "rounds" it to the nearest even number.
+#' @param x the number to round
+#' @return an integer
+#' 
+#' @examples
+#' round_even(17)
+#' @export
 
+round_even <- function(x) {
+  2 * ceiling(x/2)
+}
 
 
 

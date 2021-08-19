@@ -1,0 +1,13 @@
+name: RaceandCulture
+title: RaceandCulture
+username:
+account: teachinglabhq
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4472326
+bundleId: 4914882
+url: https://teachinglabhq.shinyapps.io/RaceandCulture/
+when: 1628753235.50184
+lastSyncTime: 1628753235.50185
+asMultiple: FALSE
+asStatic: FALSE

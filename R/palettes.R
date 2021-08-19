@@ -24,7 +24,7 @@ tl_palette <- function(color = c("blue", "orange", "purple", "green", "teal", "t
   } else if (color == "teal") {
     col <- grDevices::colorRampPalette(c(base_color_start, "#55bbc7"))
   } else if (color == "tl_colors") {
-    col <- grDevices::colorRampPalette(c(base_color_start, "#55bbc7", "#43c6b9", "#ff7b43", "#d17df7", "#FCC2FF", "#FF6961"))
+    col <- grDevices::colorRampPalette(c(base_color_start, "#30BCED", "#303036", "#FC5130", "#d17df7", "#6A2E35", "#B6D094"))
   } else {
     col <- grDevices::colorRampPalette(c(base_color_start, "#00acf0"))
   }

@@ -1,0 +1,13 @@
+name: CourseSurvey
+title: CourseSurvey
+username:
+account: teachinglabhq
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4505718
+bundleId: 4935544
+url: https://teachinglabhq.shinyapps.io/CourseSurvey/
+when: 1629269875.71435
+lastSyncTime: 1629269875.71436
+asMultiple: FALSE
+asStatic: FALSE
