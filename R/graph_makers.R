@@ -48,7 +48,7 @@ score_compare_plot <- function(data, question, order, prepost, score, split_vari
     ggplot2::theme(panel.border = ggplot2::element_blank(),
           legend.position = "none",
           plot.title = ggtext::element_markdown(hjust = 0.5, family = "Calibri", size = 20, lineheight = 1.15),
-          text = element_text(family = "Calibri"),
+          text = ggplot2::element_text(family = "Calibri"),
           axis.text.y = ggtext::element_markdown(hjust = 0.5, lineheight = 1.1, size = 14),
           axis.text.x = ggtext::element_markdown(size = 14))
   

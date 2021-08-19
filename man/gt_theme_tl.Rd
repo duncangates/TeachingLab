@@ -20,5 +20,5 @@ Creates a gt theme as a pipeable function
 Create Teaching Lab theme to a gt table
 }
 \examples{
-mtcars \%>\% head() \%>\% gt::gt() \%>\% TeachingLab::gt_theme_tl()
+mtcars \%>\% utils::head() \%>\% gt::gt() \%>\% TeachingLab::gt_theme_tl()
 }

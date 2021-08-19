@@ -386,7 +386,7 @@ theme_irp <- function(base_family = "Roboto Condensed",
 #' @importFrom magrittr %>%
 #' 
 #' @examples 
-#' mtcars %>% head() %>% gt::gt() %>% TeachingLab::gt_theme_tl()
+#' mtcars %>% utils::head() %>% gt::gt() %>% TeachingLab::gt_theme_tl()
 #' @export
 
 gt_theme_tl <- function(data, all_caps = F, ...) {
@@ -526,8 +526,8 @@ score_question <- function(data, question, coding, na_type = "NA") {
 
 score_question_number <- function(data, question_pre, question_post, coding, likert = c(5, 6)) {
   
-  n1 <- data %>% dplyr::summarise(length(which(!is.na(.data[[question_pre]])))) %>% as_vector()
-  n2 <- data %>% dplyr::summarise(length(which(!is.na(.data[[question_post]])))) %>% as_vector()
+  n1 <- data %>% dplyr::summarise(length(which(!is.na(.data[[question_pre]])))) %>% purrr::as_vector()
+  n2 <- data %>% dplyr::summarise(length(which(!is.na(.data[[question_post]])))) %>% purrr::as_vector()
   
   data_count <- data %>%
     dplyr::summarise(one_pre = sum(.data[[question_pre]] %in% "1", na.rm = T),
@@ -951,11 +951,14 @@ quote_viz <- function(data, text_col, viz_type = "gt", custom_highlight = F, wid
       
       highlight <- data %>%
         tidytext::unnest_tokens(word, .data[[text_col]]) %>%
+        # Suppress warnings gets rid of the warnings from this later
+        # This makes sure to get rid of numbers in consideration for highlighting
         dplyr::filter(is.na(as.numeric(word))) %>%
         dplyr::count(word, sort = T) %>%
         dplyr::anti_join(stop_words) %>%
-        head(3) %>%
-        dplyr::pull(word)
+        utils::head(3) %>%
+        dplyr::pull(word) %>%
+        suppressWarnings()
       cat("Highlighted words: ", highlight)
     } else if (custom_highlight == T) {
       highlight <- highlight # Custom highlighting
@@ -1076,11 +1079,10 @@ html_wrap <- function(string, n = 40) {
 #' 
 #' @examples
 #' get_season(as.POSIXct("2016-01-01 12:00:00"))
-#' @import lubridate
 #' @export
 
 get_season <- function(date){
-  numeric.date <- 100*month(date)+day(date)
+  numeric.date <- 100*lubridate::month(date)+lubridate::day(date)
   ## input Seasons upper limits in the form MMDD in the "break =" option:
   cuts <- base::cut(numeric.date, breaks = c(0,319,0620,0921,1220,1231)) 
   # rename the resulting groups (could've been done within cut(...levels=) if "Winter" wasn't double
