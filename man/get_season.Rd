@@ -4,7 +4,7 @@
 \alias{get_season}
 \title{Get Season}
 \usage{
-get_season(input_date)
+get_season(date)
 }
 \arguments{
 \item{date}{the date}

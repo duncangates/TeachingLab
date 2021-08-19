@@ -26,6 +26,8 @@ score_compare_plot(
 \item{score}{the scores to compare}
 
 \item{split_variable}{the text detected in the variable to create segments with (from prepost)}
+
+\item{title}{the title of the gt}
 }
 \value{
 a colored gt table
@@ -34,5 +36,5 @@ a colored gt table
 Makes a ggplot comparison table
 }
 \examples{
-score_comparison_plot(data, question, prepost, score)
+score_compare_plot(data, question, prepost, score)
 }

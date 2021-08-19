@@ -18,6 +18,10 @@ score_one_question_mindsets(
 \item{question}{the initial column to be selected}
 
 \item{coding}{the coding to check for}
+
+\item{na_remove}{whether or not to drop NAs at the start of the evaluation}
+
+\item{likert}{whether or not the scale is likert with 5 points or 6}
 }
 \value{
 Returns a dataframe with the percent, correct, number of non-na responses, the question itself, and the percent that sustained/improved

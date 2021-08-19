@@ -6,9 +6,9 @@
 \alias{scale_fill_tl}
 \title{Discrete color & fill scales based on the Teaching Lab palette}
 \usage{
-scale_colour_tl(n, color, ...)
+scale_colour_tl(n, color = "blue", ...)
 
-scale_color_tl(n, color, ...)
+scale_color_tl(n, color = "blue", ...)
 
 scale_fill_tl(
   n,
@@ -17,6 +17,10 @@ scale_fill_tl(
 )
 }
 \arguments{
+\item{n}{the number of colors}
+
+\item{color}{the color from \code{tl_palette}}
+
 \item{...}{
   Arguments passed on to \code{\link[ggplot2:discrete_scale]{ggplot2::discrete_scale}}
   \describe{

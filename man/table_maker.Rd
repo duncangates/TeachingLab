@@ -35,6 +35,8 @@ table_maker(
 \item{rows_negative}{the negative_rows}
 
 \item{improve_col}{name for the improve/sustain column}
+
+\item{bottom_row}{the bottom row which has "n = " instead of data}
 }
 \value{
 Returns an unsaved gt table

@@ -17,3 +17,4 @@ Data/
 FacilitatorPay/
 email_creds_staffing
 Data-Clean/
+^LICENSE\.md$

@@ -10,6 +10,10 @@
 #' @param rows_positive the positive rows
 #' @param rows_negative the negative_rows
 #' @param improve_col name for the improve/sustain column
+#' @param bottom_row the bottom row which has "n = " instead of data
+#' 
+#' @importFrom magrittr %>%
+#' 
 #' @return Returns an unsaved gt table
 #' @export
 
@@ -17,31 +21,31 @@ table_maker <- function(data, column_names, title, spanner, n1, n2, rows_positiv
   colnames(data)[2:5] <- c("name_1", "name_2", "name_3", "name_4")
   
   gt_table <- data %>%
-    gt(rowname_col = "rowname") %>%
+    gt::gt(rowname_col = "rowname") %>%
     # Add spanner
-    tab_spanner(
+    gt::tab_spanner(
       label = spanner,
       columns = c(2:4)
     ) %>%
     # Add title
-    tab_header(title = md(glue::glue("**{title}, by Survey Administration**"))) %>%
+    gt::tab_header(title = gt::md(glue::glue("**{title}, by Survey Administration**"))) %>%
     # Make labels colorful
-    cols_label(
-      name_1 = html("<strong><center><span style = 'color:#00acf0;'>Diagnostic Survey</span></center></strong>"),
-      name_2 = html("<strong><center><span style = 'color:#00acf0;'>Follow-up Survey</span></center></strong>"),
-      name_3 = html("<strong><center><span style = 'color:#00acf0;'>Percentage Point Change</span></center></strong>"),
-      name_4 = html(glue::glue("<strong><center><span style = 'color:#43c6b9;'>{improve_col}</span></center></strong>"))
+    gt::cols_label(
+      name_1 = gt::html("<strong><center><span style = 'color:#00acf0;'>Diagnostic Survey</span></center></strong>"),
+      name_2 = gt::html("<strong><center><span style = 'color:#00acf0;'>Follow-up Survey</span></center></strong>"),
+      name_3 = gt::html("<strong><center><span style = 'color:#00acf0;'>Percentage Point Change</span></center></strong>"),
+      name_4 = gt::html(glue::glue("<strong><center><span style = 'color:#43c6b9;'>{improve_col}</span></center></strong>"))
     ) %>%
     # Column widths
-    cols_width(
-      1 ~ px(200),
-      2 ~ px(125),
-      3 ~ px(125),
-      4 ~ px(125),
-      5 ~ px(200)
+    gt::cols_width(
+      1 ~ gt::px(200),
+      2 ~ gt::px(125),
+      3 ~ gt::px(125),
+      4 ~ gt::px(125),
+      5 ~ gt::px(200)
     ) %>%
     # Percent format the data
-    fmt_percent(
+    gt::fmt_percent(
       columns = c(2, 3, 5),
       scale_values = F,
       decimals = 0
@@ -63,167 +67,167 @@ table_maker <- function(data, column_names, title, spanner, n1, n2, rows_positiv
     # ) %>%
   # Color by gradation, < 40 is light, 40-80 is medium, > 80 is dark
   # Blue
-  tab_style(
+  gt::tab_style(
     style = list(
-      cell_fill(color = "#89d7f7")
+      gt::cell_fill(color = "#89d7f7")
     ),
-    locations = cells_body(
+    locations = gt::cells_body(
       columns = c(2),
       rows = `name_1` < 40
     )
   ) %>%
-    tab_style(
+    gt::tab_style(
       style = list(
-        cell_fill(color = "#52c6f4")
+        gt::cell_fill(color = "#52c6f4")
       ),
-      locations = cells_body(
+      locations = gt::cells_body(
         columns = c(2),
         rows = `name_1` >= 40
       )
     ) %>%
-    tab_style(
+    gt::tab_style(
       style = list(
-        cell_fill(color = "#00ACF0")
+        gt::cell_fill(color = "#00ACF0")
       ),
       locations = cells_body(
         columns = c(2),
         rows = `name_1` > 80
       )
     ) %>%
-    tab_style(
+    gt::tab_style(
       style = list(
-        cell_fill(color = "#89d7f7")
+        gt::cell_fill(color = "#89d7f7")
       ),
-      locations = cells_body(
+      locations = gt::cells_body(
         columns = c(3),
         rows = `name_2` < 40
       )
     ) %>%
-    tab_style(
+    gt::tab_style(
       style = list(
-        cell_fill(color = "#52c6f4")
+        gt::cell_fill(color = "#52c6f4")
       ),
-      locations = cells_body(
+      locations = gt::cells_body(
         columns = c(3),
         rows = `name_2` >= 40
       )
     ) %>%
-    tab_style(
+    gt::tab_style(
       style = list(
-        cell_fill(color = "#00ACF0")
+        gt::cell_fill(color = "#00ACF0")
       ),
-      locations = cells_body(
+      locations = gt::cells_body(
         columns = c(3),
         rows = `name_2` > 80
       )
     ) %>%
     # Green
-    tab_style(
+    gt::tab_style(
       style = list(
-        cell_fill(color = "#A7E3DE")
+        gt::cell_fill(color = "#A7E3DE")
       ),
-      locations = cells_body(
+      locations = gt::cells_body(
         columns = c(5),
         rows = `name_4` < 40
       )
     ) %>%
-    tab_style(
+    gt::tab_style(
       style = list(
-        cell_fill(color = "#7FD7CF")
+        gt::cell_fill(color = "#7FD7CF")
       ),
-      locations = cells_body(
+      locations = gt::cells_body(
         columns = c(5),
         rows = `name_4` >= 40
       )
     ) %>%
-    tab_style(
+    gt::tab_style(
       style = list(
-        cell_fill(color = "#43C6B9")
+        gt::cell_fill(color = "#43C6B9")
       ),
-      locations = cells_body(
+      locations = gt::cells_body(
         columns = c(5),
         rows = `name_4` > 80
       )
     ) %>%
     # Add black line next to row group
-    tab_style(
+    gt::tab_style(
       style = list(
-        cell_borders(
+        gt::cell_borders(
           sides = c("right"),
           color = "black",
-          weight = px(3)
+          weight = gt::px(3)
         )
       ),
-      locations = cells_stub()
+      locations = gt::cells_stub()
     ) %>%
     # Add black line next to tab spanner
-    tab_style(
+    gt::tab_style(
       style = list(
-        cell_borders(
+        gt::cell_borders(
           sides = c("right"),
           color = "black",
-          weight = px(3)
+          weight = gt::px(3)
         )
       ),
-      locations = cells_body(
+      locations = gt::cells_body(
         columns = c(4)
       )
     ) %>%
     # Add thin black line next to improvement column
-    tab_style(
+    gt::tab_style(
       style = list(
-        cell_borders(
+        gt::cell_borders(
           sides = c("left"),
           color = "black",
-          weight = px(1.5)
+          weight = gt::px(1.5)
         )
       ),
-      locations = cells_body(
+      locations = gt::cells_body(
         columns = c(4)
       )
     ) %>%
     # Make last row n row
-    tab_style(
+    gt::tab_style(
       style = list(
-        cell_fill(color = "#FFFFFF")
+        gt::cell_fill(color = "#FFFFFF")
       ),
-      locations = cells_body(
+      locations = gt::cells_body(
         rows = bottom_row
       )
     ) %>%
-    fmt_number(
+    gt::fmt_number(
       columns = c(2, 3, 5),
       rows = c(bottom_row),
       pattern = "n = {x}",
       decimals = 0
     ) %>%
-    fmt_missing(
+    gt::fmt_missing(
       columns = c(4),
       rows = c(bottom_row),
       missing_text = ""
     ) %>%
     # Footnotes
     # tab_footnote(
-    #   footnote = md(glue::glue("Note: The number of observations varies between items from {n2[1]} to {n2[2]}")),
+    #   footnote = gt::md(glue::glue("Note: The number of observations varies between items from {n2[1]} to {n2[2]}")),
     #   locations = cells_column_labels(
     #     columns = c(1:4)
     #   )
     # ) %>%
     # tab_footnote(
-    #   footnote = md(glue::glue("n = {n1}")),
+    #   footnote = gt::md(glue::glue("n = {n1}")),
     #   locations = cells_column_labels(
     #     columns = c(5)
     #   )
     # ) %>%
     # Final theming
-    gt_theme_tl() %>%
-    tab_options(
+    TeachingLab::gt_theme_tl() %>%
+    gt::tab_options(
       column_labels.border.lr.style = "solid",
       column_labels.vlines.style = "solid",
       heading.border.lr.style = "solid",
-      heading.border.bottom.width = px(3),
+      heading.border.bottom.width = gt::px(3),
       heading.border.bottom.color = "black",
-      heading.border.lr.width = px(3),
+      heading.border.lr.width = gt::px(3),
       heading.border.lr.color = "black"
     )
   
@@ -234,11 +238,14 @@ table_maker <- function(data, column_names, title, spanner, n1, n2, rows_positiv
 #' @title General Table Maker
 #' @description Makes a gt table with teaching lab color style
 #'
-#' @param data the gt table to color
+#' @param gt_table the gt table to color
 #' @param color the color style to apply
 #' @param column The column to apply the color to
 #' @param scale the scale to apply to
 #' @return a colored gt table
+#' 
+#' @importFrom magrittr %>%
+#' 
 #' @export
 
 gt_tl_color <- function(gt_table, color, column, scale = 1) {
@@ -317,10 +324,13 @@ gt_tl_color <- function(gt_table, color, column, scale = 1) {
 #'
 #' @param data the gt table to make arrows for
 #' @param colors the color style to apply
-#' @param columns The columns to compare
+#' @param column_one The first column to compare
+#' @param column_two The second column to compare
 #' @return a colored gt table
 #' 
-#' @examples gt_arrow(data = gt_table, colors = c("red", "blue"), columns = c("First", "Second"))
+#' @importFrom magrittr %>%
+#' 
+#' @examples gt_arrow(data = mtcars, colors = c("red", "blue"), column_one = cyl, column_two = disp)
 #' @export
 
 gt_arrow <- function(data, colors = c("#800000", "#98AFC7"), column_one, column_two) {
@@ -347,11 +357,11 @@ gt_arrow <- function(data, colors = c("#800000", "#98AFC7"), column_one, column_
   score_post <- rlang::quo_name(score_2)
 
   data %>%
-    mutate(rank_change = case_when(.data[[score_pre]] < .data[[score_post]] ~ "increase",
+    dplyr::mutate(rank_change = dplyr::case_when(.data[[score_pre]] < .data[[score_post]] ~ "increase",
                                    .data[[score_post]] < .data[[score_pre]] ~ "decrease",
                                    abs(.data[[score_pre]] - .data[[score_post]]) < 3 ~ "equal")) %>%
-    mutate(rank_change = purrr::map(rank_change, ~ rank_chg(change_dir = .x))) %>%
-    rename(Improvement = rank_change)
+    dplyr::mutate(rank_change = purrr::map(rank_change, ~ rank_chg(change_dir = .x))) %>%
+    dplyr::rename(Improvement = rank_change)
   
 }
 

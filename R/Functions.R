@@ -1,5 +1,3 @@
-#' @import bookdown
-#' 
 #' @title Teaching Lab Custom Ggplot2 Theme
 #'
 #'
@@ -29,7 +27,7 @@
 #' @param ticks ticks \code{TRUE}, \code{FALSE}
 #' @param dark dark mode \code{TRUE}, \code{FALSE}
 #' @param markdown enabled ggtext markdown styling  \code{TRUE}, \code{FALSE}
-#' @param palette Changes color scheme
+#' @param legend default no legend with F
 #'
 #' @export
 
@@ -384,8 +382,8 @@ theme_irp <- function(base_family = "Roboto Condensed",
 #' @param all_caps Whether or not to capitalize titles
 #' @param ... Optional additional arguments to gt::table_options()
 #' @return Creates a gt theme as a pipeable function
-#' @importFrom dplyr %>%
-#' @import gt
+#' 
+#' @importFrom magrittr %>%
 #' 
 #' @examples 
 #' mtcars %>% head() %>% gt::gt() %>% TeachingLab::gt_theme_tl()
@@ -403,11 +401,11 @@ gt_theme_tl <- function(data, all_caps = F, ...) {
     # gt::tab_style(
     #   style = list(
     #     gt::cell_borders(
-    #       sides = "bottom", color = "black", weight = px(2)
+    #       sides = "bottom", color = "black", weight = gt::px(2)
     #     )
     #   ),
     #   locations = gt::cells_body(
-    #     columns = everything(),
+    #     columns = gt::everything(),
     #     # This is a relatively sneaky way of changing the bottom border
     #     # Regardless of data size
     #     rows = nrow(data)
@@ -422,35 +420,35 @@ gt_theme_tl <- function(data, all_caps = F, ...) {
         )
       ),
       locations = gt::cells_body(
-        columns = everything(),
-        rows = everything()
+        columns = gt::everything(),
+        rows = gt::everything()
       )
     ) %>%
     # Set default to center align everything
     gt::cols_align(align = "center") %>%
     gt::tab_options(
       column_labels.background.color = "white",
-      table.border.top.width = px(3),
+      table.border.top.width = gt::px(3),
       table.border.top.color = "black",
       table.border.left.style = "solid",
-      table.border.left.width = px(3),
+      table.border.left.width = gt::px(3),
       table.border.left.color = "black",
       table.border.right.style = "solid",
-      table.border.right.width = px(3),
+      table.border.right.width = gt::px(3),
       table.border.right.color = "black",
       table.border.bottom.style = "solid",
       table.border.bottom.color = "black",
-      table.border.bottom.width = px(3),
-      column_labels.border.top.width = px(3),
+      table.border.bottom.width = gt::px(3),
+      column_labels.border.top.width = gt::px(3),
       column_labels.border.top.color = "black",
-      column_labels.border.bottom.width = px(3),
+      column_labels.border.bottom.width = gt::px(3),
       column_labels.border.bottom.color = "black",
       column_labels.border.lr.color = "black",
-      column_labels.border.lr.width = px(3),
+      column_labels.border.lr.width = gt::px(3),
       column_labels.font.weight = "bold",
       table_body.border.bottom.color = "black",
-      table_body.border.bottom.width = px(3),
-      data_row.padding = px(3),
+      table_body.border.bottom.width = gt::px(3),
+      data_row.padding = gt::px(3),
       source_notes.font.size = 12,
       table.font.size = 16,
       heading.title.font.size = 20,
@@ -519,8 +517,10 @@ score_question <- function(data, question, coding, na_type = "NA") {
 #' @description Calculate percentage of a question (column) in data (data) that is on the positive or numeric side (coding) with a grading twist, where three is worth 1 and 1/2 or 4/5 is worth 2
 #'
 #' @param data the dataframe to be analyzed
-#' @param question the column to be selected
+#' @param question_pre the "pre-tl pl" column to be selected
+#' @param question_post the "post-tl pl"column to be selected
 #' @param coding the coding to check for
+#' @param likert whether the likert scale has 5 or 6 points
 #' @return Returns a dataframe with the percent, correct, number of non-na responses, and question itself
 #' @export
 
@@ -545,7 +545,7 @@ score_question_number <- function(data, question_pre, question_post, coding, lik
   
   if (likert == 5) {
     if (coding == "positive") {
-      score <- tibble(
+      score <- tibble::tibble(
         score_pre = data_count$five_pre*2 + data_count$four_pre*2 + data_count$three_pre,
         n1 = n1,
         max_score_pre = n1 * 2,
@@ -555,7 +555,7 @@ score_question_number <- function(data, question_pre, question_post, coding, lik
         question = question_pre
       )
     } else if (coding == "negative") {
-      score <- tibble(
+      score <- tibble::tibble(
         score_pre = data_count$one_pre*2 + data_count$two_pre*2 + data_count$three_pre,
         n1 = n1,
         max_score_pre = n1 * 2,
@@ -567,7 +567,7 @@ score_question_number <- function(data, question_pre, question_post, coding, lik
     }
   } else if (likert == 6) {
     if (coding == "positive") {
-      score <- tibble(
+      score <- tibble::tibble(
         score_pre = data_count$six_pre*2 + data_count$five_pre*2 + data_count$four_pre + data_count$three_pre,
         n1 = n1,
         max_score_pre = n1 * 2,
@@ -577,7 +577,7 @@ score_question_number <- function(data, question_pre, question_post, coding, lik
         question = question_pre
       )
     } else if (coding == "negative") {
-      score <- tibble(
+      score <- tibble::tibble(
         score_pre = data_count$one_pre*2 + data_count$two_pre*2 + data_count$three_pre + data_count$four_pre,
         n1 = n1,
         max_score_pre = n1 * 2,
@@ -612,28 +612,28 @@ score_question_improved <- function(data, question_pre, question_post, coding, m
               n1 = length(which(!is.na(.data[[question_pre]]))),
               post_percent = 100* (sum(.data[[question_post]] %in% coding, na.rm = T)/length(which(!is.na(.data[[question_post]])))),
               n2 = length(which(!is.na(.data[[question_post]])))) %>%
-    dplyr::mutate(question = str_remove(question_pre, "pre"))
+    dplyr::mutate(question = stringr::str_remove(question_pre, "pre"))
   
   n <- data %>%
-    filter(prepost == T) %>%
-    drop_na(.data[[question_post]], .data[[question_pre]]) %>%
-    ungroup() %>%
+    dplyr::filter(prepost == T) %>%
+    dplyr::drop_na(.data[[question_post]], .data[[question_pre]]) %>%
+    dplyr::ungroup() %>%
     nrow()
   
   coding_with_3 <- append(coding, middle_value)
   
   data2 <- data %>%
-    filter(prepost == T) %>%
-    drop_na(.data[[question_post]], .data[[question_pre]]) %>%
+    dplyr::filter(prepost == T) %>%
+    dplyr::drop_na(.data[[question_post]], .data[[question_pre]]) %>%
     dplyr::mutate(increase = 0) %>%
-    dplyr::mutate(increase = case_when(.data[[question_pre]] %in% middle_value & .data[[question_post]] %in% middle_value ~ increase,
+    dplyr::mutate(increase = dplyr::case_when(.data[[question_pre]] %in% middle_value & .data[[question_post]] %in% middle_value ~ increase,
                                 .data[[question_pre]] %in% coding & .data[[question_post]] %in% coding ~ increase + 1,
                                 .data[[question_pre]] %!in% coding & .data[[question_post]] %in% coding_with_3 ~ increase + 1,
                                 .data[[question_pre]] %!in% coding & .data[[question_post]] %!in% coding ~ increase,
                                 .data[[question_pre]] %in% coding & .data[[question_post]] %!in% coding ~ increase)) %>%
     dplyr::summarise(percent_improve_sustain = 100 * sum(increase, na.rm = T)/n)
   
-  data3 <- bind_cols(data1, data2)
+  data3 <- dplyr::bind_cols(data1, data2)
   
   data3
   
@@ -646,6 +646,8 @@ score_question_improved <- function(data, question_pre, question_post, coding, m
 #' @param question_pre the initial column to be selected
 #' @param question_post the comparison column to be selected
 #' @param coding the coding to check for
+#' @param na_remove whether or not to drop NAs at the start of the evaluation
+#' @param likert whether or not the scale is likert with 5 points or 6
 #' @return Returns a dataframe with the percent, correct, number of non-na responses, the question itself, and the percent that sustained/improved
 #' @export
 
@@ -654,11 +656,11 @@ score_question_mindsets <- function(data, question_pre, question_post, coding, n
   if (na_remove == T) {
     data <- data %>%
     # Select only observations that have no NAs
-      drop_na(.data[[question_pre]], .data[[question_post]])
+      dplyr::drop_na(.data[[question_pre]], .data[[question_post]])
   }
   
   n <- data %>%
-    filter(prepost == T) %>%
+    dplyr::filter(prepost == T) %>%
     nrow()
   
   
@@ -671,21 +673,21 @@ score_question_mindsets <- function(data, question_pre, question_post, coding, n
     if (coding == "positive") {
       coding_with_3 <- append(positive_vector, middle_value)
       score <- data %>%
-        dplyr::mutate(score_pre = case_when(.data[[question_pre]] %in% "5" ~ 2,
+        dplyr::mutate(score_pre = dplyr::case_when(.data[[question_pre]] %in% "5" ~ 2,
                                      .data[[question_pre]] %in% "4" ~ 2,
                                      .data[[question_pre]] %in% "3" ~ 1,
                                      .data[[question_pre]] %in% "2" ~ 0,
                                      .data[[question_pre]] %in% "1" ~ 0)) %>%
-        dplyr::mutate(score_post = case_when(.data[[question_post]] %in% "5" ~ 2,
+        dplyr::mutate(score_post = dplyr::case_when(.data[[question_post]] %in% "5" ~ 2,
                                       .data[[question_post]] %in% "4" ~ 2,
                                       .data[[question_post]] %in% "3" ~ 1,
                                       .data[[question_post]] %in% "2" ~ 0,
                                       .data[[question_post]] %in% "1" ~ 0))
       
       data2 <- data %>%
-        filter(prepost == T) %>%
+        dplyr::filter(prepost == T) %>%
         dplyr::mutate(increase = 0) %>%
-        dplyr::mutate(increase = case_when(.data[[question_pre]] %in% positive_vector & .data[[question_post]] %in% middle_value ~ increase,
+        dplyr::mutate(increase = dplyr::case_when(.data[[question_pre]] %in% positive_vector & .data[[question_post]] %in% middle_value ~ increase,
                                            .data[[question_pre]] %in% positive_vector & .data[[question_post]] %in% positive_vector ~ increase + 1,
                                            .data[[question_pre]] %!in% positive_vector & .data[[question_post]] %in% coding_with_3 ~ increase + 1,
                                            .data[[question_pre]] %!in% positive_vector & .data[[question_post]] %!in% positive_vector ~ increase,
@@ -695,21 +697,21 @@ score_question_mindsets <- function(data, question_pre, question_post, coding, n
     } else if (coding == "negative") {
       coding_with_3 <- append(negative_vector, middle_value)
       score <- data %>%
-        dplyr::mutate(score_pre = case_when(.data[[question_pre]] %in% "1" ~ 2,
+        dplyr::mutate(score_pre = dplyr::case_when(.data[[question_pre]] %in% "1" ~ 2,
                                      .data[[question_pre]] %in% "2" ~ 2,
                                      .data[[question_pre]] %in% "3" ~ 1,
                                      .data[[question_pre]] %in% "4" ~ 0,
                                      .data[[question_pre]] %in% "5" ~ 0)) %>%
-        dplyr::mutate(score_post = case_when(.data[[question_post]] %in% "1" ~ 2,
+        dplyr::mutate(score_post = dplyr::case_when(.data[[question_post]] %in% "1" ~ 2,
                                       .data[[question_post]] %in% "2" ~ 2,
                                       .data[[question_post]] %in% "3" ~ 1,
                                       .data[[question_post]] %in% "4" ~ 0,
                                       .data[[question_post]] %in% "5" ~ 0))
       
       data2 <- data %>%
-        filter(prepost == T) %>%
+        dplyr::filter(prepost == T) %>%
         dplyr::mutate(increase = 0) %>%
-        dplyr::mutate(increase = case_when(.data[[question_pre]] %in% negative_vector & .data[[question_post]] %in% middle_value ~ increase,
+        dplyr::mutate(increase = dplyr::case_when(.data[[question_pre]] %in% negative_vector & .data[[question_post]] %in% middle_value ~ increase,
                                            .data[[question_pre]] %in% negative_vector & .data[[question_post]] %in% negative_vector ~ increase + 1,
                                            .data[[question_pre]] %!in% negative_vector & .data[[question_post]] %in% coding_with_3 ~ increase + 1,
                                            .data[[question_pre]] %!in% negative_vector & .data[[question_post]] %!in% negative_vector ~ increase,
@@ -728,13 +730,13 @@ score_question_mindsets <- function(data, question_pre, question_post, coding, n
       coding_with_3 <- append(positive_vector, middle_value)
       
       score <- data %>%
-        dplyr::mutate(score_pre = case_when(.data[[question_pre]] %in% "6" ~ 2,
+        dplyr::mutate(score_pre = dplyr::case_when(.data[[question_pre]] %in% "6" ~ 2,
                                      .data[[question_pre]] %in% "5" ~ 2,
                                      .data[[question_pre]] %in% "4" ~ 1,
                                      .data[[question_pre]] %in% "3" ~ 1,
                                      .data[[question_pre]] %in% "2" ~ 0,
                                      .data[[question_pre]] %in% "1" ~ 0)) %>%
-        dplyr::mutate(score_post = case_when(.data[[question_post]] %in% "6" ~ 2,
+        dplyr::mutate(score_post = dplyr::case_when(.data[[question_post]] %in% "6" ~ 2,
                                       .data[[question_post]] %in% "5" ~ 2,
                                       .data[[question_post]] %in% "4" ~ 1,
                                       .data[[question_post]] %in% "3" ~ 1,
@@ -742,9 +744,9 @@ score_question_mindsets <- function(data, question_pre, question_post, coding, n
                                       .data[[question_post]] %in% "1" ~ 0))
       
       data2 <- data %>%
-        filter(prepost == T) %>%
+        dplyr::filter(prepost == T) %>%
         dplyr::mutate(increase = 0) %>%
-        dplyr::mutate(increase = case_when(.data[[question_pre]] %in% positive_vector & .data[[question_post]] %in% middle_value ~ increase,
+        dplyr::mutate(increase = dplyr::case_when(.data[[question_pre]] %in% positive_vector & .data[[question_post]] %in% middle_value ~ increase,
                                            .data[[question_pre]] %in% positive_vector & .data[[question_post]] %in% positive_vector ~ increase + 1,
                                            .data[[question_pre]] %!in% positive_vector & .data[[question_post]] %in% coding_with_3 ~ increase + 1,
                                            .data[[question_pre]] %!in% positive_vector & .data[[question_post]] %!in% positive_vector ~ increase,
@@ -756,13 +758,13 @@ score_question_mindsets <- function(data, question_pre, question_post, coding, n
       coding_with_3 <- append(negative_vector, middle_value)
       
       score <- data %>%
-        dplyr::mutate(score_pre = case_when(.data[[question_pre]] %in% "1" ~ 2,
+        dplyr::mutate(score_pre = dplyr::case_when(.data[[question_pre]] %in% "1" ~ 2,
                                      .data[[question_pre]] %in% "2" ~ 2,
                                      .data[[question_pre]] %in% "3" ~ 1,
                                      .data[[question_pre]] %in% "4" ~ 1,
                                      .data[[question_pre]] %in% "5" ~ 0,
                                      .data[[question_pre]] %in% "6" ~ 0)) %>%
-        dplyr::mutate(score_post = case_when(.data[[question_post]] %in% "1" ~ 2,
+        dplyr::mutate(score_post = dplyr::case_when(.data[[question_post]] %in% "1" ~ 2,
                                       .data[[question_post]] %in% "2" ~ 2,
                                       .data[[question_post]] %in% "3" ~ 1,
                                       .data[[question_post]] %in% "4" ~ 1,
@@ -770,9 +772,9 @@ score_question_mindsets <- function(data, question_pre, question_post, coding, n
                                       .data[[question_post]] %in% "6" ~ 0))
       
       data2 <- data %>%
-        filter(prepost == T) %>%
+        dplyr::filter(prepost == T) %>%
         dplyr::mutate(increase = 0) %>%
-        dplyr::mutate(increase = case_when(.data[[question_pre]] %in% negative_vector & .data[[question_post]] %in% middle_value ~ increase,
+        dplyr::mutate(increase = dplyr::case_when(.data[[question_pre]] %in% negative_vector & .data[[question_post]] %in% middle_value ~ increase,
                                            .data[[question_pre]] %in% negative_vector & .data[[question_post]] %in% negative_vector ~ increase + 1,
                                            .data[[question_pre]] %!in% negative_vector & .data[[question_post]] %in% coding_with_3 ~ increase + 1,
                                            .data[[question_pre]] %!in% negative_vector & .data[[question_post]] %!in% negative_vector ~ increase,
@@ -784,19 +786,19 @@ score_question_mindsets <- function(data, question_pre, question_post, coding, n
   
   
   score_pre <- score %>%
-    drop_na(score_pre) %>%
-    summarise(
+    dplyr::drop_na(score_pre) %>%
+    dplyr::summarise(
       score_pre = (sum(score_pre, na.rm = T)/(n()*2))*100,
       n1 = n()
     )
   score_post <- score %>%
-    drop_na(score_post) %>%
-    summarise(
+    dplyr::drop_na(score_post) %>%
+    dplyr::summarise(
       score_post = (sum(score_post, na.rm = T)/(n()*2))*100,
       n2 = n()
       )
-  final_score <- bind_cols(score_pre, score_post) %>%
-    bind_cols(data2)
+  final_score <- dplyr::bind_cols(score_pre, score_post) %>%
+    dplyr::bind_cols(data2)
   
   final_score
   
@@ -808,6 +810,8 @@ score_question_mindsets <- function(data, question_pre, question_post, coding, n
 #' @param data the dataframe to be analyzed
 #' @param question the initial column to be selected
 #' @param coding the coding to check for
+#' @param na_remove whether or not to drop NAs at the start of the evaluation
+#' @param likert whether or not the scale is likert with 5 points or 6
 #' @return Returns a dataframe with the percent, correct, number of non-na responses, the question itself, and the percent that sustained/improved
 #' @export
 
@@ -816,20 +820,20 @@ score_one_question_mindsets <- function(data, question, coding, na_remove = F, l
   if (na_remove == T) {
     data <- data %>%
       # Select only observations that have no NAs
-      drop_na(.data[[question]])
+      dplyr::drop_na(.data[[question]])
   }
   
   if (likert == 5) {
     if (coding == "positive") {
       score <- data %>%
-        dplyr::mutate(score = case_when(.data[[question]] %in% c("5", "Very True") ~ 2,
+        dplyr::mutate(score = dplyr::case_when(.data[[question]] %in% c("5", "Very True") ~ 2,
                                             .data[[question]] %in% c("4", "True") ~ 2,
                                             .data[[question]] %in% c("3", "Neither True Nor Untrue") ~ 1,
                                             .data[[question]] %in% c("2", "Untrue") ~ 0,
                                             .data[[question]] %in% c("1", "Very Untrue") ~ 0))
     } else if (coding == "negative") {
       score <- data %>%
-        dplyr::mutate(score = case_when(.data[[question]] %in% c("1", "Very Untrue") ~ 2,
+        dplyr::mutate(score = dplyr::case_when(.data[[question]] %in% c("1", "Very Untrue") ~ 2,
                                             .data[[question]] %in% c("2", "Untrue") ~ 2,
                                             .data[[question]] %in% c("3", "Neither True Nor Untrue") ~ 1,
                                             .data[[question]] %in% c("4", "True") ~ 0,
@@ -838,7 +842,7 @@ score_one_question_mindsets <- function(data, question, coding, na_remove = F, l
   } else if (likert == 6) {
     if (coding == "positive") {
       score <- data %>%
-        dplyr::mutate(score = case_when(.data[[question]] %in% "6" ~ 2,
+        dplyr::mutate(score = dplyr::case_when(.data[[question]] %in% "6" ~ 2,
                                             .data[[question]] %in% "5" ~ 2,
                                             .data[[question]] %in% "4" ~ 1,
                                             .data[[question]] %in% "3" ~ 1,
@@ -846,7 +850,7 @@ score_one_question_mindsets <- function(data, question, coding, na_remove = F, l
                                             .data[[question]] %in% "1" ~ 0))
     } else if (coding == "negative") {
       score <- data %>%
-        dplyr::mutate(score = case_when(.data[[question]] %in% "1" ~ 2,
+        dplyr::mutate(score = dplyr::case_when(.data[[question]] %in% "1" ~ 2,
                                             .data[[question]] %in% "2" ~ 2,
                                             .data[[question]] %in% "3" ~ 1,
                                             .data[[question]] %in% "4" ~ 1,
@@ -857,9 +861,9 @@ score_one_question_mindsets <- function(data, question, coding, na_remove = F, l
   
   
   score %>%
-    drop_na(score) %>%
-    summarise(score = (sum(score)/(n()*2))*100,
-              n = n())
+    dplyr::drop_na(score) %>%
+    dplyr::summarise(score = (sum(score)/(n()*2))*100,
+              n = dplyr::n())
   
 }
 
@@ -908,47 +912,51 @@ round2 = function(x, n) {
 #' @param viz_type ggplot or gt visualization
 #' @param title the title of the ggplot or gt
 #' @param custom_highlight Whether to provide custom highlight arguments through `highlight =` or auto highlight 3 most frequent words
+#' @param width The width of the table generated
+#' @param ... Arguments passed onto the gt table
 #' @return a ggplot/gt that visualizes text
 #' 
 #' @examples
-#' quote_viz(data = iris, text_col = Species, viz_type = "ggplot")
-#' @import tidytext
+#' quote_viz(data = TeachingLab::survey_monkey, 
+#' text_col = `What is the learning from this course that you are most excited about trying out?`, 
+#' viz_type = "gt",
+#' title = "Responses from Survey Monkey")
 #' @export
 
-quote_viz <- function(data, text_col, viz_type = c("ggplot", "gt"), custom_highlight = F, width = 60, title, ...) {
+quote_viz <- function(data, text_col, viz_type = "gt", custom_highlight = F, width = 60, title = NULL, ...) {
   
   # highlight_mutate <- function(x) {
   #   dplyr::mutate(color_text = str_replace_all(color_text, x, paste0("<a style='color:#04abeb'>", x, "</a>")))
   # }
   
-  text_col <- enquo(text_col)
+  text_col <- rlang::enquo(text_col)
   
   if (viz_type == "ggplot") {
     data %>%
-      dplyr::mutate(text = str_replace_all(str_wrap(.data[[text_col]], width = 60), "\n", "<br>")) %>%
+      dplyr::mutate(text = stringr::str_replace_all(stringr::str_wrap(.data[[text_col]], width = 60), "\n", "<br>")) %>%
       dplyr::mutate(text = paste0("\"<i>", text, "\"")) %>%
       dplyr::mutate(x = 0,
-                    y = row_number()) %>%
-      ggplot() +
+                    y = dplyr::row_number()) %>%
+      ggplot2::ggplot() +
       ggtext::geom_richtext(fill = NA, label.color = NA, family = "Calibri",
-                            aes(label = text, x = x, y = y)) + 
-      scale_y_discrete(expand = c(0, 0.3)) +
-      theme_void() + 
-      theme(text = element_text(family = "Calibri"))
+                            ggplot2::aes(label = text, x = x, y = y)) + 
+      ggplot2::scale_y_discrete(expand = c(0, 0.3)) +
+      ggplot2::theme_void() + 
+      ggplot2::theme(text = ggplot2::element_text(family = "Calibri"))
   } else if (viz_type == "gt") {
     # Automated highlighting extract most frequent words
     if (custom_highlight == F) {
       
-      library(tidytext)
-      data("stop_words")
+      stop_words <- tidytext::stop_words
       
       highlight <- data %>%
         tidytext::unnest_tokens(word, .data[[text_col]]) %>%
-        filter(is.na(as.numeric(word))) %>%
+        dplyr::filter(is.na(as.numeric(word))) %>%
         dplyr::count(word, sort = T) %>%
         dplyr::anti_join(stop_words) %>%
         head(3) %>%
         dplyr::pull(word)
+      print("Highlighted words: ", highlight)
     } else if (custom_highlight == T) {
       highlight <- highlight # Custom highlighting
     }
@@ -956,7 +964,7 @@ quote_viz <- function(data, text_col, viz_type = c("ggplot", "gt"), custom_highl
     # print(highlight)
     
     data_text <- data %>%
-      dplyr::mutate(text = str_replace_all(str_wrap(.data[[text_col]], width = width), "\n", "<br>")) %>%
+      dplyr::mutate(text = stringr::str_replace_all(stringr::str_wrap(.data[[text_col]], width = width), "\n", "<br>")) %>%
       dplyr::mutate(text = paste0("\"<i>", text, "\""))
     
     # Make a new column for the data
@@ -973,14 +981,14 @@ quote_viz <- function(data, text_col, viz_type = c("ggplot", "gt"), custom_highl
     #                                           paste0("<a style='color:#04abeb; font-weight:bold;'>", .x, "</a>"))))
     # Make gt table with all HTML Formatting
     data_text %>%
-      select(color_text) %>%
-      gt() %>%
-        cols_label(
+      dplyr::select(color_text) %>%
+      gt::gt() %>%
+        gt::cols_label(
           color_text = gt::html(glue::glue("{title}"))
         ) %>%
       # text_transform(
       #   locations = cells_body(
-      #     columns = everything()
+      #     columns = gt::everything()
       #   ),
       #   fn = function(x) {
           # stringr::str_replace_all(x, paste0(" ", highlight[1], " "), paste0("<span style='color:#04abeb; font-weight:bold;'> ", highlight[1], " </span>"))
@@ -989,15 +997,15 @@ quote_viz <- function(data, text_col, viz_type = c("ggplot", "gt"), custom_highl
           # map_chr(highlight, ~ stringr::str_replace_all(x, .x, paste0("<span style='color:#04abeb'>", .x, "</span>")))
         # }
       #) %>%
-      fmt_markdown(columns = everything()) %>%
-      tab_style(
-        style = cell_fill(color = "gray85"),
-        locations = cells_body(
+      gt::fmt_markdown(columns = gt::everything()) %>%
+      gt::tab_style(
+        style = gt::cell_fill(color = "gray85"),
+        locations = gt::cells_body(
           # Highlights every other cell to be gray
-          rows = c(1:length(data[[quo_name(text_col)]]))[c(T, F)]
+          rows = c(1:length(data[[rlang::quo_name(text_col)]]))[c(T, F)]
         )
       ) %>%
-      gt_theme_tl()
+      TeachingLab::gt_theme_tl()
   }
   
 }
@@ -1011,6 +1019,7 @@ quote_viz <- function(data, text_col, viz_type = c("ggplot", "gt"), custom_highl
 #' @param size the wordcloud size
 #' @param shape the wordcloud shape
 #' @return a wordcloud
+#' @importFrom magrittr %>%
 #' 
 #' @examples
 #' tl_wordcloud(data = iris, text_col = Species)
@@ -1025,21 +1034,21 @@ tl_wordcloud <- function(data, text_col, colors = c("blue", "orange"), n_min = 2
   
   # text_col <- enquo(text_col)
   
-  data("stop_words")
+  stop_words <- TeachingLab::stop_words
   
   words <- data %>%
-    unnest_tokens(word, text_col) %>%
-    anti_join(stop_words) %>%
-    group_by(word) %>%
-    count(sort = T) %>%
-    filter(n >= n_min) %>%
-    mutate(angle = 90 * sample(c(0, 1), n(), replace = TRUE, prob = c(60, 40)))
+    tidytext::unnest_tokens(word, text_col) %>%
+    dplyr::anti_join(stop_words) %>%
+    dplyr::group_by(word) %>%
+    dplyr::count(sort = T) %>%
+    dplyr::filter(n >= n_min) %>%
+    dplyr::mutate(angle = 90 * sample(c(0, 1), n(), replace = TRUE, prob = c(60, 40)))
   
-  ggplot(words, aes(label = word, size = n, angle = angle, color = n)) +
+  ggplot2::ggplot(words, ggplot2::aes(label = word, size = n, angle = angle, color = n)) +
     ggwordcloud::geom_text_wordcloud_area() +
-    scale_size_area(max_size = size) +
-    theme_minimal() +
-    scale_color_gradient(low = colors[1], high = colors[2])
+    ggplot2::scale_size_area(max_size = size) +
+    ggplot2::theme_minimal() +
+    ggplot2::scale_color_gradient(low = colors[1], high = colors[2])
   
 }
 
@@ -1047,15 +1056,15 @@ tl_wordcloud <- function(data, text_col, colors = c("blue", "orange"), n_min = 2
 #' @title HTML Text Wrapping
 #' @description Takes a string and inserts <br> at the requested intervals
 #' @param string the string
-#' @param interval the width of the string before a <br> tag
+#' @param n the width of the string before a <br> tag
 #' @return the same string with <br> inserted at the requested interval
 #' 
 #' @examples
-#' html_wrap(string, interval)
+#' html_wrap("a random string that has about 40 characters in it")
 #' @export
 
-html_wrap <- function(string, interval = 40) {
-  stringr::str_replace_all(stringr::str_wrap(string = string, width = interval), "\n", "<br>")
+html_wrap <- function(string, n = 40) {
+  stringr::str_replace_all(stringr::str_wrap(string = string, width = n), "\n", "<br>")
 }
 
 
@@ -1070,8 +1079,8 @@ html_wrap <- function(string, interval = 40) {
 #' @import lubridate
 #' @export
 
-get_season <- function(input_date){
-  numeric.date <- 100*month(input_date)+day(input_date)
+get_season <- function(date){
+  numeric.date <- 100*month(date)+day(date)
   ## input Seasons upper limits in the form MMDD in the "break =" option:
   cuts <- base::cut(numeric.date, breaks = c(0,319,0620,0921,1220,1231)) 
   # rename the resulting groups (could've been done within cut(...levels=) if "Winter" wasn't double

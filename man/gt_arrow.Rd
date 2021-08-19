@@ -11,7 +11,9 @@ gt_arrow(data, colors = c("#800000", "#98AFC7"), column_one, column_two)
 
 \item{colors}{the color style to apply}
 
-\item{columns}{The columns to compare}
+\item{column_one}{The first column to compare}
+
+\item{column_two}{The second column to compare}
 }
 \value{
 a colored gt table
@@ -20,5 +22,5 @@ a colored gt table
 Makes an html column for a gt table
 }
 \examples{
-gt_arrow(data = gt_table, colors = c("red", "blue"), columns = c("First", "Second"))
+gt_arrow(data = mtcars, colors = c("red", "blue"), column_one = cyl, column_two = disp)
 }

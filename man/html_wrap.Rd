@@ -4,12 +4,12 @@
 \alias{html_wrap}
 \title{HTML Text Wrapping}
 \usage{
-html_wrap(string, interval = 40)
+html_wrap(string, n = 40)
 }
 \arguments{
 \item{string}{the string}
 
-\item{interval}{the width of the string before a <br> tag}
+\item{n}{the width of the string before a <br> tag}
 }
 \value{
 the same string with <br> inserted at the requested interval
@@ -18,5 +18,5 @@ the same string with <br> inserted at the requested interval
 Takes a string and inserts <br> at the requested intervals
 }
 \examples{
-html_wrap(string, interval)
+html_wrap("a random string that has about 40 characters in it")
 }

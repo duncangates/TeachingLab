@@ -6,7 +6,7 @@
 \usage{
 tl_palette(
   color = c("blue", "orange", "purple", "green", "teal", "tl_colors"),
-  theme = c("dark", "light"),
+  theme = c("dark"),
   n
 )
 }

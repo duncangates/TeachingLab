@@ -7,10 +7,10 @@
 quote_viz(
   data,
   text_col,
-  viz_type = c("ggplot", "gt"),
+  viz_type = "gt",
   custom_highlight = F,
   width = 60,
-  title,
+  title = NULL,
   ...
 )
 }
@@ -23,7 +23,11 @@ quote_viz(
 
 \item{custom_highlight}{Whether to provide custom highlight arguments through `highlight =` or auto highlight 3 most frequent words}
 
+\item{width}{The width of the table generated}
+
 \item{title}{the title of the ggplot or gt}
+
+\item{...}{Arguments passed onto the gt table}
 }
 \value{
 a ggplot/gt that visualizes text
@@ -32,5 +36,8 @@ a ggplot/gt that visualizes text
 takes a dataframe and makes a gt table or ggplot that shows a quote
 }
 \examples{
-quote_viz(data = iris, text_col = Species, viz_type = "ggplot")
+quote_viz(data = TeachingLab::survey_monkey, 
+text_col = `What is the learning from this course that you are most excited about trying out?`, 
+viz_type = "gt",
+title = "Responses from Survey Monkey")
 }

@@ -78,7 +78,7 @@ theme_tl(
 
 \item{markdown}{enabled ggtext markdown styling  \code{TRUE}, \code{FALSE}}
 
-\item{palette}{Changes color scheme}
+\item{legend}{default no legend with F}
 }
 \description{
 Teaching Lab Custom Ggplot2 Theme

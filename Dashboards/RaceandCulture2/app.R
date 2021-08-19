@@ -219,10 +219,10 @@ server <- function(input, output) {
         labs(x = "", y = "", color = "", fill = "") +
         scale_fill_manual(values = tl_palette(n = length(unique(plot_1_data()$`get(input$manager_race)`)),
                                               color = "tl_colors",
-                                              theme = "dark")) +
+                                              theme = "light")) +
         scale_color_manual(values = tl_palette(n = length(unique(plot_1_data()$`get(input$manager_race)`)),
                                               color = "tl_colors",
-                                              theme = "dark")) +
+                                              theme = "light")) +
         scale_y_continuous(labels = scales::percent_format(scale = 1), limits = c(0, 105), breaks = seq(0, 100, by = 10)) +
         coord_flip() +
         theme_tl() +

@@ -7,13 +7,13 @@
 gt_tl_color(gt_table, color, column, scale = 1)
 }
 \arguments{
+\item{gt_table}{the gt table to color}
+
 \item{color}{the color style to apply}
 
 \item{column}{The column to apply the color to}
 
 \item{scale}{the scale to apply to}
-
-\item{data}{the gt table to color}
 }
 \value{
 a colored gt table

@@ -1,0 +1,11 @@
+name: Publish Document
+title:
+username:
+account: rpubs
+server: rpubs.com
+hostUrl: rpubs.com
+appId: https://api.rpubs.com/api/v1/document/795615/b95614bdf73d4bdf9792d26f84f5dbf8
+bundleId: https://api.rpubs.com/api/v1/document/795615/b95614bdf73d4bdf9792d26f84f5dbf8
+url: http://rpubs.com/dungates/795615
+when: 1628008655.85554
+lastSyncTime: 1628008655.85555

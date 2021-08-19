@@ -6,7 +6,7 @@
 #'
 #' @return color ramp palette function
 #' @export
-tl_palette <- function(color = c("blue", "orange", "purple", "green", "teal", "tl_colors"), theme = c("dark", "light"), n) {
+tl_palette <- function(color = c("blue", "orange", "purple", "green", "teal", "tl_colors"), theme = c("dark"), n) {
   base_color_start <- if (theme == "light") {
     "#F7FBFD"
   } else if (theme == "dark") {
@@ -24,7 +24,7 @@ tl_palette <- function(color = c("blue", "orange", "purple", "green", "teal", "t
   } else if (color == "teal") {
     col <- grDevices::colorRampPalette(c(base_color_start, "#55bbc7"))
   } else if (color == "tl_colors") {
-    col <- grDevices::colorRampPalette(c(base_color_start, "#30BCED", "#303036", "#FC5130", "#d17df7", "#6A2E35", "#B6D094"))
+    col <- grDevices::colorRampPalette(c("#30BCED", "#303036", "#FC5130", "#d17df7", "#6A2E35", "#B6D094"))
   } else {
     col <- grDevices::colorRampPalette(c(base_color_start, "#00acf0"))
   }
@@ -51,10 +51,12 @@ tl_pal <- function() {
 #' @md
 #' @inheritDotParams ggplot2::discrete_scale -expand -position
 #' @rdname scale_tl
+#' @param n the number of colors
+#' @param color the color from `tl_palette`
 #' @export
-scale_colour_tl <- function(n, color, ...) {
+scale_colour_tl <- function(n, color = "blue", ...) {
   # ggplot2::discrete_scale("colour", "tl", tl_pal(), ...)
-  scale_color_manual(values = tl_palette(color = "blue", theme = "dark", n = n))
+  ggplot2::scale_color_manual(values = tl_palette(color = color, theme = "dark", n = n))
 }
 
 #' @export
@@ -65,5 +67,5 @@ scale_color_tl <- scale_colour_tl
 #' @rdname scale_tl
 scale_fill_tl <- function(n, color = c("blue", "orange", "purple", "green", "teal", "tl_colors"), ...) {
   # ggplot2::discrete_scale("fill", "tl", tl_pal(), ...)
-  scale_fill_manual(values = tl_palette(color = "blue", theme = "dark", n = n))
+  ggplot2::scale_fill_manual(values = tl_palette(color = "blue", theme = "dark", n = n))
 }

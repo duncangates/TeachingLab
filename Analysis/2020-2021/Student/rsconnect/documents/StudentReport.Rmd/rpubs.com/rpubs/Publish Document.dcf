@@ -1,0 +1,10 @@
+name: Publish Document
+title:
+username:
+account: rpubs
+server: rpubs.com
+hostUrl: rpubs.com
+appId: https://api.rpubs.com/api/v1/document/788993/e7a30833ec5a426ba769fe68e985a488
+bundleId: https://api.rpubs.com/api/v1/document/788993/e7a30833ec5a426ba769fe68e985a488
+url: http://rpubs.com/teachinglabHQ/788993
+when: 1625700046.73198

@@ -15,9 +15,13 @@ score_question_number(
 \arguments{
 \item{data}{the dataframe to be analyzed}
 
+\item{question_pre}{the "pre-tl pl" column to be selected}
+
+\item{question_post}{the "post-tl pl"column to be selected}
+
 \item{coding}{the coding to check for}
 
-\item{question}{the column to be selected}
+\item{likert}{whether the likert scale has 5 or 6 points}
 }
 \value{
 Returns a dataframe with the percent, correct, number of non-na responses, and question itself
