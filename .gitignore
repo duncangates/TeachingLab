@@ -8,4 +8,6 @@ Data/
 email_creds_staffing
 Data-Clean/
 .Rhistory
-rsconnect/
+Dashboards/*/rsconnect/
+Dashboards/*/Data
+Tokens/

@@ -918,9 +918,9 @@ round2 = function(x, n) {
 #' 
 #' @examples
 #' quote_viz(data = TeachingLab::survey_monkey, 
-#' text_col = `What is the learning from this course that you are most excited about trying out?`, 
-#' viz_type = "gt",
-#' title = "Responses from Survey Monkey")
+#'           text_col = `What is the learning from this course that you are most excited about trying out?`, 
+#'           viz_type = "gt",
+#'           title = "Responses from Survey Monkey")
 #' @export
 
 quote_viz <- function(data, text_col, viz_type = "gt", custom_highlight = F, width = 60, title = NULL, ...) {
@@ -956,7 +956,7 @@ quote_viz <- function(data, text_col, viz_type = "gt", custom_highlight = F, wid
         dplyr::anti_join(stop_words) %>%
         head(3) %>%
         dplyr::pull(word)
-      print("Highlighted words: ", highlight)
+      cat("Highlighted words: ", highlight)
     } else if (custom_highlight == T) {
       highlight <- highlight # Custom highlighting
     }

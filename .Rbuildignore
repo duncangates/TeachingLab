@@ -18,3 +18,4 @@ FacilitatorPay/
 email_creds_staffing
 Data-Clean/
 ^LICENSE\.md$
+^data-raw$

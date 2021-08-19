@@ -37,7 +37,7 @@ takes a dataframe and makes a gt table or ggplot that shows a quote
 }
 \examples{
 quote_viz(data = TeachingLab::survey_monkey, 
-text_col = `What is the learning from this course that you are most excited about trying out?`, 
-viz_type = "gt",
-title = "Responses from Survey Monkey")
+          text_col = `What is the learning from this course that you are most excited about trying out?`, 
+          viz_type = "gt",
+          title = "Responses from Survey Monkey")
 }
