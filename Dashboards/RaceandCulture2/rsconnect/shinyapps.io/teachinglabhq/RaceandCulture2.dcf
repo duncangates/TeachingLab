@@ -5,9 +5,9 @@ account: teachinglabhq
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 4510547
-bundleId: 4940330
+bundleId: 4943306
 url: https://teachinglabhq.shinyapps.io/RaceandCulture2/
-when: 1629363426.23991
-lastSyncTime: 1629363426.23992
+when: 1629420878.76886
+lastSyncTime: 1629420878.76887
 asMultiple: FALSE
 asStatic: FALSE

@@ -50,7 +50,8 @@ ui <- dashboardPage(
   dashboardBody(
     add_busy_spinner(spin = "fading-circle", color = "#04abeb"),
     h2("% that Agree/Strongly agree with the Selected Question Group", style = "text-align:center;font-weight:bold;width:100%;"),
-    plotOutput("plot1", height = "1200px")
+    plotOutput("plot1", height = "1000px")
+    # uiOutput("ui_plot")
   )
 )
 
@@ -129,7 +130,7 @@ server <- function(input, output) {
                  Question != "How do you identify racially or ethnically?") %>%
         mutate(Question = case_when(Question %in% input$question ~ paste("<strong>", Question, "</strong>"),
                                     T ~ as.character(Question)),
-               Question = TeachingLab::html_wrap(Question, interval = 25))
+               Question = TeachingLab::html_wrap(Question, n = 25))
     } else if (input$question_type == "Management/Leadership") {
         data %>%
             select(
@@ -144,7 +145,7 @@ server <- function(input, output) {
                  Question != "How do you identify racially or ethnically?") %>%
         mutate(Question = case_when(Question %in% input$question ~ paste("<strong>", Question, "</strong>"),
                                     T ~ as.character(Question)),
-               Question = TeachingLab::html_wrap(Question, interval = 25))
+               Question = TeachingLab::html_wrap(Question, n = 25))
     } else if (input$question_type == "Employee Engagement") {
         data %>%
             select(
@@ -159,7 +160,7 @@ server <- function(input, output) {
                  Question != "How do you identify racially or ethnically?") %>%
         mutate(Question = case_when(Question %in% input$question ~ paste("<strong>", Question, "</strong>"),
                                     T ~ as.character(Question)),
-               Question = TeachingLab::html_wrap(Question, interval = 25))
+               Question = TeachingLab::html_wrap(Question, n = 25))
     } else if (input$question_type == "Equity & Inclusion") {
         data %>%
             select(
@@ -174,7 +175,7 @@ server <- function(input, output) {
                  Question != "How do you identify racially or ethnically?") %>%
         mutate(Question = case_when(Question %in% input$question ~ paste("<strong>", Question, "</strong>"),
                                     T ~ as.character(Question)),
-               Question = TeachingLab::html_wrap(Question, interval = 50))
+               Question = TeachingLab::html_wrap(Question, n = 50))
     } else if (input$question_type == "Social Learning Groups") {
         data %>%
             select(
@@ -189,7 +190,7 @@ server <- function(input, output) {
                  Question != "How do you identify racially or ethnically?") %>%
         mutate(Question = case_when(Question %in% input$question ~ paste("<strong>", Question, "</strong>"),
                                     T ~ as.character(Question)),
-               Question = TeachingLab::html_wrap(Question, interval = 25))
+               Question = TeachingLab::html_wrap(Question, n = 25))
     } else if (input$question_type == "Teaching Lab Values") {
         data_1 <- data %>%
             select(
@@ -204,9 +205,27 @@ server <- function(input, output) {
                    Question != "How do you identify racially or ethnically?") %>%
           mutate(Question = case_when(Question %in% input$question ~ paste("<strong>", Question, "</strong>"),
                                       T ~ as.character(Question)),
-                 Question = TeachingLab::html_wrap(Question, interval = 25))
+                 Question = TeachingLab::html_wrap(Question, n = 25))
     }
       })
+    
+    plot_height <- reactive({
+      plot_height_var <- if (input$question_type == "General Working Conditions") {
+        1000
+      } else if (input$question_type == "Equity & Inclusion") {
+        1800
+      } else if (input$question_type == "Social Learning Groups") {
+        800
+      } else if (input$question_type == "Management/Leadership") {
+        900
+      } else if (input$question_type == "Employee Engagement") {
+        1400
+      } else if (input$question_type == "Teaching Lab Values") {
+        900
+      }
+      plot_height_var <- paste0(plot_height_var, "px")
+      print(plot_height_var)
+    })
     
     output$plot1 <- renderPlot({
       plot_1_data() %>%
@@ -226,14 +245,14 @@ server <- function(input, output) {
         scale_y_continuous(labels = scales::percent_format(scale = 1), limits = c(0, 105), breaks = seq(0, 100, by = 10)) +
         coord_flip() +
         theme_tl() +
-        guides(fill = guide_legend(label.position = "bottom", override.aes = list(size = 2))) +
+        guides(fill = guide_legend(label.position = "bottom", override.aes = list(size = 10))) +
         theme(axis.text.x = element_markdown(lineheight = 1.1, size = 12),
               axis.text.y = element_markdown(size = 12, lineheight = 1.1),
               legend.position = "top",
               # legend.key.size = unit(1.2, "cm"),
               legend.text = element_text(size = 10),
               legend.spacing.x = unit(1, "cm"),
-              strip.text = element_text(hjust = 0.5, face = "bold", size = 15))
+              strip.text = element_text(hjust = 0.5, face = "bold", size = 17))
   })
 
 }

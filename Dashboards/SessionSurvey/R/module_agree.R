@@ -285,9 +285,31 @@ agreeServer <- function(id) {
           strip.text = element_text(size = 13),
           axis.title.x = element_blank(),
           axis.title.y = element_blank(),
-          plot.title = element_text(hjust = 0.5, family = "Calibri"),
+          plot.title = element_text(hjust = 0.5, family = "Calibri", size = 20, face = "bold"),
           axis.line = element_line(size = 1.5)
         )
+    })
+    
+    # Agree plot n size
+    agree_plot_n <- reactive({
+      data_n <- session_survey %>%
+        dplyr::filter(between(Date, input$date_slider[1], input$date_slider[2])) %>%
+        {
+          if (input$site != "All Partners") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
+        } %>%
+        {
+          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
+        } %>%
+        {
+          if (input$facilitator != "All Facilitators") dplyr::filter(., Facilitator %in% input$facilitator) else .
+        } %>%
+        {
+          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today’s professional learning session.` %in% input$content) else .
+        } %>%
+        {
+          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
+        }
+      nrow(data_n)
     })
 
     # Agree Percent Plot
@@ -358,7 +380,8 @@ agreeServer <- function(id) {
         )) +
         labs(
           fill = "", title = "Percent that Agree/Strongly Agree with\nEach of the Following Statements",
-          x = "", y = ""
+          x = "", y = "",
+          subtitle = glue::glue("Given the filters applied there are {agree_plot_n()} responses")
         ) +
         coord_flip() +
         guides(fill = guide_legend(reverse = T)) +
@@ -369,6 +392,7 @@ agreeServer <- function(id) {
           axis.text.y = element_text(lineheight = 1.1, size = 14),
           legend.position = "bottom",
           plot.title = element_text(lineheight = 1.1, size = 20, face = "bold"),
+          plot.subtitle = element_text(size = 14, face = "bold"),
           legend.key.size = unit(1.25, "cm"),
           legend.text = element_text(size = 9)
         )
@@ -383,7 +407,7 @@ agreeServer <- function(id) {
           "(3) Neither agree nor disagree" = "#02587A", "(4) Agree" = "#0182B4", "(5) Strongly agree" = "#00ACF0"
         )) +
         labs(
-          fill = "", title = "Percent that Agree/Strongly Agree with\nEach of the Following Statements",
+          fill = "", title = "Percent that Agree/Strongly Agree with Each of the Following Statements",
           x = "", y = ""
         ) +
         coord_flip() +
