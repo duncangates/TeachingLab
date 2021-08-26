@@ -41,7 +41,7 @@
 
 # readr::write_rds(session_survey, "data-raw/session_surveymonkey.rds")
 # readr::write_rds(session_survey, here::here("Dashboards/SessionSurvey/Data/session_surveymonkey.rds"))
-
+library(magrittr)
 session_survey <- readr::read_rds("Data/session_surveymonkey.rds") %>%
   dplyr::mutate(date_created = lubridate::date(date_created)) %>%
   dplyr::mutate(`Select your course.` = dplyr::coalesce(`Select your course.`, `Select your course._2`, `Select your course._3`,

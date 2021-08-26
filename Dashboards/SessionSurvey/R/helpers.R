@@ -2,6 +2,7 @@ options(googleAuthR.scopes.selected = c("https://www.googleapis.com/auth/userinf
                                         "https://www.googleapis.com/auth/userinfo.profile"))
 options("googleAuthR.webapp.client_id" = "342318881032-ui98nm42rcujf7v5cugcv38fmns8hjvg.apps.googleusercontent.com")
 options("googleAuthR.webapp.client_secret" = "gSfM4MILy7BUD17oM7XQWfxY")
+options(shiny.port = 7325)
 library(shiny)
 library(shiny.router)
 library(shiny.semantic)
@@ -28,8 +29,8 @@ options(spinner.color = "#04ABEB")
 
 info_page <- div(class = "ui container",
                  div(class = "ui center aligned header",
-                     useShinyjs(),
-                     googleAuthUI("gauth_login"),
+                     # useShinyjs(),
+                     # googleAuthUI("gauth_login"),
                      h2("Please watch the video below to learn how to use this dashboard."),
                      div(class="ui center aligned", style = "text-align: center;",
                          br(),
@@ -46,7 +47,7 @@ info_page <- div(class = "ui container",
                          img(src="imgs/quote_vizzes.png", height = "7%")
                      ),
                      div(class = "eight wide column",
-                         div(class="ui center aligned big header", 
+                         div(class="ui center aligned big header",
                              h2("Session Survey Dashboard Information")),
                          p("This app was created to visualize participant perception data of ",
                            a(tags$b("Teaching Lab"), href = "https://www.teachinglab.org"),
