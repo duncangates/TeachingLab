@@ -8,20 +8,8 @@ data <- read_rds("Data/new_data.rds")
 
 # Create rmd to be sent
 my_email_object <- render_email(
-  input = "Rmd/email.rmd",
-  output_options = list(
-    runtime = "shiny"
-  )
-  )
-
-# Print
-# print(my_email_object)
-
-# email <- Facilitators_Emails %>% 
-#   select(1, 2, input$curriculum) %>%
-#   filter(input$curriculum == "1") %>%
-#   select(2) %>%
-#   as_vector()
+  input = "Rmd/email.rmd"
+)
 
 email <- "duncan.gates@teachinglab.org"
   

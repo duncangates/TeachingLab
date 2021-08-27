@@ -2,13 +2,9 @@
   color: #3D9970;
 }
 
-h4 {
-  color: #3D9970;
-}
-
 .selectize-input {
   height: 40px; 
-  width: 400px; 
+  width: 1000px; 
   font-size: 17px; 
   margin-top: 20px;
 }
@@ -24,7 +20,18 @@ h4 {
   display: table-row;
 }
 
-.airdatepicker--day-name {
-  color: #3D9970;
+.sw-air-picker .form-control .shiny-bound-input {
+  max-width: 300px;
+}
+
+/* Adding some basic styling to button */
+          
+.btn {
+    cursor: pointer;
+    outline: none;
+}
+/* Adding transformation when the button is active */
   
+.btn:focus {
+  background-color: white;
 }

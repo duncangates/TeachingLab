@@ -12,6 +12,8 @@ library(googledrive)
 library(here)
 library(lubridate)
 library(waiter)
+library(stringi)
+library(hover)
 
 # Immediately set authorization for google drive
 drive_auth(path = here("Data/thermal-cathode-310719-1445194b99c7.json"))

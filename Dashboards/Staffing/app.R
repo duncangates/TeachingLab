@@ -2,22 +2,28 @@ source("global.R")
 source("sheet_read.R")
 
 # Read in necessary data
-PMs <- read_rds("Data/PMs.rds")
+PMs_Emails <- read_rds("Data/PMs.rds")
 Courses <- read_rds("Data/Courses.rds")
 Facilitators_Emails <- read_rds("Data/Facilitators.rds")
-Sites <- read_rds("Data/Sites.rds")
+Sites <- read_rds("Data/Site.rds")
 
 # Organize rows as facilitator observation
 # Columns as dates
 
 bs4DashTheme <- create_theme(
-  bs_vars_font(family_sans_serif = "Calibri",
-               size_base = "20px"),
-  bs4dash_layout(main_bg = "white",
-                 sidebar_width = "0px"), #main back ground
-  bs4dash_color(gray_900 = "#00e9e5", white = "#272c30",
-                green = "#68AF8F",
-                lime = "#93C6AF")
+  bs_vars_font(
+    family_sans_serif = "Calibri",
+    size_base = "20px"
+  ),
+  bs4dash_layout(
+    main_bg = "white",
+    sidebar_width = "0px"
+  ), # main background
+  bs4dash_color(
+    gray_900 = "#00e9e5", white = "#272c30",
+    green = "#68AF8F",
+    lime = "#93C6AF"
+  )
 )
 
 ui <- dashboardPage(
@@ -25,6 +31,10 @@ ui <- dashboardPage(
   # use_googlefont("Calibri"),
   title = "Teaching Lab Staffing Site",
   dashboardHeader(
+    # title = h2("PM Facing Staffing Requests",
+    #   style = "font-weight:bold; color:#E6E9EB;margin-bottom: 1rem;margin-top: 1rem;text-align: center;margin-left: auto;",
+    #   align = "center"
+    # ),
     skin = "light",
     status = "olive"
   ),
@@ -40,172 +50,226 @@ ui <- dashboardPage(
     right = "© Teaching Lab, 2021"
   ),
   body = dashboardBody(
+    tags$head(
+      tags$link(rel = "stylesheet", type = "text/css", href = "www/styles.css")
+    ),
     shinyjs::useShinyjs(),
     # fresh::use_theme(bs4DashTheme),
     # tabItems(
-      # tabItem(
-        # tabName = "item1",
-        fluidRow(
-          column(
-            6,
-            bs4Dash::box(
-              title = h4("Course Information", style = "font-weight:bold; color:white;", align = "center"),
-              closable = F,
-              width = 12,
-              solidHeader = TRUE,
-              status = "olive",
-              collapsible = F,
-              # Make selection in line
-              tags$head(
-                tags$style(type="text/css", ".inline label{ display: table-cell; text-align: left; vertical-align: middle; padding-right: 10px;}
+    # tabItem(
+    # tabName = "item1",
+    fluidRow(
+      column(
+        6,
+        bs4Dash::box(
+          title = h4("Course Information", style = "font-weight:bold; color:white;", align = "center"),
+          closable = F,
+          width = 12,
+          solidHeader = TRUE,
+          status = "olive",
+          collapsible = F,
+          # Make selection in line
+          tags$head(
+            tags$style(type = "text/css", ".inline label{ display: table-cell; text-align: left; vertical-align: middle; padding-right: 10px;}
                 .inline .form-group { display: table-row;}")
-              ),
-              # Make selection drop down height, width, font size
-              tags$head(tags$style(HTML(".selectize-input {height: 40px; width: 400px; font-size: 17px; margin-top: 20px;}"))),
-              tags$div(
-                class = "inline",
-                shiny::selectInput("pm", label = h5(labelMandatory("PM"), style = "font-weight:bold;font-size: 20px;"),
-                            choices = purrr::prepend(PMs$PMs, "")),
-                selectInput("curriculum", label = h5(labelMandatory("Curriculum"), style = "font-weight:bold;font-size: 20px;"),
-                            choices = c("", "EL", "State Level", "IM", "Engage/Eureka", "Zearn", "Guidebooks", "Science")),
-                selectInput("site", label = h5(labelMandatory("Site "), style = "font-weight:bold;font-size: 20px;"),
-                            choices = purrr::prepend(Sites$Site, "")),
-                selectInput("content", label = h5(labelMandatory("Content "), style = "font-weight:bold;font-size: 20px;"),
-                            choices = purrr::prepend(Courses$Courses, "")),
-                selectizeInput("calls_count", label = h5(labelMandatory("# of Calls "), style = "font-weight:bold;font-size: 20px;"),
-                            choices = c(0:10), selected = 0),
-                uiOutput("specific_yes")
-              )
-            )
           ),
-          column(
-            6,
-            bs4Dash::box(
-              title = h4("Call Times (All times are EST)", style = "font-weight:bold; color:white;", align = "center"),
-              closable = F,
-              width = 12,
-              # height = 414,
-              solidHeader = TRUE,
-              status = "olive",
-              collapsible = F,
-              # Adjust height, width and font size of input text
-              tags$head(tags$style(HTML(".input-group {height: 35px; width: 700px; font-size: 15px;}"))),
-              # Adjust input of 
-              tags$head(tags$style(HTML(".airdatepicker--day-name {color: #3D9970;}"))),
-              uiOutput("call_times_gen")
-            )
-          ),
-          column(
-            12,
-            bs4Dash::box(
-              title = h4("Facilitator Information",
-                style = "font-weight:bold; color:white;",
-                align = "center"
-              ),
-              closable = F,
-              width = 12,
-              solidHeader = TRUE,
-              status = "olive",
-              collapsible = F,
-              tags$div(
-                class = "inline",
-                shinyWidgets::numericInputIcon("lead_facilitators_needed", label = "# of Lead Facilitators Needed", value = 1, step = 1, min = 0), # Weirdly when this is run locally it steps by 2
-                shinyWidgets::numericInputIcon("tech_facilitators_needed", label = "# of Tech/Support Facilitators Needed", value = 1, step = 1, min = 0),
-                airDatepickerInput("response_needed",
-                          "What date do you need responses sent by?",
-                          value = Sys.Date() + 1,
-                          minDate = Sys.Date() + 1,
-                          multiple = T)
-              ),
-              br(),
-              textAreaInput("additional_info", label = "What additional information would you like to provide?",
-                            width = "80%", height = "400px"),
-              shinyjs::useShinyjs(),
-              tags$head(tags$script(src = "message-handler.js")),
-              actionButton("submit", "Submit", icon("paper-plane"), 
-                           style="color: #fff; background-color: #3D9970; border-color: #3D9970")
-            )
+          # Make selection drop down height, width, font size
+          tags$head(tags$style(HTML(".selectize-input {height: 40px; width: 400px; font-size: 17px; margin-top: 20px;}"))),
+          tags$div(
+            class = "inline",
+            shiny::selectInput("pm",
+              label = h5(labelMandatory("PM"), style = "font-weight:bold;font-size: 20px;"),
+              choices = purrr::prepend(PMs_Emails$PMs, "")
+            ),
+            selectInput("curriculum",
+              label = h5(labelMandatory("Curriculum"), style = "font-weight:bold;font-size: 20px;"),
+              choices = c("", "EL", "State Level", "IM", "Engage/Eureka", "Zearn", "Guidebooks", "Science", "SL IPG")
+            ),
+            selectInput("site",
+              label = h5(labelMandatory("Site "), style = "font-weight:bold;font-size: 20px;"),
+              choices = purrr::prepend(Sites$Site, "")
+            ),
+            selectInput("content",
+              label = h5(labelMandatory("Content "), style = "font-weight:bold;font-size: 20px;"),
+              choices = purrr::prepend(Courses$Courses, "")
+            ),
+            selectizeInput("calls_count",
+              label = h5(labelMandatory("# of Calls "), style = "font-weight:bold;font-size: 20px;"),
+              choices = c(0:10), selected = 0
+            ),
+            tags$head(tags$style(HTML(".sw-air-picker { max-width:300px;}"))),
+            uiOutput("specific_yes")
           )
-        # )
+        )
+      ),
+      column(
+        6,
+        bs4Dash::box(
+          title = h4("Call Times (All times are EST)", style = "font-weight:bold; color:white;", align = "center"),
+          closable = F,
+          width = 12,
+          # height = 414,
+          solidHeader = TRUE,
+          status = "olive",
+          collapsible = F,
+          # Adjust height, width and font size of input text
+          tags$head(tags$style(HTML(".input-group {height: 35px; width: 700px; font-size: 15px;}"))),
+          # Adjust input of
+          tags$head(tags$style(HTML(".airdatepicker--day-name {color: #3D9970;}"))),
+          uiOutput("call_times_gen")
+        )
+      ),
+      column(
+        12,
+        bs4Dash::box(
+          title = h4("Facilitator Information",
+            style = "font-weight:bold; color:white;",
+            align = "center"
+          ),
+          closable = F,
+          width = 12,
+          solidHeader = TRUE,
+          status = "olive",
+          collapsible = F,
+          tags$div(
+            class = "inline",
+            shinyWidgets::numericInputIcon("lead_facilitators_needed", label = "# of Lead Facilitators Needed", value = 1, step = 1, min = 0), # Weirdly when this is run locally it steps by 2
+            shinyWidgets::numericInputIcon("tech_facilitators_needed", label = "# of Tech/Support Facilitators Needed", value = 1, step = 1, min = 0),
+            airDatepickerInput("response_needed",
+              "What date do you need responses sent by?",
+              dateFormat = "mm-dd-yyyy",
+              value = Sys.Date() + 1,
+              minDate = Sys.Date() + 1,
+              multiple = F
+            )
+          ),
+          br(),
+          textAreaInput("additional_info",
+            label = "What additional information would you like to provide?",
+            width = "80%", height = "400px"
+          ),
+          shinyjs::useShinyjs(),
+          tags$head(tags$script(src = "message-handler.js")),
+          # Create submit effect
+          tags$head(tags$style(HTML(".btn:focus {color: white !important;}"))),
+          use_hover(),
+          hover_action_button("submit", "Submit", icon("paper-plane"),
+            style = "color: #fff; background-color: #3d9970; border-color: #2e6da4",
+            button_animation = "rotate",
+            icon_animation = "spin"
+          )
+        )
+      )
+      # )
       # )
     )
   )
 )
 server <- function(input, output, session) {
-  
+
   # Enable the Submit button when all mandatory fields are filled out
   observe({
     mandatoryFilled <-
-      vapply(fieldsMandatory,
-             function(x) {
-               !is.null(input[[x]]) && input[[x]] != "" && input[[x]] != 0
-               length(input[["specific_facilitator"]]) > 0
-             },
-             logical(1))
+      vapply(
+        fieldsMandatory,
+        function(x) {
+          !is.null(input[[x]]) && input[[x]] != "" && input[[x]] != 0
+          length(input[["specific_facilitator"]]) > 0
+        },
+        logical(1)
+      )
     mandatoryFilled <- all(mandatoryFilled)
-    
+
     shinyjs::toggleState(id = "submit", condition = mandatoryFilled)
   })
-  
+
   # Create dropdown with facilitators who should be emailed
   output$specific_yes <- renderUI({
     req(input$curriculum)
-    shinyWidgets::pickerInput("specific_facilitator", 
-                              label = labelMandatory("Select the facilitators you would like to email:"), 
-                              choices = Facilitators_Emails %>%
-                                pivot_longer(!c(1, 2), names_to = "Curriculum") %>% 
-                                arrange(Facilitators) %>%
-                                filter(Curriculum == input$curriculum & value == 1) %>% 
-                                select(Facilitators) %>% 
-                                distinct(),
-                              multiple = T,
-                              width = "400px",
-                              options = list(
-                                `actions-box` = TRUE
-                              )
-                              )
+    shinyWidgets::pickerInput("specific_facilitator",
+      label = labelMandatory("Select the facilitators you would like to email:"),
+      choices = Facilitators_Emails %>%
+        pivot_longer(!c(1, 2), names_to = "Curriculum") %>%
+        arrange(Facilitators) %>%
+        filter(Curriculum == input$curriculum & value == 1) %>%
+        select(Facilitators) %>%
+        distinct(),
+      multiple = T,
+      width = "400px",
+      options = list(
+        `actions-box` = TRUE
+      )
+    )
   })
-  
+
   # Generate call times selection
   output$call_times_gen <- renderUI({
-    
-    # Require all times 
+
+    # Require all times
     req(input$site)
     req(input$curriculum)
     req(input$pm)
-    
+
     # local_zone <- Sites %>%
     #   filter(Site == input$site) %>%
     #   mutate(`Time Zone` = str_replace_all(`Time Zone`, c("CST" = "America/Chicago", "EST" = "America/New_York", "PST" = "America/Los_Angeles"))) %>%
     #   mutate(`Time Zone` = replace_na(`Time Zone`, "America/New_York")) %>%
     #   select(`Time Zone`) %>%
     #   as_vector()
-    
+
     # Create a variable length input
     if (input$calls_count > 0) {
-      map(1:input$calls_count, ~ airDatepickerInput(
-        inputId = paste0("time_", .x),
-        label = h5(paste0("Date and Time ", .x, (" (EST)")), style = "width: 400px;font-weight:bold;"),
-        multiple = F,
-        value = force_tz(as.POSIXct(format(as_datetime(paste0(today(), " 12:00:00 UTC")), "%Y-%m-%d %H:%M")), "America/New_York"),
-        # value = as.POSIXct(format(Sys.time(), "%Y-%m-%d %H:%M")),
-        timepicker = TRUE,
-        minDate = Sys.Date() + 1,
-        update_on = "change",
-        addon = "left",
-        width = "100px",
-        timepickerOpts = timepickerOptions(
-          dateTimeSeparator = " at ",
-          minutesStep = 5,
-          hoursStep = 1
-        )
+      map(1:input$calls_count, ~ list(
+        div(style = "display:inline-block;width:300px;", airDatepickerInput(
+          inputId = paste0("time1_", .x),
+          label = h5(paste0("Select Date ", .x, " and Time ", .x, " (EST)"), style = "width: 400px;font-weight:bold;"),
+          multiple = F,
+          width = "300px",
+          value = as_datetime(paste0(Sys.Date(), " 17:00:00"), tz = "UTC"),
+          timepicker = T,
+          separator = " to ",
+          placeholder = "Pick to select date and time range",
+          # minDate = Sys.Date() + 1,
+          dateFormat = "mm-dd-yyyy",
+          update_on = "change",
+          addon = "left",
+          # range = T,
+          toggleSelected = F,
+          timepickerOpts = timepickerOptions(
+            dateTimeSeparator = " at ",
+            # timeFormat = "hh:ii a",
+            minutesStep = 5 # ,
+            # hoursStep = 1
+          )
+        )),
+        div(style = "display:inline-block;width:300px", airDatepickerInput(
+          inputId = paste0("time2_", .x),
+          label = h5(paste0("to ", stringi::stri_dup(intToUtf8(160), 6), "Date ", .x, " and Time ", .x, " (EST)"), style = "width: 400px;font-weight:bold;"),
+          multiple = F,
+          width = "300px",
+          value = as_datetime(paste0(Sys.Date(), " 17:00:00"), tz = "UTC"),
+          timepicker = T,
+          separator = " to ",
+          placeholder = "Pick to select date and time range",
+          # minDate = Sys.Date() + 1,
+          dateFormat = "mm-dd-yyyy",
+          update_on = "change",
+          addon = "left",
+          # range = T,
+          toggleSelected = F,
+          timepickerOpts = timepickerOptions(
+            dateTimeSeparator = " at ",
+            # timeFormat = "hh:ii a",
+            minutesStep = 5 # ,
+            # hoursStep = 1
+          )
+        ))
       ))
     } else {
       print(HTML("Please Enter the # of Calls Desired"))
     }
-    
   })
-  
+
   # Restrict submit until there is at least one time entered
   # observeEvent(input$calls_count, {
   #   if (input$calls_count < 1) {
@@ -214,71 +278,101 @@ server <- function(input, output, session) {
   #     shinyjs::enable("submit")
   #   }
   # })
-  
+
   # Track new line of submitted data
   new_data <- reactive({
     # Create new data
     if (input$calls_count > 0) {
-     new_data <- tibble(
+      new_data <- tibble(
         PMs = input$pm,
         Curriculum = input$curriculum,
         Site = input$site,
         Content = input$content,
-        `Call Times` = paste(map(1:input$calls_count, ~ as.character(eval(parse(text = (paste0("input$time_", .x)))))), collapse = ", "),
+        `Call Times` = paste(map(1:input$calls_count, ~ as.character(eval(parse(text = (paste0("input$time1_", .x)))))) %>%
+          map(., ~ as_datetime(.x, tz = "UTC")) %>%
+          map(., ~ format(.x, "%m-%d-%Y %I:%M %P")), "to",
+        map(1:input$calls_count, ~ as.character(eval(parse(text = (paste0("input$time2_", .x)))))) %>%
+          map(., ~ as_datetime(.x, tz = "UTC")) %>%
+          map(., ~ format(.x, "%m-%d-%Y %I:%M %P")),
+        collapse = ", "
+        ),
         `Response Time` = as.character(input$response_needed),
         `Lead Facilitators` = as.character(input$lead_facilitators_needed),
         `Tech Facilitators` = as.character(input$tech_facilitators_needed),
         `Additional Comments` = input$additional_info,
         ID = ids::random_id(n = 1),
         Emails = Facilitators_Emails %>%
-          filter(Facilitators %in% input$specific_facilitator) %>% 
+          filter(Facilitators %in% input$specific_facilitator) %>%
           pull(Emails) %>%
           paste(collapse = ", "),
         Names = Facilitators_Emails %>%
-          filter(Facilitators %in% input$specific_facilitator) %>% 
+          filter(Facilitators %in% input$specific_facilitator) %>%
           pull(Facilitators) %>%
-          paste(collapse = ", ")
-      )
-      print(new_data)
+          paste(collapse = ", "),
+        PM_emails = PMs_Emails %>%
+          dplyr::filter(PMs == input$pm) %>%
+          dplyr::pull(Email)
+      ) # %>%
+      # print(new_data)
+      # print(input$calls_count)
       # print(new_data$`Call Times`)
     }
   })
-  
+
   # Create action for submit button
   observeEvent(input$submit, {
-    
-    # Ensure no duplicate date/times based on length of uniques and length of original dataframe
-    times <- tibble(names = map(1:input$calls_count, ~ as.character(eval(parse(text = (paste0("input$time_", .x)))))))
-    # 
-    print(crossing(times))
-    crossing_number <- nrow(crossing(times))
-    # 
+
+    # Ensure no duplicate date/times based on length of selected number of calls and unique time/date sets
+    times <- paste(map(1:input$calls_count, ~ as.character(eval(parse(text = (paste0("input$time1_", .x)))))) %>%
+      map(., ~ as_datetime(.x)) %>%
+      map(., ~ format(.x, "%m-%d-%Y %I:%M %P")), "to",
+    map(1:input$calls_count, ~ as.character(eval(parse(text = (paste0("input$time2_", .x)))))) %>%
+      map(., ~ as_datetime(.x)) %>%
+      map(., ~ format(.x, "%m-%d-%Y %I:%M %P")),
+    collapse = ", "
+    ) %>%
+      str_split(", ") %>%
+      as_tibble(.name_repair = "unique") %>%
+      distinct() %>%
+      nrow()
+
+    cat("Number of unique date/time sets: ", times)
+    #
     # validate(
     #   need(crossing_number == input$calls_count, session$sendCustomMessage(type = 'testmessage',
     #                                                                message = 'Please enter non-duplicate times'))
     # )
 
-    req(crossing_number == input$calls_count)
-    
+    if (times != input$calls_count) {
+      session$sendCustomMessage(
+        type = "testmessage",
+        message = "Invalid input: matching dates and times"
+      )
+    } # else if () { # AT SOME POINT TRY TO MAKE IT SO TIMES AND DATES HAVE TO BE VALID
+    #   type = "testmessage",
+    #   message = "Invalid input: check that dates are after the current date"
+    # }
+
+    # Require same number of requested calls as unique times & dates
+    req(times == input$calls_count)
+
     # Write New RDS first
     write_rds(new_data(), "Data/new_data.rds")
-    
+
     # Write to sheet
     source("sheet_write.R")
 
-    # Send pop-up message
-    session$sendCustomMessage(type = 'testmessage',
-                              message = 'Thank you for your submission!')
-    
-    # Send email
-    # source("email_send.R")
 
+    # Send pop-up message on success
+    session$sendCustomMessage(
+      type = "testmessage",
+      message = "Thank you for your submission!"
+    )
   })
-  
-  # observe({
-    # print(input$time_1)
-  # })
-  
+
+  observe({
+    cat("The input times are ", data$`Call Times`[1])
+  })
 }
 
 

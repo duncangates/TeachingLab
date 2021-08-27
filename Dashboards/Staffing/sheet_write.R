@@ -20,7 +20,7 @@ sheet <- gs4_find("Staffing Input Request")
 init_data <- read_sheet(ss = sheet$id, sheet = "Input", col_types = "c")
 
 # Read new data
-new_data <- read_rds(here("Data/new_data.rds"))
+new_data <- read_rds("Data/new_data.rds")
 
 # Append to data
 data <- bind_rows(new_data, init_data)

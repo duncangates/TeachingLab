@@ -142,7 +142,8 @@ gt5 <- data_clean %>%
   summarise(Score = round(sum(Score == 2)/n(), 2)) %>%
   mutate(Prepost = str_replace_all(Prepost, c("Pre" = "Fall", "Post" = "Spring"))) %>%
   pivot_wider(names_from = "Prepost", values_from = "Score", names_sort = T) %>%
-  ungroup()
+  ungroup() %>%
+  
 
 gt5 %>%
   gt(rowname_col = "Curriculum") %>%
@@ -161,9 +162,67 @@ gt5 %>%
     scale_values = T,
     decimals = 0
   ) %>%
-  tab_source_note(source_note = "Fall ELA n = 68, Spring ELA n = 22, Fall Math n = 30, Spring Math n = 14") %>%
   gt_theme_tl(all_caps = T) %>%
   gtsave(here::here("Images/StudentWork/2020-2021/Table5.png"))
+
+gt5 %>%
+  gt(rowname_col = "Curriculum") %>%
+  tab_header(title = "\U1F605    Table 5: % Who Score a 2 (All schools)    \U1F605") %>%
+  data_color(
+    columns = c(Spring),
+    colors = scales::col_numeric(
+      palette = paletteer::paletteer_d(
+        palette = "ggsci::blue_material"
+      ) %>% as.character(),
+      domain = NULL
+    )
+  ) %>%
+  fmt_percent(
+    columns = c(Spring, Fall),
+    scale_values = T,
+    decimals = 0
+  ) %>%
+  tab_source_note(source_note = "Fall ELA n = 68, Spring ELA n = 22, Fall Math n = 30, Spring Math n = 14") %>%
+  gt_theme_tl(all_caps = T) %>%
+  grand_summary_rows(
+    columns = c(Fall, Spring),
+    fns = list(Overall = ~ mean(.)),
+    formatter = fmt_percent,
+    use_seps = F
+  ) %>%
+  gtsave("~/Teaching Lab/Coding/TeachingLab/Images/2021-2022/Student/Table52020-2021.png")
+
+fake_table <- tibble(
+  Curriculum = c("ELA", "Math"),
+  `Overall %` = c(0.475, 0.62)
+)
+
+fake_table %>%
+  gt(rowname_col = "Curriculum") %>%
+  tab_header(title = "\U1F605    % Who Score a 2 (All schools)    \U1F605") %>%
+  data_color(
+    columns = c(`Overall %`),
+    colors = scales::col_numeric(
+      palette = paletteer::paletteer_d(
+        palette = "ggsci::blue_material"
+      ) %>% as.character(),
+      domain = NULL
+    )
+  ) %>%
+  fmt_percent(
+    columns = c(`Overall %`),
+    scale_values = T,
+    decimals = 0
+  ) %>%
+  tab_source_note(source_note = "ELA n = 68, Math n = 30") %>%
+  gt_theme_tl(all_caps = T) %>%
+  grand_summary_rows(
+    columns = c(`Overall %`),
+    fns = list(Overall = ~ mean(.)),
+    formatter = fmt_percent,
+    use_seps = F
+  ) %>%
+  gtsave("~/Teaching Lab/Coding/TeachingLab/Images/2021-2022/Student/StudentTablefrom2020-2021.png")
 
 ### TABLE 6 AVERAGE SCORE (% WHO SCORE 2 MATCHED)
 

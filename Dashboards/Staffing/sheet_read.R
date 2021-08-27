@@ -5,8 +5,10 @@ course_list <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d
 
 pm_list <- read_sheet("https://docs.google.com/spreadsheets/d/1nqtFK9_HBMBU6XQwCmmPYkhwBXZUj8wmevF2WGYUlaM/edit?ts=5f5a8a55#gid=1933413518",
                       sheet = "PMs",
-                      range = "A:A") %>%
-  rename(PMs = 1)
+                      range = "A:C") %>%
+  rename(PMs = 1,
+         Email = 3) %>%
+  select(-2)
 
 sites_list <- read_sheet("https://docs.google.com/spreadsheets/d/1nqtFK9_HBMBU6XQwCmmPYkhwBXZUj8wmevF2WGYUlaM/edit#gid=1070048971",
                          sheet = "Sites") %>%
@@ -15,10 +17,11 @@ sites_list <- read_sheet("https://docs.google.com/spreadsheets/d/1nqtFK9_HBMBU6X
 
 facilitator_names_emails_list <- read_sheet("https://docs.google.com/spreadsheets/d/1nqtFK9_HBMBU6XQwCmmPYkhwBXZUj8wmevF2WGYUlaM/edit?ts=5f5a8a55#gid=1933413518",
                                sheet = "Facilitators",
-                               range = "D:L") %>%
+                               range = "D:M") %>%
   mutate(Zearn = case_when(Zearn == FALSE ~ 0,
                            Zearn == TRUE ~ 1)) %>%
   rename(Facilitators = 1, Emails = 2) %>%
   drop_na(`Emails`)
 
-walk(list(pm_list, sites_list, facilitator_names_emails_list), ~ write_rds(x = .x, file = paste0(here("Data/"), colnames(.x)[1], ".rds")))
+walk(list(pm_list, sites_list, facilitator_names_emails_list, course_list), ~ 
+       write_rds(x = .x, file = paste0("Data/", colnames(.x)[1], ".rds")))
