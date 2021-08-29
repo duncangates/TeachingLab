@@ -27,8 +27,6 @@ bs4DashTheme <- create_theme(
 )
 
 ui <- dashboardPage(
-  # preloader = list(html = spin_1(), color = "#333e48"),
-  # use_googlefont("Calibri"),
   title = "Teaching Lab Staffing Site",
   dashboardHeader(
     # title = h2("PM Facing Staffing Requests",
@@ -50,9 +48,15 @@ ui <- dashboardPage(
     right = "© Teaching Lab, 2021"
   ),
   body = dashboardBody(
-    tags$head(
-      tags$link(rel = "stylesheet", type = "text/css", href = "www/styles.css")
-    ),
+    HTML('<input type="text" id="client_time" name="client_time" style="display: none;"> '),
+    HTML('<input type="text" id="client_time_zone_offset" name="client_time_zone_offset" style="display: none;"> '),
+    tags$script('
+    $(function() {
+      var time_now = new Date()
+      $("input#client_time").val(time_now.getTime())
+      $("input#client_time_zone_offset").val(time_now.getTimezoneOffset())
+    });
+  '),
     shinyjs::useShinyjs(),
     # fresh::use_theme(bs4DashTheme),
     # tabItems(
@@ -160,8 +164,6 @@ ui <- dashboardPage(
           )
         )
       )
-      # )
-      # )
     )
   )
 )
@@ -279,6 +281,11 @@ server <- function(input, output, session) {
   #   }
   # })
 
+  client_time <- reactive(as.numeric(input$client_time) / 1000) # in s
+  time_zone_offset <- reactive(as.numeric(input$client_time_zone_offset) / 60) # in h
+  
+  observe({print(time_zone_offset())})
+
   # Track new line of submitted data
   new_data <- reactive({
     # Create new data
@@ -288,10 +295,10 @@ server <- function(input, output, session) {
         Curriculum = input$curriculum,
         Site = input$site,
         Content = input$content,
-        `Call Times` = paste(map(1:input$calls_count, ~ as.character(eval(parse(text = (paste0("input$time1_", .x)))))) %>%
+        `Call Times` = paste(map(1:input$calls_count, ~ as.character(eval(parse(text = (paste0("input$time1_", .x)))) - hours(time_zone_offset()))) %>%
           map(., ~ as_datetime(.x, tz = "UTC")) %>%
           map(., ~ format(.x, "%m-%d-%Y %I:%M %P")), "to",
-        map(1:input$calls_count, ~ as.character(eval(parse(text = (paste0("input$time2_", .x)))))) %>%
+        map(1:input$calls_count, ~ as.character(eval(parse(text = (paste0("input$time2_", .x)))) - hours(time_zone_offset()))) %>%
           map(., ~ as_datetime(.x, tz = "UTC")) %>%
           map(., ~ format(.x, "%m-%d-%Y %I:%M %P")),
         collapse = ", "
@@ -324,10 +331,10 @@ server <- function(input, output, session) {
 
     # Ensure no duplicate date/times based on length of selected number of calls and unique time/date sets
     times <- paste(map(1:input$calls_count, ~ as.character(eval(parse(text = (paste0("input$time1_", .x)))))) %>%
-      map(., ~ as_datetime(.x)) %>%
+      map(., ~ as_datetime(.x, tz = "UTC")) %>%
       map(., ~ format(.x, "%m-%d-%Y %I:%M %P")), "to",
     map(1:input$calls_count, ~ as.character(eval(parse(text = (paste0("input$time2_", .x)))))) %>%
-      map(., ~ as_datetime(.x)) %>%
+      map(., ~ as_datetime(.x, tz = "UTC")) %>%
       map(., ~ format(.x, "%m-%d-%Y %I:%M %P")),
     collapse = ", "
     ) %>%
@@ -371,7 +378,10 @@ server <- function(input, output, session) {
   })
 
   observe({
-    cat("The input times are ", data$`Call Times`[1])
+    # Validate by checking if data is a dataframe and then print the times
+    req(is.data.frame(data))
+    cat("The input times are ", data$`Call Times`[1], "\n")
+    print("The input times are ", data$`Call Times`[1])
   })
 }
 
