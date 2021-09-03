@@ -1,7 +1,6 @@
-options(googleAuthR.scopes.selected = c("https://www.googleapis.com/auth/userinfo.email",
-                                        "https://www.googleapis.com/auth/userinfo.profile"))
 options("googleAuthR.webapp.client_id" = "342318881032-ui98nm42rcujf7v5cugcv38fmns8hjvg.apps.googleusercontent.com")
-options("googleAuthR.webapp.client_secret" = "gSfM4MILy7BUD17oM7XQWfxY")
+
+
 options(shiny.port = 7325)
 library(shiny)
 library(shiny.router)
@@ -29,8 +28,6 @@ options(spinner.color = "#04ABEB")
 
 info_page <- div(class = "ui container",
                  div(class = "ui center aligned header",
-                     # useShinyjs(),
-                     # googleAuthUI("gauth_login"),
                      h2("Please watch the video below to learn how to use this dashboard."),
                      div(class="ui center aligned", style = "text-align: center;",
                          br(),
@@ -82,3 +79,21 @@ info_page <- div(class = "ui container",
                      )
                  )
 )
+
+check_email_domain <- function(email, domain) {
+  grepl(paste0("@",domain,"$"), email, ignore.case = TRUE)
+}
+
+# From Here: https://groups.google.com/a/teachinglab.org/g/employees/members
+# approved_emails_list <- readr::read_csv(here::here("Dashboards/SessionSurvey/Data/employees.csv"), skip = 1) %>%
+#   dplyr::select(1) %>%
+#   purrr::as_vector()
+
+approved_emails_list <- readr::read_csv("Data/employees.csv", skip = 1) %>%
+  dplyr::select(1) %>%
+  purrr::as_vector()
+
+check_email_approved <- function(email, approved_emails_list) {
+  email %in% approved_emails_list
+}
+

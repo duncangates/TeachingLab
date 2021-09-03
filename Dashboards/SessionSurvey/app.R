@@ -8,23 +8,25 @@ router <- shiny.router::make_router(
 
 ui <- semanticPage(
 
-  # shinyjs::useShinyjs(),
-
-  fluidRow(
-    column(12,
-      align = "center", offset = 2,
-      googleAuthUI("gauth_login")
-    )
-  ),
-  # googleSignInUI("gauth_login"),
+  # includeCSS("www/styles.css"),
+  
+  shinyjs::useShinyjs(),
 
   conditionalPanel(
-    condition = "output.gauth_login == 'YES'",
+    condition = "output.loginButton != 'YES'",
+    fluidRow(
+      column(12,
+             align = "center", offset = 2,
+             h2("Please authenticate using your teachinglab.org gmail account."),
+             googleSignInUI("loginButton")
+      )
+    )
+  ),
+
+  conditionalPanel(
+    condition = "output.loginButton == 'YES'",
     title = "End of Session Feedback",
     theme = "united",
-    tags$head(
-      tags$link(rel = "stylesheet", href = "www/style.css", type = "text/css")
-    ),
     shiny.semantic::horizontal_menu(
       list(
         list(name = "About the Session Survey Dashboard", link = route_link("info"), icon = "copy outline"),
@@ -36,69 +38,37 @@ ui <- semanticPage(
     router$ui
   ),
   conditionalPanel(
-    condition = "output.gauth_login == 'NO'",
+    condition = "output.loginButton == 'NO'",
     div(style = "display:inline-block; left:39%; position:fixed;", helpText("Need to login with a valid email domain to see content"))
   ),
   conditionalPanel(
-    condition = "output.gauth_login == 'UNKNOWN'",
+    condition = "output.loginButton == 'UNKNOWN'",
     helpText("Logged in successfully, but not with an authorised email. Please contact duncan.gates@teachinglab.org if you think you should have access to this content.")
   )
 )
 
 server <- function(input, output, session) {
 
-
-  # Global variables needed throughout the app
-  rv <- reactiveValues(
-    login = FALSE
-  )
-
-  ## Authentication
-  accessToken <- shiny::callModule(googleAuth, "gauth_login",
-    login_class = "btn btn-primary",
-    logout_class = "btn btn-primary"
-  )
+  sign_ins <- callModule(googleSignIn, "loginButton")
 
   # only display content to verified domain users
-  output$gauth_login <- renderText({
-    cat("please")
-    if (!is.null(accessToken())) {
-      "YES"
+  output$loginButton <- renderText({
+    if(!is.null(sign_ins())){
+      # if(check_email_domain(sign_ins()$email, "teachinglab.org")){
+      if(check_email_approved(sign_ins()$email, approved_emails_list)){
+        print("yes")
+        return("YES")
+      } else {
+        print("unknown")
+        return("UNKNOWN")
+      }
     }
+    print("no")
     "NO"
   })
-
-
-  # need this so it works when conditionalPanel hides content
-  outputOptions(output, "gauth_login", suspendWhenHidden = T)
-
-  userDetails <- reactive({
-    validate(
-      need(accessToken(), "not logged in")
-    )
-    rv$login <- TRUE
-    with_shiny(get_user_info, shiny_access_token = accessToken())
-  })
   
-  ## Display user's Google display name after successful login
-  output$display_username <- renderText({
-    validate(
-      need(userDetails(), "getting user details")
-    )
-    print(userDetails()$displayName)
-    cat("\nwtf")
-  })
-
-  # Workaround to avoid shinyaps.io URL problems
-  observe({
-    if (rv$login) {
-      shinyjs::onclick(
-        "gauth_login-googleAuthUi",
-        shinyjs::runjs("window.location.href = 'http://127.0.0.1:7325;")
-      )
-    }
-  })
-
+  # need this so it works when conditionalPanel hides content
+  outputOptions(output, "loginButton", suspendWhenHidden = F)
 
   router$server(input, output, session)
   agreeServer("p1")

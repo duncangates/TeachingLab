@@ -917,13 +917,15 @@ round2 = function(x, n) {
 #' @return a ggplot/gt that visualizes text
 #' 
 #' @examples
-#' quote_viz(data = TeachingLab::survey_monkey, 
+#' library(TeachingLab)
+#' data("survey_monkey")
+#' quote_viz(data = survey_monkey, 
 #'           text_col = `What is the learning from this course that you are most excited about trying out?`, 
 #'           viz_type = "gt",
 #'           title = "Responses from Survey Monkey")
 #' @export
 
-quote_viz <- function(data, text_col, viz_type = "gt", custom_highlight = F, width = 60, title = NULL, ...) {
+quote_viz <- function(data, text_col, viz_type = "gt", custom_highlight = F, width = 60, title = NULL, suppress_warnings = T, ...) {
   
   # highlight_mutate <- function(x) {
   #   dplyr::mutate(color_text = str_replace_all(color_text, x, paste0("<a style='color:#04abeb'>", x, "</a>")))
@@ -959,7 +961,10 @@ quote_viz <- function(data, text_col, viz_type = "gt", custom_highlight = F, wid
         utils::head(3) %>%
         dplyr::pull(word) %>%
         suppressWarnings()
-      cat("Highlighted words: ", highlight)
+      
+      if (suppress_warnings == F) {
+        cat("Highlighted words: ", highlight)
+      }
     } else if (custom_highlight == T) {
       highlight <- highlight # Custom highlighting
     }
@@ -967,15 +972,16 @@ quote_viz <- function(data, text_col, viz_type = "gt", custom_highlight = F, wid
     # print(highlight)
     
     data_text <- data %>%
-      dplyr::mutate(text = stringr::str_replace_all(stringr::str_wrap(.data[[text_col]], width = width), "\n", "<br>")) %>%
-      dplyr::mutate(text = paste0("\"<i>", text, "\""))
+      dplyr::mutate(text = stringr::str_replace_all(stringr::str_wrap(.data[[text_col]], width = width), "\n", "<br>")) #%>%
+      # dplyr::mutate(text = paste0("\"<i>", text, "\""))
     
     # Make a new column for the data
     data_text <- data_text %>%
       dplyr::mutate(color_text = text) %>%
       dplyr::mutate(color_text = stringr::str_replace_all(color_text, paste0(highlight[1]), paste0("<span style='color:#04abeb; font-weight:bold;'>", highlight[1], "</span>"))) %>%
       dplyr::mutate(color_text = stringr::str_replace_all(color_text, paste0(highlight[2]), paste0("<span style='color:#04abeb; font-weight:bold;'>", highlight[2], "</span>"))) %>%
-      dplyr::mutate(color_text = stringr::str_replace_all(color_text, paste0(highlight[3]), paste0("<span style='color:#04abeb; font-weight:bold;'>", highlight[3], "</span>")))
+      dplyr::mutate(color_text = stringr::str_replace_all(color_text, paste0(highlight[3]), paste0("<span style='color:#04abeb; font-weight:bold;'>", highlight[3], "</span>"))) %>%
+      dplyr::mutate(color_text = stringr::str_replace_all(color_text, paste0(highlight[4]), paste0("<span style='color:#04abeb; font-weight:bold;'>", highlight[4], "</span>")))
     
     # Highlight most common words
     # data_text <- map_df(highlight, ~ data_text %>% 
