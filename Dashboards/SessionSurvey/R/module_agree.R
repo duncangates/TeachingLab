@@ -64,9 +64,9 @@ uiAgree <- function(id, label = "Counter") {
               unique() %>%
               as.character() %>%
               sort() %>%
-              purrr::prepend("All Partners"),
+              purrr::prepend("All Sites"),
             multiple = T,
-            selected = "All Partners",
+            selected = "All Sites",
             options = list(plugins= list('remove_button'))
           ),
           icon = shiny.semantic::icon("location arrow")
@@ -190,10 +190,10 @@ agreeServer <- function(id) {
         need(!is.null(input$course), "Please select at least one course")
       )
       
-      session_survey %>%
+      agree_plot_ts <- session_survey %>%
         dplyr::filter(between(Date, input$date_slider[1], input$date_slider[2])) %>%
         {
-          if (input$site != "All Partners") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
+          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
         } %>%
         {
           if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
@@ -239,12 +239,18 @@ agreeServer <- function(id) {
                                  input$scale_adjust == "1 day" ~ paste0(lubridate::day(Date)))
         ) %>%
         ungroup() %>%
+        dplyr::mutate(question = str_remove_all(
+          question,
+          "How much do you agree with the\nfollowing statements about this\nfacilitator today\\? - "
+        )) %>%
         group_by(date_group, question) %>%
         mutate(Percent = `Number Agree/Disagree` / sum(`Number Agree/Disagree`) * 100) %>%
         filter(Rating == "Agree/Strongly Agree") %>%
         group_by(date_group, Rating, question) %>%
         summarise(Percent = round(sum(Percent), 2),
                   Date = Date)
+      
+      agree_plot_ts
     })
     
     # Ggplot for time series plot
@@ -272,7 +278,7 @@ agreeServer <- function(id) {
           labels = scales::percent_format(scale = 1), expand = c(0, 0)
         ) +
         scale_fill_manual(values = c(rev(tl_palette(n = 2, color = "blue", theme = "dark")))) +
-        labs(x = "Date", title = glue::glue("{if (input$scale_adjust == '1 month') {'Monthly'} else if (input$scale_adjust == '1 week') {'Weekly'} else if (input$scale_adjust == '1 day') {'Daily'}} Percentage that Agree/Strongly Agree")) +
+        labs(x = "Date", title = glue::glue("{if (input$scale_adjust == '1 month') {'Monthly'} else if (input$scale_adjust == '1 week') {'Weekly'} else if (input$scale_adjust == '1 day') {'Daily'}} Percent that Agree/Strongly Agree")) +
         theme_bw() + # BW Panel panel elements
         theme(
           legend.position = "bottom",
@@ -295,7 +301,7 @@ agreeServer <- function(id) {
       data_n <- session_survey %>%
         dplyr::filter(between(Date, input$date_slider[1], input$date_slider[2])) %>%
         {
-          if (input$site != "All Partners") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
+          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
         } %>%
         {
           if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
@@ -326,7 +332,7 @@ agreeServer <- function(id) {
       agree_plot <- session_survey %>%
         dplyr::filter(between(Date, input$date_slider[1], input$date_slider[2])) %>%
         {
-          if (input$site != "All Partners") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
+          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
         } %>%
         {
           if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
@@ -379,7 +385,7 @@ agreeServer <- function(id) {
           "(3) Neither agree nor disagree" = "#02587A", "(4) Agree" = "#0182B4", "(5) Strongly agree" = "#00ACF0"
         )) +
         labs(
-          fill = "", title = "Percent that Agree/Strongly Agree with\nEach of the Following Statements",
+          fill = "", title = "Participant Perceptions of Course - Likert Scale Questions",
           x = "", y = "",
           subtitle = glue::glue("Given the filters applied there are {agree_plot_n()} responses")
         ) +
@@ -440,6 +446,29 @@ agreeServer <- function(id) {
       }
     )
     
+    rv_facilitator <- reactive({
+      input$facilitator
+    })
+    
+    rv_content <- reactive({
+      input$content
+    })
+    
+    rv_course <- reactive({
+      input$course
+    })
+    
+    rv_site <- reactive({
+      input$site
+    })
+    
+    rv_role <- reactive({
+      input$role
+    })
+    
+    rv_date_slider <- reactive({
+      input$date_slider
+    })
     
   })
 }

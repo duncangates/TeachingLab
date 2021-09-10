@@ -40,8 +40,7 @@ delaware_sheet_join <- delaware_sheet %>%
          `S/he facilitated the content clearly #2` = `S/he facilitated the content clearly....18`,
          `S/he facilitated the content clearly #3` = `S/he facilitated the content clearly....22`,
          `Select your course.` = `Please select the training session you attended today.`,
-         `What could have improved your experience?` = `What could have improved your experience today?`,
-         `What is the learning from this course that you are most excited about trying out?` = `What is the learning from today that you are most excited about trying out?`) %>%
+         `What could have improved your experience?` = `What could have improved your experience today?`) %>%
   mutate(`Select your site (district, parish, network, or school).` = "Delaware Professional Learning")
 
 sheets_data <- full_join(big_sheet_join, delaware_sheet_join)
@@ -85,7 +84,7 @@ sheets_data_merge <- sheets_data %>%
   bind_rows(community_content_second, community_content_third) %>%
   select(-c(`Please select the focus of the session you attended today.`, `Timestamp`, `Select the best description for your role.`,
          `If you would like to speak to our team further about your experience at today’s training, please share your email address and we will reach out to you shortly.`,
-         `Select the grade-band(s) you focused on today.`, `Do you give us permission to include your feedback in promotional materials?`,
+         `Do you give us permission to include your feedback in promotional materials?`,
          `Did you have a third facilitator?`)) %>%
   rename(`Date for the session` = `Date`,
          `Professional Training Session` = `Select your course.`,
@@ -118,9 +117,9 @@ sheets_data_merge_final <- sheets_data_merge %>%
   mutate(across(c(4, 5, 6, 7, 8, 9, 12, 14, 15), ~ str_replace_all(.x, "1", "Strongly disagree")))
 
 
-write_rds(sheets_data_merge_final, here("Data/Dashboard Data/sheets_data_merge.rds"))
+write_rds(sheets_data_merge_final, here("Data-Clean/Data-move/Dashboard Data/sheets_data_merge.rds"))
 
-write_rds(sheets_data_merge_final, here("ParticipantFeedback/Data/sheets_data_merge.rds"))
+write_rds(sheets_data_merge_final, here("Dashboards/ParticipantFeedback/Data/sheets_data_merge.rds"))
 
 
 

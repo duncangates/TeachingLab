@@ -1,29 +1,4 @@
-
-textGridTemplate <- grid_template(
-  default = list(
-    areas = rbind(
-      c("btn1", "btn2", "btn3"),
-      c("gt1", "gt2", "gt3")
-    ),
-    cols_width = c("412px"),
-    rows_height = c("50px", "auto")
-  ),
-  mobile = list(
-    areas = rbind(
-      "btn1",
-      "gt1",
-      "btn2",
-      "gt2",
-      "btn3",
-      "gt3"
-    ),
-    rows_height = c("1fr"),
-    cols_width = c("100%")
-  )
-)
-
-
-uiText <- function(id, label = "Counter") {
+uiReport <- function(id, label = "Counter") {
   ns <- NS(id)
   shiny::tagList(
     shiny.semantic::sidebar_layout(
@@ -128,51 +103,40 @@ uiText <- function(id, label = "Counter") {
             timeFormat = "%b %d, %Y"
           ),
           icon = shiny.semantic::icon("calendar alternate")
-        ),
-        br(),
-        shiny.semantic::menu_item(
-          tabName = "text_length_menu",
-          shiny.semantic::numeric_input(
-            input_id = ns("quote_length"),
-            label = HTML("<span style = 'font-weight: 700;font-size:1.28571429rem;margin-bottom:0;margin-top:0;line-height:1.28571429em;padding:0;margin:calc(2rem - .1428571428571429em) 0 1rem;'>Select a text length to filter<br>for a minimum character length</span> <br>"),
-            value = 30,
-            min = 0,
-            max = 100,
-            step = 5
-          ),
-          icon = shiny.semantic::icon("text width")
         )
       ),
-      main_panel = main_panel(
+      main_panel = shiny.semantic::main_panel(
         width = 4,
-        shiny.semantic::grid(
-        textGridTemplate,
-        area_styles = list(
-          btn1 = "margin:auto",
-          btn2 = "margin:auto",
-          btn3 = "margin:auto"
-        ),
-        btn1 = uiOutput(ns("btn1")),
-        btn2 = uiOutput(ns("btn2")),
-        btn3 = uiOutput(ns("btn3")),
-        gt1 = gt::gt_output(ns("quote_gt1")) %>%
-          withSpinner(type = 3, color.background = "white"),
-        gt2 = gt::gt_output(ns("quote_gt2")) %>%
-          withSpinner(type = 3, color.background = "white"),
-        gt3 = gt::gt_output(ns("quote_gt3")) %>%
-          withSpinner(type = 3, color.background = "white")
+        div(
+          class = "ui two column stackable grid container",
+          div(
+            class = "sixteen wide column",
+            h3("Utilize the filters on the side to download your custom report.")
+          ),
+          div(
+            class = "sixteen wide column",
+            downloadButton(ns("download_report1"), label = "Download Report with Filters", icon = shiny::icon("file-download")),
+            tags$img(src = "report_example.png", align = "center")
+          ),
+          br(),
+          br(),
+          div(
+            class = "sixteen wide column",
+            downloadButton(ns("download_report2"), label = "Download FULL Report ", icon = shiny::icon("file-download")),
+            tags$img(src = "report_example.png", align = "center")
+          )
+        )
       )
-    )
     )
   )
 }
 
-textServer <- function(id) {
+reportServer <- function(id) {
   ns <- NS(id)
   moduleServer(id, function(input, output, session) {
-    
-    reactive_1_count <- reactive({
-      
+
+    #### TIME SERIES INPUTS ####
+    data_plot_ts <- reactive({
       validate(
         need(!is.null(input$facilitator), "Please select at least one facilitator"),
         need(!is.null(input$role), "Please select at least one role"),
@@ -180,8 +144,8 @@ textServer <- function(id) {
         need(!is.null(input$content), "Please select at least one content area"),
         need(!is.null(input$course), "Please select at least one course")
       )
-      
-      count <- session_survey %>%
+
+      session_survey %>%
         dplyr::filter(between(Date, input$date_slider[1], input$date_slider[2])) %>%
         {
           if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
@@ -198,17 +162,54 @@ textServer <- function(id) {
         {
           if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
         } %>%
-        select(Facilitation_Feedback) %>%
-        pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
-        drop_na() %>%
-        filter(Response %!in% na_df) %>%
-        select(Response) %>%
-        filter(str_length(Response) > input$quote_length)
-      nrow(count)
+        select(
+          Date,
+          c(
+            "How much do you agree with the following statements about this facilitator today? - They demonstrated  deep knowledge of the content they facilitated.",
+            "How much do you agree with the following statements about this facilitator today? - They facilitated the content clearly.",
+            "How much do you agree with the following statements about this facilitator today? - They effectively built a safe learning community.",
+            "How much do you agree with the following statements about this facilitator today? - They were fully prepared for the session.",
+            "How much do you agree with the following statements about this facilitator today? - They responded to the group’s needs."
+          )
+        ) %>%
+        pivot_longer(!`Date`, names_to = "question", values_to = "answer") %>%
+        dplyr::mutate(question = str_remove_all(
+          question,
+          "How much do you agree with the following statements about this course\\? - "
+        )) %>%
+        # Rename with line breaks every 27 characters
+        mutate(question = gsub("(.{28,}?)\\s", "\\1\n", question)) %>%
+        drop_na(answer) %>%
+        dplyr::group_by(question, Date) %>%
+        # Group by input variable
+        mutate(`Number Agree/Disagree` = n()) %>%
+        mutate(answer = str_remove_all(answer, "\\([:digit:]\\) ")) %>%
+        mutate(
+          Rating = case_when(
+            answer %in% c("Agree", "Strongly agree") ~ "Agree/Strongly Agree",
+            answer %in% c("Neither agree nor disagree", "Disagree", "Strongly disagree") ~ "Neither/Disagree/Strongly Disagree"
+          ),
+          date_group = case_when(as.integer(diff(range(as.Date(input$date_slider)))) >= 30 ~ paste0(lubridate::month(Date, label = T, abbr = F), ", ", year(Date)),
+                                 as.integer(diff(range(as.Date(input$date_slider)))) >= 14 & as.integer(diff(range(as.Date(input$date_slider)))) < 30 ~ paste0(year(Date), lubridate::week(Date)),
+                                 as.integer(diff(range(as.Date(input$date_slider)))) < 14 ~ paste0(lubridate::day(Date)))
+        ) %>%
+        ungroup() %>%
+        dplyr::mutate(question = str_remove_all(
+          question,
+          "How much do you agree with the\nfollowing statements about this\nfacilitator today\\? -"
+        )) %>%
+        group_by(date_group, question) %>%
+        mutate(Percent = `Number Agree/Disagree` / sum(`Number Agree/Disagree`) * 100) %>%
+        filter(Rating == "Agree/Strongly Agree") %>%
+        group_by(date_group, Rating, question) %>%
+        summarise(Percent = round(sum(Percent), 2),
+                  Date = Date)
     })
-    
-    reactive_2_count <- reactive({
-      
+
+    #### OVERALL AGREE PLOT ####
+
+    data_plot_agree <- reactive({
+
       validate(
         need(!is.null(input$facilitator), "Please select at least one facilitator"),
         need(!is.null(input$role), "Please select at least one role"),
@@ -216,8 +217,8 @@ textServer <- function(id) {
         need(!is.null(input$content), "Please select at least one content area"),
         need(!is.null(input$course), "Please select at least one course")
       )
-      
-      count <- session_survey %>%
+
+      agree_plot <- session_survey %>%
         dplyr::filter(between(Date, input$date_slider[1], input$date_slider[2])) %>%
         {
           if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
@@ -234,26 +235,37 @@ textServer <- function(id) {
         {
           if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
         } %>%
-        select(`What went well in today’s session?`) %>%
+        select(c(
+          "How much do you agree with the following statements about this facilitator today? - They demonstrated  deep knowledge of the content they facilitated.",
+          "How much do you agree with the following statements about this facilitator today? - They facilitated the content clearly.",
+          "How much do you agree with the following statements about this facilitator today? - They effectively built a safe learning community.",
+          "How much do you agree with the following statements about this facilitator today? - They were fully prepared for the session.",
+          "How much do you agree with the following statements about this facilitator today? - They responded to the group’s needs."
+        )) %>%
         pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
         drop_na() %>%
-        filter(Response %!in% na_df) %>%
-        select(Response) %>%
-        filter(str_length(Response) > input$quote_length)
-      nrow(count)
+        dplyr::mutate(Question = str_remove_all(
+          Question,
+          "How much do you agree with the following statements about this facilitator today\\? - "
+        )) %>%
+        group_by(Question, Response) %>%
+        count() %>%
+        ungroup() %>%
+        group_by(Question) %>%
+        mutate(Question = str_wrap(Question, width = 30)) %>%
+        summarise(
+          n = n,
+          Response = Response,
+          Percent = n / sum(n) * 100
+        )
+
+      agree_plot
+
     })
     
-    reactive_3_count <- reactive({
-      
-      validate(
-        need(!is.null(input$facilitator), "Please select at least one facilitator"),
-        need(!is.null(input$role), "Please select at least one role"),
-        need(!is.null(input$site), "Please select at least one site"),
-        need(!is.null(input$content), "Please select at least one content area"),
-        need(!is.null(input$course), "Please select at least one course")
-      )
-      
-      count <- session_survey %>%
+    #### Agree plot n size ####
+    agree_plot_n <- reactive({
+      data_n <- session_survey %>%
         dplyr::filter(between(Date, input$date_slider[1], input$date_slider[2])) %>%
         {
           if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
@@ -269,45 +281,14 @@ textServer <- function(id) {
         } %>%
         {
           if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-        } %>%
-        select(`What could have been better about today’s session?`) %>%
-        pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
-        drop_na() %>%
-        filter(Response %!in% na_df) %>%
-        select(Response) %>%
-        filter(str_length(Response) > input$quote_length)
-      nrow(count)
+        }
+      nrow(data_n)
     })
-    
-    
-    output$btn1 <- renderUI({ 
-        shinyWidgets::actionBttn(
-          inputId = ns("refresh1"),
-          label = glue::glue("Refresh from\n{reactive_1_count()} responses"),
-          style = "unite",
-          color = "primary"
-      )
-    })
-    output$btn2 <- renderUI({ 
-      shinyWidgets::actionBttn(
-        inputId = ns("refresh2"),
-        label = glue::glue("Refresh from {reactive_2_count()} responses"),
-        style = "unite",
-        color = "primary"
-      )
-    })
-    output$btn3 <- renderUI({ 
-      shinyWidgets::actionBttn(
-        inputId = ns("refresh3"),
-        label = glue::glue("Refresh from {reactive_3_count()} responses"),
-        style = "unite",
-        color = "primary"
-      )
-    })
-    
-    # Getting quotes for table
+
+    #### QUOTES 1 ####
+
     quote_viz_data1 <- reactive({
-      
+
       validate(
         need(!is.null(input$facilitator), "Please select at least one facilitator"),
         need(!is.null(input$role), "Please select at least one role"),
@@ -315,7 +296,7 @@ textServer <- function(id) {
         need(!is.null(input$content), "Please select at least one content area"),
         need(!is.null(input$course), "Please select at least one course")
       )
-      
+
       quote_reactive1 <- session_survey %>%
         dplyr::filter(between(Date, input$date_slider[1], input$date_slider[2])) %>%
         {
@@ -338,28 +319,13 @@ textServer <- function(id) {
         drop_na() %>%
         filter(Response %!in% na_df) %>%
         select(Response) %>%
-        filter(str_length(Response) > input$quote_length)
-    })
-    
-    quote1 <- reactiveValues(table1 = NULL)
-    
-    observeEvent(c(input$refresh1, input$site, input$role, input$content, input$course, input$quote_length, input$date_slider, input$facilitator), {
-      quote1$table1 <- quote_viz_data1() %>%
         slice_sample(n = 10)
     })
-    
-    output$quote_gt1 <- gt::render_gt(
-      quote_viz(
-        data = quote1$table1, text_col = "Response", viz_type = "gt",
-        title = "What additional feedback do you have about their facilitation skills?",
-        width = 60
-      ) %>%
-        suppressWarnings() %>%
-        suppressMessages()
-    )
+
+    #### QUOTES 2 ####
 
     quote_viz_data2 <- reactive({
-      
+
       validate(
         need(!is.null(input$facilitator), "Please select at least one facilitator"),
         need(!is.null(input$role), "Please select at least one role"),
@@ -367,7 +333,7 @@ textServer <- function(id) {
         need(!is.null(input$content), "Please select at least one content area"),
         need(!is.null(input$course), "Please select at least one course")
       )
-      
+
       quote_reactive2 <- session_survey %>%
         dplyr::filter(between(Date, input$date_slider[1], input$date_slider[2])) %>%
         {
@@ -390,28 +356,13 @@ textServer <- function(id) {
         drop_na() %>%
         filter(Response %!in% na_df) %>%
         select(Response) %>%
-        filter(str_length(Response) > input$quote_length)
-    })
-    
-    quote2 <- reactiveValues(table2 = NULL)
-    
-    observeEvent(c(input$refresh2, input$site, input$role, input$content, input$course, input$quote_length, input$date_slider, input$facilitator), {
-      quote2$table2 <- quote_viz_data2() %>%
         slice_sample(n = 10)
     })
-    
-    output$quote_gt2 <- gt::render_gt(
-      quote_viz(
-        data = quote2$table2, text_col = "Response", viz_type = "gt",
-        title = "What went well in today’s session?",
-        width = 60
-      ) %>%
-        suppressWarnings() %>%
-        suppressMessages()
-    )
+
+    #### QUOTES 3 ####
 
     quote_viz_data3 <- reactive({
-      
+
       validate(
         need(!is.null(input$facilitator), "Please select at least one facilitator"),
         need(!is.null(input$role), "Please select at least one role"),
@@ -419,7 +370,7 @@ textServer <- function(id) {
         need(!is.null(input$content), "Please select at least one content area"),
         need(!is.null(input$course), "Please select at least one course")
       )
-      
+
       quote_reactive3 <- session_survey %>%
         dplyr::filter(between(Date, input$date_slider[1], input$date_slider[2])) %>%
         {
@@ -442,33 +393,46 @@ textServer <- function(id) {
         drop_na() %>%
         filter(Response %!in% na_df) %>%
         select(Response) %>%
-        filter(str_length(Response) > input$quote_length)
-    })
-    
-    quote3 <- reactiveValues(table3 = NULL)
-    
-    observeEvent(c(input$refresh3, input$site, input$role, input$content, input$course, input$quote_length, input$date_slider, input$facilitator), {
-      quote3$table3 <- quote_viz_data3() %>%
         slice_sample(n = 10)
+      
+      quote_reactive3
     })
 
-    output$quote_gt3 <- gt::render_gt(
-      quote_viz(
-        data = quote3$table3, text_col = "Response", viz_type = "gt",
-        title = "What could have been better about today’s session?",
-        width = 60
-      ) %>%
-        suppressWarnings() %>%
-        suppressMessages()
+
+    #### GENERATE THE REPORT ####
+
+    output$download_report1 <- downloadHandler(
+      # For HTML output, change this to "report.html"
+      filename = "report.pdf",
+      content = function(file) {
+        # Copy the report file to a temporary directory before processing it, in
+        # case we don't have write permissions to the current working dir (which
+        # can happen when deployed).
+        tempReport <- file.path(tempdir(), "report.Rmd")
+        tempFont <- file.path(tempdir(), "calibri.otf")
+        file.copy("report.Rmd", tempReport, overwrite = TRUE)
+        file.copy(from = "calibri.otf",
+                  to = tempFont,
+                  overwrite = TRUE)
+
+        # Set up parameters to pass to Rmd document
+        params <- list(plot_ts = data_plot_ts(),
+                       plot_agree = data_plot_agree(),
+                       agree_plot_n = agree_plot_n(),
+                       quote1 = quote_viz_data1(),
+                       quote2 = quote_viz_data2(),
+                       quote3 = quote_viz_data3())
+
+        # Knit the document, passing in the `params` list, and eval it in a
+        # child of the global environment (this isolates the code in the document
+        # from the code in this app).
+        rmarkdown::render(tempReport,
+                          output_file = file,
+                          params = params,
+                          envir = new.env(parent = globalenv())
+        )
+      }
     )
-    
-    #### Filters reactive to other module inputs ####
-    # facilitator_input <- callModule(agreeServer, "facilitator")
-    # session$userData$settings <- reactiveValues(chosen_facilitator = NA)
-    # observeEvent(facilitator_input(), {
-    #   session$userData$settings$chosen_facilitator <- facilitator_input()
-    # })
-    
 
   })
 }

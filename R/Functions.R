@@ -925,7 +925,8 @@ round2 = function(x, n) {
 #'           title = "Responses from Survey Monkey")
 #' @export
 
-quote_viz <- function(data, text_col, viz_type = "gt", custom_highlight = F, width = 60, title = NULL, suppress_warnings = T, ...) {
+quote_viz <- function(data, text_col, viz_type = "gt", custom_highlight = F, width = 60, 
+                      title = NULL, suppress_warnings = T, align = "center", ...) {
   
   # highlight_mutate <- function(x) {
   #   dplyr::mutate(color_text = str_replace_all(color_text, x, paste0("<a style='color:#04abeb'>", x, "</a>")))
@@ -1012,6 +1013,18 @@ quote_viz <- function(data, text_col, viz_type = "gt", custom_highlight = F, wid
         locations = gt::cells_body(
           # Highlights every other cell to be gray
           rows = c(1:length(data[[rlang::quo_name(text_col)]]))[c(T, F)]
+        )
+      ) %>%
+      gt::tab_style(
+        style = list(
+          gt::cell_text(
+            size = "medium",
+            align = align
+          )
+        ),
+        locations = gt::cells_body(
+          columns = gt::everything(),
+          rows = gt::everything()
         )
       ) %>%
       TeachingLab::gt_theme_tl()

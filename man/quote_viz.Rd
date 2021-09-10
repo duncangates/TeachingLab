@@ -12,6 +12,7 @@ quote_viz(
   width = 60,
   title = NULL,
   suppress_warnings = T,
+  align = "center",
   ...
 )
 }

@@ -3,7 +3,8 @@
 router <- shiny.router::make_router(
   route("info", info_page),
   route("agree", uiAgree("p1")),
-  route("text", uiText("p2"))
+  route("text", uiText("p2")),
+  route("report", uiReport("p3"))
 )
 
 ui <- semanticPage(
@@ -30,8 +31,9 @@ ui <- semanticPage(
     shiny.semantic::horizontal_menu(
       list(
         list(name = "About the Session Survey Dashboard", link = route_link("info"), icon = "copy outline"),
-        list(name = "Strongly Agree/Agree", link = route_link("agree"), icon = "list alternate outline"),
-        list(name = "Survey Quotes", link = route_link("text"), icon = "envelope open outline")
+        list(name = "Quantitative Responses", link = route_link("agree"), icon = "list alternate outline"),
+        list(name = "Qualitative Answers", link = route_link("text"), icon = "envelope open outline"),
+        list(name = "Report Download", link = route_link("report"), icon = "file")
       ),
       logo = "imgs/teachinglab_logo.png"
     ),
@@ -56,7 +58,6 @@ server <- function(input, output, session) {
     if(!is.null(sign_ins())){
       # if(check_email_domain(sign_ins()$email, "teachinglab.org")){
       if(check_email_approved(sign_ins()$email, approved_emails_list)){
-        print("yes")
         return("YES")
       } else {
         print("unknown")
@@ -73,6 +74,15 @@ server <- function(input, output, session) {
   router$server(input, output, session)
   agreeServer("p1")
   textServer("p2")
+  reportServer("p3")
+  
+  # rv_facilitator
+  # rv_content
+  # rv_course
+  # rv_site
+  # rv_role
+  # rv_date_slider
+  
 }
 
 shinyApp(ui, server)
