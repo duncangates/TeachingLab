@@ -449,26 +449,34 @@ agreeServer <- function(id) {
     rv_facilitator <- reactive({
       input$facilitator
     })
+    return(rv_facilitator)
     
     rv_content <- reactive({
       input$content
     })
+    return(rv_content)
     
     rv_course <- reactive({
       input$course
     })
+    return(rv_course)
     
     rv_site <- reactive({
       input$site
     })
+    return(rv_site)
     
     rv_role <- reactive({
       input$role
     })
+    return(rv_role)
     
     rv_date_slider <- reactive({
       input$date_slider
     })
+    return(rv_date_slider)
+    
+    
     
   })
 }

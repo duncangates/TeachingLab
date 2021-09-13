@@ -8,9 +8,7 @@ params:
   quote2: NA
   quote3: NA
 output: 
-  pdf_document:
-    latex_engine: xelatex
-    dev: cairo_pdf
+  word_document
 ---
 
 ```{r setup, include=FALSE}
@@ -23,7 +21,7 @@ library(webshot)
 webshot::install_phantomjs()
 ```
 
-<!-- \fontspec{calibri} -->
+<!-- \fontspec{Calibri} -->
 
 # Quantitative Data
 
@@ -109,33 +107,49 @@ params$plot_ts %>%
 
 ## Quotes from "What could have been better about today's session?"
 
-```{r fig.width = 8}
-quote_viz(
+```{r fig.width = 8, fig.show = "hide"}
+img1_loc <- file.path2(tempdir(), "img1.png")
+img1 <- quote_viz(
         data = params$quote3, text_col = "Response", viz_type = "gt",
         title = "What could have been better about today’s session?",
         width = 40, align = "left"
       ) %>%
-  gtsave("img1.png", path = tempdir())
+  gtsave(filename = img1_loc)
 ```
+
+```{r}
+knitr::include_graphics(img1_loc)
+```
+
 
 ## Quotes from "What went well in today's session?"
 
-```{r fig.width = 8}
-quote_viz(
+```{r fig.width = 8, fig.show = "hide"}
+img2_loc <- file.path2(tempdir(), "img2.png")
+img2 <- quote_viz(
         data = params$quote2, text_col = "Response", viz_type = "gt",
         title = "What went well in today’s session?",
         width = 40, align = "left"
       ) %>%
-  gtsave("img2.png", path = tempdir())
+  gtsave(filename = img2_loc)
+```
+
+```{r}
+knitr::include_graphics(img2_loc)
 ```
 
 ## Quotes from "What additional feedback do you have about their facilitation skills?"
 
-```{r fig.width = 8}
-quote_viz(
+```{r fig.width = 8, fig.show = "hide"}
+img3_loc <- file.path2(tempdir(), "img3.png")
+img3 <- quote_viz(
         data = params$quote1, text_col = "Response", viz_type = "gt",
         title = "What additional feedback do you have about their facilitation skills?",
         width = 40, align = "left"
       ) %>%
-  gtsave("img3.png", path = tempdir())
+  gtsave(filename = img3_loc)
+```
+
+```{r}
+knitr::include_graphics(img3_loc)
 ```

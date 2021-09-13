@@ -1122,8 +1122,14 @@ round_even <- function(x) {
   2 * ceiling(x/2)
 }
 
-
-
+#' @title File path 
+#' @description Gives the file path without double slash bug
+#' @param ... The file path
+#' @return a file path
+#' @export
+file.path2 <- function(..., fsep = .Platform$file.sep) {
+  gsub("//", "/", file.path(..., fsep = fsep))
+}
 
 
 

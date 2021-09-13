@@ -1,3 +1,4 @@
+library(magrittr)
 # options(sm_oauth_token = "BjVjlV9MiVBgfe1XpS2xPS547c6gkAygKWAgm4Vv539-KbFct5lsqyVGRCZun0GDt21lnJrgn9hDvSjF.KybF58vc.P.jdeKJ8A2UEUHnE2.50e0lp.86EmQmy8-y9tm")
 # session_survey <- surveymonkey::fetch_survey_obj(id = 308115193) %>%
 #   surveymonkey::parse_survey() %>%
@@ -8,11 +9,10 @@
 #   # Fix this cluttering of names the others result in a bunch of differernt formats
 #   dplyr::mutate(dplyr::across(c("Select the name of your facilitator.", "Select the name of your facilitator. - Other (please specify)",
 #                   "Select the name of your facilitator._2", "Select the name of your facilitator. - Other (please specify)_2",
-#                   "Select the name of your facilitator._3", "Select the name of your facilitator. - Other (please specify)_3"), ~ na_if(.x, "Name"))) %>%
+#                   "Select the name of your facilitator._3", "Select the name of your facilitator. - Other (please specify)_3"), ~ dplyr::na_if(.x, "Name"))) %>%
 #   dplyr::mutate(Facilitator = dplyr::coalesce(`Select the name of your facilitator.`,
 #                                 `Select the name of your facilitator._2`,
 #                                 `Select the name of your facilitator._3`,
-#                                 `Select the name of your facilitator. - Other (please specify)_3`,
 #                                 `Select the name of your facilitator. - Other (please specify)_2`,
 #                                 `Select the name of your facilitator. - Other (please specify)_3`),
 #          Facilitation_Feedback = dplyr::coalesce(`What additional feedback do you have about their facilitation skills?`,
@@ -41,7 +41,6 @@
 
 # readr::write_rds(session_survey, "data-raw/session_surveymonkey.rds")
 # readr::write_rds(session_survey, here::here("Dashboards/SessionSurvey/Data/session_surveymonkey.rds"))
-library(magrittr)
 session_survey <- readr::read_rds("Data/session_surveymonkey.rds") %>%
   dplyr::mutate(date_created = lubridate::date(date_created)) %>%
   dplyr::mutate(`Select your course.` = dplyr::coalesce(`Select your course.`, `Select your course._2`, `Select your course._3`,
@@ -50,7 +49,6 @@ session_survey <- readr::read_rds("Data/session_surveymonkey.rds") %>%
   dplyr::mutate(Facilitator = dplyr::coalesce(`Select the name of your facilitator.`,
                                 `Select the name of your facilitator._2`,
                                 `Select the name of your facilitator._3`,
-                                `Select the name of your facilitator. - Other (please specify)_3`,
                                 `Select the name of your facilitator. - Other (please specify)_2`,
                                 `Select the name of your facilitator. - Other (please specify)_3`),
          Facilitation_Feedback = dplyr::coalesce(`What additional feedback do you have about their facilitation skills?`,
@@ -79,3 +77,18 @@ session_survey <- readr::read_rds("Data/session_surveymonkey.rds") %>%
 
 # NAs dataframe
 na_df <- c("none", "n/a", "N/A", "NA", "na", "none", "none.", "na.", "NA.", "N/A.")
+
+#### Finding most recent groupings ####
+
+recent_choices <- session_survey %>% 
+  dplyr::filter(date_created > Sys.Date() - 14 & !is.na(Facilitator)) %>% # CURRENTLY SET TO LAST TWO WEEKS
+  dplyr::group_by(`Select your site (district, parish, network, or school).`, Facilitator) %>%
+  dplyr::summarise() %>%
+  tidyr::drop_na() %>%
+  dplyr::ungroup() %>%
+  dplyr::mutate(id = dplyr::row_number())
+
+recent_choices_final <- tibble::tibble(choice = paste(recent_choices$`Select your site (district, parish, network, or school).` %>% as.character() %>% stringr::str_replace_all(., ", ", " "),
+                              recent_choices$Facilitator, sep = ", ")) %>%
+  dplyr::mutate(id = dplyr::row_number())
+
