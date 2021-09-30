@@ -389,7 +389,7 @@ theme_irp <- function(base_family = "Roboto Condensed",
 #' mtcars %>% utils::head() %>% gt::gt() %>% TeachingLab::gt_theme_tl()
 #' @export
 
-gt_theme_tl <- function(data, all_caps = F, ...) {
+gt_theme_tl <- function(data, all_caps = F, align = "center", ...) {
   data %>%
     gt::opt_all_caps(all_caps = all_caps) %>%
     gt::opt_table_font(
@@ -416,7 +416,7 @@ gt_theme_tl <- function(data, all_caps = F, ...) {
       style = list(
         gt::cell_text(
           size = "medium",
-          align = "center"
+          align = align
         )
       ),
       locations = gt::cells_body(
@@ -616,7 +616,7 @@ score_question_improved <- function(data, question_pre, question_post, coding, m
   
   n <- data %>%
     dplyr::filter(prepost == T) %>%
-    dplyr::drop_na(.data[[question_post]], .data[[question_pre]]) %>%
+    tidyr::drop_na(.data[[question_post]], .data[[question_pre]]) %>%
     dplyr::ungroup() %>%
     nrow()
   
@@ -624,7 +624,7 @@ score_question_improved <- function(data, question_pre, question_post, coding, m
   
   data2 <- data %>%
     dplyr::filter(prepost == T) %>%
-    dplyr::drop_na(.data[[question_post]], .data[[question_pre]]) %>%
+    tidyr::drop_na(.data[[question_post]], .data[[question_pre]]) %>%
     dplyr::mutate(increase = 0) %>%
     dplyr::mutate(increase = dplyr::case_when(.data[[question_pre]] %in% middle_value & .data[[question_post]] %in% middle_value ~ increase,
                                 .data[[question_pre]] %in% coding & .data[[question_post]] %in% coding ~ increase + 1,
@@ -656,7 +656,7 @@ score_question_mindsets <- function(data, question_pre, question_post, coding, n
   if (na_remove == T) {
     data <- data %>%
     # Select only observations that have no NAs
-      dplyr::drop_na(.data[[question_pre]], .data[[question_post]])
+      tidyr::drop_na(.data[[question_pre]], .data[[question_post]])
   }
   
   n <- data %>%
@@ -786,13 +786,13 @@ score_question_mindsets <- function(data, question_pre, question_post, coding, n
   
   
   score_pre <- score %>%
-    dplyr::drop_na(score_pre) %>%
+    tidyr::drop_na(score_pre) %>%
     dplyr::summarise(
       score_pre = (sum(score_pre, na.rm = T)/(n()*2))*100,
       n1 = n()
     )
   score_post <- score %>%
-    dplyr::drop_na(score_post) %>%
+    tidyr::drop_na(score_post) %>%
     dplyr::summarise(
       score_post = (sum(score_post, na.rm = T)/(n()*2))*100,
       n2 = n()
@@ -820,7 +820,7 @@ score_one_question_mindsets <- function(data, question, coding, na_remove = F, l
   if (na_remove == T) {
     data <- data %>%
       # Select only observations that have no NAs
-      dplyr::drop_na(.data[[question]])
+      tidyr::drop_na(.data[[question]])
   }
   
   if (likert == 5) {
@@ -861,7 +861,7 @@ score_one_question_mindsets <- function(data, question, coding, na_remove = F, l
   
   
   score %>%
-    dplyr::drop_na(score) %>%
+    tidyr::drop_na(score) %>%
     dplyr::summarise(score = (sum(score)/(n()*2))*100,
               n = dplyr::n())
   
@@ -925,7 +925,7 @@ round2 = function(x, n) {
 #'           title = "Responses from Survey Monkey")
 #' @export
 
-quote_viz <- function(data, text_col, viz_type = "gt", custom_highlight = F, width = 60, 
+quote_viz <- function(data, text_col, extra_cols = NULL, viz_type = "gt", custom_highlight = F, width = 60, 
                       title = NULL, suppress_warnings = T, align = "center", ...) {
   
   # highlight_mutate <- function(x) {
@@ -981,8 +981,8 @@ quote_viz <- function(data, text_col, viz_type = "gt", custom_highlight = F, wid
       dplyr::mutate(color_text = text) %>%
       dplyr::mutate(color_text = stringr::str_replace_all(color_text, paste0(highlight[1]), paste0("<span style='color:#04abeb; font-weight:bold;'>", highlight[1], "</span>"))) %>%
       dplyr::mutate(color_text = stringr::str_replace_all(color_text, paste0(highlight[2]), paste0("<span style='color:#04abeb; font-weight:bold;'>", highlight[2], "</span>"))) %>%
-      dplyr::mutate(color_text = stringr::str_replace_all(color_text, paste0(highlight[3]), paste0("<span style='color:#04abeb; font-weight:bold;'>", highlight[3], "</span>"))) %>%
-      dplyr::mutate(color_text = stringr::str_replace_all(color_text, paste0(highlight[4]), paste0("<span style='color:#04abeb; font-weight:bold;'>", highlight[4], "</span>")))
+      dplyr::mutate(color_text = stringr::str_replace_all(color_text, paste0(highlight[3]), paste0("<span style='color:#04abeb; font-weight:bold;'>", highlight[3], "</span>"))) #%>%
+      # dplyr::mutate(color_text = stringr::str_replace_all(color_text, paste0(highlight[4]), paste0("<span style='color:#04abeb; font-weight:bold;'>", highlight[4], "</span>")))
     
     # Highlight most common words
     # data_text <- map_df(highlight, ~ data_text %>% 
@@ -991,7 +991,10 @@ quote_viz <- function(data, text_col, viz_type = "gt", custom_highlight = F, wid
     #                                           paste0("<a style='color:#04abeb; font-weight:bold;'>", .x, "</a>"))))
     # Make gt table with all HTML Formatting
     data_text %>%
-      dplyr::select(color_text) %>%
+      dplyr::select(color_text#,
+                    # extra_cols
+                    ) %>%
+      # dplyr::arrange(desc(.data[[extra_cols]])) %>%
       gt::gt() %>%
         gt::cols_label(
           color_text = gt::html(glue::glue("{title}"))
@@ -1015,11 +1018,11 @@ quote_viz <- function(data, text_col, viz_type = "gt", custom_highlight = F, wid
           rows = c(1:length(data[[rlang::quo_name(text_col)]]))[c(T, F)]
         )
       ) %>%
+      gt::cols_align(align = align) %>%
       gt::tab_style(
         style = list(
           gt::cell_text(
-            size = "medium",
-            align = align
+            size = "medium"
           )
         ),
         locations = gt::cells_body(
@@ -1027,7 +1030,7 @@ quote_viz <- function(data, text_col, viz_type = "gt", custom_highlight = F, wid
           rows = gt::everything()
         )
       ) %>%
-      TeachingLab::gt_theme_tl()
+      TeachingLab::gt_theme_tl(align = align)
   }
   
 }
@@ -1132,6 +1135,16 @@ file.path2 <- function(..., fsep = .Platform$file.sep) {
 }
 
 
+#' @title Percent Agree/Strongly agree
+#' @description Calculates percent that are 4, 5, agree, or strongly agree
+#' @param data the vector or column to summarise
+#' @return integer
+#' @export
+
+percent_agree <- function(agree_col) {
+  100*sum(agree_col %in% c("4", "5", "Strongly agree", "Agree", "(5) Strongly agree", "(4) Agree"))/
+    sum(!is.na(agree_col))
+}
 
 
 

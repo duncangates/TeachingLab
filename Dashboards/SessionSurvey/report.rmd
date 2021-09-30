@@ -57,7 +57,19 @@ ggplot(data = params$plot_agree, aes(x = Question, y = Percent, fill = factor(Re
         )
 ```
 
+\newpage
+
+In summary, we see the following % agree or strongly agree with the above statements:
+
+- `r params$plot_agree %>% filter(Question == "They were fully prepared for\nthe session." & Response %in% c("(4) Agree", "(5) Strongly agree")) %>% summarise(Percent = sum(Percent)) %>% pull(Percent) %>% round() %>% paste0(., "%")` strongly agree or agree that they were fully prepared for the session.
+- `r params$plot_agree %>% filter(Question == "They responded to the group’s\nneeds." & Response %in% c("(4) Agree", "(5) Strongly agree")) %>% summarise(Percent = sum(Percent)) %>% pull(Percent) %>% round() %>% paste0(., "%")` strongly agree or agree that they responded to the group's needs.
+- `r params$plot_agree %>% filter(Question == "They facilitated the content\nclearly." & Response %in% c("(4) Agree", "(5) Strongly agree")) %>% summarise(Percent = sum(Percent)) %>% pull(Percent) %>% round() %>% paste0(., "%")` strongly agree or agree that they facilitated the content clearly.
+- `r params$plot_agree %>% filter(Question == "They effectively built a safe\nlearning community." & Response %in% c("(4) Agree", "(5) Strongly agree")) %>% summarise(Percent = sum(Percent)) %>% pull(Percent) %>% round() %>% paste0(., "%")` strongly agree or agree that they effectively built a safe learning community.
+- `r params$plot_agree %>% filter(Question == "They demonstrated deep\nknowledge of the content they\nfacilitated." & Response %in% c("(4) Agree", "(5) Strongly agree")) %>% summarise(Percent = sum(Percent)) %>% pull(Percent) %>% round() %>% paste0(., "%")` strongly agree or agree that they demonstrated deep knowledge of the content they facilitated.
+
 ## Over Time
+
+Here by visualizing ratings of strongly agree/agree in blue areas, and all other ratings in black areas we visualize feedback over time (If there is just one point of feedback this appears as a dot).
 
 ```{r}
 params$plot_ts %>%
@@ -106,6 +118,14 @@ params$plot_ts %>%
 ```
 
 # Qualitative Data
+
+Finally responses to the following questions are presented below:
+
+- What could have been better about today's session?
+
+- What went well in today's session?
+
+- What additional feedback do you have about their facilitation skills?
 
 ## Quotes from "What could have been better about today's session?"
 

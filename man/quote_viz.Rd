@@ -7,6 +7,7 @@
 quote_viz(
   data,
   text_col,
+  extra_cols = NULL,
   viz_type = "gt",
   custom_highlight = F,
   width = 60,

@@ -17,10 +17,11 @@ tl_partners_historic <- read_sheet("https://docs.google.com/spreadsheets/d/1uMg4
 	
 tl_2021_partners <- tl_partners_historic %>% 
   dplyr::filter(`SY 20-21` == "2020-21 (EL)")  %>%
-  select(`Partner System`) %>%
+  select(`Partner System`)
   
 
-tl_partners <- tl_partners_historic %>% pivot_longer(c(colnames(tl_partners_historic[4:7])), names_to = "Year",
+tl_partners <- tl_partners_historic %>% 
+  pivot_longer(c(colnames(tl_partners_historic[4:7])), names_to = "Year",
                                       values_to = "Class") %>%
   dplyr::filter(State == "LA") %>%
   distinct(`Partner System`) %>%

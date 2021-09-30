@@ -17,9 +17,9 @@ sites_list <- read_sheet("https://docs.google.com/spreadsheets/d/1nqtFK9_HBMBU6X
 
 facilitator_names_emails_list <- read_sheet("https://docs.google.com/spreadsheets/d/1nqtFK9_HBMBU6XQwCmmPYkhwBXZUj8wmevF2WGYUlaM/edit?ts=5f5a8a55#gid=1933413518",
                                sheet = "Facilitators",
-                               range = "D:M") %>%
-  mutate(Zearn = case_when(Zearn == FALSE ~ 0,
-                           Zearn == TRUE ~ 1)) %>%
+                               range = "D:O") %>%
+  # mutate(Zearn = case_when(Zearn == FALSE ~ 0,
+  #                          Zearn == TRUE ~ 1)) %>%
   rename(Facilitators = 1, Emails = 2) %>%
   drop_na(`Emails`)
 

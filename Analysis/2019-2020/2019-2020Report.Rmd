@@ -22,7 +22,7 @@ library(here)
 library(gt)
 
 # og_df <- read_excel(here("Data/SY19-20 Fall Spring merged.xlsx"))
-second_df <- read_excel(here("Data/SY19-20/SY19-20 Fall-Spring Merged Dataset Update.xls"))
+second_df <- read_excel(here("Data-Clean/Data-move/SY19-20/SY19-20 Fall-Spring Merged Dataset Update.xls"))
 
 identifiers <- second_df %>%
   select(district, school, portfolio, id, merge)#, role, role2...10, role_txt)

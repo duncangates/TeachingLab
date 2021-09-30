@@ -110,11 +110,10 @@ uiReport <- function(id, label = "Counter") {
         div(
           class = "ui three column stackable grid container",
           div(
-            class = "six wide column",
+            class = "seven wide column",
             br(),
             br(),
             h3("Utilize the filters in the sidebar to download your custom report,"),
-            br(),
             h3(" OR click one of the following buttons to download one of the following most recent sessions found by a unique combination of site and facilitator, and then just click download!"),
             multiple_radio(ns("recent_sessions"), choices = recent_choices_final$choice, 
                            label = NULL, selected = NULL),
@@ -126,14 +125,16 @@ uiReport <- function(id, label = "Counter") {
             br()
           ),
           div(
-            class = "seven wide column",
+            class = "five wide column",
+            align = "center",
             br(),
             br(),
             br(),
             downloadButton(ns("download_report1"), 
                            label = tagList(tags$span("Download Report PDF"),
                                            tags$img(src = "report_example_pdf.png", align = "center")), 
-                           icon = shiny::icon("file-download")),
+                           icon = shiny::icon("file-download")) %>%
+              withSpinner(),
             br(),
             br(),
             br(),
@@ -142,10 +143,12 @@ uiReport <- function(id, label = "Counter") {
             downloadButton(ns("download_report2"), 
                            label = tagList(tags$span("Download Report DOCX"),
                                            tags$img(src = "report_example_word.png", align = "center")), 
-                           icon = shiny::icon("file-download"))
+                           icon = shiny::icon("file-download")) %>%
+              withSpinner()
           ),
           div(
-            class = "two wide column",
+            class = "four wide column",
+            align = "center",
             br(),
             br(),
             downloadButton(ns("download_csv"), 
@@ -520,7 +523,7 @@ reportServer <- function(id) {
     
     output$download_csv <- downloadHandler(
       filename = function() {
-        paste("session_survey_data-", Sys.Date(), ".csv", sep="")
+        paste0("session_survey_data-", Sys.Date(), ".csv", sep="")
       },
       content = function(file) {
         write.csv(session_survey, file)

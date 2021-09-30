@@ -1,4 +1,4 @@
-
+source("R/helpers.R")
 # Making the initial routes to follow
 router <- shiny.router::make_router(
   route("info", info_page),
@@ -33,7 +33,7 @@ ui <- semanticPage(
         list(name = "About the Session Survey Dashboard", link = route_link("info"), icon = "copy outline"),
         list(name = "Quantitative Responses", link = route_link("agree"), icon = "list alternate outline"),
         list(name = "Qualitative Answers", link = route_link("text"), icon = "envelope open outline"),
-        list(name = "Report Download", link = route_link("report"), icon = "file")
+        list(name = "Report/Download", link = route_link("report"), icon = "file")
       ),
       logo = "imgs/teachinglab_logo.png"
     ),

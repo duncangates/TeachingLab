@@ -78,24 +78,29 @@ ui <- dashboardPage(
                 .inline .form-group { display: table-row;}")
           ),
           # Make selection drop down height, width, font size
-          tags$head(tags$style(HTML(".selectize-input {height: 40px; width: 400px; font-size: 17px; margin-top: 20px;}"))),
+          tags$head(tags$style(HTML(".selectize-input {height: 40px; width: 500px; font-size: 17px; margin-top: 20px;}"))),
           tags$div(
             class = "inline",
             shiny::selectInput("pm",
               label = h5(labelMandatory("PM"), style = "font-weight:bold;font-size: 20px;"),
-              choices = purrr::prepend(PMs_Emails$PMs, "")
+              choices = purrr::prepend(PMs_Emails$PMs, "") %>% sort(),
+              selected = "",
             ),
             selectInput("curriculum",
               label = h5(labelMandatory("Curriculum"), style = "font-weight:bold;font-size: 20px;"),
-              choices = c("", "EL", "State Level", "IM", "Engage/Eureka", "Zearn", "Guidebooks", "Science", "SL IPG")
+              choices = c("", "EL", "State Level", "IM", "Engage/Eureka", "Zearn", "Guidebooks", "Science", "SL IPG") %>% sort(),
+              selected = "",
             ),
             selectInput("site",
               label = h5(labelMandatory("Site "), style = "font-weight:bold;font-size: 20px;"),
-              choices = purrr::prepend(Sites$Site, "")
+              choices = purrr::prepend(Sites$Site, "") %>% sort(),
+              selected = "",
             ),
-            selectInput("content",
+            tags$head(tags$style(HTML("#content+ div>.selectize-input {height: 130px;}"))),
+            shiny::selectizeInput("content",
               label = h5(labelMandatory("Content "), style = "font-weight:bold;font-size: 20px;"),
-              choices = purrr::prepend(Courses$Courses, "")
+              choices = purrr::prepend(Courses$Courses, ""),
+              multiple = T, options = list(plugins= list('remove_button'))
             ),
             selectizeInput("calls_count",
               label = h5(labelMandatory("# of Calls "), style = "font-weight:bold;font-size: 20px;"),
@@ -294,7 +299,7 @@ server <- function(input, output, session) {
         PMs = input$pm,
         Curriculum = input$curriculum,
         Site = input$site,
-        Content = input$content,
+        Content = paste0(input$content, collapse = ", "),
         `Call Times` = paste(map(1:input$calls_count, ~ as.character(eval(parse(text = (paste0("input$time1_", .x)))) - hours(time_zone_offset()))) %>%
           map(., ~ as_datetime(.x, tz = "UTC")) %>%
           map(., ~ format(.x, "%m-%d-%Y %I:%M %P")), "to",
