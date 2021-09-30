@@ -19,3 +19,4 @@ email_creds_staffing
 Data-Clean/
 ^LICENSE\.md$
 ^data-raw$
+data-raw/
