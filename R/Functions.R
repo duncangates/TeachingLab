@@ -990,48 +990,51 @@ quote_viz <- function(data, text_col, extra_cols = NULL, viz_type = "gt", custom
     #                                           .x, 
     #                                           paste0("<a style='color:#04abeb; font-weight:bold;'>", .x, "</a>"))))
     # Make gt table with all HTML Formatting
-    data_text %>%
-      dplyr::select(color_text#,
-                    # extra_cols
-                    ) %>%
-      # dplyr::arrange(desc(.data[[extra_cols]])) %>%
-      gt::gt() %>%
-        gt::cols_label(
-          color_text = gt::html(glue::glue("{title}"))
-        ) %>%
-      # text_transform(
-      #   locations = cells_body(
-      #     columns = gt::everything()
-      #   ),
-      #   fn = function(x) {
+      if (nrow(data_text) >= 1) {
+        data_text %>%
+          dplyr::select(color_text#,
+                        # extra_cols
+          ) %>%
+          # dplyr::arrange(desc(.data[[extra_cols]])) %>%
+          gt::gt() %>%
+          gt::cols_label(
+            color_text = gt::html(glue::glue("{title}"))
+          ) %>%
+          # text_transform(
+          #   locations = cells_body(
+          #     columns = gt::everything()
+          #   ),
+          #   fn = function(x) {
           # stringr::str_replace_all(x, paste0(" ", highlight[1], " "), paste0("<span style='color:#04abeb; font-weight:bold;'> ", highlight[1], " </span>"))
           # stringr::str_replace_all(x, paste0(" ", highlight[2], " "), paste0("<span style='color:#04abeb; font-weight:bold;'> ", highlight[2], " </span>"))
           # stringr::str_replace_all(x, paste0(" ", highlight[3], " "), paste0("<span style='color:#04abeb; font-weight:bold;'> ", highlight[3], " </span>"))
           # map_chr(highlight, ~ stringr::str_replace_all(x, .x, paste0("<span style='color:#04abeb'>", .x, "</span>")))
-        # }
-      #) %>%
-      gt::fmt_markdown(columns = gt::everything()) %>%
-      gt::tab_style(
-        style = gt::cell_fill(color = "gray85"),
-        locations = gt::cells_body(
-          # Highlights every other cell to be gray
-          rows = c(1:length(data[[rlang::quo_name(text_col)]]))[c(T, F)]
-        )
-      ) %>%
-      gt::cols_align(align = align) %>%
-      gt::tab_style(
-        style = list(
-          gt::cell_text(
-            size = "medium"
-          )
-        ),
-        locations = gt::cells_body(
-          columns = gt::everything(),
-          rows = gt::everything()
-        )
-      ) %>%
-      TeachingLab::gt_theme_tl(align = align)
-  }
+          # }
+          #) %>%
+        gt::fmt_markdown(columns = gt::everything()) %>%
+          gt::tab_style(
+            style = gt::cell_fill(color = "gray85"),
+            locations = gt::cells_body(
+              # Highlights every other cell to be gray
+              rows = c(1:length(data[[rlang::quo_name(text_col)]]))[c(T, F)]
+            )
+          ) %>%
+          gt::cols_align(align = align) %>%
+          gt::tab_style(
+            style = list(
+              gt::cell_text(
+                size = "medium"
+              )
+            ),
+            locations = gt::cells_body(
+              columns = gt::everything(),
+              rows = gt::everything()
+            )
+          ) %>%
+          TeachingLab::gt_theme_tl(align = align)
+      }
+    }
+    
   
 }
 

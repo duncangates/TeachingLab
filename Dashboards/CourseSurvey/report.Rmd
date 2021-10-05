@@ -1,5 +1,5 @@
 ---
-title: "Teaching Lab Session Report"
+title: "Teaching Lab Course Report"
 params:
   plot_ts: NA
   plot_agree: NA
@@ -9,6 +9,8 @@ params:
   quote3: NA
   quote4: NA
   quote5: NA
+  subtitle: NA
+subtitle: "`r params$subtitle`"
 output: 
   pdf_document:
     latex_engine: xelatex

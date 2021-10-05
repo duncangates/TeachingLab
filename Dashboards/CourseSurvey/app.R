@@ -1,5 +1,3 @@
-source("R/helpers.R")
-
 router <- shiny.router::make_router(
   route("index", info_page),
   route("agree", uiAgree("p1")),

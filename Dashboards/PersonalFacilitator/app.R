@@ -1,5 +1,4 @@
 
-source("R/data_load.R")
 source("R/helpers.R")
 
 router <- shiny.router::make_router(

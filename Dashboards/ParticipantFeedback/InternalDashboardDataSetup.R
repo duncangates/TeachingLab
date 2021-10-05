@@ -40,8 +40,9 @@ delaware_sheet_join <- delaware_sheet %>%
          `S/he facilitated the content clearly #2` = `S/he facilitated the content clearly....18`,
          `S/he facilitated the content clearly #3` = `S/he facilitated the content clearly....22`,
          `Select your course.` = `Please select the training session you attended today.`,
-         `What could have improved your experience?` = `What could have improved your experience today?`,
-         `What is the learning from this course that you are most excited about trying out?` = `What is the learning from today that you are most excited about trying out?`) %>%
+         `What could have improved your experience?` = `What could have improved your experience today?`#,
+         # `What is the learning from this course that you are most excited about trying out?` = `What is the learning from today that you are most excited about trying out?`
+         ) %>%
   mutate(`Select your site (district, parish, network, or school).` = "Delaware Professional Learning")
 
 sheets_data <- full_join(big_sheet_join, delaware_sheet_join)
@@ -85,7 +86,8 @@ sheets_data_merge <- sheets_data %>%
   bind_rows(community_content_second, community_content_third) %>%
   select(-c(`Please select the focus of the session you attended today.`, `Timestamp`, `Select the best description for your role.`,
             `If you would like to speak to our team further about your experience at today’s training, please share your email address and we will reach out to you shortly.`,
-            `Select the grade-band(s) you focused on today.`, `Do you give us permission to include your feedback in promotional materials?`,
+            # `Select the grade-band(s) you focused on today.`, 
+            `Do you give us permission to include your feedback in promotional materials?`,
             `Did you have a third facilitator?`)) %>%
   rename(`Date for the session` = `Date`,
          `Professional Training Session` = `Select your course.`,
@@ -123,14 +125,14 @@ write_rds(sheets_data_merge_final, here("Data/sheets_data_merge.rds"))
 
 ## Other data
 
-teaching_df_readin <- read_rds(here("Data/original_df.rds")) # Read in the data
+teaching_df_readin <- read_rds(here("Data-Clean/Data-move/Dashboard Data/original_df.rds")) # Read in the data
 # teaching_df <- read_rds("~/Teaching Lab/Coding/TeachingLab/PieCharter/Data/original_df.rds")
 # Relevant columns
 oldcols <- c(
   "Professional training session",
   "Select your site (district, parish, or network).",
   # "Select the best description for your role.",
-  # "Select the grade-band(s) you focused on.",
+  "Select the grade-band(s) you focused on.",
   "I am satisfied with the overall quality of today's professional learning session.",
   "Today's topic was relevant for my role.",
   "The activities of today's session were well-designed to help me learn.",
@@ -166,20 +168,21 @@ newcols <- str_to_title(c(
 
 # Small data clean
 teaching_df_readin <- teaching_df_readin %>%
-  select(-`Select the grade-band(s) you focused on.`,
+  select(
+    # -`Select the grade-band(s) you focused on.`,
          -`Select the best description for your role.`) %>%
   rename_with(~ newcols[which(oldcols == .x)], .cols = oldcols) %>%
   mutate(`Date for the session` = lubridate::ymd(`Date for the session`)) %>%
   mutate(Portfolio = case_when(!str_detect(`Professional Training Session`, c("EL|IM|Guidebooks|GuideBooks")) == T ~ "State-Level",
                                str_detect(`Professional Training Session`, "IM") == T ~ "Illustrative Mathematics",
                                str_detect(`Professional Training Session`, "Guidebooks|GuideBooks") == T ~ "Guidebooks",
-                               str_detect(`Professional Training Session`, "EL") == T ~ "EL"))#,
-         # `What Grade Band(S) Do You Focus On?` = str_replace(`What Grade Band(S) Do You Focus On?`, "Grades 6-8;Grades 9-12", "Grades 6-8, Grades 9-12"),
-         # `What Grade Band(S) Do You Focus On?` = str_replace(`What Grade Band(S) Do You Focus On?`, "All grades K-12", "All Grades"),
-         # `What Grade Band(S) Do You Focus On?` = str_replace(`What Grade Band(S) Do You Focus On?`, "Grades 9-12, All grades K-12", "All Grades"),
-         # `What Grade Band(S) Do You Focus On?` = str_replace(`What Grade Band(S) Do You Focus On?`, "Grades K-2, Grades 3-5, Grades 6-8, Grades 9-12, All grades K-12", "All Grades"),
-         # `What Grade Band(S) Do You Focus On?` = str_replace(`What Grade Band(S) Do You Focus On?`, "Grades K-2, Grades 3-5, Grades 6-8, Grades 9-12", "All Grades"),
-         # `What Grade Band(S) Do You Focus On?` = str_replace(`What Grade Band(S) Do You Focus On?`, "All Grades, All Grades", "All Grades"))
+                               str_detect(`Professional Training Session`, "EL") == T ~ "EL"),
+         `What Grade Band(S) Do You Focus On?` = str_replace(`What Grade Band(S) Do You Focus On?`, "Grades 6-8;Grades 9-12", "Grades 6-8, Grades 9-12"),
+         `What Grade Band(S) Do You Focus On?` = str_replace(`What Grade Band(S) Do You Focus On?`, "All grades K-12", "All Grades"),
+         `What Grade Band(S) Do You Focus On?` = str_replace(`What Grade Band(S) Do You Focus On?`, "Grades 9-12, All grades K-12", "All Grades"),
+         `What Grade Band(S) Do You Focus On?` = str_replace(`What Grade Band(S) Do You Focus On?`, "Grades K-2, Grades 3-5, Grades 6-8, Grades 9-12, All grades K-12", "All Grades"),
+         `What Grade Band(S) Do You Focus On?` = str_replace(`What Grade Band(S) Do You Focus On?`, "Grades K-2, Grades 3-5, Grades 6-8, Grades 9-12", "All Grades"),
+         `What Grade Band(S) Do You Focus On?` = str_replace(`What Grade Band(S) Do You Focus On?`, "All Grades, All Grades", "All Grades"))
 
 # teaching_df <- teaching_df_readin
 
