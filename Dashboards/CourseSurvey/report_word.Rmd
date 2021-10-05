@@ -141,12 +141,18 @@ Finally responses to the following questions are presented below:
 
 ```{r fig.width = 8, fig.show = "hide"}
 img1_loc <- file.path2(tempdir(), "img1.png")
-img1 <- quote_viz(
-        data = params$quote1, text_col = "Response", viz_type = "gt",
-        title = "Overall, what went well in the course?",
-        width = 40, align = "left"
-      ) %>%
-  gtsave(filename = img1_loc)
+if (nrow(as_tibble(params$quote1)) >= 1) { 
+  img1 <- quote_viz(
+          data = as_tibble(params$quote1), text_col = "Response", viz_type = "gt",
+          title = "Overall, what went well in the course?",
+          width = 40, align = "left"
+        ) %>%
+    gtsave(filename = img1_loc)
+} else {
+  img1 <- tibble("There were no comments to display here.") %>% 
+    quote_viz(title = "Nothing", width = 40) %>% 
+    gtsave(filename = img1_loc)
+}
 ```
 
 ```{r}
@@ -158,12 +164,18 @@ knitr::include_graphics(img1_loc)
 
 ```{r fig.width = 8, fig.show = "hide"}
 img2_loc <- file.path2(tempdir(), "img2.png")
-img2 <- quote_viz(
-        data = params$quote2, text_col = "Response", viz_type = "gt",
+if (nrow(as_tibble(params$quote2)) >= 1) { 
+  img2 <- quote_viz(
+        data = as_tibble(params$quote2), text_col = "Response", viz_type = "gt",
         title = "Overall, what could have been better in this course?",
         width = 40, align = "left"
       ) %>%
   gtsave(filename = img2_loc)
+} else {
+  img2 <- tibble("There were no comments to display here.") %>% 
+    quote_viz(title = "Nothing", width = 40) %>% 
+    gtsave(filename = img2_loc)
+}
 ```
 
 ```{r}
@@ -174,12 +186,18 @@ knitr::include_graphics(img2_loc)
 
 ```{r fig.width = 8, fig.show = "hide"}
 img3_loc <- file.path2(tempdir(), "img3.png")
-img3 <- quote_viz(
-        data = params$quote3, text_col = "Response", viz_type = "gt",
+if (nrow(as_tibble(params$quote3)) >= 1) { 
+  img3 <- quote_viz(
+        data = as_tibble(params$quote3), text_col = "Response", viz_type = "gt",
         title = "What is the learning from this course that you are most excited about trying out?",
         width = 40, align = "left"
       ) %>%
   gtsave(filename = img3_loc)
+} else {
+  img3 <- tibble("There were no comments to display here.") %>% 
+    quote_viz(title = "Nothing", width = 40) %>% 
+    gtsave(filename = img3_loc)
+}
 ```
 
 ```{r}
@@ -190,12 +208,18 @@ knitr::include_graphics(img3_loc)
 
 ```{r fig.width = 8, fig.show = "hide"}
 img4_loc <- file.path2(tempdir(), "img4.png")
-img4 <- quote_viz(
-        data = params$quote4, text_col = "Response", viz_type = "gt",
+if (nrow(as_tibble(params$quote4)) >= 1) { 
+  img4 <- quote_viz(
+        data = as_tibble(params$quote4), text_col = "Response", viz_type = "gt",
         title = "Which activities best supported your learning in this course?",
         width = 40, align = "left"
       ) %>%
   gtsave(filename = img4_loc)
+} else {
+  img4 <- tibble("There were no comments to display here.") %>% 
+    quote_viz(title = "Nothing", width = 40) %>% 
+    gtsave(filename = img4_loc)
+}
 ```
 
 ```{r}
@@ -206,12 +230,18 @@ knitr::include_graphics(img4_loc)
 
 ```{r fig.width = 8, fig.show = "hide"}
 img5_loc <- file.path2(tempdir(), "img5.png")
-img5 <- quote_viz(
-        data = params$quote5, text_col = "Response", viz_type = "gt",
+if (nrow(as_tibble(params$quote5)) >= 1) { 
+  img5 <- quote_viz(
+        data = as_tibble(params$quote5), text_col = "Response", viz_type = "gt",
         title = "Feel free to leave us any additional comments, concerns, or questions.",
         width = 40, align = "left"
       ) %>%
   gtsave(filename = img5_loc)
+} else {
+  img5 <- tibble("There were no comments to display here.") %>% 
+    quote_viz(title = "Nothing", width = 40) %>% 
+    gtsave(filename = img5_loc)
+}
 ```
 
 ```{r}

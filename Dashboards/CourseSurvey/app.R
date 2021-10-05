@@ -75,12 +75,6 @@ server <- function(input, output, session) {
   # need this so it works when conditionalPanel hides content
   outputOptions(output, "loginButton", suspendWhenHidden = F)
   
-  # in_site <- callModule({input$site})
-  # in_course <- reactive({input$course})
-  # in_role <- reactive({input$role})
-  # in_date_slider <- reactive({input$date_slider})
-  # in_content <- reactive({input$content})
-  
   router$server(input, output, session)
   agreeServer("p1", in_site)
   npsServer("p2", in_site)

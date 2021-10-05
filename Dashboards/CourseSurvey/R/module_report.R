@@ -501,9 +501,10 @@ reportServer <- function(id, in_site) {
                        quote4 = quote_viz_data4(),
                        quote5 = quote_viz_data5(),
                        subtitle = course_survey_recent() %>% 
-                         dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) %>% 
-                         select(`Select your site (district, parish, network, or school).`) %>% 
-                         unique())
+                         select(`Select your course.`, `Select your site (district, parish, network, or school).`) %>% 
+                         transmute(course_site = paste0(`Select your course.`, ", ", `Select your site (district, parish, network, or school).`)) %>%
+                         unique() %>%
+                         as_vector())
 
         # Knit the document, passing in the `params` list, and eval it in a
         # child of the global environment (this isolates the code in the document
@@ -542,9 +543,10 @@ reportServer <- function(id, in_site) {
                        quote4 = quote_viz_data4(),
                        quote5 = quote_viz_data5(),
                        subtitle = course_survey_recent() %>% 
-                         dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) %>% 
-                         select(`Select your site (district, parish, network, or school).`) %>% 
-                         unique())
+                         select(`Select your course.`, `Select your site (district, parish, network, or school).`) %>% 
+                         transmute(course_site = paste0(`Select your course.`, ", ", `Select your site (district, parish, network, or school).`)) %>%
+                         unique() %>%
+                         as_vector())
         
         # Knit the document, passing in the `params` list, and eval it in a
         # child of the global environment (this isolates the code in the document
