@@ -3,7 +3,7 @@ uiReport <- function(id, label = "Counter") {
   shiny::tagList(
     shiny.semantic::sidebar_layout(
       sidebar_panel = shiny.semantic::sidebar_panel(
-        style = "position:fixed;width:inherit;",
+        style = "position:fixed;overflow-x:hidden;overflow-y:scroll;width:inherit;",
         shiny.semantic::menu_item(
           tabName = "facilitator_menu",
           shiny::selectizeInput(
@@ -473,7 +473,12 @@ reportServer <- function(id) {
                        agree_plot_n = agree_plot_n(),
                        quote1 = quote_viz_data1(),
                        quote2 = quote_viz_data2(),
-                       quote3 = quote_viz_data3())
+                       quote3 = quote_viz_data3(),
+                       subtitle = session_survey_recent() %>% 
+                         select(Facilitator, `Select your site (district, parish, network, or school).`) %>% 
+                         transmute(course_site = paste0(`Select your site (district, parish, network, or school).`, ", ", Facilitator)) %>%
+                         unique() %>%
+                         as_vector())
 
         # Knit the document, passing in the `params` list, and eval it in a
         # child of the global environment (this isolates the code in the document
@@ -508,7 +513,12 @@ reportServer <- function(id) {
                        agree_plot_n = agree_plot_n(),
                        quote1 = quote_viz_data1(),
                        quote2 = quote_viz_data2(),
-                       quote3 = quote_viz_data3())
+                       quote3 = quote_viz_data3(),
+                       subtitle = session_survey_recent() %>% 
+                         select(Facilitator, `Select your site (district, parish, network, or school).`) %>% 
+                         transmute(course_site = paste0(`Select your site (district, parish, network, or school).`, ", ", Facilitator)) %>%
+                         unique() %>%
+                         as_vector())
         
         # Knit the document, passing in the `params` list, and eval it in a
         # child of the global environment (this isolates the code in the document
@@ -521,12 +531,34 @@ reportServer <- function(id) {
       }
     )
     
+    download_reactive <- reactive({
+      df <- session_survey_recent() %>%
+        dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
+        {
+          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
+        } %>%
+        {
+          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
+        } %>%
+        {
+          if (input$facilitator != "All Facilitators") dplyr::filter(., Facilitator %in% input$facilitator) else .
+        } %>%
+        {
+          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today's professional learning session.` %in% input$content) else .
+        } %>%
+        {
+          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
+        }
+      
+      df
+    })
+    
     output$download_csv <- downloadHandler(
       filename = function() {
         paste0("session_survey_data-", Sys.Date(), ".csv", sep="")
       },
       content = function(file) {
-        write.csv(session_survey, file)
+        write.csv(download_reactive(), file)
       }
     )
     

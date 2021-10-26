@@ -151,10 +151,12 @@ check_email_domain <- function(email, domain) {
 # approved_emails_list <- readr::read_csv(here::here("Dashboards/SessionSurvey/Data/employees.csv"), skip = 1) %>%
 #   dplyr::select(1) %>%
 #   purrr::as_vector()
-
-approved_emails_list <- readr::read_csv("Data/employees.csv", skip = 1) %>%
-  dplyr::select(1) %>%
-  purrr::as_vector()
+# approved_emails_list <- readr::read_csv("Dashboards/SessionSurvey/Data/employees.csv", skip = 1) %>%
+#   dplyr::select(1) %>%
+#   purrr::as_vector() %>%
+#   append("kristen.taylor@teachinglab.org")
+# readr::write_rds(approved_emails_list, "Dashboards/SessionSurvey/Data/employees.rds")
+approved_emails_list <- readr::read_rds("Data/employees.rds")
 
 check_email_approved <- function(email, approved_emails_list) {
   email %in% approved_emails_list

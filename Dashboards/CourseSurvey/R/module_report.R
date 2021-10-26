@@ -1,9 +1,10 @@
 uiReport <- function(id, label = "Counter") {
   ns <- NS(id)
   shiny::tagList(
+    # tags$head(tags$style(HTML("#sidebar_panel{min-width:320px;padding:5px;height:100vh;}"))),
     shiny.semantic::sidebar_layout(
       sidebar_panel = shiny.semantic::sidebar_panel(
-        style = "position:fixed;width:inherit;",
+        style = "position:fixed;overflow-x:auto;overflow-y:auto;width:inherit;max-width:330px;",
         menu_item(
           tabName = "site_menu",
           shiny::selectizeInput(
@@ -98,8 +99,9 @@ uiReport <- function(id, label = "Counter") {
             br(),
             h3("Utilize the filters in the sidebar to download your custom report,"),
             h3(" OR click one of the following buttons to download one of the following most recent sessions found by a unique combination of site and course, and then just click download!"),
-            multiple_radio(ns("recent_sessions"), choices = recent_choices_final$choice, 
-                           label = NULL, selected = NULL),
+            selectizeInput(ns("recent_sessions"), choices = recent_choices_final$choice, 
+                           label = NULL, selected = NULL, multiple = T,
+                           options = list(plugins= list('remove_button'))),
             br(),
             br(),
             br(),
@@ -158,11 +160,11 @@ reportServer <- function(id, in_site) {
         # Get previously created choices dataframe for filtering by id
         chosen <- recent_choices %>% 
           inner_join((recent_choices_final %>%
-                      dplyr::filter(choice == input$recent_sessions)), by = "id")
+                      dplyr::filter(choice %in% input$recent_sessions)), by = "id")
       
         course_survey <- course_survey %>%
-          dplyr::filter(`Select your site (district, parish, network, or school).` == chosen$`Select your site (district, parish, network, or school).` &
-                          `Select your course.` == chosen$`Select your course.`)
+          dplyr::filter(`Select your site (district, parish, network, or school).` %in% chosen$`Select your site (district, parish, network, or school).` &
+                          `Select your course.` %in% chosen$`Select your course.`)
         
       } else {
         course_survey
@@ -503,8 +505,9 @@ reportServer <- function(id, in_site) {
                        subtitle = course_survey_recent() %>% 
                          select(`Select your course.`, `Select your site (district, parish, network, or school).`) %>% 
                          transmute(course_site = paste0(`Select your course.`, ", ", `Select your site (district, parish, network, or school).`)) %>%
-                         unique() %>%
-                         as_vector())
+                         distinct(course_site) %>%
+                         as_vector() %>%
+                         paste(collapse = ", "))
 
         # Knit the document, passing in the `params` list, and eval it in a
         # child of the global environment (this isolates the code in the document
@@ -516,6 +519,19 @@ reportServer <- function(id, in_site) {
         )
       }
     )
+    
+    observe({
+      course_survey_recent() %>% 
+        select(`Select your course.`, `Select your site (district, parish, network, or school).`) %>% 
+        transmute(course_site = paste0(`Select your course.`, ", ", `Select your site (district, parish, network, or school).`)) %>%
+        distinct(course_site) %>%
+        # {
+        #   if (length(course_site) > 3) dplyr::slice(., 1:3) %>% bind_rows(tibble::tibble(course_site = "and more")) else .
+        # } %>%
+        as_vector() %>%
+        paste(collapse = ", ") %>%
+        print()
+    })
     
     #### GENERATE THE DOCX REPORT ####
     
@@ -545,8 +561,9 @@ reportServer <- function(id, in_site) {
                        subtitle = course_survey_recent() %>% 
                          select(`Select your course.`, `Select your site (district, parish, network, or school).`) %>% 
                          transmute(course_site = paste0(`Select your course.`, ", ", `Select your site (district, parish, network, or school).`)) %>%
-                         unique() %>%
-                         as_vector())
+                         distinct(course_site) %>%
+                         as_vector() %>%
+                         paste(collapse = ", "))
         
         # Knit the document, passing in the `params` list, and eval it in a
         # child of the global environment (this isolates the code in the document
@@ -560,20 +577,25 @@ reportServer <- function(id, in_site) {
     )
     
     download_reactive <- reactive({
-      df <- course_survey_recent() %>%
-        dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
-        {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-        } %>%
-        {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-        } %>%
-        {
-          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today's professional learning session.` %in% input$content) else .
-        } %>%
-        {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-        }
+      
+      if (input$recent_sessions != "No Selection") {
+        df <- course_survey_recent() %>%
+          dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
+          {
+            if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
+          } %>%
+          {
+            if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
+          } %>%
+          {
+            if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today's professional learning session.` %in% input$content) else .
+          } %>%
+          {
+            if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
+          }
+      } else {
+        df <- course_survey_recent()
+      }
       
       df
     })

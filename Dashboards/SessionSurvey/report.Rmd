@@ -7,6 +7,8 @@ params:
   quote1: NA
   quote2: NA
   quote3: NA
+  subtitle: NA
+subtitle: "`r params$subtitle`"
 output: 
   pdf_document:
     latex_engine: xelatex
@@ -130,32 +132,44 @@ Finally responses to the following questions are presented below:
 ## Quotes from "What could have been better about today's session?"
 
 ```{r fig.width = 8}
-quote_viz(
-        data = params$quote3, text_col = "Response", viz_type = "gt",
-        title = "What could have been better about today’s session?",
-        width = 40, align = "left"
-      ) %>%
-  gtsave("img1.png", path = tempdir())
+if (nrow(as_tibble(params$quote3)) >= 1) { 
+  quote_viz(
+          data = params$quote3, text_col = "Response", viz_type = "gt",
+          title = "What could have been better about today’s session?",
+          width = 40, align = "left"
+        ) %>%
+    gtsave("img1.png", path = tempdir())
+} else {
+  tibble("There were no comments to display here.") %>% quote_viz(title = "Nothing", width = 40) %>% gtsave("nothing_image.png", path = tempdir())
+}
 ```
 
 ## Quotes from "What went well in today's session?"
 
 ```{r fig.width = 8}
-quote_viz(
+if (nrow(as_tibble(params$quote2)) >= 1) { 
+  quote_viz(
         data = params$quote2, text_col = "Response", viz_type = "gt",
         title = "What went well in today’s session?",
         width = 40, align = "left"
       ) %>%
   gtsave("img2.png", path = tempdir())
+} else {
+  tibble("There were no comments to display here.") %>% quote_viz(title = "Nothing", width = 40) %>% gtsave("nothing_image.png", path = tempdir())
+}
 ```
 
 ## Quotes from "What additional feedback do you have about their facilitation skills?"
 
 ```{r fig.width = 8}
-quote_viz(
-        data = params$quote1, text_col = "Response", viz_type = "gt",
-        title = "What additional feedback do you have about their facilitation skills?",
-        width = 40, align = "left"
-      ) %>%
-  gtsave("img3.png", path = tempdir())
+if (nrow(as_tibble(params$quote1)) >= 1) { 
+  quote_viz(
+          data = params$quote1, text_col = "Response", viz_type = "gt",
+          title = "What additional feedback do you have about their facilitation skills?",
+          width = 40, align = "left"
+        ) %>%
+    gtsave("img3.png", path = tempdir())
+} else {
+  tibble("There were no comments to display here.") %>% quote_viz(title = "Nothing", width = 40) %>% gtsave("nothing_image.png", path = tempdir())
+}
 ```

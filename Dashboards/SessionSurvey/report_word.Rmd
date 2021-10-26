@@ -7,6 +7,8 @@ params:
   quote1: NA
   quote2: NA
   quote3: NA
+  subtitle: NA
+subtitle: "`r params$subtitle`"
 output: 
   word_document
 ---
@@ -129,12 +131,18 @@ Finally responses to the following questions are presented below:
 
 ```{r fig.width = 8, fig.show = "hide"}
 img1_loc <- file.path2(tempdir(), "img1.png")
-img1 <- quote_viz(
-        data = params$quote3, text_col = "Response", viz_type = "gt",
-        title = "What could have been better about today’s session?",
-        width = 40, align = "left"
-      ) %>%
-  gtsave(filename = img1_loc)
+if (nrow(as_tibble(params$quote1)) >= 1) { 
+  img1 <- quote_viz(
+          data = params$quote3, text_col = "Response", viz_type = "gt",
+          title = "What could have been better about today’s session?",
+          width = 40, align = "left"
+        ) %>%
+    gtsave(filename = img1_loc)
+} else {
+  img1 <- tibble("There were no comments to display here.") %>% 
+    quote_viz(title = "Nothing", width = 40) %>% 
+    gtsave(filename = img1_loc)
+}
 ```
 
 ```{r}
@@ -146,12 +154,18 @@ knitr::include_graphics(img1_loc)
 
 ```{r fig.width = 8, fig.show = "hide"}
 img2_loc <- file.path2(tempdir(), "img2.png")
-img2 <- quote_viz(
-        data = params$quote2, text_col = "Response", viz_type = "gt",
-        title = "What went well in today’s session?",
-        width = 40, align = "left"
-      ) %>%
-  gtsave(filename = img2_loc)
+if (nrow(as_tibble(params$quote2)) >= 1) { 
+  img2 <- quote_viz(
+          data = params$quote2, text_col = "Response", viz_type = "gt",
+          title = "What went well in today’s session?",
+          width = 40, align = "left"
+        ) %>%
+    gtsave(filename = img2_loc)
+} else {
+  img2 <- tibble("There were no comments to display here.") %>% 
+    quote_viz(title = "Nothing", width = 40) %>% 
+    gtsave(filename = img2_loc)
+}
 ```
 
 ```{r}
@@ -162,12 +176,18 @@ knitr::include_graphics(img2_loc)
 
 ```{r fig.width = 8, fig.show = "hide"}
 img3_loc <- file.path2(tempdir(), "img3.png")
-img3 <- quote_viz(
-        data = params$quote1, text_col = "Response", viz_type = "gt",
-        title = "What additional feedback do you have about their facilitation skills?",
-        width = 40, align = "left"
-      ) %>%
-  gtsave(filename = img3_loc)
+if (nrow(as_tibble(params$quote3)) >= 1) { 
+  img3 <- quote_viz(
+          data = params$quote1, text_col = "Response", viz_type = "gt",
+          title = "What additional feedback do you have about their facilitation skills?",
+          width = 40, align = "left"
+        ) %>%
+    gtsave(filename = img3_loc)
+} else {
+  img3 <- tibble("There were no comments to display here.") %>% 
+    quote_viz(title = "Nothing", width = 40) %>% 
+    gtsave(filename = img3_loc)
+}
 ```
 
 ```{r}

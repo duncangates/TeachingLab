@@ -1,4 +1,3 @@
-source("R/helpers.R")
 # Making the initial routes to follow
 router <- shiny.router::make_router(
   route("info", info_page),

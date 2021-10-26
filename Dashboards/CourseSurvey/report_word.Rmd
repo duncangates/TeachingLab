@@ -10,7 +10,7 @@ params:
   quote4: NA
   quote5: NA
   subtitle: NA
-subtitle: "`r params$subtitle`"
+subtitle: "Report on `r params$subtitle`"
 output: 
   word_document
 ---

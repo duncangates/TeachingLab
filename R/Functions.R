@@ -498,14 +498,16 @@ score_question <- function(data, question, coding, na_type = "NA") {
       tidyr::drop_na(.data[[question]]) %>%
       dplyr::filter(.data[[question]] != "NULL") %>%
       dplyr::summarise(percent = 100 * (sum(.data[[question]] %in% coding, na.rm = T)/length(which(!is.na(.data[[question]])))),
-                n = length(which(!is.na(.data[[question]])))) %>%
+                n = length(which(!is.na(.data[[question]]))),
+                responses = list(unique(.data[[question]]))) %>%
       dplyr::mutate(question = question,
                     answer = list(coding))
   } else {
     data %>%
       dplyr::filter(.data[[question]] != "NULL") %>%
       dplyr::summarise(percent = 100 * (sum(.data[[question]] %in% coding, na.rm = T)/length(which(!.data[[question]] == na_type))),
-                n = length(which(!.data[[question]] == na_type))) %>%
+                n = length(which(!.data[[question]] == na_type)),
+                responses = list(unique(.data[[question]]))) %>%
       dplyr::mutate(question = question, 
                     answer = list(coding))
   }

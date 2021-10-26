@@ -3,7 +3,7 @@ uiAgree <- function(id, label = "Counter") {
   shiny::tagList(
     shiny.semantic::sidebar_layout(
       sidebar_panel = shiny.semantic::sidebar_panel(
-        style = "position:fixed;width:inherit;",
+        style = "position:fixed;overflow-x:hidden;overflow-y:auto;width:inherit;",
         shiny.semantic::menu_item(
           tabName = "facilitator_menu",
           shiny::selectizeInput(

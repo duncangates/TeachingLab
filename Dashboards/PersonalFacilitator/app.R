@@ -1,10 +1,7 @@
-
-source("R/helpers.R")
-
 router <- shiny.router::make_router(
-  route("info", info_page),
-  route("agree", uiAgree("p1")),
-  route("text", uiText("p2"))
+  shiny.router::route("info", info_page),
+  shiny.router::route("agree", uiAgree("p1")),
+  shiny.router::route("text", uiText("p2"))
 )
 
 
