@@ -115,8 +115,9 @@ uiReport <- function(id, label = "Counter") {
             br(),
             h3("Utilize the filters in the sidebar to download your custom report,"),
             h3(" OR click one of the following buttons to download one of the following most recent sessions found by a unique combination of site and facilitator, and then just click download!"),
-            multiple_radio(ns("recent_sessions"), choices = recent_choices_final$choice, 
-                           label = NULL, selected = NULL),
+            selectizeInput(ns("recent_sessions"), choices = recent_choices_final$choice, 
+                           label = NULL, selected = NULL, multiple = T,
+                           options = list(plugins= list('remove_button'))),
             br(),
             br(),
             br(),
@@ -175,11 +176,11 @@ reportServer <- function(id) {
         # Get previously created choices dataframe for filtering by id
         chosen <- recent_choices %>% 
           inner_join((recent_choices_final %>%
-                      dplyr::filter(choice == input$recent_sessions)), by = "id")
+                      dplyr::filter(choice %in% input$recent_sessions)), by = "id")
       
         session_survey <- session_survey %>%
-          dplyr::filter(`Select your site (district, parish, network, or school).` == chosen$`Select your site (district, parish, network, or school).` &
-                          Facilitator == chosen$Facilitator)
+          dplyr::filter(`Select your site (district, parish, network, or school).` %in% chosen$`Select your site (district, parish, network, or school).` &
+                          Facilitator %in% chosen$Facilitator)
         
       } else {
         session_survey
@@ -476,9 +477,10 @@ reportServer <- function(id) {
                        quote3 = quote_viz_data3(),
                        subtitle = session_survey_recent() %>% 
                          select(Facilitator, `Select your site (district, parish, network, or school).`) %>% 
-                         transmute(course_site = paste0(`Select your site (district, parish, network, or school).`, ", ", Facilitator)) %>%
-                         unique() %>%
-                         as_vector())
+                         transmute(course_fac = paste0(`Select your site (district, parish, network, or school).`, ", ", Facilitator)) %>%
+                         distinct(course_fac) %>%
+                         as_vector() %>%
+                         paste(collapse = ", "))
 
         # Knit the document, passing in the `params` list, and eval it in a
         # child of the global environment (this isolates the code in the document
@@ -516,9 +518,10 @@ reportServer <- function(id) {
                        quote3 = quote_viz_data3(),
                        subtitle = session_survey_recent() %>% 
                          select(Facilitator, `Select your site (district, parish, network, or school).`) %>% 
-                         transmute(course_site = paste0(`Select your site (district, parish, network, or school).`, ", ", Facilitator)) %>%
-                         unique() %>%
-                         as_vector())
+                         transmute(course_fac = paste0(`Select your site (district, parish, network, or school).`, ", ", Facilitator)) %>%
+                         distinct(course_fac) %>%
+                         as_vector() %>%
+                         paste(collapse = ", "))
         
         # Knit the document, passing in the `params` list, and eval it in a
         # child of the global environment (this isolates the code in the document

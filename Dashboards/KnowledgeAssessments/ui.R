@@ -132,7 +132,7 @@ page_navbar(
                            options = list(plugins= list('remove_button'))),
             selectizeInput("site", 
                            label = "Select Sites to Include",
-                           choices = diagnostic_final$your_site_district_parish_network_or_school_br_br %>% unique() %>% sort(),
+                           choices = diagnostic$your_site_district_parish_network_or_school_br_br %>% unique() %>% sort(),
                            multiple = T,
                            options = list(plugins= list('remove_button'))),
             selectizeInput("grade", 
@@ -142,8 +142,8 @@ page_navbar(
                            options = list(plugins= list('remove_button'))),
             dateRangeInput(inputId = "date_range",
                            label = "Select a Date Range",
-                           start = min(diagnostic_final$date_created, na.rm = T),
-                           end = max(diagnostic_final$date_created, na.rm = T)),
+                           start = min(diagnostic$date_created, na.rm = T),
+                           end = max(diagnostic$date_created, na.rm = T)),
             tags$html("*Note that for all of the above filters, the default (no selection) will select all results.")
         ),
         boot_main(

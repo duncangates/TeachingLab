@@ -176,7 +176,10 @@ reportServer <- function(id, in_site) {
     data_plot_ts <- reactive({
       
       validate(
-        need(!is.null(input$site), "Please select at least one site")
+        need(!is.null(input$site), "Please select at least one site"),
+        need(!is.null(input$role), "Please select at least one role"),
+        need(!is.null(input$content), "Please select at least one content area"),
+        need(!is.null(input$course), "Please select at least one course")
       )
       
       data_plot <- course_survey_recent() %>%
@@ -243,8 +246,12 @@ reportServer <- function(id, in_site) {
     data_plot_agree <- reactive({
       
       validate(
-        need(!is.null(input$site), "Please select at least one site")
+        need(!is.null(input$site), "Please select at least one site"),
+        need(!is.null(input$role), "Please select at least one role"),
+        need(!is.null(input$content), "Please select at least one content area"),
+        need(!is.null(input$course), "Please select at least one course")
       )
+      
       agree_plot <- course_survey_recent() %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
         {

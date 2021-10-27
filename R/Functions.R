@@ -32,21 +32,22 @@
 #' @export
 
 theme_tl <- function(base_family = "Calibri",
-                     base_size = 11,
+                     base_size = 14,
                      strip_text_family = base_family,
-                     strip_text_size = 12,
+                     strip_text_size = 15,
                      plot_title_family = "Calibri",
-                     plot_title_size = 18,
+                     plot_title_size = 20,
                      plot_title_margin = 10,
                      subtitle_family = "Roboto",
-                     subtitle_size = 12,
+                     subtitle_size = 15,
                      subtitle_margin = 15,
                      caption_family = "Roboto",
-                     caption_size = 9,
+                     caption_size = 11,
                      caption_margin = 10,
                      axis_title_family = "Calibri",
-                     axis_title_size = 9,
+                     axis_title_size = 12,
                      axis_title_just = "mm",
+                     axis_text_size = 10.5,
                      dark = FALSE,
                      grid = TRUE,
                      axis = FALSE,
@@ -124,15 +125,15 @@ theme_tl <- function(base_family = "Calibri",
   xj <- switch(tolower(substr(axis_title_just, 1, 1)), b = 0, l = 0, m = 0.5, c = 0.5, r = 1, t = 1)
   yj <- switch(tolower(substr(axis_title_just, 2, 2)), b = 0, l = 0, m = 0.5, c = 0.5, r = 1, t = 1)
 
-  ret <- ret + ggplot2::theme(axis.text.x = ggplot2::element_text(color = tick_color, margin = ggplot2::margin(t = 0.8 * base_size / 2)))
-  ret <- ret + ggplot2::theme(axis.text.y = ggplot2::element_text(color = tick_color, margin = ggplot2::margin(r = 0.8 * base_size / 2))) + ggplot2::theme(axis.title = ggplot2::element_text(size = axis_title_size, family = axis_title_family))
+  ret <- ret + ggplot2::theme(axis.text.x = ggplot2::element_text(size = axis_text_size, color = tick_color, margin = ggplot2::margin(t = 0.8 * base_size / 2)))
+  ret <- ret + ggplot2::theme(axis.text.y = ggplot2::element_text(size = axis_text_size, color = tick_color, margin = ggplot2::margin(r = 0.8 * base_size / 2))) + ggplot2::theme(axis.title = ggplot2::element_text(size = axis_title_size, family = axis_title_family))
   ret <- ret + ggplot2::theme(axis.title.x = ggplot2::element_text(hjust = xj, size = axis_title_size, family = axis_title_family))
   ret <- ret + ggplot2::theme(axis.title.y = ggplot2::element_text(hjust = yj, size = axis_title_size, family = axis_title_family))
   ret <- ret + ggplot2::theme(strip.text = ggplot2::element_text(hjust = 0, size = strip_text_size, family = strip_text_family))
 
   if (!markdown) {
-    ret <- ret + ggplot2::theme(axis.text.x = ggplot2::element_text(color = tick_color, margin = ggplot2::margin(t = 0.8 * base_size / 2)))
-    ret <- ret + ggplot2::theme(axis.text.y = ggplot2::element_text(color = tick_color, margin = ggplot2::margin(r = 0.8 * base_size / 2))) + ggplot2::theme(axis.title = ggplot2::element_text(size = axis_title_size, family = axis_title_family))
+    ret <- ret + ggplot2::theme(axis.text.x = ggplot2::element_text(size = axis_text_size, color = tick_color, margin = ggplot2::margin(t = 0.8 * base_size / 2)))
+    ret <- ret + ggplot2::theme(axis.text.y = ggplot2::element_text(size = axis_text_size, color = tick_color, margin = ggplot2::margin(r = 0.8 * base_size / 2))) + ggplot2::theme(axis.title = ggplot2::element_text(size = axis_title_size, family = axis_title_family))
     ret <- ret + ggplot2::theme(axis.title.x = ggplot2::element_text(hjust = xj, size = axis_title_size, family = axis_title_family))
     ret <- ret + ggplot2::theme(axis.title.y = ggplot2::element_text(hjust = yj, size = axis_title_size, family = axis_title_family))
     ret <- ret + ggplot2::theme(strip.text = ggplot2::element_text(hjust = 0, size = strip_text_size, family = strip_text_family))
@@ -141,8 +142,8 @@ theme_tl <- function(base_family = "Calibri",
     ret <- ret + ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0, size = subtitle_size, margin = ggplot2::margin(b = subtitle_margin), family = subtitle_family))
     ret <- ret + ggplot2::theme(plot.caption = ggplot2::element_text(hjust = 1, size = caption_size, margin = ggplot2::margin(t = caption_margin), family = caption_family))
   } else {
-    ret <- ret + ggplot2::theme(axis.text.x = ggtext::element_markdown(color = tick_color, margin = ggplot2::margin(t = 0.8 * base_size / 2)))
-    ret <- ret + ggplot2::theme(axis.text.y = ggtext::element_markdown(color = tick_color, margin = ggplot2::margin(r = 0.8 * base_size / 2))) + ggplot2::theme(axis.title = ggtext::element_markdown(size = axis_title_size, family = axis_title_family))
+    ret <- ret + ggplot2::theme(axis.text.x = ggtext::element_markdown(size = axis_text_size, color = tick_color, margin = ggplot2::margin(t = 0.8 * base_size / 2)))
+    ret <- ret + ggplot2::theme(axis.text.y = ggtext::element_markdown(size = axis_text_size, color = tick_color, margin = ggplot2::margin(r = 0.8 * base_size / 2))) + ggplot2::theme(axis.title = ggtext::element_markdown(size = axis_title_size, family = axis_title_family))
     ret <- ret + ggplot2::theme(axis.title.x = ggtext::element_markdown(hjust = xj, size = axis_title_size, family = axis_title_family))
     ret <- ret + ggplot2::theme(axis.title.y = ggtext::element_markdown(hjust = yj, size = axis_title_size, family = axis_title_family))
     ret <- ret + ggplot2::theme(strip.text = ggtext::element_markdown(hjust = 0, size = strip_text_size, family = strip_text_family))

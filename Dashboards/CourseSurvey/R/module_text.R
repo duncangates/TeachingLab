@@ -390,6 +390,14 @@ textServer <- function(id, in_site) {
         filter(Response %!in% na_df) %>%
         select(Response) %>%
         filter(str_length(Response) > input$quote_length)
+      
+      #### Validate that there is data #### 
+      validate(
+        need(nrow(quote_reactive1) > 0, "There are no observations for this set of filters")
+      )
+      
+      #### Return the data ####
+      quote_reactive1
     })
 
     quote_viz_data2 <- reactive({
@@ -419,6 +427,14 @@ textServer <- function(id, in_site) {
         filter(Response %!in% na_df) %>%
         select(Response) %>%
         filter(str_length(Response) > input$quote_length)
+      
+      #### Validate that there is data #### 
+      validate(
+        need(nrow(quote_reactive2) > 0, "There are no observations for this set of filters")
+      )
+      
+      #### Return the data ####
+      quote_reactive2
     })
 
     quote_viz_data3 <- reactive({
@@ -448,6 +464,14 @@ textServer <- function(id, in_site) {
         filter(Response %!in% na_df) %>%
         select(Response) %>%
         filter(str_length(Response) > input$quote_length)
+      
+      #### Validate that there is data #### 
+      validate(
+        need(nrow(quote_reactive3) > 0, "There are no observations for this set of filters")
+      )
+      
+      #### Return the data ####
+      quote_reactive3
     })
 
     quote_viz_data4 <- reactive({
@@ -477,6 +501,14 @@ textServer <- function(id, in_site) {
         filter(Response %!in% na_df) %>%
         select(Response) %>%
         filter(str_length(Response) > input$quote_length)
+      
+      #### Validate that there is data #### 
+      validate(
+        need(nrow(quote_reactive4) > 0, "There are no observations for this set of filters")
+      )
+      
+      #### Return the data ####
+      quote_reactive4
     })
 
     quote_viz_data5 <- reactive({
@@ -506,6 +538,14 @@ textServer <- function(id, in_site) {
         filter(Response %!in% na_df) %>%
         select(Response) %>%
         filter(str_length(Response) > input$quote_length)
+      
+      #### Validate that there is data #### 
+      validate(
+        need(nrow(quote_reactive5) > 0, "There are no observations for this set of filters")
+      )
+      
+      #### Return the data ####
+      quote_reactive5
     })
     
     quote1 <- reactiveValues(table1 = NULL)

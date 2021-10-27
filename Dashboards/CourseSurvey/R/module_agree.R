@@ -166,7 +166,10 @@ agreeServer <- function(id, in_site) {
     data_plot_ts <- reactive({
       
       validate(
-        need(!is.null(input$site), "Please select at least one site")
+        need(!is.null(input$site), "Please select at least one site"),
+        need(!is.null(input$role), "Please select at least one role"),
+        need(!is.null(input$content), "Please select at least one content area"),
+        need(!is.null(input$course), "Please select at least one course")
       )
       
       data_plot <- course_survey %>%
@@ -226,9 +229,14 @@ agreeServer <- function(id, in_site) {
         summarise(Percent = round(sum(Percent), 2),
                   date_created = date_created)
       
-      # validate(
-      #   need(nrow(data_plot) > 0, "There are no observations for this set of filters")
-      # )
+      #### Validate that there is data #### 
+      validate(
+        need(nrow(data_plot) > 0, "There are no observations for this set of filters")
+      )
+      
+      #### Return the data ####
+      data_plot
+      
     })
     
     # Ggplot for time series plot
@@ -278,7 +286,10 @@ agreeServer <- function(id, in_site) {
     data_plot_agree <- reactive({
       
       validate(
-        need(!is.null(input$site), "Please select at least one site")
+        need(!is.null(input$site), "Please select at least one site"),
+        need(!is.null(input$role), "Please select at least one role"),
+        need(!is.null(input$content), "Please select at least one content area"),
+        need(!is.null(input$course), "Please select at least one course")
       )
       agree_plot <- course_survey %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
@@ -322,10 +333,12 @@ agreeServer <- function(id, in_site) {
           Percent = n / sum(n) * 100
         )
       
-      # validate(
-      #   need(nrow(agree_plot) > 0, "There are no observations for this set of filters.")
-      # )
+      #### Validate that there is data #### 
+      validate(
+        need(nrow(agree_plot) > 0, "There are no observations for this set of filters")
+      )
       
+      #### Return the data ####
       agree_plot
     })
 
@@ -440,28 +453,6 @@ agreeServer <- function(id, in_site) {
           downloadGraph()
         }
       }
-    )
-    
-    # observeEvent(
-    #   session$userData$settings$in_site(), 
-    #   {
-    #     if (!is.na(session$userData$settings$in_site())) 
-    #       updateSelectizeInput(
-    #         session, 
-    #         "site", 
-    #         selected=session$userData$settings$in_site()
-    #       )
-    #   }
-    # )
-    
-    return(
-      list(
-        in_site <- reactive({input$site}),
-        in_course <- reactive({input$course}),
-        in_role <- reactive({input$role}),
-        in_date_slider <- reactive({input$date_slider}),
-        in_content <- reactive({input$content})
-      )
     )
     
     

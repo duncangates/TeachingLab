@@ -164,10 +164,12 @@ npsServer <- function(id, in_site) {
         ungroup() %>%
         mutate(Percent = round(100 * n / sum(n)))
       
+      #### Validate that there is data ####
       validate(
         need(nrow(reactive_nps) > 0, "There are no observations for this set of filters.")
       )
-
+      
+      #### Return the data ####
       reactive_nps
     })
 
@@ -234,10 +236,11 @@ npsServer <- function(id, in_site) {
           y = nps
         )
       
+      #### Validate that there is data ####
       validate(
         need(nrow(sum) > 0, "There are no observations for this set of filters.")
       )
-      
+      #### Return the data ####
       sum
     })
 
