@@ -5,7 +5,7 @@ Images/
 PDF/
 HTML/
 Data/
-!Data/course_survey2021data.rds
+!*Data/course_survey2021data.rds
 email_creds_staffing
 Data-Clean/
 .Rhistory
