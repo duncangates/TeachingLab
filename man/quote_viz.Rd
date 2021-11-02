@@ -6,7 +6,7 @@
 \usage{
 quote_viz(
   data,
-  text_col,
+  text_col = colnames(data)[1],
   extra_cols = NULL,
   viz_type = "gt",
   custom_highlight = F,

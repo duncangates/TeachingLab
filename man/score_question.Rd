@@ -4,7 +4,7 @@
 \alias{score_question}
 \title{Calculate percentage of a question (column) in data (data) that is in the right answer (coding)}
 \usage{
-score_question(data, question, coding, na_type = "NA")
+score_question(data, question, coding, grouping, na_type = "NA")
 }
 \arguments{
 \item{data}{the dataframe to be analyzed}
@@ -12,6 +12,8 @@ score_question(data, question, coding, na_type = "NA")
 \item{question}{the column to be selected}
 
 \item{coding}{the coding to check for}
+
+\item{grouping}{a variable to group_by}
 
 \item{na_type}{the form that NA takes - could be "No Response" as in the Participant Feedback dashboard, or any other form of "NA"}
 }

@@ -49,7 +49,7 @@ shinyServer(function(input, output) {
                            color = "#75AADB", fill = "#75AADB") +
             labs(x = "Waiting time to next eruption (in mins)",
                  title = "Histogram of waiting times") + 
-            theme_tl()
+            TeachingLab::theme_tl()
         
     })
     
@@ -60,7 +60,7 @@ shinyServer(function(input, output) {
                            color = "#75AADB", fill = "#75AADB") +
             labs(x = "Waiting time to next eruption (in mins)",
                  title = "Histogram of waiting times") + 
-            theme_tl()
+            TeachingLab::theme_tl()
     })
 
 })

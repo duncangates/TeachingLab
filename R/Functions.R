@@ -488,16 +488,18 @@ calc_nps <- function(x) {
 #' @param data the dataframe to be analyzed
 #' @param question the column to be selected
 #' @param coding the coding to check for
+#' @param grouping a variable to group_by
 #' @param na_type the form that NA takes - could be "No Response" as in the Participant Feedback dashboard, or any other form of "NA"
 #' @return Returns a dataframe with the percent, correct, number of non-na responses, and question itself
 #' @export
 #' 
-score_question <- function(data, question, coding, na_type = "NA") {
+score_question <- function(data, question, coding, grouping = "None", na_type = "NA") {
   
   if (na_type == "NA") {
     data %>%
       tidyr::drop_na(.data[[question]]) %>%
       dplyr::filter(.data[[question]] != "NULL") %>%
+      dplyr::group_by(.data[[grouping]]) %>%
       dplyr::summarise(percent = 100 * (sum(.data[[question]] %in% coding, na.rm = T)/length(which(!is.na(.data[[question]])))),
                 n = length(which(!is.na(.data[[question]]))),
                 responses = list(unique(.data[[question]]))) %>%
@@ -505,7 +507,8 @@ score_question <- function(data, question, coding, na_type = "NA") {
                     answer = list(coding))
   } else {
     data %>%
-      dplyr::filter(.data[[question]] != "NULL") %>%
+      dplyr::filter(.data[[question]] != "NULL" & .data[[question]] != na_type) %>%
+      dplyr::group_by(.data[[grouping]]) %>%
       dplyr::summarise(percent = 100 * (sum(.data[[question]] %in% coding, na.rm = T)/length(which(!.data[[question]] == na_type))),
                 n = length(which(!.data[[question]] == na_type)),
                 responses = list(unique(.data[[question]]))) %>%

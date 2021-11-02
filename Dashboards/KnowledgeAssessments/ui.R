@@ -111,9 +111,9 @@ body {
 page_navbar(
 
     # Application title and background color
-    title = tags$b("Diagnostic Survey Dashboard", style = "padding-left:20px;"),
+    title = tags$b("Knowledge Assessment Dashboard", style = "padding-left:20px;"),
     # Window title
-    window_title = "Diagnostic Survey",
+    window_title = "Knowledge Assessment Survey",
     # Theme settings
     theme = bslib::bs_theme(base_font = c("Calibri", "sans-serif"), primary = "#04abeb") %>%
         bslib::bs_add_rules(css_def),
@@ -125,19 +125,9 @@ page_navbar(
                        min = 1,
                        max = 50,
                        value = 30),
-            selectizeInput("comparison", 
-                           label = "Select a basis of Comparison",
-                           choices = c("Lab Leader", "Race", "Role (Teacher, etc.)", "Subject Area (Math/ELA)"),
-                           multiple = T,
-                           options = list(plugins= list('remove_button'))),
             selectizeInput("site", 
                            label = "Select Sites to Include",
                            choices = diagnostic$your_site_district_parish_network_or_school_br_br %>% unique() %>% sort(),
-                           multiple = T,
-                           options = list(plugins= list('remove_button'))),
-            selectizeInput("grade", 
-                           label = "Select Grades to Include",
-                           choices = c("K", 1:12),
                            multiple = T,
                            options = list(plugins= list('remove_button'))),
             dateRangeInput(inputId = "date_range",
@@ -162,10 +152,12 @@ page_navbar(
     nav_menu(
         "Other links", align = "right",
         nav_item(
-            tags$a(icon("bar-chart-o"), "Session Survey Dashboard", href = "https://teachinglabhq.shinyapps.io/SessionSurvey/", target = "_blank")
+            tags$a(icon("bar-chart-o"), "Session Survey Dashboard", href = "https://teachinglabhq.shinyapps.io/SessionSurvey/", target = "_blank"),
+            align = "left"
         ),
         nav_item(
-            tags$a(icon("table"), "Course Survey Dashboard", href = "https://teachinglabhq.shinyapps.io/CourseSurvey/", target = "_blank")
+            tags$a(icon("table"), "Course Survey Dashboard", href = "https://teachinglabhq.shinyapps.io/CourseSurvey/", target = "_blank"),
+            align = "left"
         )
     ),
     

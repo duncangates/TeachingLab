@@ -30,6 +30,6 @@ Imports:
     scales,
     rlang,
     grid
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Depends: 
     R (>= 2.10)
