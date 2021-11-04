@@ -493,13 +493,13 @@ calc_nps <- function(x) {
 #' @return Returns a dataframe with the percent, correct, number of non-na responses, and question itself
 #' @export
 #' 
-score_question <- function(data, question, coding, grouping = "None", na_type = "NA") {
+score_question <- function(data, question, coding, grouping, na_type = "NA") {
   
   if (na_type == "NA") {
     data %>%
       tidyr::drop_na(.data[[question]]) %>%
       dplyr::filter(.data[[question]] != "NULL") %>%
-      dplyr::group_by(.data[[grouping]]) %>%
+      dplyr::group_by(!!rlang::ensym(grouping)) %>%
       dplyr::summarise(percent = 100 * (sum(.data[[question]] %in% coding, na.rm = T)/length(which(!is.na(.data[[question]])))),
                 n = length(which(!is.na(.data[[question]]))),
                 responses = list(unique(.data[[question]]))) %>%
@@ -508,7 +508,7 @@ score_question <- function(data, question, coding, grouping = "None", na_type = 
   } else {
     data %>%
       dplyr::filter(.data[[question]] != "NULL" & .data[[question]] != na_type) %>%
-      dplyr::group_by(.data[[grouping]]) %>%
+      dplyr::group_by(!!rlang::ensym(grouping)) %>%
       dplyr::summarise(percent = 100 * (sum(.data[[question]] %in% coding, na.rm = T)/length(which(!.data[[question]] == na_type))),
                 n = length(which(!.data[[question]] == na_type)),
                 responses = list(unique(.data[[question]]))) %>%
@@ -1096,7 +1096,9 @@ tl_wordcloud <- function(data, text_col, colors = c("blue", "orange"), n_min = 2
 #' @export
 
 html_wrap <- function(string, n = 40) {
-  stringr::str_replace_all(stringr::str_wrap(string = string, width = n), "\n", "<br>")
+  stringr::str_replace_all(
+    stringr::str_wrap(string = string, width = n), 
+    "\n", "<br>")
 }
 
 
@@ -1153,6 +1155,18 @@ percent_agree <- function(agree_col) {
     sum(!is.na(agree_col))
 }
 
+#' @title Coalesce everything
+#' @description Takes all columns and splices them into dots for combination
+#' @param df the dataframe
+#' @return the dataframe coalesced
+#' @example df %>%
+#' group_by(A) %>%
+#' summarise_all(coalesce_by_column)
+#' @export
+
+coalesce_by_column <- function(df) {
+  return(dplyr::coalesce(!!! as.list(df)))
+}
 
 
 

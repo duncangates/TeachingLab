@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(surveymonkey)
 library(TeachingLab)
-devtools::load_all()
+library(ggtext)
 #### Reminder to go back to Survey 14 ####
 ```
 
@@ -64,14 +64,27 @@ purrr::map2(.x = ids_surveys$id, .y = ids_surveys$count, ~ fetch_survey_2(id = .
 
 ```{r eval = F}
 #### Survey 1: ELA General Bootcamp ####
-# ela_general_bootcamp <- readr::read_rds(here::here("Dashboards/KnowledgeAssessments/data/ELABootcamp-General.rds"))
-ela_general_bootcamp <- readr::read_rds("data/ELABootcamp-General.rds")
+ela_general_bootcamp <- readr::read_rds(here::here("Dashboards/KnowledgeAssessments/data/ELABootcamp-General.rds")) %>%
+  group_by(respondent_id) %>%
+  summarise_all(coalesce_by_column) %>%
+  mutate(id = paste0(str_to_lower(`Please write in your 3 initials. If you do not have a middle initial, please write X.<br>(This is used to link pre/post assessments, but is kept confidential.)`), `Please write in your four-digit birthday (MMDD).<br>(This is used to pre/post link assessments, but is kept confidential.)`)) %>%
+  group_by(id) %>%
+  mutate(n_response = n(),
+         maxdate = max(date_created),
+         prepost = if_else(n_response > 1 & maxdate == date_created, "post", "pre"))
+# ela_general_bootcamp <- readr::read_rds("data/ELABootcamp-General.rds")
 
 ela_general_bootcamp_correct <- tibble::tibble(question = c("Which of the following are literacy instructional shifts? Select all that apply. - Regular practice with complex texts and their academic language.", 
                                                             "Which of the following are literacy instructional shifts? Select all that apply. - Building knowledge through content-rich non-fiction.", 
                                                             "Which of the following are literacy instructional shifts? Select all that apply. - Equal balance of text-based writing and writing from personal experiences.", 
                                                             "Which of the following are literacy instructional shifts? Select all that apply. - Regular opportunities for direct instruction on reading comprehension strategies.", 
                                                             "When designing literacy lessons, teachers should start with which of the following?", 
+                                                            "When designing literacy lessons, teachers should start with which of the following?", 
+                                                            "When designing literacy lessons, teachers should start with which of the following?", 
+                                                            "When designing literacy lessons, teachers should start with which of the following?", 
+                                                            "Which of the following is the single biggest differentiator of college and career-readiness?", 
+                                                            "Which of the following is the single biggest differentiator of college and career-readiness?", 
+                                                            "Which of the following is the single biggest differentiator of college and career-readiness?", 
                                                             "Which of the following is the single biggest differentiator of college and career-readiness?", 
                                                             "Which of the following approaches for selecting texts for whole-class reading instruction are aligned with post-shifts literacy instruction? Select all that apply. - Selecting a text that is at or above the grade-level complexity.", 
                                                             "Which of the following approaches for selecting texts for whole-class reading instruction are aligned with post-shifts literacy instruction? Select all that apply. - Selecting a text that is rich in meaning.", 
@@ -83,36 +96,69 @@ ela_general_bootcamp_correct <- tibble::tibble(question = c("Which of the follow
                                                             "Which of the following describe strategies for supporting struggling readers? Select all that apply. - Ask simpler questions about the same text."),
                                                   coding = c("Regular practice with complex texts and their academic language.",
                                                              "Building knowledge through content-rich non-fiction.", 
-                                                             "incorrect",
-                                                             "incorrect",
+                                                             "Equal balance of text-based writing and writing from personal experiences.",
+                                                             "Regular opportunities for direct instruction on reading comprehension strategies.",
                                                              "A complex text that is worthy of reading multiple times.",
+                                                             "A strategy they want students to implement (main idea, predicting, etc.).",
+                                                             "A standard (identify author’s purpose).",
+                                                             "I’m not sure.",
+                                                             "Ability to read fluently and accurately.",
+                                                             "Ability to read and write at grade-level independently.",
                                                              "Ability to read complex text independently and proficiently.",
+                                                             "I’m not sure.",
                                                              "Selecting a text that is at or above the grade-level complexity.",
                                                              "Selecting a text that is rich in meaning.",
-                                                             "incorrect",
-                                                             "incorrect",
+                                                             "Selecting an adapted version of the main text for below-grade-level readers.",
+                                                             "Selecting a text for the class based on student interest.",
                                                              "Read the complex text aloud for students.",
                                                              "Read aloud a simple article to build knowledge of the topic while students follow along.",
-                                                             "incorrect",
-                                                             "incorrect"))
+                                                             "Have students read the full text multiple times to find the main idea.",
+                                                             "Ask simpler questions about the same text."))
 ela_general_bootcamp_percent <- purrr::map2_df(ela_general_bootcamp_correct$question, 
                                         ela_general_bootcamp_correct$coding, ~ TeachingLab::score_question(data = ela_general_bootcamp, 
                                                                                               question = .x,
                                                                                               coding = .y,
-                                                                                              grouping = "Please select your site (district, parish, network, or school)"))
+                                                                                              grouping = `Please select your site (district, parish, network, or school)`))
 ```
 
 # Plot Template
 
 ```{r}
-library(ggtext)
-ela_general_bootcamp_percent %>%
-  mutate(question = TeachingLab::html_wrap(str_remove_all(str_remove_all(question, ".*(?=\\s-\\s)| - "), " - "), n = 30)) %>%
-  ggplot(aes(question, percent)) +
-  geom_col() +
+correct <- c("Regular practice with complex texts and their academic language.",
+             "Building knowledge through content-rich non-fiction.",
+             "A complex text that is worthy of reading multiple times.",
+             "Ability to read complex text independently and proficiently.",
+             "Selecting a text that is at or above the grade-level complexity.",
+             "Selecting a text that is rich in meaning.",
+             "Read the complex text aloud for students.",
+             "Read aloud a simple article to build knowledge of the topic while students follow along.")
+ela_general_plot <- ela_general_bootcamp_percent %>%
+  mutate(question = str_remove_all(str_remove_all(question, "(?<=\\s-\\s).*| - "), " - ")) %>%
+  group_by(question, `Please select your site (district, parish, network, or school)`) %>%
+  summarise(percent = if_else(percent == 100, 100*(n/max(n)), percent),
+            answer = unlist(answer))
+
+ela_general_plot %>%
+  mutate(answer = TeachingLab::html_wrap(answer, n = 30),
+         answer = if_else(str_replace_all(answer, "<br>", " ") %in% correct, 
+                          paste0("<b style='color:#04abeb'>", answer, "</b>"), 
+                          answer),
+         question = TeachingLab::html_wrap(question, n = 30)) %>%
+  filter(`Please select your site (district, parish, network, or school)` == "NYC District 11 -  IS 326, NY") %>%
+  ggplot(aes(fct_reorder(answer, percent), percent, fill = percent)) +
+  geom_col(width = 0.25) +
+  geom_text(aes(label = paste0(round(percent), "%")), hjust = -0.2) +
+  facet_wrap( ~ question, scales = "free") +
   coord_flip() +
+  scale_fill_continuous() +
+  labs(x = "", y = "", caption = "*Correct answers are in bold",
+       title = "% Answering Each Item in ELA Bootcamp General") +
+  scale_y_continuous(labels = scales::label_percent(scale = 1), expand = c(0.14, 0)) +
   theme_tl() +
-  theme(axis.text.y = element_markdown())
+  theme(axis.text.y = element_markdown(),
+        strip.text = element_markdown(hjust = 0.5, face = "bold"),
+        plot.title = element_text(face = "bold"))
+ggsave(here::here("Images/KnowledgeAssessments/example1.png"), width = 15, height = 10)
 ```
 
 

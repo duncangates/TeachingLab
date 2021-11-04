@@ -56,7 +56,7 @@ shinyServer(function(input, output) {
     output$distPlot2 <- renderPlot({
         x <- as_tibble(faithful$waiting)
         ggplot(x, aes(value)) +
-            geom_histogram(bins = input$bins+1,
+        geom_histogram(bins = input$bins+1,
                            color = "#75AADB", fill = "#75AADB") +
             labs(x = "Waiting time to next eruption (in mins)",
                  title = "Histogram of waiting times") + 

@@ -38,72 +38,7 @@ boot_main <- function(...) {
 
 # css ---------------------------------------------------------------------
 
-css_def <- "
-body {
-  overflow-x: hidden;
-}
-
-.container-fluid, .container-sm, .container-md, .container-lg, .container-xl {
-    padding-left: 0px;
-}
-
-.sidebar-wrapper {
-  min-height: 100vh;
-  margin-left: -15rem;
-  padding-left: 15px;
-  padding-right: 15px;
-  -webkit-transition: margin .25s ease-out;
-  -moz-transition: margin .25s ease-out;
-  -o-transition: margin .25s ease-out;
-  transition: margin .25s ease-out;
-}
-
-
-.sidebar-wrapper .list-group {
-  width: 15rem;
-}
-
-.page-content-wrapper {
-  min-width: 100vw;
-  padding: 20px;
-}
-
-.wrapper.toggled .sidebar-wrapper {
-  margin-left: 0;
-}
-
-.sidebar-wrapper, .page-content-wrapper {
-  padding-top: 20px;
-}
-
-.navbar{
-  margin-bottom: 0px;
-}
-
-@media (max-width: 768px) {
-  .sidebar-wrapper {
-    padding-right: 0px;
-    padding-left: 0px;
-
-  }
-}
-
-@media (min-width: 768px) {
-  .sidebar-wrapper {
-    margin-left: 0;
-  }
-
-  .page-content-wrapper {
-    min-width: 0;
-    width: 100%;
-  }
-
-  .wrapper.toggled .sidebar-wrapper {
-    margin-left: -15rem;
-  }
-}
-
-"
+css_def <- sass::sass_file("www/styles.scss")
 
 #### All taken from https://github.com/rstudio/bslib/issues/76 ####
 
@@ -118,7 +53,7 @@ page_navbar(
     theme = bslib::bs_theme(base_font = c("Calibri", "sans-serif"), primary = "#04abeb") %>%
         bslib::bs_add_rules(css_def),
 
-    nav("% Correct", boot_side_layout(
+    nav("% Correct", icon = icon("check-circle"), boot_side_layout(
         boot_sidebar(
             sliderInput(inputId = "bins",
                        label = "Number of bins:",
@@ -144,7 +79,7 @@ page_navbar(
             )
         )
     )),
-    nav("Summary Statistics", plotOutput("diagnostic_correct")),
+    nav("Summary Statistics", icon = icon("icicles"), plotOutput("diagnostic_correct")),
     nav_item(
         tags$a(icon("youtube"), "Tutorial", href = "https://youtube.com", target = "_blank")
     ),
@@ -152,7 +87,7 @@ page_navbar(
     nav_menu(
         "Other links", align = "right",
         nav_item(
-            tags$a(icon("bar-chart-o"), "Session Survey Dashboard", href = "https://teachinglabhq.shinyapps.io/SessionSurvey/", target = "_blank"),
+            tags$a(icon("chart-bar"), "Session Survey Dashboard", href = "https://teachinglabhq.shinyapps.io/SessionSurvey/", target = "_blank"),
             align = "left"
         ),
         nav_item(
