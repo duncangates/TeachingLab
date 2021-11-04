@@ -1159,9 +1159,9 @@ percent_agree <- function(agree_col) {
 #' @description Takes all columns and splices them into dots for combination
 #' @param df the dataframe
 #' @return the dataframe coalesced
-#' @example df %>%
-#' group_by(A) %>%
-#' summarise_all(coalesce_by_column)
+#' @examples df %>%
+#'    group_by(A) %>%
+#'    summarise_all(coalesce_by_column)
 #' @export
 
 coalesce_by_column <- function(df) {
