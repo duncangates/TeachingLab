@@ -495,11 +495,18 @@ calc_nps <- function(x) {
 #' 
 score_question <- function(data, question, coding, grouping, na_type = "NA") {
   
+  groups <- as.list(rlang::enexpr(grouping))
+  groups <- if (length(groups) > 1) {
+    groups[-1]
+  } else {
+    groups
+  }
+  
   if (na_type == "NA") {
     data %>%
       tidyr::drop_na(.data[[question]]) %>%
       dplyr::filter(.data[[question]] != "NULL") %>%
-      dplyr::group_by(!!rlang::ensym(grouping)) %>%
+      dplyr::group_by(!!!groups) %>%
       dplyr::summarise(percent = 100 * (sum(.data[[question]] %in% coding, na.rm = T)/length(which(!is.na(.data[[question]])))),
                 n = length(which(!is.na(.data[[question]]))),
                 responses = list(unique(.data[[question]]))) %>%
@@ -508,7 +515,7 @@ score_question <- function(data, question, coding, grouping, na_type = "NA") {
   } else {
     data %>%
       dplyr::filter(.data[[question]] != "NULL" & .data[[question]] != na_type) %>%
-      dplyr::group_by(!!rlang::ensym(grouping)) %>%
+      dplyr::group_by(!!!groups) %>%
       dplyr::summarise(percent = 100 * (sum(.data[[question]] %in% coding, na.rm = T)/length(which(!.data[[question]] == na_type))),
                 n = length(which(!.data[[question]] == na_type)),
                 responses = list(unique(.data[[question]]))) %>%
@@ -1169,4 +1176,71 @@ coalesce_by_column <- function(df) {
 }
 
 
+#' @title Coalesce everything
+#' @description A function to use on already loaded data
+#' @param data the dataframe to be evaluated
+#' @param q_and_a a dataframe of questions and answers
+#' @param correct the correct answers
+#' @param save_name a folder for the plot ready data to be saved
+#' @return a plot ready dataframe
+#' @examples save_processed_data(data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELABootcamp-FoundationalSkillsBootcampSkills(K-2).rds"),
+#' q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_foundational_skills.rds"),
+#' correct = c("Print concepts",
+#'            "Phonological awareness",
+#'            "Fluency",
+#'            "It prompts students to use context clues and pictures to decode words",
+#'            "Utilize a variety of ongoing assessment data to determine the focus of instruction for small groups",
+#'            "Group students by their ongoing phase of development with regard to the foundational skills"),
+#' save_name = "ela_foundational_skills")
+#' @export
+#' 
+save_processed_data <- function(data, q_and_a, correct, save_name) {
+  #### Input Survey ####
+  data_with_id <- readr::read_rds(data) %>%
+    dplyr::group_by(respondent_id) %>% # By respondent id reduce to one row per respondent
+    dplyr::summarise_all(TeachingLab::coalesce_by_column) %>% # Same as above
+    dplyr::rename_at(dplyr::vars(tidyselect::matches("3 initials")), ~ paste0("initials")) %>% # rename initials 
+    dplyr::rename_at(dplyr::vars(tidyselect::matches("birthday")), ~ paste0("birthday")) %>% # rename birthday for next mutate
+    dplyr::rename_at(dplyr::vars(tidyselect::matches("school\\)\\.$|school\\)$")), ~ paste0("site")) %>% # rename site, but not site (other)
+    dplyr::mutate(id = paste0(str_to_lower(initials), birthday)) %>% # Create id by concatenating lowercase initials and bday
+    dplyr::group_by(id) %>%
+    dplyr::mutate(n_response = n(), # Get number of responses by person, sometimes there are more than 2 :/
+           maxdate = max(date_created), # Get max date of creation for most recent response
+           prepost = dplyr::if_else(n_response > 1 & maxdate == date_created, "post", "pre")) %>% # Define as post if more than 1 response and date is max of date_created
+    dplyr::mutate(prepost = factor(prepost, levels = c("pre", "post"))) # Make prepost a factor
+  
+  data_for_grading <- readr::read_rds(q_and_a) # Read in q_and_a dataframe
+  
+  # Calculate percent saying each with score_question
+  data_percents <- purrr::map2_df(data_for_grading$question,
+                                  data_for_grading$answer, ~ 
+                                    TeachingLab::score_question(data = data_with_id, 
+                                                                question = .x,
+                                                                coding = .y,
+                                                                grouping = c(site, prepost)))
+  # Remove extra parts of questions, highlight answers that are correct, add <br> for plotting
+  data_plot <- data_percents %>%
+    dplyr::mutate(question = stringr::str_remove_all(stringr::str_remove_all(question, "(?<=\\s-\\s).*| - "), " - ")) %>%
+    dplyr::group_by(question, site, prepost) %>%
+    dplyr::summarise(percent = if_else(percent == 100, 100*(n/max(n)), percent),
+              answer = unlist(answer)) %>%
+    dplyr::mutate(answer = TeachingLab::html_wrap(answer, n = 30),
+           answer = dplyr::if_else(stringr::str_replace_all(answer, "<br>", " ") %in% correct, 
+                            paste0("<b style='color:#04abeb'>", answer, "</b>"), 
+                            answer),
+           question = TeachingLab::html_wrap(question, n = 30))
+  
+  print(data_plot)
+  
+  readr::write_rds(data_plot, here::here(glue::glue("Dashboards/KnowledgeAssessments/data/processed/{save_name}.rds")))
+}
+
+#' @title Remove HTML
+#' @description Takes a string and removes html using rvest
+#' @param string a string
+#' @return a string without the html
+#' @export
+strip_html <- function(string) {
+  rvest::html_text(rvest::read_html(string))
+}
 

@@ -42,25 +42,77 @@ shinyServer(function(input, output) {
             TeachingLab::theme_tl()
     })
     
-    output$distPlot <- renderPlot({
-        x <- as_tibble(faithful$waiting)
-        ggplot(x, aes(value)) +
-            geom_histogram(bins = input$bins+1,
-                           color = "#75AADB", fill = "#75AADB") +
-            labs(x = "Waiting time to next eruption (in mins)",
-                 title = "Histogram of waiting times") + 
-            TeachingLab::theme_tl()
+    
+    
+    #### Site Filter Conditional On Knowledge Assessments ####
+    output$site_ui <- renderUI({
+        # Wait for knowledge assessment selection
+        req(!is.null(input$know_assessment))
+        # Store which dataframe is selected
+        know_site <- input$know_assessment
+        
+        selectizeInput("site", 
+                       label = "Select Sites to Include",
+                       choices = readr::read_rds(paste0("data/processed/", input$know_assessment)) %>% 
+                           pull(site) %>% 
+                           unique() %>% 
+                           sort(),
+                       multiple = T,
+                       options = list(plugins= list('remove_button')))
+    })
+    
+    #### Data Reactives ####
+    know_data <- reactive({
+        # Wait for knowledge assessment selection
+        req(input$know_assessment, input$site)
+        # Filter data for site
+        df <- readr::read_rds(paste0("data/processed/", input$know_assessment)) %>%
+            dplyr::filter(site %in% input$site) %>%
+            dplyr::group_by(site) %>%
+            dplyr::mutate(percent = mean(percent, na.rm = T))
+        print(df)
+    })
+    
+    #### Matched Data Plot ####
+    output$plot_matched <- renderPlot({
+        know_data() %>%
+            ggplot(aes(fct_reorder(answer, percent), percent, fill = prepost, group = prepost)) +
+            geom_col(position = position_dodge2(preserve = "single", reverse = T)) +
+            geom_text(aes(label = paste0(round(percent), "%")), hjust = -0.2, position = position_dodge2(width = 0.9, reverse = T)) +
+            facet_wrap( ~ question, scales = "free") +
+            coord_flip() +
+            scale_fill_manual(values = c("pre" = "#040404", "post" = "#00ACF0"), labels = c("Pre", "Post")) +
+            labs(x = "", y = "",
+                 title = "% Answering Each Item in ELA Bootcamp General",
+                 fill = "") +
+            scale_y_continuous(labels = scales::label_percent(scale = 1), expand = c(0.14, 0)) +
+            # theme_tl(legend = T, markdown = T) +
+            theme_bw() +
+            theme(axis.text.y = element_markdown(family = "Calibri"),
+                  strip.text = element_markdown(hjust = 0.5, face = "bold", family = "Calibri"),
+                  plot.title = element_text(face = "bold", family = "Calibri"),
+                  legend.position = c(0.9, 0.2))
         
     })
     
-    output$distPlot2 <- renderPlot({
-        x <- as_tibble(faithful$waiting)
-        ggplot(x, aes(value)) +
-        geom_histogram(bins = input$bins+1,
-                           color = "#75AADB", fill = "#75AADB") +
-            labs(x = "Waiting time to next eruption (in mins)",
-                 title = "Histogram of waiting times") + 
-            TeachingLab::theme_tl()
+    #### Unmatched Data Plot ####
+    output$plot_unmatched <- renderPlot({
+        know_data() %>%
+            ggplot(aes(fct_reorder(answer, percent), percent, fill = prepost, group = prepost)) +
+            geom_col(position = position_dodge2(preserve = "single", reverse = T)) +
+            geom_text(aes(label = paste0(round(percent), "%")), hjust = -0.2, position = position_dodge2(width = 0.9, reverse = T)) +
+            facet_wrap( ~ question, scales = "free") +
+            coord_flip() +
+            scale_fill_manual(values = c("pre" = "#040404", "post" = "#00ACF0"), labels = c("Pre", "Post")) +
+            labs(x = "", y = "", caption = "*Correct answers are colored blue and in bold",
+                 title = "% Answering Each Item in ELA Bootcamp General",
+                 fill = "") +
+            scale_y_continuous(labels = scales::label_percent(scale = 1), expand = c(0.14, 0)) +
+            # theme_tl() +
+            theme(axis.text.y = element_markdown(),
+                  strip.text = element_markdown(hjust = 0.5, face = "bold"),
+                  plot.title = element_text(face = "bold"),
+                  legend.position = c(0.9, 0.2))
     })
 
 })

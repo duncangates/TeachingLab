@@ -60,18 +60,20 @@ fetch_survey_2 <- function(id, name) {
 purrr::map2(.x = ids_surveys$id, .y = ids_surveys$count, ~ fetch_survey_2(id = .x, name = .y))
 ```
 
+
 ## ELA
 
 ```{r eval = F}
 #### Survey 1: ELA General Bootcamp ####
-ela_general_bootcamp <- readr::read_rds(here::here("Dashboards/KnowledgeAssessments/data/ELABootcamp-General.rds")) %>%
+ela_general_bootcamp <- readr::read_rds(here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELABootcamp-General.rds")) %>%
   group_by(respondent_id) %>%
   summarise_all(coalesce_by_column) %>%
   mutate(id = paste0(str_to_lower(`Please write in your 3 initials. If you do not have a middle initial, please write X.<br>(This is used to link pre/post assessments, but is kept confidential.)`), `Please write in your four-digit birthday (MMDD).<br>(This is used to pre/post link assessments, but is kept confidential.)`)) %>%
   group_by(id) %>%
   mutate(n_response = n(),
          maxdate = max(date_created),
-         prepost = if_else(n_response > 1 & maxdate == date_created, "post", "pre"))
+         prepost = if_else(n_response > 1 & maxdate == date_created, "post", "pre")) %>%
+  mutate(prepost = factor(prepost, levels = c("pre", "post")))
 # ela_general_bootcamp <- readr::read_rds("data/ELABootcamp-General.rds")
 
 ela_general_bootcamp_correct <- tibble::tibble(question = c("Which of the following are literacy instructional shifts? Select all that apply. - Regular practice with complex texts and their academic language.", 
@@ -118,7 +120,7 @@ ela_general_bootcamp_percent <- purrr::map2_df(ela_general_bootcamp_correct$ques
                                         ela_general_bootcamp_correct$coding, ~ TeachingLab::score_question(data = ela_general_bootcamp, 
                                                                                               question = .x,
                                                                                               coding = .y,
-                                                                                              grouping = `Please select your site (district, parish, network, or school)`))
+                                                                                              grouping = c(`Please select your site (district, parish, network, or school)`, prepost)))
 ```
 
 # Plot Template
@@ -134,39 +136,44 @@ correct <- c("Regular practice with complex texts and their academic language.",
              "Read aloud a simple article to build knowledge of the topic while students follow along.")
 ela_general_plot <- ela_general_bootcamp_percent %>%
   mutate(question = str_remove_all(str_remove_all(question, "(?<=\\s-\\s).*| - "), " - ")) %>%
-  group_by(question, `Please select your site (district, parish, network, or school)`) %>%
+  group_by(question, `Please select your site (district, parish, network, or school)`, prepost) %>%
   summarise(percent = if_else(percent == 100, 100*(n/max(n)), percent),
             answer = unlist(answer))
 
-ela_general_plot %>%
+ela_general_plot2 <- ela_general_plot %>%
   mutate(answer = TeachingLab::html_wrap(answer, n = 30),
          answer = if_else(str_replace_all(answer, "<br>", " ") %in% correct, 
                           paste0("<b style='color:#04abeb'>", answer, "</b>"), 
                           answer),
-         question = TeachingLab::html_wrap(question, n = 30)) %>%
-  filter(`Please select your site (district, parish, network, or school)` == "NYC District 11 -  IS 326, NY") %>%
-  ggplot(aes(fct_reorder(answer, percent), percent, fill = percent)) +
-  geom_col(width = 0.25) +
-  geom_text(aes(label = paste0(round(percent), "%")), hjust = -0.2) +
+         question = TeachingLab::html_wrap(question, n = 30))
+write_rds(ela_general_plot2, here::here("Dashboards/KnowledgeAssessments/data/processed/ela_general_bootcamp.rds"))
+#### Shiny plot with single level reactive ####
+ela_general_plot2 %>%
+  filter(`Please select your site (district, parish, network, or school)` == "Cleveland Metropolitan School District, OH") %>%
+  ggplot(aes(fct_reorder(answer, percent), percent, fill = prepost, group = prepost)) +
+  geom_col(position = position_dodge2(preserve = "single", reverse = T)) +
+  geom_text(aes(label = paste0(round(percent), "%")), hjust = -0.2, position = position_dodge2(width = 0.9, reverse = T)) +
   facet_wrap( ~ question, scales = "free") +
   coord_flip() +
-  scale_fill_continuous() +
+  scale_fill_manual(values = c("pre" = "#040404", "post" = "#00ACF0"), labels = c("Pre", "Post")) +
   labs(x = "", y = "", caption = "*Correct answers are in bold",
-       title = "% Answering Each Item in ELA Bootcamp General") +
+       title = "% Answering Each Item in ELA Bootcamp General",
+       fill = "") +
   scale_y_continuous(labels = scales::label_percent(scale = 1), expand = c(0.14, 0)) +
   theme_tl() +
   theme(axis.text.y = element_markdown(),
         strip.text = element_markdown(hjust = 0.5, face = "bold"),
-        plot.title = element_text(face = "bold"))
+        plot.title = element_text(face = "bold"),
+        legend.position = c(0.9, 0.2))
 ggsave(here::here("Images/KnowledgeAssessments/example1.png"), width = 15, height = 10)
+#####
 ```
 
 
 ```{r eval = F}
 #### Making Survey 2 ELA General Cycle of Inquiry ####
 #### Not complete as of 10-29-31, will need updating on questions, answers ####
-# ela_cycle_of_inquiry <- readr::read_rds(here::here("Dashboards/KnowledgeAssessments/data/ELAGeneralCycleofInquiry-ComplexText.rds"))
-ela_cycle_of_inquiry <- readr::read_rds("data/ELAGeneralCycleofInquiry-ComplexText.rds")
+ela_cycle_of_inquiry <- readr::read_rds(here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELAGeneralCycleofInquiry-ComplexText.rds"))
 
 ela_cycle_of_inquiry_correct <- tibble::tibble(question = c("For each of the following, indicate if it is a component of the foundational skills of reading. Select all that apply. - Print concepts", 
                                                "For each of the following, indicate if it is a component of the foundational skills of reading. Select all that apply. - Phonological awareness", 
@@ -194,8 +201,7 @@ ela_cycle_of_inquiry_percent <- purrr::map2_df(ela_cycle_of_inquiry_correct$ques
 
 ```{r}
 #### Making Survey 3 ELA Foundational Skills Bootcamp ####
-# ela_foundational_skills <- readr::read_rds(here::here("Dashboards/KnowledgeAssessments/data/ELABootcamp-FoundationalSkillsBootcampSkills(K-2).rds"))
-ela_foundational_skills <- readr::read_rds("data/ELABootcamp-FoundationalSkillsBootcampSkills(K-2).rds")
+ela_foundational_skills <- readr::read_rds(here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELABootcamp-FoundationalSkillsBootcampSkills(K-2).rds"))
 
 ela_foundational_skills_correct <- tibble::tibble(question = c("For each of the following, indicate if it is a component of the foundational skills of reading. Select all that apply. - Print concepts", 
                                                                "For each of the following, indicate if it is a component of the foundational skills of reading. Select all that apply. - Phonological awareness", 
@@ -203,16 +209,33 @@ ela_foundational_skills_correct <- tibble::tibble(question = c("For each of the 
                                                                "For each of the following, indicate if it is a component of the foundational skills of reading. Select all that apply. - Fluency", 
                                                                "For each of the following, indicate if it is a component of the foundational skills of reading. Select all that apply. - Reading comprehension", 
                                                                "A structured phonics program is important in K-2 for the following reasons EXCEPT:", 
+                                                               "A structured phonics program is important in K-2 for the following reasons EXCEPT:", 
+                                                               "A structured phonics program is important in K-2 for the following reasons EXCEPT:", 
+                                                               "A structured phonics program is important in K-2 for the following reasons EXCEPT:", 
+                                                               "A structured phonics program is important in K-2 for the following reasons EXCEPT:", 
                                                                "When planning for differentiated small group instruction to support the foundational skills, which of the following should teachers engage in? Select all that apply. - Utilize a variety of ongoing assessment data to determine the focus of instruction for small groups", 
                                                                "When planning for differentiated small group instruction to support the foundational skills, which of the following should teachers engage in? Select all that apply. - Group students by their ongoing phase of development with regard to the foundational skills", 
                                                                "When planning for differentiated small group instruction to support the foundational skills, which of the following should teachers engage in? Select all that apply. - Only provide foundational skills instruction during small group time", 
                                                                "When planning for differentiated small group instruction to support the foundational skills, which of the following should teachers engage in? Select all that apply. - Adhere to a same structure of number of groups and members of groups for the entirety of the year"),
-                                                  coding = c("Print Concepts", "Phonological awareness", "incorrect", "Fluency", "incorrect",
+                                                  answers = c("Print Concepts", 
+                                                              "Phonological awareness", 
+                                                              "Vocabulary development", 
+                                                              "Fluency", 
+                                                              "Reading comprehension",
+                                                              "It is the most effective approach for the most students to learn how to read",
+                                                              "It supports the development of foundational reading skills in a focused, systematic way",
+                                                              "It explicitly teaches the sound/spelling patterns of English in a sequence",
                                                              "It prompts students to use context clues and pictures to decode words",
+                                                             "I am not sure.",
                                                              "Utilize a variety of ongoing assessment data to determine the focus of instruction for small groups",
                                                              "Group students by their ongoing phase of development with regard to the foundational skills",
-                                                             "incorrect",
-                                                             "incorrect"))
+                                                             "Only provide foundational skills instruction during small group time",
+                                                             "Adhere to a same structure of number of groups and members of groups for the entirety of the year"))
+
+readr::write_rds(ela_foundational_skills_correct, 
+                 here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_foundational_skills.rds"))
+
+
 ela_foundational_skills_percent <- purrr::map2_df(ela_foundational_skills_correct$question, 
                                                   ela_foundational_skills_correct$coding, ~ TeachingLab::score_question(data = ela_foundational_skills, 
                                                                                                                         question = .x,
@@ -663,6 +686,350 @@ ela_school_leaders_percent <- purrr::map2_df(ela_school_leaders_correct$question
                                                                             coding = .y,
                                                                             grouping = "Please select your site (district, parish, network, or school)"))
 ```
+
+
+
+## ELA General Bootcamp
+
+```{r}
+ela_general_bootcamp_correct <- tibble::tibble(question = c("Which of the following are literacy instructional shifts? Select all that apply. - Regular practice with complex texts and their academic language.", 
+                                                            "Which of the following are literacy instructional shifts? Select all that apply. - Building knowledge through content-rich non-fiction.", 
+                                                            "Which of the following are literacy instructional shifts? Select all that apply. - Equal balance of text-based writing and writing from personal experiences.", 
+                                                            "Which of the following are literacy instructional shifts? Select all that apply. - Regular opportunities for direct instruction on reading comprehension strategies.", 
+                                                            "When designing literacy lessons, teachers should start with which of the following?", 
+                                                            "When designing literacy lessons, teachers should start with which of the following?", 
+                                                            "When designing literacy lessons, teachers should start with which of the following?", 
+                                                            "When designing literacy lessons, teachers should start with which of the following?", 
+                                                            "Which of the following is the single biggest differentiator of college and career-readiness?", 
+                                                            "Which of the following is the single biggest differentiator of college and career-readiness?", 
+                                                            "Which of the following is the single biggest differentiator of college and career-readiness?", 
+                                                            "Which of the following is the single biggest differentiator of college and career-readiness?", 
+                                                            "Which of the following approaches for selecting texts for whole-class reading instruction are aligned with post-shifts literacy instruction? Select all that apply. - Selecting a text that is at or above the grade-level complexity.", 
+                                                            "Which of the following approaches for selecting texts for whole-class reading instruction are aligned with post-shifts literacy instruction? Select all that apply. - Selecting a text that is rich in meaning.", 
+                                                            "Which of the following approaches for selecting texts for whole-class reading instruction are aligned with post-shifts literacy instruction? Select all that apply. - Selecting an adapted version of the main text for below-grade-level readers.", 
+                                                            "Which of the following approaches for selecting texts for whole-class reading instruction are aligned with post-shifts literacy instruction? Select all that apply. - Selecting a text for the class based on student interest.", 
+                                                            "Which of the following describe strategies for supporting struggling readers? Select all that apply. - Read the complex text aloud for students.", 
+                                                            "Which of the following describe strategies for supporting struggling readers? Select all that apply. - Read aloud a simple article to build knowledge of the topic while students follow along.", 
+                                                            "Which of the following describe strategies for supporting struggling readers? Select all that apply. - Have students read the full text multiple times to find the main idea.", 
+                                                            "Which of the following describe strategies for supporting struggling readers? Select all that apply. - Ask simpler questions about the same text."),
+                                                  answer = c("Regular practice with complex texts and their academic language.",
+                                                             "Building knowledge through content-rich non-fiction.", 
+                                                             "Equal balance of text-based writing and writing from personal experiences.",
+                                                             "Regular opportunities for direct instruction on reading comprehension strategies.",
+                                                             "A complex text that is worthy of reading multiple times.",
+                                                             "A strategy they want students to implement (main idea, predicting, etc.).",
+                                                             "A standard (identify author’s purpose).",
+                                                             "I’m not sure.",
+                                                             "Ability to read fluently and accurately.",
+                                                             "Ability to read and write at grade-level independently.",
+                                                             "Ability to read complex text independently and proficiently.",
+                                                             "I’m not sure.",
+                                                             "Selecting a text that is at or above the grade-level complexity.",
+                                                             "Selecting a text that is rich in meaning.",
+                                                             "Selecting an adapted version of the main text for below-grade-level readers.",
+                                                             "Selecting a text for the class based on student interest.",
+                                                             "Read the complex text aloud for students.",
+                                                             "Read aloud a simple article to build knowledge of the topic while students follow along.",
+                                                             "Have students read the full text multiple times to find the main idea.",
+                                                             "Ask simpler questions about the same text."))
+write_rds(ela_general_bootcamp_correct,
+          here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_general_bootcamp.rds"))
+```
+
+```{r}
+save_processed_data(data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELABootcamp-General.rds"),
+                    q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_general_bootcamp.rds"),
+                    correct = c("Regular practice with complex texts and their academic language.",
+                                "Building knowledge through content-rich non-fiction.",
+                                "A complex text that is worthy of reading multiple times.",
+                                "Ability to read complex text independently and proficiently.",
+                                "Selecting a text that is at or above the grade-level complexity.",
+                                "Selecting a text that is rich in meaning.",
+                                "Read the complex text aloud for students.",
+                                "Read aloud a simple article to build knowledge of the topic while students follow along."),
+                    save_name = "ela_general_bootcamp")
+```
+
+## ELA Foundational Skills
+
+```{r}
+ela_foundational_skills_correct <- tibble::tibble(question = c("For each of the following, indicate if it is a component of the foundational skills of reading. Select all that apply. - Print concepts", 
+                                                               "For each of the following, indicate if it is a component of the foundational skills of reading. Select all that apply. - Phonological awareness", 
+                                                               "For each of the following, indicate if it is a component of the foundational skills of reading. Select all that apply. - Vocabulary development", 
+                                                               "For each of the following, indicate if it is a component of the foundational skills of reading. Select all that apply. - Fluency", 
+                                                               "For each of the following, indicate if it is a component of the foundational skills of reading. Select all that apply. - Reading comprehension", 
+                                                               "A structured phonics program is important in K-2 for the following reasons EXCEPT:", 
+                                                               "A structured phonics program is important in K-2 for the following reasons EXCEPT:", 
+                                                               "A structured phonics program is important in K-2 for the following reasons EXCEPT:", 
+                                                               "A structured phonics program is important in K-2 for the following reasons EXCEPT:", 
+                                                               "A structured phonics program is important in K-2 for the following reasons EXCEPT:", 
+                                                               "When planning for differentiated small group instruction to support the foundational skills, which of the following should teachers engage in? Select all that apply. - Utilize a variety of ongoing assessment data to determine the focus of instruction for small groups", 
+                                                               "When planning for differentiated small group instruction to support the foundational skills, which of the following should teachers engage in? Select all that apply. - Group students by their ongoing phase of development with regard to the foundational skills", 
+                                                               "When planning for differentiated small group instruction to support the foundational skills, which of the following should teachers engage in? Select all that apply. - Only provide foundational skills instruction during small group time", 
+                                                               "When planning for differentiated small group instruction to support the foundational skills, which of the following should teachers engage in? Select all that apply. - Adhere to a same structure of number of groups and members of groups for the entirety of the year"),
+                                                  answer = c("Print Concepts", 
+                                                              "Phonological awareness", 
+                                                              "Vocabulary development", 
+                                                              "Fluency", 
+                                                              "Reading comprehension",
+                                                              "It is the most effective approach for the most students to learn how to read",
+                                                              "It supports the development of foundational reading skills in a focused, systematic way",
+                                                              "It explicitly teaches the sound/spelling patterns of English in a sequence",
+                                                             "It prompts students to use context clues and pictures to decode words",
+                                                             "I am not sure.",
+                                                             "Utilize a variety of ongoing assessment data to determine the focus of instruction for small groups",
+                                                             "Group students by their ongoing phase of development with regard to the foundational skills",
+                                                             "Only provide foundational skills instruction during small group time",
+                                                             "Adhere to a same structure of number of groups and members of groups for the entirety of the year"))
+
+readr::write_rds(ela_foundational_skills_correct, 
+                 here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_foundational_skills.rds"))
+```
+
+```{r}
+save_processed_data(data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELABootcamp-FoundationalSkillsBootcampSkills(K-2).rds"),
+                    q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_foundational_skills.rds"),
+                    correct = c("Print concepts",
+                                "Phonological awareness",
+                                "Fluency",
+                                "It prompts students to use context clues and pictures to decode words",
+                                "Utilize a variety of ongoing assessment data to determine the focus of instruction for small groups",
+                                "Group students by their ongoing phase of development with regard to the foundational skills"),
+                    save_name = "ela_foundational_skills")
+```
+
+## ELA Guidebooks Diverse Learners: Bootcamp - Leader
+
+```{r}
+ela_guidebooks_diverse_learners_leader_correct <- tibble::tibble(
+  question = c("Which of the following are true about the Diverse Learners Planning Guide’s approach to supporting diverse learners? Select all that apply. - Some students need targeted additional support outside of their ELA block.", 
+               "Which of the following are true about the Diverse Learners Planning Guide’s approach to supporting diverse learners? Select all that apply. - Students who need it should have practice with the text before they engage with that text in their ELA block.", 
+               "Which of the following are true about the Diverse Learners Planning Guide’s approach to supporting diverse learners? Select all that apply. - Students who need it should be front-loaded with reading comprehension strategies before engaging with a complex grade-level text.", 
+               "Which of the following are true about the Diverse Learners Planning Guide’s approach to supporting diverse learners? Select all that apply. - Students need to build up all general basic skills before they can take part in Tier 1 instruction.", 
+               "Through observing her students, Mrs. Richards concluded that eight of her students may not know the elements of a written response. There is a culminating writing task that all students will need to complete next week. How can she BEST plan to support these eight students so that they will be successful on this writing task?",
+               "Through observing her students, Mrs. Richards concluded that eight of her students may not know the elements of a written response. There is a culminating writing task that all students will need to complete next week. How can she BEST plan to support these eight students so that they will be successful on this writing task?",
+               "Through observing her students, Mrs. Richards concluded that eight of her students may not know the elements of a written response. There is a culminating writing task that all students will need to complete next week. How can she BEST plan to support these eight students so that they will be successful on this writing task?",
+               "Through observing her students, Mrs. Richards concluded that eight of her students may not know the elements of a written response. There is a culminating writing task that all students will need to complete next week. How can she BEST plan to support these eight students so that they will be successful on this writing task?",
+               "Through observing her students, Mrs. Richards concluded that eight of her students may not know the elements of a written response. There is a culminating writing task that all students will need to complete next week. How can she BEST plan to support these eight students so that they will be successful on this writing task?"),
+  answer = c("Some students need targeted additional support outside of their ELA block.",
+             "Students who need it should have practice with the text before they engage with that text in their ELA block.",
+             "Students who need it should be front-loaded with reading comprehension strategies before engaging with a complex grade-level text.",
+             "Students need to build up all general basic skills before they can take part in Tier 1 instruction.",
+             "Plan with the interventionist, Mr. Liu, to have the students work with him to analyze some exemplar written responses for key elements a few days before the writing task is assigned.",
+             "Design a new task that does not require students to include the elements of a written response.",
+             "Give the students the culminating task in advance so that they have more time to independently plan their response.",
+             "As their peers begin drafting the writing task, pull these eight students into a small group and give them a mini lesson on key elements of a written response.",
+             "I’m not sure"))
+readr::write_rds(ela_guidebooks_diverse_learners_leader_correct, 
+                 here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_diverse_learners.rds"))
+```
+
+```{r}
+save_processed_data(data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELAGuidebooksDiverseLearnersBootcamp-Leader.rds"),
+                    q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_diverse_learners.rds"),
+                    correct = c("Some students need targeted additional support outside of their ELA block.",
+                                "Students who need it should have practice with the text before they engage with that text in their ELA block.",
+                                "Plan with the interventionist, Mr. Liu, to have the students work with him to analyze exemplar written responses for key elements a few days before the writing task is assigned."),
+                    save_name = "ela_guidebooks_diverse_learners_bootcamp_leader")
+```
+
+
+## ELA Guidebooks Diverse Learners: Bootcamp - Teacher
+
+```{r}
+ela_guidebooks_diverse_learners_teacher_correct <- tibble::tibble(
+  question = c("Which of the following are true about the Diverse Learners Planning Guide’s approach to supporting diverse learners? Select all that apply. - Some students need targeted additional support outside of their ELA block.", 
+               "Which of the following are true about the Diverse Learners Planning Guide’s approach to supporting diverse learners? Select all that apply. - Students who need it should have practice with the text before they engage with that text in their ELA block.", 
+               "Which of the following are true about the Diverse Learners Planning Guide’s approach to supporting diverse learners? Select all that apply. - Students who need it should be front-loaded with reading comprehension strategies before engaging with a complex grade-level text.", 
+               "Which of the following are true about the Diverse Learners Planning Guide’s approach to supporting diverse learners? Select all that apply. - Students need to build up all general basic skills before they can take part in Tier 1 instruction.", 
+               "Through observing her students, Mrs. Richards concluded that eight of her students may not know the elements of a written response. There is a culminating writing task that all students will need to complete next week. How can she BEST plan to support these eight students so that they will be successful on this writing task?", 
+               "Through observing her students, Mrs. Richards concluded that eight of her students may not know the elements of a written response. There is a culminating writing task that all students will need to complete next week. How can she BEST plan to support these eight students so that they will be successful on this writing task?",
+               "Through observing her students, Mrs. Richards concluded that eight of her students may not know the elements of a written response. There is a culminating writing task that all students will need to complete next week. How can she BEST plan to support these eight students so that they will be successful on this writing task?",
+               "Through observing her students, Mrs. Richards concluded that eight of her students may not know the elements of a written response. There is a culminating writing task that all students will need to complete next week. How can she BEST plan to support these eight students so that they will be successful on this writing task?",
+               "Through observing her students, Mrs. Richards concluded that eight of her students may not know the elements of a written response. There is a culminating writing task that all students will need to complete next week. How can she BEST plan to support these eight students so that they will be successful on this writing task?",
+               "Which of the following observations describe practices for establishing an inclusive and student centered classroom culture? Select all that apply. - Students nominate a set of discussion agreements to use in their class.", 
+               "Which of the following observations describe practices for establishing an inclusive and student centered classroom culture? Select all that apply. - The teacher holds a mediation conversation for two students after witnessing one student making a derogatory comment toward the other.", 
+               "Which of the following observations describe practices for establishing an inclusive and student centered classroom culture? Select all that apply. - Students research one of three 19th century American heroes: Abraham Lincoln, Thomas Edison, and Mark Twain.", 
+               "Which of the following observations describe practices for establishing an inclusive and student centered classroom culture? Select all that apply. - A classroom norm is that “All students must make at least one comment during a class discussion.”", 
+               "What is the ideal use case of the Diverse Learners Planning Guide?",
+               "What is the ideal use case of the Diverse Learners Planning Guide?",
+               "What is the ideal use case of the Diverse Learners Planning Guide?",
+               "What is the ideal use case of the Diverse Learners Planning Guide?"),
+  answer = c("Some students need targeted additional support outside of their ELA block.",
+             "Students who need it should have practice with the text before they engage with that text in their ELA block.",
+             "Students who need it should be front-loaded with reading comprehension strategies before engaging with a complex grade-level text.",
+             "Students need to build up all general basic skills before they can take part in Tier 1 instruction.",
+             "Plan with the interventionist, Mr. Liu, to have the students work with him to analyze some exemplar written responses for key elements a few days before the writing task is assigned.",
+             "Design a new task that does not require students to include the elements of a written response.",
+             "Give the students the culminating task in advance so that they have more time to independently plan their response.",
+             "As their peers begin drafting the writing task, pull these eight students into a small group and give them a mini lesson on key elements of a written response.",
+             "I’m not sure",
+             "Students nominate a set of discussion agreements to use in their class.",
+             "The teacher holds a mediation conversation for two students after witnessing one student making a derogatory comment toward the other.",
+             "Students research one of three 19th century American heroes: Abraham Lincoln, Thomas Edison, and Mark Twain.",
+             "A classroom norm is that \"All students must make at least one comment during a class discussion.\"",
+             "To help teachers plan to use the supports and allow for students to preview the skills that diverse learners might need to engage with grade-level texts and tasks ahead of whole-class instruction.",
+             "To help teachers plan for Tier-1 instruction that supports diverse learners to engage with grade-level texts and tasks.",
+             "To help teachers plan for whole-group instruction that addresses the most pressing unfinished learning of the majority of the students in the class.",
+             "I’m not sure"))
+readr::write_rds(ela_guidebooks_diverse_learners_teacher_correct, 
+                 here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_diverse_learners_bootcamp_teacher.rds"))
+```
+
+```{r}
+save_processed_data(data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELAGuidebooksDiverseLearnersBootcamp-Teacher.rds"),
+                    q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_diverse_learners_bootcamp_teacher.rds"),
+                    correct = c("Some students need targeted additional support outside of their ELA block.",
+                                "Students who need it should have practice with the text before they engage with that text in their ELA block.",
+                                "Plan with the interventionist, Mr. Liu, to have the students work with him to analyze exemplar written responses for key elements a few days before the writing task is assigned.",
+                                "Students nominate a set of discussion agreements to use in their class.",
+                                "The teacher holds a mediation conversation for two students after witnessing one student making a derogatory comment toward the other.",
+                                "To help teachers plan to use the supports and allow for students to preview the skills that diverse learners might need to engage with grade-level texts and tasks ahead of whole-class instruction."),
+                    save_name = "ela_guidebooks_diverse_learners_bootcamp_teacher")
+```
+
+## ELA Guidebooks Diverse Learners: Bootcamp - Writing
+
+```{r}
+ela_guidebooks_diverse_learners_writing_correct <- tibble::tibble(
+  question = c("Which of the following are true about how most students become better writers? Select all that apply. - Students need to be explicitly taught how to write.", 
+               "Which of the following are true about how most students become better writers? Select all that apply. - Students should  plan out what they’re going to write before beginning to write.", 
+               "Which of the following are true about how most students become better writers? Select all that apply. - Students can become good writers by reading complex texts.", 
+               "Which of the following are true about how most students become better writers? Select all that apply. - Students should have isolated grammar lessons so that they can apply grammar rules in their writing.", 
+               "Which of the following are true about how most students become better writers? Select all that apply. - I’m not sure", 
+               "All of the following are effective ways a teacher can help students write a stronger sentence EXCEPT:",
+               "All of the following are effective ways a teacher can help students write a stronger sentence EXCEPT:",
+               "All of the following are effective ways a teacher can help students write a stronger sentence EXCEPT:",
+               "All of the following are effective ways a teacher can help students write a stronger sentence EXCEPT:",
+               "All of the following are effective ways a teacher can help students write a stronger sentence EXCEPT:"),
+  answer = c("Students need to be explicitly taught how to write.",
+             "Students should  plan out what they’re going to write before beginning to write.",
+             "Students can become good writers by reading complex texts.",
+             "Students should have isolated grammar lessons so that they can apply grammar rules in their writing.",
+             "I’m not sure",
+             "Identify incorrect uses of punctuation and correct them.",
+             "Identify fragments and change them into a complete sentence.",
+             "Use 5Ws and H questions to write a summary sentence.",
+             "Incorporate conjunctions to respond to a text-dependent question.",
+             "I’m not sure"))
+
+write_rds(ela_guidebooks_diverse_learners_writing_correct,
+          here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_diverse_learners_bootcamp_writing.rds"))
+```
+
+```{r}
+save_processed_data(data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELAGuidebooksDiverseLearnersBootcampWriting.rds"),
+                    q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_diverse_learners_bootcamp_writing.rds"),
+                    correct = c("Students need to be explicitly taught how to write.",
+                                "Students should  plan out what they’re going to write before beginning to write.",
+                                "Identify incorrect uses of punctuation and correct them."),
+                    save_name = "ela_guidebooks_diverse_learners_bootcamp_writing")
+```
+
+## ELA EL: HQIM & Enrichment
+
+```{r}
+ela_hqim_enrichment_correct <- tibble::tibble(
+  question = c("Which of the following statements describes gifted learners?", 
+               "Which of the following statements describes gifted learners?",
+               "Which of the following statements describes gifted learners?",
+               "Which of the following statements describes gifted learners?",
+               "Which of the following statements describe the Depth and Complexity framework? Select all that apply. - The Depth and Complexity Framework applies specifically to the content area of ELA.", 
+               "Which of the following statements describe the Depth and Complexity framework? Select all that apply. - Sequencing the layers of Depth and Complexity to support key standards yields the highest-impact enrichment.", 
+               "Which of the following statements describe the Depth and Complexity framework? Select all that apply. - The Depth and Complexity Framework is a differentiation tool that can raise the thinking level for all students.", 
+               "Which of the following statements describe the Depth and Complexity framework? Select all that apply. - Teachers should attend to all aspects and layers of the Depth and Complexity framework in any given instructional unit to ensure the highest leverage enrichment experience for students.", 
+               "The Multi-Tiered System of Support (MTSS) is a framework that:",
+               "The Multi-Tiered System of Support (MTSS) is a framework that:",
+               "The Multi-Tiered System of Support (MTSS) is a framework that:",
+               "The Multi-Tiered System of Support (MTSS) is a framework that:"),
+  answer = c("Gifted learners are always high-achieving.",
+             "Gifted learners will display characteristics and traits in all four categories: Cognitive, Creative, Affective, Behavioral.",
+             "Gifted learners have special needs in the classroom that fall into these categories: Cognitive, Creative, Affective, Behavioral.",
+             "I’m not sure",
+             "The Depth and Complexity Framework applies specifically to the content area of ELA.",
+             "Sequencing the layers of Depth and Complexity to support key standards yields the highest-impact enrichment.",
+             "The Depth and Complexity Framework is a differentiation tool that can raise the thinking level for all students.",
+             "Teachers should attend to all aspects and layers of the Depth and Complexity framework in any given instructional unit to ensure the highest leverage enrichment experience for students.",
+             "Replaces Response to Intervention or RTI",
+             "Identifies students in need of pull-out instruction",
+             "Includes universal screening of all students, multiple tiers of instruction and support services, and integrated data collection and assessment systems to inform decisions at each tier of instruction",
+             "I’m not sure"
+))
+
+write_rds(ela_hqim_enrichment_correct, 
+          here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/el_ela_hqim_enrichment.rds"))
+```
+
+```{r}
+save_processed_data(data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELAHQIM&Enrichment.rds"),
+                    q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/el_ela_hqim_enrichment.rds"),
+                    correct = c("Gifted learners have special needs in the classroom that fall into these categories: Cognitive, Creative, Affective, Behavioral.",
+                                "Sequencing the layers of Depth and Complexity to support key standards yields the highest-impact enrichment.",
+                                "The Depth and Complexity Framework is a differentiation tool that can raise the thinking level for all students.",
+                                "Includes universal screening of all students, multiple tiers of instruction and support services, and integrated data collection and assessment systems to inform decisions at each tier of instruction"),
+                    save_name = "el_ela_hqim_enrichment")
+```
+
+## Math: Bootcamp EIC
+
+```{r}
+math_bootcamp_correct <- tibble::tibble(
+  question = c("Which of the following statements describe math instructional shifts associated with college-and-career readiness standards? Select all that apply. - Going deeper into fewer math topics.", 
+              "Which of the following statements describe math instructional shifts associated with college-and-career readiness standards? Select all that apply. - Making connections between math topics across grades.", 
+              "Which of the following statements describe math instructional shifts associated with college-and-career readiness standards? Select all that apply. - Prioritizing conceptual understanding over procedural skills.", 
+              "Which of the following statements describe math instructional shifts associated with college-and-career readiness standards? Select all that apply. - Creating opportunities for students to work on math skills above their grade-level.", 
+              "Which of the following statements are true about the research into types of math instruction? Select all that apply. - Unguided problem solving lessons are the least effective type of math lesson.", 
+              "Which of the following statements are true about the research into types of math instruction? Select all that apply. - Building deep understanding with fewer math topics is more effective than covering a broader range of math topics.", 
+              "Which of the following statements are true about the research into types of math instruction? Select all that apply. - Math instruction that covers more math topics leads to better student performance on assessments.", 
+              "Which of the following statements are true about the research into types of math instruction? Select all that apply. - Direct instruction (I do, We do, You do) is the most effective type of math instruction.", 
+              "Equitable instruction in math includes which of the following?", 
+              "Equitable instruction in math includes which of the following?", 
+              "Equitable instruction in math includes which of the following?", 
+              "Equitable instruction in math includes which of the following?", 
+              "Equitable instruction in math includes which of the following?", 
+              "Which of the following statements are true about the principles behind the Mathematical Language Routines? Select all that apply. - Students do not need to understand English completely before they can start making sense of math instruction in English.", 
+              "Which of the following statements are true about the principles behind the Mathematical Language Routines? Select all that apply. - An appropriate scaffold for language development is to allow students to make charts, diagrams, and other visual representations of their understanding.", 
+              "Which of the following statements are true about the principles behind the Mathematical Language Routines? Select all that apply. - Students who are not proficient in academic English should work with simplified math tasks until they develop stronger language skills.", 
+              "Which of the following statements are true about the principles behind the Mathematical Language Routines? Select all that apply. - To demonstrate their mathematical knowledge, students must be able to use formal definitions and vocabulary accurately."),
+  answer = c("Going deeper into fewer math topics.", 
+             "Making connections between math topics across grades.",
+             "Prioritizing conceptual understanding over procedural skills.",
+             "Creating opportunities for students to work on math skills above their grade-level.",
+             "Unguided problem solving lessons are the least effective type of math lesson.",
+             "Building deep understanding with fewer math topics is more effective than covering a broader range of math topics.",
+             "Math instruction that covers more math topics leads to better student performance on assessments.",
+             "Direct instruction (I do, We do, You do) is the most effective type of math instruction.",
+             "Giving simplified tasks to students who have unfinished learning.",
+             "Following a strict pacing schedule for covering new materials and focusing only on grade-level work.",
+             "Teaching the procedures and “tricks” such as using the “butterfly method” to compare fractions.",
+             "Creating opportunities for students to practice saying out loud how they solved for a problem.",
+             "I’m not sure.",
+             "Students do not need to understand English completely before they can start making sense of math instruction in English.",
+             "An appropriate scaffold for language development is to allow students to make charts, diagrams, and other visual representations of their understanding.",
+             "Students who are not proficient in academic English should work with simplified math tasks until they develop stronger language skills.",
+             "To demonstrate their mathematical knowledge, students must be able to use formal definitions and vocabulary accurately."
+))
+
+write_rds(math_bootcamp_correct, 
+          here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_bootcamp.rds"))
+```
+
+```{r}
+save_processed_data(data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/MathBootcamp-EIC.rds"),
+                    q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_bootcamp.rds"),
+                    correct = c("Going deeper into fewer math topics.",
+                                "Making connections between math topics across grades.",
+                                "Unguided problem solving lessons are the least effective type of math lesson.",
+                                "Building deep understanding with fewer math topics is more effective than covering a broader range of math topics.",
+                                "Creating opportunities for students to practice saying out loud how they solved a problem.",
+                                "Students do not need to understand English completely before they can start making sense of math instruction in English.",
+                                "An appropriate scaffold for language development is to allow students to make charts, diagrams, and other visual representations of their understanding."),
+                    save_name = "math_bootcamp_eic")
+```
+
+
+
+
 
 
 

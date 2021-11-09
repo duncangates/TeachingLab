@@ -12,8 +12,12 @@ library(bslib)
 library(thematic)
 library(tidyverse)
 library(TeachingLab)
+library(ggtext)
+library(showtext)
 options(shiny.useragg = T)
-thematic_shiny(font = font_spec(families = c("Calibri", "Roboto")))
+thematic::thematic_shiny(font = font_spec(families = c("Calibri", "Roboto")))
+font_add("Calibri", "www/Calibri.ttf")
+# showtext_auto()
 
 # boot dash layout funs ---------------------------------------------------
 
@@ -55,27 +59,22 @@ page_navbar(
 
     nav("% Correct", icon = icon("check-circle"), boot_side_layout(
         boot_sidebar(
-            sliderInput(inputId = "bins",
-                       label = "Number of bins:",
-                       min = 1,
-                       max = 50,
-                       value = 30),
-            selectizeInput("site", 
-                           label = "Select Sites to Include",
-                           choices = diagnostic$your_site_district_parish_network_or_school_br_br %>% unique() %>% sort(),
-                           multiple = T,
-                           options = list(plugins= list('remove_button'))),
-            dateRangeInput(inputId = "date_range",
-                           label = "Select a Date Range",
-                           start = min(diagnostic$date_created, na.rm = T),
-                           end = max(diagnostic$date_created, na.rm = T)),
-            tags$html("*Note that for all of the above filters, the default (no selection) will select all results.")
+            selectInput("know_assessment",
+                        label = h5("Select a Knowledge Assessment"),
+                        choices = c("ELA General: Bootcamp" = "ela_general_bootcamp.rds",
+                                    "ELA Foundational Skills: Bootcamp" = "ela_foundational_skills.rds",
+                                    "ELA Guidebooks Diverse Learners: Bootcamp - Leader" = "ela_guidebooks_diverse_learners_bootcamp_leader.rds",
+                                    "ELA Guidebooks Diverse Learners: Bootcamp - Teacher" = "ela_guidebooks_diverse_learners_bootcamp_teacher.rds"),
+                        selected = NULL),
+            uiOutput("site_ui"),
+            tags$h5("Questions from Selected Knowledge Assessment Below"),
+            tags$h6("*Note that for all of the above filters, the default (no selection) will select all results.")
         ),
         boot_main(
-            fluidRow(column(6, h1("Plot 1")), column(6, h1("Plot 2"))),
+            fluidRow(column(6, h1("Matched Assessments")), column(6, h1("Unmatched Assessments"))),
             fluidRow(
-                column(6, plotOutput(outputId = "distPlot")),
-                column(6, plotOutput(outputId = "distPlot2"))
+                column(6, plotOutput(outputId = "plot_matched", height = "900px")),
+                column(6, plotOutput(outputId = "plot_unmatched", height = "900px"))
             )
         )
     )),

@@ -1,3 +1,23 @@
+#### Read in Data ####
+
+ela_general_bootcamp <- readr::read_rds("data/processed/ela_general_bootcamp.rds")
+ela_foundational_skills <- readr::read_rds("data/processed/ela_foundational_skills.rds")
+ela_guidebooks_diverse_learners_bootcamp_leader <- readr::read_rds("data/processed/ela_guidebooks_diverse_learners_bootcamp_leader.rds")
+ela_guidebooks_diverse_learners_bootcamp_teacher <- readr::read_rds("data/processed/ela_guidebooks_diverse_learners_bootcamp_teacher.rds")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # library(surveymonkey)
 # library(magrittr)
 # 
