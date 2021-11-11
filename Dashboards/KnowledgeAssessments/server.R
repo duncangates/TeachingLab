@@ -68,7 +68,7 @@ shinyServer(function(input, output) {
         # Filter data for site
         df <- readr::read_rds(paste0("data/processed/", input$know_assessment)) %>%
             dplyr::filter(site %in% input$site) %>%
-            dplyr::group_by(site) %>%
+            dplyr::group_by(answer, prepost) %>%
             dplyr::mutate(percent = mean(percent, na.rm = T))
         print(df)
     })
@@ -79,19 +79,25 @@ shinyServer(function(input, output) {
             ggplot(aes(fct_reorder(answer, percent), percent, fill = prepost, group = prepost)) +
             geom_col(position = position_dodge2(preserve = "single", reverse = T)) +
             geom_text(aes(label = paste0(round(percent), "%")), hjust = -0.2, position = position_dodge2(width = 0.9, reverse = T)) +
-            facet_wrap( ~ question, scales = "free") +
+            facet_wrap( ~ question, scales = "free", ncol = 2) +
             coord_flip() +
             scale_fill_manual(values = c("pre" = "#040404", "post" = "#00ACF0"), labels = c("Pre", "Post")) +
             labs(x = "", y = "",
                  title = "% Answering Each Item in ELA Bootcamp General",
                  fill = "") +
+            guides(fill = guide_legend(label.position = "left")) +
             scale_y_continuous(labels = scales::label_percent(scale = 1), expand = c(0.14, 0)) +
-            # theme_tl(legend = T, markdown = T) +
-            theme_bw() +
-            theme(axis.text.y = element_markdown(family = "Calibri"),
-                  strip.text = element_markdown(hjust = 0.5, face = "bold", family = "Calibri"),
-                  plot.title = element_text(face = "bold", family = "Calibri"),
-                  legend.position = c(0.9, 0.2))
+            scale_x_discrete(expand = c(-0.5, 0)) +
+            theme(
+                axis.text.y = element_markdown(size = 14),
+                strip.text = element_markdown(hjust = 0.5, family = "Calibri Bold"),
+                plot.title = element_markdown(family = "Calibri Bold"),
+                legend.position = c(0.5, 1.1),
+                legend.direction = "horizontal",
+                legend.key.size = unit(2, "cm"),
+                legend.text = element_text(size = 14, family = "Calibri"),
+                legend.key.width = unit(4, "cm")
+            )
         
     })
     
@@ -101,18 +107,25 @@ shinyServer(function(input, output) {
             ggplot(aes(fct_reorder(answer, percent), percent, fill = prepost, group = prepost)) +
             geom_col(position = position_dodge2(preserve = "single", reverse = T)) +
             geom_text(aes(label = paste0(round(percent), "%")), hjust = -0.2, position = position_dodge2(width = 0.9, reverse = T)) +
-            facet_wrap( ~ question, scales = "free") +
+            facet_wrap( ~ question, scales = "free", ncol = 2) +
             coord_flip() +
             scale_fill_manual(values = c("pre" = "#040404", "post" = "#00ACF0"), labels = c("Pre", "Post")) +
             labs(x = "", y = "", caption = "*Correct answers are colored blue and in bold",
                  title = "% Answering Each Item in ELA Bootcamp General",
                  fill = "") +
+            guides(fill = guide_legend(label.position = "left")) +
             scale_y_continuous(labels = scales::label_percent(scale = 1), expand = c(0.14, 0)) +
-            # theme_tl() +
-            theme(axis.text.y = element_markdown(),
-                  strip.text = element_markdown(hjust = 0.5, face = "bold"),
-                  plot.title = element_text(face = "bold"),
-                  legend.position = c(0.9, 0.2))
+            scale_x_discrete(expand = c(-0.5, 0)) +
+            theme(
+                axis.text.y = element_markdown(family = "Calibri", size = 14),
+                strip.text = element_markdown(hjust = 0.5, family = "Calibri Bold"),
+                plot.title = element_markdown(family = "Calibri Bold"),
+                legend.position = c(0.5, 1.1),
+                legend.direction = "horizontal",
+                legend.key.size = unit(2, "cm"),
+                legend.text = element_text(size = 14),
+                legend.key.width = unit(4, "cm")
+            )
     })
 
 })

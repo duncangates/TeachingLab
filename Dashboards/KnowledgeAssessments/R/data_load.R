@@ -4,6 +4,13 @@ ela_general_bootcamp <- readr::read_rds("data/processed/ela_general_bootcamp.rds
 ela_foundational_skills <- readr::read_rds("data/processed/ela_foundational_skills.rds")
 ela_guidebooks_diverse_learners_bootcamp_leader <- readr::read_rds("data/processed/ela_guidebooks_diverse_learners_bootcamp_leader.rds")
 ela_guidebooks_diverse_learners_bootcamp_teacher <- readr::read_rds("data/processed/ela_guidebooks_diverse_learners_bootcamp_teacher.rds")
+ela_guidebooks_diverse_learners_bootcamp_writing <- readr::read_rds("data/processed/ela_guidebooks_diverse_learners_bootcamp_writing.rds")
+ela_school_leaders <- readr::read_rds("data/processed/ela_school_leaders.rds")
+el_ela_hqim_enrichment <- readr::read_rds("data/processed/el_ela_hqim_enrichment.rds")
+math_bootcamp_eic <- readr::read_rds("data/processed/math_bootcamp_eic.rds")
+math_bootcamp <- readr::read_rds("data/processed/math_bootcamp.rds")
+math_cycle_inquiry_iv <- readr::read_rds("data/processed/math_cycle_inquiry_iv.rds")
+math_cycle_of_inquiry_i <- readr::read_rds("data/processed/math_cycle_of_inquiry_i.rds")
 
 
 

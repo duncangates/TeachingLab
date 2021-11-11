@@ -1,12 +1,5 @@
-#
-# This is the user-interface definition of a Shiny web application. You can
-# run the application by clicking 'Run App' above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
-
+#### UI for Knowledge Assessments Dashboard ####
+### Libraries Load ###
 library(shiny)
 library(bslib)
 library(thematic)
@@ -14,12 +7,17 @@ library(tidyverse)
 library(TeachingLab)
 library(ggtext)
 library(showtext)
+### Graphics ###
 options(shiny.useragg = T)
-thematic::thematic_shiny(font = font_spec(families = c("Calibri", "Roboto")))
+### Fonts ###
+thematic::thematic_shiny(font = font_spec(families = c("Calibri", "Roboto")),
+                         inherit = T)
 font_add("Calibri", "www/Calibri.ttf")
-# showtext_auto()
+font_add("Calibri Bold", "www/Calibri Bold.ttf")
+theme_set(theme_tl(markdown = F)) # Have to set markdown as T in individual aesthetics for some reason
+showtext_auto()
 
-# boot dash layout funs ---------------------------------------------------
+### boot dash layout funs --------------------------------------------------- ###
 
 
 boot_side_layout <- function(...) {
@@ -40,7 +38,7 @@ boot_main <- function(...) {
     )
 }
 
-# css ---------------------------------------------------------------------
+### css --------------------------------------------------------------------- ###
 
 css_def <- sass::sass_file("www/styles.scss")
 
@@ -64,18 +62,27 @@ page_navbar(
                         choices = c("ELA General: Bootcamp" = "ela_general_bootcamp.rds",
                                     "ELA Foundational Skills: Bootcamp" = "ela_foundational_skills.rds",
                                     "ELA Guidebooks Diverse Learners: Bootcamp - Leader" = "ela_guidebooks_diverse_learners_bootcamp_leader.rds",
-                                    "ELA Guidebooks Diverse Learners: Bootcamp - Teacher" = "ela_guidebooks_diverse_learners_bootcamp_teacher.rds"),
+                                    "ELA Guidebooks Diverse Learners: Bootcamp - Teacher" = "ela_guidebooks_diverse_learners_bootcamp_teacher.rds",
+                                    "ELA Guidebooks Diverse Learners: Bootcamp - Writing" = "ela_guidebooks_diverse_learners_bootcamp_writing.rds",
+                                    "School Leaders: ELA" = "ela_school_leaders.rds",
+                                    "ELA EL: HQIM & Enrichment" = "el_ela_hqim_enrichment.rds",
+                                    "Math: Bootcamp EIC" = "math_bootcamp_eic.rds",
+                                    "Math: Bootcamp" = "math_bootcamp.rds",
+                                    "Math: Cycle of Inquiry I - Eliciting Student Thinking" = "math_cycle_inquiry_iv.rds",
+                                    "Math: Cycle of Inquiry V- Sequencing and Connecting Representations" = "math_cycle_of_inquiry_i.rds"),
                         selected = NULL),
             uiOutput("site_ui"),
             tags$h5("Questions from Selected Knowledge Assessment Below"),
             tags$h6("*Note that for all of the above filters, the default (no selection) will select all results.")
         ),
         boot_main(
-            fluidRow(column(6, h1("Matched Assessments")), column(6, h1("Unmatched Assessments"))),
+            fluidRow(column(12, h1("Matched Sample"))),
+            fluidRow(column(12, tags$html("These are the results for participants who took both the pre and post knowledge assessment"))),
             fluidRow(
-                column(6, plotOutput(outputId = "plot_matched", height = "900px")),
-                column(6, plotOutput(outputId = "plot_unmatched", height = "900px"))
-            )
+                column(12, plotOutput(outputId = "plot_matched", height = "900px"))),
+            fluidRow(column(12, h1("Unmatched Sample"))),
+            fluidRow(
+                column(12, plotOutput(outputId = "plot_unmatched", height = "900px")))
         )
     )),
     nav("Summary Statistics", icon = icon("icicles"), plotOutput("diagnostic_correct")),

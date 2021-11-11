@@ -1,3 +1,5 @@
+#### Facilitator Dashboard ####
+
 router <- shiny.router::make_router(
   shiny.router::route("info", info_page),
   shiny.router::route("agree", uiAgree("p1")),

@@ -9,7 +9,7 @@
 #' @param base_size base font size
 #' @param strip_text_family facet label font family
 #' @param strip_text_size facet label text size
-#' @param plot_title_family plot tilte family
+#' @param plot_title_family plot title family
 #' @param plot_title_size plot title font size
 #' @param plot_title_margin plot title margin
 #' @param subtitle_family plot subtitle family
@@ -124,12 +124,6 @@ theme_tl <- function(base_family = "Calibri",
 
   xj <- switch(tolower(substr(axis_title_just, 1, 1)), b = 0, l = 0, m = 0.5, c = 0.5, r = 1, t = 1)
   yj <- switch(tolower(substr(axis_title_just, 2, 2)), b = 0, l = 0, m = 0.5, c = 0.5, r = 1, t = 1)
-
-  ret <- ret + ggplot2::theme(axis.text.x = ggplot2::element_text(size = axis_text_size, color = tick_color, margin = ggplot2::margin(t = 0.8 * base_size / 2)))
-  ret <- ret + ggplot2::theme(axis.text.y = ggplot2::element_text(size = axis_text_size, color = tick_color, margin = ggplot2::margin(r = 0.8 * base_size / 2))) + ggplot2::theme(axis.title = ggplot2::element_text(size = axis_title_size, family = axis_title_family))
-  ret <- ret + ggplot2::theme(axis.title.x = ggplot2::element_text(hjust = xj, size = axis_title_size, family = axis_title_family))
-  ret <- ret + ggplot2::theme(axis.title.y = ggplot2::element_text(hjust = yj, size = axis_title_size, family = axis_title_family))
-  ret <- ret + ggplot2::theme(strip.text = ggplot2::element_text(hjust = 0, size = strip_text_size, family = strip_text_family))
 
   if (!markdown) {
     ret <- ret + ggplot2::theme(axis.text.x = ggplot2::element_text(size = axis_text_size, color = tick_color, margin = ggplot2::margin(t = 0.8 * base_size / 2)))
@@ -1182,6 +1176,7 @@ coalesce_by_column <- function(df) {
 #' @param q_and_a a dataframe of questions and answers
 #' @param correct the correct answers
 #' @param save_name a folder for the plot ready data to be saved
+#' @param question_html_wrap number of characters before <br> insertion in question
 #' @return a plot ready dataframe
 #' @examples save_processed_data(data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELABootcamp-FoundationalSkillsBootcampSkills(K-2).rds"),
 #' q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_foundational_skills.rds"),
@@ -1194,20 +1189,22 @@ coalesce_by_column <- function(df) {
 #' save_name = "ela_foundational_skills")
 #' @export
 #' 
-save_processed_data <- function(data, q_and_a, correct, save_name) {
+save_processed_data <- function(data, q_and_a, correct, save_name, question_html_wrap = 45) {
   #### Input Survey ####
   data_with_id <- readr::read_rds(data) %>%
     dplyr::group_by(respondent_id) %>% # By respondent id reduce to one row per respondent
     dplyr::summarise_all(TeachingLab::coalesce_by_column) %>% # Same as above
     dplyr::rename_at(dplyr::vars(tidyselect::matches("3 initials")), ~ paste0("initials")) %>% # rename initials 
     dplyr::rename_at(dplyr::vars(tidyselect::matches("birthday")), ~ paste0("birthday")) %>% # rename birthday for next mutate
-    dplyr::rename_at(dplyr::vars(tidyselect::matches("school\\)\\.$|school\\)$")), ~ paste0("site")) %>% # rename site, but not site (other)
-    dplyr::mutate(id = paste0(str_to_lower(initials), birthday)) %>% # Create id by concatenating lowercase initials and bday
+    dplyr::rename_at(dplyr::vars(tidyselect::matches("school\\)\\.$|school\\)$|school$")), ~ paste0("site")) %>% # rename site, but not site (other)
+    dplyr::mutate(id = paste0(stringr::str_to_lower(initials), birthday)) %>% # Create id by concatenating lowercase initials and bday
     dplyr::group_by(id) %>%
     dplyr::mutate(n_response = n(), # Get number of responses by person, sometimes there are more than 2 :/
            maxdate = max(date_created), # Get max date of creation for most recent response
-           prepost = dplyr::if_else(n_response > 1 & maxdate == date_created, "post", "pre")) %>% # Define as post if more than 1 response and date is max of date_created
-    dplyr::mutate(prepost = factor(prepost, levels = c("pre", "post"))) # Make prepost a factor
+           matched = dplyr::if_else(n_response > 1 & maxdate == date_created, "post", "pre")) %>% # Define as post for matched if more than 1 response and date is max of date_created
+    dplyr::mutate(matched = factor(prepost, levels = c("pre", "post"))) %>% # Make matched a factor
+    dplyr::mutate(prepost = dplyr::if_else(date_created >= as.Date("2021-10-01"), "post", "pre")) %>% # Make pre and post defined by pre-October and post-October
+    dplyr::mutate(prepost = factor(prepost, levels = c("pre", "post"))) %>% # Make prepost a factor
   
   data_for_grading <- readr::read_rds(q_and_a) # Read in q_and_a dataframe
   
@@ -1228,7 +1225,7 @@ save_processed_data <- function(data, q_and_a, correct, save_name) {
            answer = dplyr::if_else(stringr::str_replace_all(answer, "<br>", " ") %in% correct, 
                             paste0("<b style='color:#04abeb'>", answer, "</b>"), 
                             answer),
-           question = TeachingLab::html_wrap(question, n = 30))
+           question = TeachingLab::html_wrap(question, n = question_html_wrap))
   
   print(data_plot)
   
