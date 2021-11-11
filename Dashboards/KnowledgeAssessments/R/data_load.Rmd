@@ -1028,7 +1028,7 @@ save_processed_data(data = here::here("Dashboards/KnowledgeAssessments/data/unpr
                     save_name = "math_bootcamp_eic")
 ```
 
-## Math Bootcamp
+## Math: Bootcamp
 
 ```{r}
 save_processed_data(data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/MathBootcamp.rds"),
