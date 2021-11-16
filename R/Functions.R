@@ -1199,12 +1199,12 @@ save_processed_data <- function(data, q_and_a, correct, save_name, question_html
     dplyr::rename_at(dplyr::vars(tidyselect::matches("school\\)\\.$|school\\)$|school$")), ~ paste0("site")) %>% # rename site, but not site (other)
     dplyr::mutate(id = paste0(tolower(initials), birthday)) %>% # Create id by concatenating lowercase initials and bday
     dplyr::group_by(id) %>%
-    dplyr::mutate(n_response = n(), # Get number of responses by person, sometimes there are more than 2 :/
+    dplyr::mutate(n_response = dplyr::n(), # Get number of responses by person, sometimes there are more than 2 :/
            maxdate = max(date_created), # Get max date of creation for most recent response
            matched = dplyr::if_else(n_response > 1 & maxdate == date_created, "post", "pre")) %>% # Define as post for matched if more than 1 response and date is max of date_created
-    dplyr::mutate(matched = factor(prepost, levels = c("pre", "post"))) %>% # Make matched a factor
+    dplyr::mutate(matched = factor(matched, levels = c("pre", "post"))) %>% # Make matched a factor
     dplyr::mutate(prepost = dplyr::if_else(date_created >= as.Date("2021-10-01") & n_response > 1, "post", "pre")) %>% # Make pre and post defined by pre-October and post-October
-    dplyr::mutate(prepost = factor(prepost, levels = c("pre", "post"))) %>% # Make prepost a factor
+    dplyr::mutate(prepost = factor(prepost, levels = c("pre", "post"))) # Make prepost a factor
   
   data_for_grading <- readr::read_rds(q_and_a) # Read in q_and_a dataframe
   
@@ -1219,7 +1219,7 @@ save_processed_data <- function(data, q_and_a, correct, save_name, question_html
   data_plot <- data_percents %>%
     dplyr::mutate(question = stringr::str_remove_all(stringr::str_remove_all(question, "(?<=\\s-\\s).*| - "), " - ")) %>%
     dplyr::group_by(question, site, prepost) %>%
-    dplyr::summarise(percent = if_else(percent == 100, 100*(n/max(n)), percent),
+    dplyr::summarise(percent = dplyr::if_else(percent == 100, 100*(n/max(n)), percent),
               answer = unlist(answer)) %>%
     dplyr::mutate(answer = TeachingLab::html_wrap(answer, n = 30),
            answer = dplyr::if_else(stringr::str_replace_all(answer, "<br>", " ") %in% correct, 
