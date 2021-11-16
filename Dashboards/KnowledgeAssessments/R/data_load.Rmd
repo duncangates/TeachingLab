@@ -872,6 +872,7 @@ ela_guidebooks_diverse_learners_teacher_correct <- tibble::tibble(
              "To help teachers plan for Tier-1 instruction that supports diverse learners to engage with grade-level texts and tasks.",
              "To help teachers plan for whole-group instruction that addresses the most pressing unfinished learning of the majority of the students in the class.",
              "I’m not sure"))
+
 readr::write_rds(ela_guidebooks_diverse_learners_teacher_correct, 
                  here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_diverse_learners_bootcamp_teacher.rds"))
 ```
