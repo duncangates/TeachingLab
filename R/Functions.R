@@ -1197,13 +1197,13 @@ save_processed_data <- function(data, q_and_a, correct, save_name, question_html
     dplyr::rename_at(dplyr::vars(tidyselect::matches("3 initials")), ~ paste0("initials")) %>% # rename initials 
     dplyr::rename_at(dplyr::vars(tidyselect::matches("birthday")), ~ paste0("birthday")) %>% # rename birthday for next mutate
     dplyr::rename_at(dplyr::vars(tidyselect::matches("school\\)\\.$|school\\)$|school$")), ~ paste0("site")) %>% # rename site, but not site (other)
-    dplyr::mutate(id = paste0(stringr::str_to_lower(initials), birthday)) %>% # Create id by concatenating lowercase initials and bday
+    dplyr::mutate(id = paste0(tolower(initials), birthday)) %>% # Create id by concatenating lowercase initials and bday
     dplyr::group_by(id) %>%
     dplyr::mutate(n_response = n(), # Get number of responses by person, sometimes there are more than 2 :/
            maxdate = max(date_created), # Get max date of creation for most recent response
            matched = dplyr::if_else(n_response > 1 & maxdate == date_created, "post", "pre")) %>% # Define as post for matched if more than 1 response and date is max of date_created
     dplyr::mutate(matched = factor(prepost, levels = c("pre", "post"))) %>% # Make matched a factor
-    dplyr::mutate(prepost = dplyr::if_else(date_created >= as.Date("2021-10-01"), "post", "pre")) %>% # Make pre and post defined by pre-October and post-October
+    dplyr::mutate(prepost = dplyr::if_else(date_created >= as.Date("2021-10-01") & n_response > 1, "post", "pre")) %>% # Make pre and post defined by pre-October and post-October
     dplyr::mutate(prepost = factor(prepost, levels = c("pre", "post"))) %>% # Make prepost a factor
   
   data_for_grading <- readr::read_rds(q_and_a) # Read in q_and_a dataframe
