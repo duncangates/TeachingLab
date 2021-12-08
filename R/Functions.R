@@ -384,7 +384,7 @@ theme_irp <- function(base_family = "Roboto Condensed",
 #' mtcars %>% utils::head() %>% gt::gt() %>% TeachingLab::gt_theme_tl()
 #' @export
 
-gt_theme_tl <- function(data, all_caps = F, align = "center", ...) {
+gt_theme_tl <- function(data, all_caps = F, align = "center", base_font = 16, heading_font = 20, ...) {
   data %>%
     gt::opt_all_caps(all_caps = all_caps) %>%
     gt::opt_table_font(
@@ -410,7 +410,7 @@ gt_theme_tl <- function(data, all_caps = F, align = "center", ...) {
     gt::tab_style(
       style = list(
         gt::cell_text(
-          size = "medium",
+          size = gt::px(base_font),
           align = align
         )
       ),
@@ -443,10 +443,12 @@ gt_theme_tl <- function(data, all_caps = F, align = "center", ...) {
       column_labels.font.weight = "bold",
       table_body.border.bottom.color = "black",
       table_body.border.bottom.width = gt::px(3),
+      grand_summary_row.border.color = "black",
+      grand_summary_row.border.width = gt::px(3),
       data_row.padding = gt::px(3),
       source_notes.font.size = 12,
-      table.font.size = 16,
-      heading.title.font.size = 20,
+      table.font.size = base_font,
+      heading.title.font.size = heading_font,
       heading.title.font.weight = "bold",
       heading.align = "center",
       ...
@@ -984,6 +986,7 @@ quote_viz <- function(data, text_col = colnames(data)[1], extra_cols = NULL, viz
       # dplyr::mutate(text = paste0("\"<i>", text, "\""))
     
     # Make a new column for the data
+    # Issue: this allows for overlay of html tags since it doesn't all occur at once
     data_text <- data_text %>%
       dplyr::mutate(color_text = text) %>%
       dplyr::mutate(color_text = stringr::str_replace_all(color_text, paste0(highlight[1]), paste0("<span style='color:#04abeb; font-weight:bold;'>", highlight[1], "</span>"))) %>%
@@ -1037,7 +1040,7 @@ quote_viz <- function(data, text_col = colnames(data)[1], extra_cols = NULL, viz
           rows = gt::everything()
         )
       ) %>%
-      TeachingLab::gt_theme_tl(align = align)
+      TeachingLab::gt_theme_tl(align = align, ...)
     }
     
   
@@ -1240,4 +1243,185 @@ save_processed_data <- function(data, q_and_a, correct, save_name, question_html
 strip_html <- function(string) {
   rvest::html_text(rvest::read_html(string))
 }
+
+#' @title GT, percent, n
+#' @description makes a gt table with percent and n colored
+#' @param df the data frame
+#' @param column the column to get count and percent from
+#' @param custom_title the title for the table
+#' @param no_title make the table have no title
+#' @param base_font overall table font size
+#' @param heading_font title font size
+#' @return a gt table
+#' @export
+gt_percent_n <- function(df, column, custom_title, no_title = T, base_font = 10, heading_font = 14) {
+  
+  column <- rlang::sym(column)
+  
+  new_name <- stringr::str_to_title(stringr::str_replace_all(column, "_", " ")) %>%
+    stringr::str_remove_all(" Br") %>%
+    paste0(., "?") %>%
+    stringr::str_wrap(., width = 25) %>%
+    stringr::str_replace_all(., "\n", "<br>")
+  
+  df %>%
+    dplyr::group_by(!!column) %>%
+    dplyr::count(sort = T) %>%
+    tidyr::drop_na(!!column) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(Percent = round(100 * n / sum(n), 2)) %>%
+    dplyr::rename({{ new_name }} := {{ column }}) %>%
+    gt::gt() %>%
+    gt::cols_label({{new_name}} := gt::html(new_name)) %>%
+    {if (no_title == F) gt::tab_header(title = gt::md(glue::glue("*{custom_title}*"))) else .} %>%
+    gt::data_color(
+      columns = n,
+      colors = scales::col_numeric(
+        palette = TeachingLab::tl_palette(color = "blue", n = 10),
+        domain = NULL
+      )
+    ) %>%
+    gt::fmt_percent(
+      columns = Percent,
+      decimals = 2,
+      scale_values = F
+    ) %>%
+    gt::grand_summary_rows(columns = c(n),
+                           fns = list(
+                             Total = ~ sum(.)
+                           ),
+                           formatter = fmt_number,
+                           decimals = 0) %>%
+    gt::grand_summary_rows(columns = c(Percent),
+                           fns = list(
+                             Total = ~ sum(.)
+                           ),
+                           formatter = fmt_percent,
+                           scale_values = F,
+                           decimals = 0) %>%
+    TeachingLab::gt_theme_tl(base_font = base_font, heading_font = heading_font)
+}
+
+#' @title HTML/CSS Button Content Expander
+#' @description Creates a button that will expand or hide content
+#' @param before button default, collapsed/not collapsed
+#' @param options unclear
+#' @param envir also unclear
+#' @param name chunk name
+#' @return html wrapper
+#' @export
+drop1 <- function(before = T, options, envir, name) {
+  
+  if (before) {
+    paste(
+      '<p>',
+      glue::glue('<button class="btn btn-primary collapsed" data-toggle="collapse" data-target="{name}">'),
+      '</button>',
+      '</p>',
+      glue::glue('<div class="collapse" id="{name}">'),
+      '<div class="card card-body">',  sep = "\n")
+  } else {
+    paste("</div>", "</div>", sep = "\n")
+  }
+  
+}
+
+
+#' @title IPG Forms Grapher
+#' @description Creates a graph specifically for IPG Forms data
+#' @param data the data
+#' @param name the column name for the data frame to focus on
+#' @param height height
+#' @param width width
+#' @param save_name the name to save
+#' @param wrap passes to str_wrap for the title
+#' @param sizing the base text size multiplier
+#' @param dpi the dpi to save with
+#' @param numeric if it is numeric reorder the factors
+#' @param split if it is sequenced by commas split it
+#' @param factor_level option for factor levels
+#' @return a ggplot
+#' @export
+ipg_plot <- function(data, name, save_name, height = 5, width = 8.5, wrap = 60, sizing = 1, dpi = 300,
+                     split = F, numeric = F, factor_level = NULL) {
+  
+  n <- data %>%
+    dplyr::filter(name == {{ name }}) %>%
+    dplyr::ungroup() %>%
+    dplyr::summarise(n = sum(n)) %>%
+    dplyr::select(n) %>%
+    as.vector()
+  
+  plot_data <- data %>%
+    dplyr::filter(name == {{ name }}) %>%
+    dplyr::ungroup() %>%
+    { if (split == T) dplyr::mutate(., value = stringr::str_split(value, ", ")) %>% 
+        tidyr::unnest(value) %>% 
+        dplyr::mutate(value = stringr::str_remove_all(value, ",")) %>% 
+        dplyr::group_by(value) %>%
+        dplyr::summarise(name = name,
+                         n = sum(n),
+                         percent = sum(percent)) %>%
+        dplyr::mutate(percent = replace(percent, percent == 99, 100)) %>%
+        dplyr::distinct(value, .keep_all = T) else . } %>%
+    dplyr::mutate(value = stringr::str_wrap(value, 30)) %>%
+    { if (numeric == T) dplyr::mutate(., number = readr::parse_number(value),
+                                       value = factor(value),
+                                       value = forcats::fct_reorder(value, number)) else . } %>%
+    { if (numeric == F) dplyr::mutate(., value = factor(value),
+                                      value = forcats::fct_reorder(value, percent)) else . } %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(color = ifelse(percent < mean(percent, na.rm = T), "white", "black")) %>%
+    print() 
+  
+  if (missing(factor_level)) {
+    plot_data
+  } else if (factor_level == "ac1") {
+    plot_data$value <- factor(plot_data$value, 
+                              levels = c("1- Rarely/Never",
+                                         "2- Sometimes",
+                                         "3- Often",
+                                         "4- Always"))
+  } else if (factor_level == "ca2a") {
+    plot_data$value <- factor(plot_data$value, 
+                              levels = stringr::str_wrap(c("1- Instruction is not focused on the mathematics of the lesson.",
+                                         "2- Instruction is limited to showing students how to get the answer.",
+                                         "3- Examples are used to make the mathematics of the lesson clear.",
+                                         "4- A variety of instructional techniques and examples are used to make the mathematics of the lesson clear."), 30))
+  } else if (factor_level == "ca2b") {
+    plot_data$value <- factor(plot_data$value, 
+                              levels = stringr::str_wrap(c("1- Student solution methods are not shared.",
+                                                           "2- Student solution methods are shared, but few connections are made to strengthen student understanding.",
+                                                           "3- Student solution methods are shared, and some mathematical connections are made between them.",
+                                                           "4- Student solution methods are shared, and connections to the mathematics are explicit and purposeful. If applicable, connections between the methods are examined."), 30))
+  } else if (factor_level == "ca3a") {
+    plot_data$value <- factor(plot_data$value, 
+                              levels = stringr::str_wrap(c("1- Teacher provides few or no opportunities, or few or very few students take the opportunities provided.",
+                                                           "2- Teacher provides some opportunities, and some students take them.",
+                                                           "3- Teacher provides many opportunities, and some students take them; or teacher provides some opportunities and most students take them.",
+                                                           "4- Teacher provides many opportunities, and most students take them."), 30))
+  } 
+  
+  p <- plot_data %>%
+    ggplot2::ggplot(ggplot2::aes(x = value, 
+                                 y = percent, 
+                                 fill = percent)) +
+    ggplot2::geom_col() +
+    ggplot2::geom_text(ggplot2::aes(label = paste0(percent, "%"), color = color), hjust = 1.25, size = 5*sizing) +
+    ggplot2::coord_flip() +
+    ggplot2::scale_y_continuous(labels = scales::percent_format(scale = 1), expand = c(0.1, 0)) +
+    ggplot2::scale_x_discrete(drop = F, limits = levels(plot_data$value)) +
+    ggplot2::labs(y = "", x = "", title = stringr::str_wrap(name, wrap), caption = paste0("n = ", n)) +
+    ggplot2::scale_color_manual(values = c("black", "white")) +
+    TeachingLab::theme_tl() +
+    ggplot2::theme(plot.caption = ggplot2::element_text(size = 10*sizing),
+                   axis.text.x = ggplot2::element_text(size = 15*sizing),
+                   axis.text.y = ggplot2::element_text(size = 15*sizing),
+                   plot.title = element_text(hjust = 0, face = "bold", size = 18*sizing))
+  
+  
+  ggplot2::ggsave(here::here(glue::glue("images/ipg_forms/{save_name}.png")), width = width, height = height, bg = "white", dpi = dpi)
+}
+
+
 

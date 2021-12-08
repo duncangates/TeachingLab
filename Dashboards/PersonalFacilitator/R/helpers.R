@@ -215,4 +215,19 @@ check_email_domain <- function(email, domain) {
   grepl(paste0("@",domain,"$"), email, ignore.case = TRUE)
 }
 
+#### Finding most recent groupings ####
 
+recent_choices <- session_survey %>% 
+  dplyr::filter(date_created > Sys.Date() - 14 & !is.na(Facilitator)) %>% # CURRENTLY SET TO LAST TWO WEEKS
+  dplyr::group_by(`Select your site (district, parish, network, or school).`, Facilitator) %>%
+  dplyr::summarise() %>%
+  tidyr::drop_na() %>%
+  dplyr::ungroup() %>%
+  dplyr::mutate(id = dplyr::row_number())
+
+recent_choices_final <- tibble::tibble(choice = paste(recent_choices$`Select your site (district, parish, network, or school).` %>% as.character() %>% stringr::str_replace_all(., ", ", " "),
+                                                      recent_choices$Facilitator, sep = ", ")) %>%
+  dplyr::mutate(id = dplyr::row_number())
+
+# NAs dataframe
+na_df <- c("none", "n/a", "N/A", "N/a", "NA", "na", "none", "none.", "na.", "NA.", "N/A.", "No Response")

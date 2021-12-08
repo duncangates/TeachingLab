@@ -23,7 +23,7 @@ data <- read_sheet("https://docs.google.com/spreadsheets/d/1nqtFK9_HBMBU6XQwCmmP
 
 ```{r}
 ela_names <- data %>%
-  filter(EL == T | Guidebooks == T) %>%
+  filter(EL == T | Guidebooks == T | `K-2` == T) %>%
   filter(Completed != "No" & Completed != "Not Started" & Completed != "") %>%
   select(Name)
 

@@ -4,7 +4,7 @@
 \alias{save_processed_data}
 \title{Coalesce everything}
 \usage{
-save_processed_data(data, q_and_a, correct, save_name)
+save_processed_data(data, q_and_a, correct, save_name, question_html_wrap = 45)
 }
 \arguments{
 \item{data}{the dataframe to be evaluated}
@@ -14,6 +14,8 @@ save_processed_data(data, q_and_a, correct, save_name)
 \item{correct}{the correct answers}
 
 \item{save_name}{a folder for the plot ready data to be saved}
+
+\item{question_html_wrap}{number of characters before <br> insertion in question}
 }
 \value{
 a plot ready dataframe

@@ -1,8 +1,27 @@
+#### Course Survey Dashboard ####
+
 library(magrittr)
 
-old_df <- readr::read_rds("Data/course_survey2021data.rds")
+course_survey <- readr::read_rds("data/course_surveymonkey.rds")
 
-options(sm_oauth_token = "a22Dkw3KTSZB9v.TYV0g2GAV2fRK7dfmQ81WEk1iqnTrcUUQpcksI1fRc44J-H0fcN3OAovcaQRNb38fhScbHpiUJu4vDP-9SZuXuwHNwcNRK035sJ7VjQFPOUnKi3TT")
+# NAs dataframe
+na_df <- c("none", "n/a", "N/A", "N/a", "NA", "na", "none", "none.", "na.", "NA.", "N/A.", "No Response")
+
+recent_choices <- course_survey %>% 
+  dplyr::filter(date_created > Sys.Date() - 14 & !is.na(`Select your course.`)) %>% # CURRENTLY SET TO LAST TWO WEEKS
+  dplyr::group_by(`Select your site (district, parish, network, or school).`, `Select your course.`) %>%
+  dplyr::summarise() %>%
+  tidyr::drop_na() %>%
+  dplyr::ungroup() %>%
+  dplyr::mutate(id = dplyr::row_number())
+
+recent_choices_final <- tibble::tibble(choice = paste(recent_choices$`Select your site (district, parish, network, or school).` %>% as.character() %>% stringr::str_replace_all(., ", ", " "),
+                                                      recent_choices$`Select your course.`, sep = ", ")) %>%
+  dplyr::mutate(id = dplyr::row_number())
+
+# old_df <- readr::read_rds("data/course_survey2021data.rds")
+
+# options(sm_oauth_token = "a22Dkw3KTSZB9v.TYV0g2GAV2fRK7dfmQ81WEk1iqnTrcUUQpcksI1fRc44J-H0fcN3OAovcaQRNb38fhScbHpiUJu4vDP-9SZuXuwHNwcNRK035sJ7VjQFPOUnKi3TT")
 
 # course_survey <- surveymonkey::fetch_survey_obj(id = 308116695) %>%
 #   surveymonkey::parse_survey() %>%
@@ -40,7 +59,7 @@ options(sm_oauth_token = "a22Dkw3KTSZB9v.TYV0g2GAV2fRK7dfmQ81WEk1iqnTrcUUQpcksI1
 
 # old_df <- readr::read_rds(here::here("Dashboards/CourseSurvey/Data/course_survey2021data.rds"))
 
-course_survey <- readr::read_rds("Data/course_surveymonkey.rds") #%>%
+# course_survey <- readr::read_rds("data/course_surveymonkey.rds") #%>%
   # dplyr::mutate(date_created = lubridate::date(date_created)) %>%
   # dplyr::mutate(`Select your course.` = dplyr::coalesce(`Select your course.`, `Select your course._2`, `Select your course._3`,
   #                                         `Select your course._4`, `Select your course._5`, `Select your course._6`)) %>%
@@ -123,18 +142,3 @@ course_survey <- readr::read_rds("Data/course_surveymonkey.rds") #%>%
 #                   `How much do you agree with the following statements about this course? - The independent online work activities were well-designed to help me meet the learning targets.`,
 #                   `How much do you agree with the following statements about this course? - I felt a sense of community with the other participants in this course. even though we were meeting virtually.`,
 #                   `How much do you agree with the following statements about this course? - I will apply what I have learned in this course to my practice in the next 4-6 weeks.`), ~ na_if(.x, "No Response")))
-
-# NAs dataframe
-na_df <- c("none", "n/a", "N/A", "N/a", "NA", "na", "none", "none.", "na.", "NA.", "N/A.", "No Response")
-
-recent_choices <- course_survey %>% 
-  dplyr::filter(date_created > Sys.Date() - 14 & !is.na(`Select your course.`)) %>% # CURRENTLY SET TO LAST TWO WEEKS
-  dplyr::group_by(`Select your site (district, parish, network, or school).`, `Select your course.`) %>%
-  dplyr::summarise() %>%
-  tidyr::drop_na() %>%
-  dplyr::ungroup() %>%
-  dplyr::mutate(id = dplyr::row_number())
-
-recent_choices_final <- tibble::tibble(choice = paste(recent_choices$`Select your site (district, parish, network, or school).` %>% as.character() %>% stringr::str_replace_all(., ", ", " "),
-                                                      recent_choices$`Select your course.`, sep = ", ")) %>%
-  dplyr::mutate(id = dplyr::row_number())

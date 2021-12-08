@@ -4,7 +4,14 @@
 \alias{gt_theme_tl}
 \title{Create Teaching Lab theme to a gt table}
 \usage{
-gt_theme_tl(data, all_caps = F, align = "center", ...)
+gt_theme_tl(
+  data,
+  all_caps = F,
+  align = "center",
+  base_font = 16,
+  heading_font = 20,
+  ...
+)
 }
 \arguments{
 \item{data}{An existing gt table object}

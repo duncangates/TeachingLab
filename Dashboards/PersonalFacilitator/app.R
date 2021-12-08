@@ -50,6 +50,17 @@ ui <- semanticPage(
 )
 
 server <- function(input, output, session) {
+  
+  # Trick file date creation update
+  onStop(function() {
+    
+    # File name
+    p <- paste0(getwd(), "/app.R")
+    
+    # Update file 'date creation'
+    Sys.setFileTime(p, lubridate::now())
+    
+  }) # onStop
 
   sign_ins <- shiny::callModule(googleSignIn, "loginButton")
   

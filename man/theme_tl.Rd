@@ -44,7 +44,7 @@ theme_tl(
 
 \item{strip_text_size}{facet label text size}
 
-\item{plot_title_family}{plot tilte family}
+\item{plot_title_family}{plot title family}
 
 \item{plot_title_size}{plot title font size}
 

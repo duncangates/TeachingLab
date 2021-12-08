@@ -2,10 +2,10 @@
 
 # Making the initial routes to follow
 router <- shiny.router::make_router(
-  route("info", info_page),
-  route("agree", uiAgree("p1")),
-  route("text", uiText("p2")),
-  route("report", uiReport("p3"))
+  shiny.router::route("info", info_page),
+  shiny.router::route("agree", uiAgree("p1")),
+  shiny.router::route("text", uiText("p2")),
+  shiny.router::route("report", uiReport("p3"))
 )
 
 ui <- semanticPage(

@@ -3,7 +3,8 @@ source("sheet_read.R")
 
 # Read in necessary data
 PMs_Emails <- read_rds("Data/PMs.rds")
-Courses <- read_rds("Data/Courses.rds")
+Courses <- read_rds("Data/Courses.rds") %>%
+  dplyr::bind_rows(tibble::tibble(Courses = "K-2 Supported Planning"))
 Facilitators_Emails <- read_rds("Data/Facilitators.rds")
 Sites <- read_rds("Data/Site.rds")
 
@@ -88,7 +89,7 @@ ui <- dashboardPage(
             ),
             selectInput("curriculum",
               label = h5(labelMandatory("Curriculum"), style = "font-weight:bold;font-size: 20px;"),
-              choices = c("", "EL", "State Level", "IM", "Engage/Eureka", "Zearn", "Guidebooks", "Science", "SL IPG") %>% sort(),
+              choices = c("", "Curriculum Adaptive", "EL", "State Level", "IM", "Engage/Eureka", "Zearn", "Guidebooks", "Science", "SL IPG") %>% sort(),
               selected = "",
             ),
             selectInput("site",
@@ -99,7 +100,7 @@ ui <- dashboardPage(
             tags$head(tags$style(HTML("#content+ div>.selectize-input {height: 130px;}"))),
             shiny::selectizeInput("content",
               label = h5(labelMandatory("Content "), style = "font-weight:bold;font-size: 20px;"),
-              choices = purrr::prepend(Courses$Courses, ""),
+              choices = purrr::prepend(sort(Courses$Courses), ""),
               multiple = T, options = list(plugins= list('remove_button'))
             ),
             selectizeInput("calls_count",

@@ -1,11 +1,11 @@
 #### Course Survey Dashboard ####
 
 router <- shiny.router::make_router(
-  route("index", info_page),
-  route("agree", uiAgree("p1")),
-  route("nps", uiNPS("p2")),
-  route("text", uiText("p3")),
-  route("report", uiReport("p4"))
+  shiny.router::route("index", info_page),
+  shiny.router::route("agree", uiAgree("p1")),
+  shiny.router::route("nps", uiNPS("p2")),
+  shiny.router::route("text", uiText("p3")),
+  shiny.router::route("report", uiReport("p4"))
 )
 
 ui <- semanticPage(

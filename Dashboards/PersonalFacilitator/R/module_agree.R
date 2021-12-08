@@ -149,10 +149,6 @@ uiAgree <- function(id, label = "Counter") {
 agreeServer <- function(id, result_auth, in_content, in_course, in_site, in_role, in_date_slider) {
   ns <- NS(id)
   moduleServer(id, function(input, output, session) {
-    
-    observe({
-      print(paste(result_auth, "textitty text text"))
-    })
 
     # Time Series Plot
     data_plot_ts <- reactive({

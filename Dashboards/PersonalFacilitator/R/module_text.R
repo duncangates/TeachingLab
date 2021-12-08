@@ -248,6 +248,8 @@ textServer <- function(id, result_auth, in_content, in_course, in_site, in_role,
 
     quote_viz_data3 <- reactive({
       
+      print(result_auth)
+      
       
       quote_reactive3 <- session_survey %>%
         dplyr::filter(Facilitator == result_auth) %>%
@@ -265,7 +267,6 @@ textServer <- function(id, result_auth, in_content, in_course, in_site, in_role,
           if (input$course != "All Courses") dplyr::filter(., `Select your course.` == input$course) else .
         } %>%
         select(`What could have been better about today’s session?`) %>%
-        print() %>%
         pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
         drop_na() %>%
         filter(Response %!in% na_df) %>%

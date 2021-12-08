@@ -44,7 +44,6 @@ css_def <- sass::sass_file("www/styles.scss")
 
 #### All taken from https://github.com/rstudio/bslib/issues/76 ####
 
-# Define UI for application that draws a histogram
 page_navbar(
 
     # Application title and background color
