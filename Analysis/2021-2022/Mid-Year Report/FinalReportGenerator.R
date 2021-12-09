@@ -3,32 +3,30 @@ library(rmarkdown)
 
 params_list <- list(
   partner = list(
-    # "All Partners", # Already completed
-    # "District 11", # Already completed
-    # "District 11 Math", # Already completed
-    # "District 11 ELA", # Already completed
-    # "San Diego 6-8", # Already completed
-    # "San Diego K-5", # Already completed
-    # "Fannie Lou",
-    # "Amistad",
-    # "Brownington Central School, VT", # Already completed
-    # "Building 21 - Allentown, PA", # Already completed
-    # "Building 21 - Philadelphia, PA", # Already completed
-    # "Calcasieu Parish, LA", # Already completed
-    # "Cleveland Metropolitan School District, OH", # Already completed
-    # "Connecticut Partnership (with UnboundEd)", # Already completed
-    # "Delaware Department of Education, DE", # Already completed
-    # "DeSoto Parish, LA", # Already completed
-    # "Freire Charter Schools, PA/DE",
-    # "Horizon Charter Schools, CA",
-    # "Kankakee School District, IL",
-    # "Louisville School District - Jacob Elementary, KY",
-    # "Lafayette Parish, LA",
-    # "Louisiana Department of Education, LA",
-    # "Methuen Public Schools, MA",
-    # "Massachusetts Dept of Elementary & Secondary Education",
-    # "Mississippi Department of Education, MS",
-    # "North Bronx School of Empowerment, NY",
+    "All Partners", # Already completed
+    "District 11", # Already completed
+    "District 11 Math", # Already completed
+    "District 11 ELA", # Already completed
+    "San Diego 6-8", # Already completed
+    "San Diego K-5", # Already completed
+    "Brownington Central School, VT", # Already completed
+    "Building 21 - Allentown, PA", # Already completed
+    "Building 21 - Philadelphia, PA", # Already completed
+    "Calcasieu Parish, LA", # Already completed
+    "Cleveland Metropolitan School District, OH", # Already completed
+    "Connecticut Partnership (with UnboundEd)", # Already completed
+    "Delaware Department of Education, DE", # Already completed
+    "DeSoto Parish, LA", # Already completed
+    "Freire Charter Schools, PA/DE",
+    "Horizon Charter Schools, CA",
+    "Kankakee School District, IL",
+    "Louisville School District - Jacob Elementary, KY",
+    "Lafayette Parish, LA",
+    "Louisiana Department of Education, LA",
+    "Methuen Public Schools, MA",
+    "Massachusetts Dept of Elementary & Secondary Education",
+    "Mississippi Department of Education, MS",
+    "North Bronx School of Empowerment, NY",
     # "NYC District 11 - District-wide, NY",
     # "NYC District 11 - IS 355, NY",
     # "NYC District 11 - PS 21, NY",
@@ -61,17 +59,17 @@ params_list <- list(
     # "NYC District 11 - IS 462, NY",
     # "NYC District 11 - IS 532, NY",
     # "NYC District 11 - IS 556, NY",
-    # "NYC District 12 - EMST-IS 190, N",
-    # "NYC District 6 - MS311, NY",
-    # "NYC District 12 - MS 286, NY",
+    "NYC District 12 - EMST-IS 190, N",
+    "NYC District 6 - MS311, NY",
+    "NYC District 12 - MS 286, NY",
     # "NYC District 11 - PS 78, NY",
     # "NYC District 11 - PS 97, NY",
     # "NYC District 11 - PS 105, NY",
     # "NYC District 11 - PS 106, NY",
-    # "NYC District 9",
-    # "Open Enrollment, National",
-    # "Orleans Central Supervisory Union, VT",
-    # "Pointe Coupee Parish, LA",
+    "NYC District 9",
+    "Open Enrollment, National",
+    "Orleans Central Supervisory Union, VT",
+    "Pointe Coupee Parish, LA",
     "Rochester City School District",
     "San Diego Unified School District, CA",
     "Washington Parish, LA",

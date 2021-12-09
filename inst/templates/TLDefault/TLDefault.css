@@ -165,7 +165,8 @@ body{
     height:100%;
     margin-left:300px;
     /* margin:auto; */
-    max-width:900px;
+    max-width:1080px; 
+    /* Chang max width here */
     min-height:100%;
 }
 

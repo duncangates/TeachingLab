@@ -807,44 +807,7 @@ other_text <- function(data) {
 map_dfr(1:18, ~other_text(data = .x))
 
 
-el_ela_hqim_enrichment <- read_rds(here::here("Dashboards/KnowledgeAssessments/data/processed/el_ela_hqim_enrichment.rds")) %>%
-  mutate(know_assess = "el_ela_hqim_enrichment")
-ela_foundational_skills <- read_rds(here::here("Dashboards/KnowledgeAssessments/data/processed/ela_foundational_skills.rds")) %>%
-  mutate(know_assess = "ela_foundational_skills")
-ela_general_bootcamp <- read_rds(here::here("Dashboards/KnowledgeAssessments/data/processed/ela_general_bootcamp.rds")) %>%
-  mutate(know_assess = "ela_general_bootcamp")
-ela_guidebooks_diverse_learners_bootcamp_leader <- read_rds(here::here("Dashboards/KnowledgeAssessments/data/processed/ela_guidebooks_diverse_learners_bootcamp_leader.rds")) %>%
-  mutate(know_assess = "ela_guidebooks_diverse_learners_bootcamp_leader")
-ela_guidebooks_diverse_learners_bootcamp_teacher <- read_rds(here::here("Dashboards/KnowledgeAssessments/data/processed/ela_guidebooks_diverse_learners_bootcamp_teacher.rds")) %>%
-  mutate(know_assess = "ela_guidebooks_diverse_learners_bootcamp_teacher")
-ela_guidebooks_diverse_learners_bootcamp_writing <- read_rds(here::here("Dashboards/KnowledgeAssessments/data/processed/ela_guidebooks_diverse_learners_bootcamp_writing.rds")) %>%
-  mutate(know_assess = "ela_guidebooks_diverse_learners_bootcamp_writing")
-ela_school_leaders <- read_rds(here::here("Dashboards/KnowledgeAssessments/data/processed/ela_school_leaders.rds")) %>%
-  mutate(know_assess = "ela_school_leaders")
-math_bootcamp_eic <- read_rds(here::here("Dashboards/KnowledgeAssessments/data/processed/math_bootcamp_eic.rds")) %>%
-  mutate(know_assess = "math_bootcamp_eic")
-math_bootcamp <- read_rds(here::here("Dashboards/KnowledgeAssessments/data/processed/math_bootcamp.rds")) %>%
-  mutate(know_assess = "math_bootcamp")
-math_cycle_inquiry_iv <- read_rds(here::here("Dashboards/KnowledgeAssessments/data/processed/math_cycle_inquiry_iv.rds")) %>%
-  mutate(know_assess = "math_cycle_inquiry_iv")
-math_cycle_of_inquiry_i <- read_rds(here::here("Dashboards/KnowledgeAssessments/data/processed/math_cycle_of_inquiry_i.rds")) %>%
-  mutate(know_assess = "math_cycle_of_inquiry_i")
 
-
-all_knowledge_assessments <- el_ela_hqim_enrichment %>%
-  full_join(ela_foundational_skills) %>%
-  full_join(ela_foundational_skills) %>%
-  full_join(ela_general_bootcamp) %>%
-  full_join(ela_guidebooks_diverse_learners_bootcamp_leader) %>%
-  full_join(ela_guidebooks_diverse_learners_bootcamp_teacher) %>%
-  full_join(ela_guidebooks_diverse_learners_bootcamp_writing) %>%
-  full_join(ela_school_leaders) %>%
-  full_join(math_bootcamp_eic) %>%
-  full_join(math_bootcamp) %>%
-  full_join(math_cycle_inquiry_iv) %>%
-  full_join(math_cycle_of_inquiry_i)
-
-write_rds(here::here("data/"))
 
 
 
