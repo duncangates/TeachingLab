@@ -10,7 +10,9 @@ gt_percent_n(
   custom_title,
   no_title = T,
   base_font = 10,
-  heading_font = 14
+  heading_font = 14,
+  custom_column_name = "",
+  viz_type = "gt"
 )
 }
 \arguments{
@@ -25,6 +27,10 @@ gt_percent_n(
 \item{base_font}{overall table font size}
 
 \item{heading_font}{title font size}
+
+\item{custom_column_name}{a custom name for the column}
+
+\item{viz_type}{gt by default, also has ggplot options like pie chart}
 }
 \value{
 a gt table

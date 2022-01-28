@@ -2,11 +2,11 @@ source("global.R")
 source("sheet_read.R")
 
 # Read in necessary data
-PMs_Emails <- read_rds("Data/PMs.rds")
-Courses <- read_rds("Data/Courses.rds") %>%
-  dplyr::bind_rows(tibble::tibble(Courses = "K-2 Supported Planning"))
-Facilitators_Emails <- read_rds("Data/Facilitators.rds")
-Sites <- read_rds("Data/Site.rds")
+PMs_Emails <- read_rds("data/PMs.rds")
+Courses <- read_rds("data/Courses.rds") #%>%
+  # dplyr::bind_rows(tibble::tibble(Courses = "K-2 Supported Planning"))
+Facilitators_Emails <- read_rds("data/Facilitators.rds")
+Sites <- read_rds("data/Site.rds")
 
 # Organize rows as facilitator observation
 # Columns as dates
@@ -43,8 +43,8 @@ ui <- dashboardPage(
   footer = dashboardFooter(
     tags$head(tags$style(HTML("a {color: #3D9970}"))),
     left = a(
-      href = "https://twitter.com/teachinglabHQ",
-      target = "_blank", "@teachinglabHQ"
+      href = "https://www.surveymonkey.com/r/StaffingFeedback1",
+      target = "_blank", "Feedback Survey"
     ),
     right = "© Teaching Lab, 2021"
   ),
@@ -87,12 +87,12 @@ ui <- dashboardPage(
               choices = purrr::prepend(PMs_Emails$PMs, "") %>% sort(),
               selected = "",
             ),
-            selectInput("curriculum",
+            shiny::selectInput("curriculum",
               label = h5(labelMandatory("Curriculum"), style = "font-weight:bold;font-size: 20px;"),
-              choices = c("", "Curriculum Adaptive", "EL", "State Level", "IM", "Engage/Eureka", "Zearn", "Guidebooks", "Science", "SL IPG") %>% sort(),
+              choices = c("", "EL", "Guidebooks", "Engage/Eureka", "K-2", "CKLA", "IM", "Zearn", "State Level", "Science", "SL IPG") %>% sort(),
               selected = "",
             ),
-            selectInput("site",
+            shiny::selectInput("site",
               label = h5(labelMandatory("Site "), style = "font-weight:bold;font-size: 20px;"),
               choices = purrr::prepend(Sites$Site, "") %>% sort(),
               selected = "",
@@ -103,7 +103,7 @@ ui <- dashboardPage(
               choices = purrr::prepend(sort(Courses$Courses), ""),
               multiple = T, options = list(plugins= list('remove_button'))
             ),
-            selectizeInput("calls_count",
+            shiny::selectizeInput("calls_count",
               label = h5(labelMandatory("# of Calls "), style = "font-weight:bold;font-size: 20px;"),
               choices = c(0:10), selected = 0
             ),
@@ -154,7 +154,7 @@ ui <- dashboardPage(
             )
           ),
           br(),
-          textAreaInput("additional_info",
+          shiny::textAreaInput("additional_info",
             label = "What additional information would you like to provide?",
             width = "80%", height = "400px"
           ),
@@ -197,7 +197,10 @@ server <- function(input, output, session) {
     shinyWidgets::pickerInput("specific_facilitator",
       label = labelMandatory("Select the facilitators you would like to email:"),
       choices = Facilitators_Emails %>%
+        mutate(across(EL:Science, ~ case_when(.x == TRUE ~ 1,
+                                              .x == FALSE ~ 0))) %>%
         pivot_longer(!c(1, 2), names_to = "Curriculum") %>%
+        print() %>%
         arrange(Facilitators) %>%
         filter(Curriculum == input$curriculum & value == 1) %>%
         select(Facilitators) %>%
@@ -214,6 +217,7 @@ server <- function(input, output, session) {
   output$call_times_gen <- renderUI({
 
     # Require all times
+    req(input$pm)
     req(input$site)
     req(input$curriculum)
     req(input$pm)
@@ -370,7 +374,7 @@ server <- function(input, output, session) {
     req(times == input$calls_count)
 
     # Write New RDS first
-    write_rds(new_data(), "Data/new_data.rds")
+    write_rds(new_data(), "data/new_data.rds")
 
     # Write to sheet
     source("sheet_write.R")

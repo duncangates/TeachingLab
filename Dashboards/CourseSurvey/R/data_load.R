@@ -2,7 +2,12 @@
 
 library(magrittr)
 
-course_survey <- readr::read_rds("data/course_surveymonkey.rds")
+course_survey <- readr::read_rds("data/course_surveymonkey.rds") %>%
+  dplyr::mutate(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?` =
+           as.numeric(readr::parse_number(as.character(dplyr::coalesce(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`,
+                           `How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend?`))))) %>%
+  dplyr::mutate(date_created = dplyr::coalesce(date_created,
+                                               `Date for the session`))
 
 # NAs dataframe
 na_df <- c("none", "n/a", "N/A", "N/a", "NA", "na", "none", "none.", "na.", "NA.", "N/A.", "No Response")

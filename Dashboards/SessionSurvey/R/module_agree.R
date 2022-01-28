@@ -385,7 +385,7 @@ agreeServer <- function(id) {
           "(3) Neither agree nor disagree" = "#02587A", "(4) Agree" = "#0182B4", "(5) Strongly agree" = "#00ACF0"
         )) +
         labs(
-          fill = "", title = "Participant Perceptions of Course - Likert Scale Questions",
+          fill = "", title = "Participant Perceptions of Session - Likert Scale Questions",
           x = "", y = "",
           subtitle = glue::glue("Given the filters applied there are {agree_plot_n()} responses")
         ) +

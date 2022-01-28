@@ -142,7 +142,7 @@ theme_tl <- function(base_family = "Calibri",
     ret <- ret + ggplot2::theme(axis.title.y = ggtext::element_markdown(hjust = yj, size = axis_title_size, family = axis_title_family))
     ret <- ret + ggplot2::theme(strip.text = ggtext::element_markdown(hjust = 0, size = strip_text_size, family = strip_text_family))
 
-    ret <- ret + ggplot2::theme(plot.title = ggtext::element_markdown(hjust = 0, size = plot_title_size, margin = ggplot2::margin(b = plot_title_margin), family = plot_title_family))
+    ret <- ret + ggplot2::theme(plot.title = ggtext::element_markdown(hjust = 0.5, size = plot_title_size, margin = ggplot2::margin(b = plot_title_margin), family = plot_title_family))
     ret <- ret + ggplot2::theme(plot.subtitle = ggtext::element_markdown(hjust = 0, size = subtitle_size, margin = ggplot2::margin(b = subtitle_margin), family = subtitle_family))
     ret <- ret + ggplot2::theme(plot.caption = ggtext::element_markdown(hjust = 1, size = caption_size, margin = ggplot2::margin(t = caption_margin), family = caption_family))
   }
@@ -1235,6 +1235,103 @@ save_processed_data <- function(data, q_and_a, correct, save_name, question_html
   readr::write_rds(data_plot, here::here(glue::glue("Dashboards/KnowledgeAssessments/data/processed/{save_name}.rds")))
 }
 
+#' @title Version 2 Knowledge Assessments Reformat
+#' @description A function to use on already loaded knowledge_assessments data, this one saves to data/mid_year_reports
+#' @param data the dataframe to be evaluated
+#' @param q_and_a a dataframe of questions and answers
+#' @param correct the correct answers
+#' @param save_name a folder for the plot ready data to be saved
+#' @param question_html_wrap number of characters before <br> insertion in question
+#' @return a plot ready dataframe
+#' @examples save_processed_data2(data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELABootcamp-FoundationalSkillsBootcampSkills(K-2).rds"),
+#' q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_foundational_skills.rds"),
+#' correct = c("Print concepts",
+#'            "Phonological awareness",
+#'            "Fluency",
+#'            "It prompts students to use context clues and pictures to decode words",
+#'            "Utilize a variety of ongoing assessment data to determine the focus of instruction for small groups",
+#'            "Group students by their ongoing phase of development with regard to the foundational skills"),
+#' save_name = "ela_foundational_skills")
+#' @export
+#' 
+save_processed_data2 <- function(data, q_and_a, correct, save_name, question_html_wrap = 45) {
+  #### Check which knowledge assessment it is for later adaptation purposes due to data entry mistakes ####
+  know_assess <- str_remove(q_and_a, ".*questions_and_answers/")
+  #### Input Survey ####
+  data_with_id <- readr::read_rds(data) %>%
+    dplyr::group_by(respondent_id) %>% # By respondent id reduce to one row per respondent
+    dplyr::summarise_all(TeachingLab::coalesce_by_column) %>% # Same as above
+    dplyr::rename_at(dplyr::vars(tidyselect::matches("3 initials")), ~ paste0("initials")) %>% # rename initials 
+    dplyr::rename_at(dplyr::vars(tidyselect::matches("birthday")), ~ paste0("birthday")) %>% # rename birthday for next mutate
+    dplyr::rename_at(dplyr::vars(tidyselect::matches("school\\)\\.$|school\\)$|school$")), ~ paste0("site")) %>% # rename site, but not site (other)
+    dplyr::rename_at(dplyr::vars(tidyselect::matches("Other -|- Other")), ~ paste0("other_site")) %>%
+    dplyr::mutate(other_site = stringr::str_replace_all(other_site, c("North Bronx School of Empowerment" = "North Bronx School of Empowerment, NY",
+                                                                      "BRONX GREEN MIDDLE SCHOOL" = "North Bronx School of Empowerment, NY",
+                                                                      "Math Director" = "North Bronx School of Empowerment, NY",
+                                                                      "BCO" = "North Bronx School of Empowerment, NY",
+                                                                      "BAYCHESTER MIDDLE SCHOOL" = "North Bronx School of Empowerment, NY",
+                                                                      "San Diego Unified" = "San Diego Unified School District, CA")),
+                  other_site = ifelse(stringr::str_detect(other_site, "11"), "District 11", other_site)) %>%
+    dplyr::mutate(site = dplyr::coalesce(site, other_site)) %>%
+    dplyr::mutate(id = paste0(tolower(initials), birthday)) %>% # Create id by concatenating lowercase initials and bday
+    dplyr::group_by(id) %>%
+    dplyr::mutate(n_response = dplyr::n(), # Get number of responses by person, sometimes there are more than 2 :/
+                  maxdate = max(date_created), # Get max date of creation for most recent response
+                  prepost = dplyr::if_else(n_response > 1 & maxdate == date_created | 
+                                             date_created > mean(date_created), 
+                                           "post", 
+                                           "pre")) #%>% # Define as post for matched if more than 1 response and date is max of date_created
+  
+  
+  # Conditionally assign pre or post for specific sites with specific parameters
+    if ((data_with_id$site == "San Diego Unified School District, CA") && (know_assess == "math_cycle_of_inquiry_i")) {
+      data_with_id <- dplyr::mutate(data_with_id,
+                    prepost = "post") 
+    }
+    if ((data_with_id$site == "San Diego Unified School District, CA") && (know_assess == "math_bootcamp")) {
+      data_with_id <- dplyr::mutate(data_with_id, 
+                    prepost = ifelse(date_created %in% c(as.Date("2021-08-16"), as.Date("2021-08-17")),
+                                     "pre",
+                                     "post"))
+    }
+    if ((data_with_id$site == "San Diego Unified School District, CA") && (know_assess == "math_bootcamp") && (data_with_id$date_created >= as.Date("2021-10-01"))) {
+      data_with_id <- dplyr::mutate(data_with_id, 
+                    prepost = ifelse(between(date_created, as.Date("2021-10-05"), as.Date("2021-10-07")),
+                                     "pre",
+                                     "post"),
+                    site = "math_cycle_of_inquiry_i")
+    }
+  data_with_id <- data_with_id %>%
+    dplyr::mutate(prepost = factor(prepost, levels = c("pre", "post")))
+  
+  data_for_grading <- readr::read_rds(q_and_a) # Read in q_and_a dataframe
+
+  # Calculate percent saying each with score_question
+  data_percents <- purrr::map2_df(data_for_grading$question,
+                                  data_for_grading$answer, ~
+                                    TeachingLab::score_question(data = data_with_id,
+                                                                question = .x,
+                                                                coding = .y,
+                                                                grouping = c(site, prepost)))
+  # Remove extra parts of questions, highlight answers that are correct, add <br> for plotting
+  data_plot <- data_percents %>%
+    dplyr::mutate(question = stringr::str_remove_all(stringr::str_remove_all(question, "(?<=\\s-\\s).*| - "), " - ")) %>%
+    dplyr::group_by(question, site, prepost) %>%
+    dplyr::summarise(percent = percent,
+                     n = n,
+                     percent = dplyr::if_else(percent == 100, 100*(n/max(n)), percent),
+                     answer = unlist(answer)) %>%
+    dplyr::mutate(answer = TeachingLab::html_wrap(answer, n = 30),
+                  answer = dplyr::if_else(stringr::str_replace_all(answer, "<br>", " ") %in% correct,
+                                          paste0("<b style='color:#04abeb'>", answer, "</b>"),
+                                          answer),
+                  question = TeachingLab::html_wrap(question, n = question_html_wrap))
+
+  print(data_plot)
+
+  readr::write_rds(data_plot, here::here(glue::glue("data/mid_year_reports/knowledge_assessments/{save_name}.rds")))
+}
+
 #' @title Remove HTML
 #' @description Takes a string and removes html using rvest
 #' @param string a string
@@ -1252,54 +1349,161 @@ strip_html <- function(string) {
 #' @param no_title make the table have no title
 #' @param base_font overall table font size
 #' @param heading_font title font size
+#' @param custom_column_name a custom name for the column
+#' @param viz_type gt by default, also has ggplot options like pie chart
 #' @return a gt table
 #' @export
-gt_percent_n <- function(df, column, custom_title, no_title = T, base_font = 10, heading_font = 14) {
+gt_percent_n <- function(df, column, custom_title, no_title = T, base_font = 10, 
+                         heading_font = 14, custom_column_name = "", viz_type = "gt") {
   
   column <- rlang::sym(column)
+  # Replaced by 
+  # new_name <- stringr::str_to_title(stringr::str_replace_all(column, "_", " ")) %>%
+  #   stringr::str_remove_all(" Br") %>%
+  #   paste0(., "?") %>%
+  #   stringr::str_wrap(., width = 25) %>%
+  #   stringr::str_replace_all(., "\n", "<br>")
   
-  new_name <- stringr::str_to_title(stringr::str_replace_all(column, "_", " ")) %>%
-    stringr::str_remove_all(" Br") %>%
-    paste0(., "?") %>%
-    stringr::str_wrap(., width = 25) %>%
-    stringr::str_replace_all(., "\n", "<br>")
+  if (viz_type == "gt") {
+    df %>%
+      dplyr::group_by(!!column) %>%
+      dplyr::count(sort = T) %>%
+      tidyr::drop_na(!!column) %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(Percent = round(100 * n / sum(n), 2)) %>%
+      dplyr::rename({{ custom_column_name }} := {{ column }}) %>%
+      gt::gt() %>%
+      gt::cols_label({{custom_column_name}} := gt::html(custom_column_name)) %>%
+      {if (no_title == F) gt::tab_header(title = gt::md(glue::glue("*{custom_title}*"))) else .} %>%
+      gt::data_color(
+        columns = n,
+        colors = scales::col_numeric(
+          palette = TeachingLab::tl_palette(color = "blue", n = 10),
+          domain = NULL
+        )
+      ) %>%
+      gt::fmt_percent(
+        columns = Percent,
+        decimals = 2,
+        scale_values = F
+      ) %>%
+      gt::grand_summary_rows(columns = c(n),
+                             fns = list(
+                               Total = ~ sum(.)
+                             ),
+                             formatter = fmt_number,
+                             decimals = 0) %>%
+      gt::grand_summary_rows(columns = c(Percent),
+                             fns = list(
+                               Total = ~ sum(.)
+                             ),
+                             formatter = fmt_percent,
+                             scale_values = F,
+                             decimals = 0) %>%
+      TeachingLab::gt_theme_tl(base_font = base_font, heading_font = heading_font)
+  } else if (viz_type == "pie") {
+    ggplot_data <- df %>%
+      dplyr::group_by(!!column) %>%
+      dplyr::count(sort = T) %>%
+      tidyr::drop_na(!!column) %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(!!(column) := stringr::str_wrap(!!rlang::sym(column), width = 10),
+                    Percent = round(100 * n / sum(n), 2)) %>%
+      dplyr::rename({{ custom_column_name }} := {{ column }}) %>%
+      dplyr::mutate(prop = 100 * (Percent / sum(Percent)),
+                    ypos = cumsum(prop) - 0.5 * prop,
+                    {{ custom_column_name }} := forcats::fct_reorder(!!ensym(custom_column_name), Percent))
+    ggplot_data %>%
+      ggplot2::ggplot(ggplot2::aes(x = "", y = Percent, 
+                                   fill = !!ensym(custom_column_name))) +
+      ggplot2::geom_col(key_glyph = draw_key_point) +
+      ggplot2::geom_text(ggplot2::aes(label = paste0(Percent, "%"),
+                                      y = ypos),
+                         family = "Calibri",
+                         fontface = "bold",
+                         color = ifelse(min(ggplot_data$Percent) == ggplot_data$Percent | ggplot_data$Percent < 10, 
+                                        "white", 
+                                        "black"),
+                         size = ifelse(min(ggplot_data$Percent) == ggplot_data$Percent | ggplot_data$Percent < 10, 
+                                       4, 
+                                       6),
+                         vjust = ifelse(min(ggplot_data$Percent) == ggplot_data$Percent, -1.5, 0.5)) +
+      ggplot2::coord_polar("y", start = 0) +
+      ggplot2::labs(title = paste0(custom_column_name, " (n = ", sum(ggplot_data$n, na.rm = T), ")")) +
+      ggplot2::scale_fill_manual(values = tl_palette(color = "blue", 
+                                                     n = length(unique(ggplot_data[[custom_column_name]])))) +
+      ggplot2::theme_void(base_family = "Calibri") +
+      ggplot2::theme(legend.position = "bottom",
+                     legend.title = ggplot2::element_blank(),
+                     plot.title = element_text(hjust = 0.5, face = "bold")) +
+      ggplot2::guides(fill = ggplot2::guide_legend(override.aes = list(shape = 21, size = 10), reverse = T))
+  } else if (viz_type == "waffle") {
+    ggplot_data <- df %>%
+      dplyr::group_by(!!column) %>%
+      dplyr::count(sort = T) %>%
+      tidyr::drop_na(!!column) %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(Percent = round(100 * n / sum(n), 2)) %>%
+      dplyr::rename({{ custom_column_name }} := {{ column }}) %>%
+      dplyr::mutate(prop = 100 * (Percent / sum(Percent)),
+                    ypos = cumsum(prop) - 0.5 * prop,
+                    {{ custom_column_name }} := forcats::fct_reorder(!!ensym(custom_column_name), Percent))
+    
+    subtitle <- ggplot_data %>%
+      dplyr::select({{ custom_column_name }}, Percent, n) %>%
+      dplyr::arrange(dplyr::desc(Percent)) %>%
+      dplyr::mutate(color = rev(tl_palette(n = length(n), color = "blue"))) %>%
+      dplyr::summarise(text = stringr::str_c("<b style='color:", color, "'>", !!ensym(custom_column_name), ": ", Percent, "%</b>", collapse = "<br>")) %>%
+      dplyr::pull(text)
+    
+    ggplot_data %>%
+      ggplot2::ggplot(ggplot2::aes(fill = !!ensym(custom_column_name),
+                                   values = n)) +
+      waffle::geom_waffle(n_rows = 10, size = 1, colour = "white", 
+                          make_proportional = TRUE,
+                          radius = unit(2, "pt"),
+                          height = 0.9, width = 0.9) +
+      ggplot2::labs(title = paste0(custom_column_name, " (n = ", sum(ggplot_data$n, na.rm = T), ")"),
+                    subtitle = subtitle) +
+      ggplot2::scale_fill_manual(values = tl_palette(color = "blue", 
+                                                     n = length(unique(ggplot_data[[custom_column_name]])))) +
+      ggplot2::theme_void(base_family = "Calibri") +
+      ggplot2::theme(legend.position = "none",
+                     plot.title = element_text(hjust = 0.5, face = "bold"),
+                     plot.subtitle = element_markdown(hjust = 0.5, face = "italic", lineheight = 1.15))
+  } else if (viz_type == "treemap") {
+    ggplot_data <- df %>%
+      dplyr::group_by(!!column) %>%
+      dplyr::count(sort = T) %>%
+      tidyr::drop_na(!!column) %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(Percent = round(100 * n / sum(n), 2)) %>%
+      dplyr::rename({{ custom_column_name }} := {{ column }}) %>%
+      dplyr::mutate(prop = 100 * (Percent / sum(Percent)),
+                    ypos = cumsum(prop) - 0.5 * prop,
+                    {{ custom_column_name }} := forcats::fct_reorder(!!ensym(custom_column_name), Percent))
+    ggplot_data %>%
+      ggplot2::ggplot(ggplot2::aes(area = Percent, 
+                                   fill = !!ensym(custom_column_name))) +
+      treemapify::geom_treemap(key_glyph = draw_key_point) +
+      treemapify::geom_treemap_text(ggplot2::aes(label = paste0(!!ensym(custom_column_name), ": ", Percent, "%")),
+                         family = "Calibri",
+                         fontface = "bold",
+                         # grow = T,
+                         reflow = T,
+                         color = ifelse(min(ggplot_data$Percent) == ggplot_data$Percent | ggplot_data$Percent < 10, 
+                                        "white", 
+                                        "black"),
+                         place = "center") +
+      ggplot2::labs(title = paste0(custom_column_name, " (n = ", sum(ggplot_data$n, na.rm = T), ")\n")) +
+      ggplot2::scale_fill_manual(values = tl_palette(color = "blue", 
+                                                     n = length(unique(ggplot_data[[custom_column_name]])))) +
+      ggplot2::theme_void(base_family = "Calibri") +
+      ggplot2::theme(legend.position = "none",
+                     legend.title = ggplot2::element_blank(),
+                     plot.title = element_text(hjust = 0.5, face = "bold"))
+  }
   
-  df %>%
-    dplyr::group_by(!!column) %>%
-    dplyr::count(sort = T) %>%
-    tidyr::drop_na(!!column) %>%
-    dplyr::ungroup() %>%
-    dplyr::mutate(Percent = round(100 * n / sum(n), 2)) %>%
-    dplyr::rename({{ new_name }} := {{ column }}) %>%
-    gt::gt() %>%
-    gt::cols_label({{new_name}} := gt::html(new_name)) %>%
-    {if (no_title == F) gt::tab_header(title = gt::md(glue::glue("*{custom_title}*"))) else .} %>%
-    gt::data_color(
-      columns = n,
-      colors = scales::col_numeric(
-        palette = TeachingLab::tl_palette(color = "blue", n = 10),
-        domain = NULL
-      )
-    ) %>%
-    gt::fmt_percent(
-      columns = Percent,
-      decimals = 2,
-      scale_values = F
-    ) %>%
-    gt::grand_summary_rows(columns = c(n),
-                           fns = list(
-                             Total = ~ sum(.)
-                           ),
-                           formatter = fmt_number,
-                           decimals = 0) %>%
-    gt::grand_summary_rows(columns = c(Percent),
-                           fns = list(
-                             Total = ~ sum(.)
-                           ),
-                           formatter = fmt_percent,
-                           scale_values = F,
-                           decimals = 0) %>%
-    TeachingLab::gt_theme_tl(base_font = base_font, heading_font = heading_font)
 }
 
 #' @title HTML/CSS Button Content Expander
@@ -1423,5 +1627,374 @@ ipg_plot <- function(data, name, save_name, height = 5, width = 8.5, wrap = 60, 
   ggplot2::ggsave(here::here(glue::glue("images/ipg_forms/{save_name}.png")), width = width, height = height, bg = "white", dpi = dpi)
 }
 
+#' @title Knowledge Assessment Graphs
+#' @description Creates a graph specifically for Knowledge Assessments in mid year reports
+#' @param data the data
+#' @param know_assess the knowledge assessment to make a table for
+#' @return a gt table
+#' @export
+gt_know_assess <- function(data, know_assess) {
+  
+  # Format to wide pre and post
+  plot_data <- data %>%
+    dplyr::filter(know_assess == !!rlang::enquo(know_assess)) %>%
+    dplyr::ungroup() %>%
+    dplyr::select(-site) %>% # Get rid of site for when there is more than one
+    dplyr::group_by(answer, question, prepost) %>%
+    dplyr::summarise(n = round(percent * (n/100)),
+              percent = percent) %>% # Adjust n for each individual obs
+    dplyr::ungroup() %>%
+    dplyr::group_by(answer, question, prepost) %>%
+    dplyr::mutate(n = sum(n)) %>%
+    dplyr::summarise(percent = weighted.mean(percent, n),
+              n = n) %>% # Adjust percent to be based on weighted mean
+    dplyr::ungroup() %>%
+    dplyr::distinct() %>%
+    dplyr::mutate(percent = tidyr::replace_na(percent, 0)) %>%
+    tidyr::pivot_wider(names_from = prepost, values_from = c(percent, n), values_fill = 0) %>%
+    dplyr::mutate(highlight = if_else(stringr::str_detect(answer, "04abeb"), T, F))
+  
+  title <- stringr::str_to_title(str_replace_all(know_assess, "_", " ")) %>%
+    stringr::str_replace_all(., "Ela", "ELA") %>%
+    stringr::str_replace_all(., "Eic", "EIC") # Correct title casing
+  # Weighted averages
+  if ("percent_pre" %in% colnames(plot_data)) {
+    pre_percent_correct <- plot_data %>%
+      dplyr::ungroup() %>%
+      dplyr::filter(highlight == T) %>%
+      dplyr::summarise(correct = mean(percent_pre)) %>%
+      dplyr::pull(correct)
+  } else {
+    pre_percent_correct <- NA
+    plot_data <- plot_data %>%
+      dplyr::mutate(percent_pre = NA)
+  }
+  if ("percent_post" %in% colnames(plot_data)) {
+    post_percent_correct <- plot_data %>%
+      dplyr::ungroup() %>%
+      dplyr::filter(highlight == T) %>%
+      dplyr::summarise(correct = mean(percent_post, na.rm = T)) %>%
+      dplyr::pull(correct)
+  } else {
+    post_percent_correct <- NA
+    plot_data <- plot_data %>%
+      dplyr::mutate(percent_post = NA)
+  }
+  
+  
+  n1 <- data %>%
+    dplyr::filter(know_assess == !!rlang::enquo(know_assess)) %>%
+    dplyr::ungroup() %>%
+    dplyr::group_by(prepost) %>%
+    dplyr::summarise(n = max(n, na.rm = T)) %>%
+    dplyr::filter(prepost == "pre") %>% 
+    dplyr::pull(n)
+  
+  n2 <- data %>%
+    dplyr::filter(know_assess == !!rlang::enquo(know_assess)) %>%
+    dplyr::ungroup() %>%
+    dplyr::group_by(prepost) %>%
+    dplyr::summarise(n = max(n, na.rm = T)) %>%
+    dplyr::filter(prepost == "post") %>% 
+    dplyr::pull(n)
+  
+  if (length(n1) == 0) {
+    n1 <- 0
+  }
+  
+  if (length(n2) == 0) {
+    n2 <- 0
+  }
+  
+  cols_to_hide <- if (c("n_pre", "n_post", "highlight") %in% colnames(plot_data) %>% sum() == 3) {
+    c("n_pre", "n_post", "highlight")
+  } else if (c("n_pre", "highlight") %in% colnames(plot_data) %>% sum() == 2) {
+    c("n_pre", "highlight")
+  } else if(c("n_post", "highlight") %in% colnames(plot_data) %>% sum() == 2) {
+    c("n_post", "highlight")
+  }
+  
+  
+  gt_table <- plot_data %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(question = stringr::str_replace_all(question, "<br>", " ")) %>%
+    dplyr::group_by(question) %>%
+    gt::gt(
+      # rowname_col = "answer"
+    ) %>%
+    gt::cols_hide(
+      columns = cols_to_hide
+    ) %>%
+    gt::cols_move_to_end(percent_post) %>%
+    gt::tab_header(
+      title = gt::html(glue::glue("<b>{title} Knowledge Assessments Scoring</b>")),
+      subtitle = gt::html("<i style='color:#04abeb'>Correct Answers are Highlighted in Blue</i>")
+    ) %>%
+    gt::cols_label(answer = "Answer",
+               question = "Question",
+               percent_post = gt::html(glue::glue("Post<br>(n = {n2})")),
+               percent_pre = gt::html(glue::glue("Pre<br>(n = {n1})"))) %>%
+    gt::tab_style(
+      style = list(
+        gt::cell_text(color = "#04abeb",
+                  weight = "bolder")
+      ),
+      locations = gt::cells_body(columns = c(percent_pre, percent_post),
+                             rows = highlight == T
+      )
+    ) %>%
+    gt::tab_style(
+      style = list(
+        gt::cell_text(weight = "bolder")
+      ),
+      locations = gt::cells_row_groups()
+    ) %>%
+    gt::fmt_markdown(columns = gt::everything()) %>%
+    gt::fmt_percent(columns = tidyselect:::where(is.numeric),
+                scale_values = F,
+                decimals = 0) %>%
+    gt::fmt_missing(
+      columns = tidyselect:::where(is.logical),
+      missing_text = "no data"
+    ) %>%
+    # Impute in total averages
+    {if (is.numeric(plot_data$percent_pre) == T) gt::summary_rows(.,
+                                                              fns = list(`Average % Correct` = ~ return(pre_percent_correct)),
+                                                              columns = c(percent_pre),
+                                                              formatter = fmt_percent,
+                                                              scale_values = F,
+                                                              decimals = 0
+    ) else summary_rows(.,
+                        fns = list(`Average % Correct` = ~ return(pre_percent_correct)),
+                        columns = c(percent_pre),
+                        formatter = fmt_missing,
+                        missing_text = "no data"
+    )} %>%
+    {if (is.numeric(plot_data$percent_post) == T) gt::summary_rows(.,
+                                                               fns = list(`Average % Correct` = ~ return(post_percent_correct)),
+                                                               columns = c(percent_post),
+                                                               formatter = fmt_percent,
+                                                               scale_values = F,
+                                                               decimals = 0
+    ) else summary_rows(.,
+                        fns = list(`Average % Correct` = ~ return(post_percent_correct)),
+                        columns = c(percent_post),
+                        formatter = fmt_missing
+    )} %>%
+    TeachingLab::gt_theme_tl()
+  
+  gt_table %>%
+    gt::gtsave(filename = glue::glue("{know_assess}.png"), path = here::here("images/report_images"))
+}
 
+#' @title Knowledge Assessment Graph Summary
+#' @description Creates a graph specifically for Knowledge Assessments in mid year reports
+#' @param data the data
+#' @param know_assess the knowledge assessment to make a table for
+#' @return a gt table
+#' @export
+know_assess_summary <- function(data, know_assess) {
+  plot_data <- data %>%
+    dplyr::filter(know_assess == !!rlang::enquo(know_assess)) %>%
+    dplyr::ungroup() %>%
+    dplyr::select(-site) %>% # Get rid of site for when there is more than one
+    dplyr::group_by(answer, question, prepost) %>%
+    dplyr::summarise(n = round(percent * (n/100)),
+                     percent = percent) %>% # Adjust n for each individual obs
+    dplyr::ungroup() %>%
+    dplyr::group_by(answer, question, prepost) %>%
+    dplyr::mutate(n = sum(n)) %>%
+    dplyr::summarise(percent = weighted.mean(percent, n),
+                     n = n) %>% # Adjust percent to be based on weighted mean
+    dplyr::ungroup() %>%
+    dplyr::distinct() %>%
+    dplyr::mutate(percent = tidyr::replace_na(percent, 0)) %>%
+    tidyr::pivot_wider(names_from = prepost, values_from = c(percent, n), values_fill = 0) %>%
+    dplyr::mutate(highlight = if_else(stringr::str_detect(answer, "04abeb"), T, F)) %>%
+    dplyr::ungroup() %>%
+    dplyr::filter(highlight == T) %>%
+    dplyr::summarise(`Before` = ifelse("percent_pre" %in% names(.), mean(percent_pre), NA),
+                     `After` = ifelse("percent_post" %in% names(.), mean(percent_post), NA)) %>%
+    tidyr::pivot_longer(tidyselect::everything()) %>%
+    dplyr::mutate(name = factor(name, levels = c("Before", "After")))
+  
+  title <- stringr::str_to_title(str_replace_all(know_assess, "_", " ")) %>%
+    stringr::str_replace_all(., "Ela", "ELA") %>%
+    stringr::str_replace_all(., "Eic", "EIC") # Correct title casing
+  
+  n1 <- data %>%
+    dplyr::filter(know_assess == !!rlang::enquo(know_assess)) %>%
+    dplyr::ungroup() %>%
+    dplyr::group_by(prepost) %>%
+    dplyr::summarise(n = max(n, na.rm = T)) %>%
+    dplyr::filter(prepost == "pre") %>% 
+    dplyr::pull(n)
+  
+  n2 <- data %>%
+    dplyr::filter(know_assess == !!rlang::enquo(know_assess)) %>%
+    dplyr::ungroup() %>%
+    dplyr::group_by(prepost) %>%
+    dplyr::summarise(n = max(n, na.rm = T)) %>%
+    dplyr::filter(prepost == "post") %>% 
+    dplyr::pull(n)
+  
+  if (length(n1) == 0) {
+    n1 <- 0
+  }
+  
+  if (length(n2) == 0) {
+    n2 <- 0
+  }
+  
+  plot_data %>%
+    ggplot2::ggplot(ggplot2::aes(x = name, y = value, fill = name)) +
+    ggplot2::geom_col() +
+    ggplot2::geom_text(ggplot2::aes(label = paste0(round(value), "%")),
+                       vjust = -1,
+                       fontface = "bold",
+                       family = "Calibri") +
+    ggplot2::scale_fill_manual(values = c("Before" = "#D17DF7", "After" = "#55BBC7")) +
+    # ggtext::geom_richtext(data = data.frame(name = "Before", value = 100, 
+    #                                         label = "% Correct <b style='color:#d17df7'>before</b> and <b style='color:#55bbc7'>after</b>."),
+    #                       aes(x = name, y = value, label = label)) +
+    ggplot2::labs(x = "", y = "",
+                  # title = paste0(title, "\n% Correct before and after")#,
+                  title = paste0(title, "<br>% Correct <b style='color:#d17df7'>before (n = ", n1, ")</b> and <b style='color:#55bbc7'>after (n = ", n2, ")</b>")
+                  ) +
+    ggplot2::scale_y_continuous(labels = percent_format(scale = 1), expand = c(0.1, 0),
+                                limits = c(0, 100)) +
+    # TeachingLab::theme_tl(markdown = F) +
+    ggplot2::theme_minimal() +
+    ggplot2::theme(
+      # plot.title = ggplot2::element_text(),
+      plot.title = ggtext::element_markdown(lineheight = 1.1, hjust = 0.5),
+      legend.position = "none",
+      axis.text.x = ggplot2::element_text(face = "bold"))
+  
+  ggplot2::ggsave(here::here(glue::glue("images/report_summary_images/{know_assess}.png")), 
+                  bg = "white", 
+                  device = "png",
+                  height = 5, width = 5)
+}
+
+#' @title Password Generator
+#' @description Creates a password of n length
+#' @param length the length of the password
+#' @return a string
+#' @export
+
+password_generator <- function(length = 8) {
+  sampling <- sample(c(letters, 1:9), size = length)
+  paste(sampling, collapse = "")
+}
+
+#' @title Survey Standardization
+#' @description Fetches the knowledge assessment survey specified and standardizes it
+#' @param id the SurveyMonkey id of the survey
+#' @param name the name of the survey
+#' @export
+
+fetch_survey_2 <- function(id, name) {
+  #### Get survey object and check for responses ####
+  survey_obj <- surveymonkey::fetch_survey_obj(id = id) 
+  #### If there are responses parse
+  assertthat::assert_that(survey_obj$response_count > 0)
+  survey <- survey_obj %>%
+    surveymonkey::parse_survey()
+  ### Standardize Site Column names ###
+  column_name_with_period <- c("Please select your site \\(district, parish, network, or school\\)\\.")
+  just_school <- "Your school"
+  if (sum(stringr::str_detect(colnames(survey), column_name_with_period)) >= 1) {
+    survey <- survey %>%
+      dplyr::rename_with( ~ stringr::str_replace_all(.x, 
+                                                     column_name_with_period, 
+                                                     "Please select your site (district, parish, network, or school)"))
+    print("Period removed")
+  } else if (sum(stringr::str_detect(colnames(survey), just_school)) >= 1) {
+    survey <- survey %>%
+      dplyr::rename_with( ~ stringr::str_replace_all(.x, 
+                                                     just_school, 
+                                                     "Please select your site (district, parish, network, or school)"))
+  }
+  
+  #### Read through survey and standardize id column ####
+  survey_parsed <- survey %>%
+    {
+      if (nrow(.) > 1) {
+        dplyr::mutate(., id = dplyr::select(
+          .,
+          tidyselect::contains("3 initials"),
+          tidyselect::contains("birthday")
+        ) %>%
+          purrr::pmap_chr(., ~ paste0(tolower(.x[1]), "_", .x[2])))
+      } else {
+        .
+      }
+    } %>%
+    {
+      if (nrow(.) > 1) { # If there is any data create a new column with the answers from both site and district questions
+        dplyr::mutate(., `Please select your site (district, parish, network, or school)` = if_else(is.na(`Please select your site (district, parish, network, or school)`),
+                                                                                                    `Please select your site (district, parish, network, or school) - Other (please specify)`,
+                                                                                                    as.character(`Please select your site (district, parish, network, or school)`)
+        ))
+      }
+    }
+  #### Assign to environment with format "surveynumber" ####
+  assign(value = survey_parsed, x = paste0("survey", name), envir = .GlobalEnv)
+  #### Compile dataframe of all the surveys new names and add ####
+  name_df <- tibble::tibble(names = paste0("survey", name)) %>%
+    dplyr::mutate(count = name) %>%
+    dplyr::left_join(ids_surveys, by = "count") %>%
+    dplyr::mutate(title = stringr::str_replace_all(title, " ", "")) %>%
+    dplyr::mutate(title = stringr::str_replace_all(title, ":", ""))
+  print(name_df)
+  #### Write to data folder with original name####
+  purrr::map2(.x = name_df$names, .y = name_df$title, ~ readr::write_rds(x = get(.x), file = paste0(here::here("Dashboards/KnowledgeAssessments/data/unprocessed/"), .y, ".rds")))
+}
+
+#' @title Conditionally Perform Function
+#' @description Wraps a function and conditionally performs it given certain arguments
+#' @param fun the function to wrap
+#' @examples 
+#' library(dplyr)
+#' cond_filter <- conditionally(filter)
+#' cond_select <- conditionally(select)
+#' 
+#' @export
+conditionally <- function(fun){
+  function(first_arg, ..., execute){
+    if(execute) return(fun(first_arg, ...))
+    else return(first_arg)
+  }
+}
+
+#' @title ID Maker
+#' @description takes initials and id column and makes an ID
+#' @param initials the initials
+#' @param birthday the birthday
+#' 
+#' @export
+id_maker <- function(initials, birthday) {
+  paste0(tolower(initials), "_", birthday)
+}
+
+#' @title 
+#' @description file remove and render 
+partner_file_remove <- function(partners) {
+  
+  print("Rendering new rmd...")
+  
+  rmarkdown::render(
+    input = here::here("Analysis/2021-2022/Mid-Year Report/MidYearReport.Rmd"),
+    output_file = paste0("2021-2022-tl-report", "_", partners),
+    output_dir = here::here("Analysis/2021-2022/Mid-Year Report/Reports"),
+    params = list(partner = partners, matched = "unmatched")
+  )
+  
+  do.call(file.remove, list(list.files(here::here("images/report_images"), full.names = TRUE)))
+  do.call(file.remove, list(list.files(here::here("images/report_summary_images"), full.names = TRUE)))
+  
+  print("Removing files...\n")
+  
+}
 

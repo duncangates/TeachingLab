@@ -1,32 +1,36 @@
 library(tidyverse)
 library(rmarkdown)
+# library(doParallel)
+# no_cores <- detectCores() - 1  
+# cl <- makeCluster(no_cores)  
+# registerDoParallel(cl)  
 
 params_list <- list(
   partner = list(
-    "All Partners", # Already completed
-    "District 11", # Already completed
-    "District 11 Math", # Already completed
-    "District 11 ELA", # Already completed
-    "San Diego 6-8", # Already completed
-    "San Diego K-5", # Already completed
-    "Brownington Central School, VT", # Already completed
-    "Building 21 - Allentown, PA", # Already completed
-    "Building 21 - Philadelphia, PA", # Already completed
-    "Calcasieu Parish, LA", # Already completed
-    "Cleveland Metropolitan School District, OH", # Already completed
-    "Connecticut Partnership (with UnboundEd)", # Already completed
-    "Delaware Department of Education, DE", # Already completed
-    "DeSoto Parish, LA", # Already completed
-    "Freire Charter Schools, PA/DE",
-    "Horizon Charter Schools, CA",
-    "Kankakee School District, IL",
-    "Louisville School District - Jacob Elementary, KY",
-    "Lafayette Parish, LA",
-    "Louisiana Department of Education, LA",
-    "Methuen Public Schools, MA",
-    "Massachusetts Dept of Elementary & Secondary Education",
-    "Mississippi Department of Education, MS",
-    "North Bronx School of Empowerment, NY",
+    "All Partners",
+    "District 11",
+    "District 11 Math",
+    "District 11 ELA",
+    "San Diego 6-8",
+    "San Diego K-5",
+    # "Brownington Central School, VT",
+    # "Building 21 - Allentown, PA",
+    # "Building 21 - Philadelphia, PA",
+    # "Calcasieu Parish, LA",
+    # "Cleveland Metropolitan School District, OH",
+    "Connecticut Partnership (with UnboundEd)",
+    "Delaware Department of Education, DE",
+    # "DeSoto Parish, LA",
+    # "Freire Charter Schools, PA/DE",
+    # "Horizon Charter Schools, CA",
+    # "Kankakee School District, IL",
+    # "Louisville School District - Jacob Elementary, KY",
+    # "Lafayette Parish, LA",
+    # "Louisiana Department of Education, LA",
+    # "Methuen Public Schools, MA",
+    # "Massachusetts Dept of Elementary & Secondary Education",
+    # "Mississippi Department of Education, MS",
+    # "North Bronx School of Empowerment, NY",
     # "NYC District 11 - District-wide, NY",
     # "NYC District 11 - IS 355, NY",
     # "NYC District 11 - PS 21, NY",
@@ -59,22 +63,22 @@ params_list <- list(
     # "NYC District 11 - IS 462, NY",
     # "NYC District 11 - IS 532, NY",
     # "NYC District 11 - IS 556, NY",
-    "NYC District 12 - EMST-IS 190, N",
-    "NYC District 6 - MS311, NY",
-    "NYC District 12 - MS 286, NY",
+    # "NYC District 12 - EMST-IS 190, N",
+    # "NYC District 6 - MS311, NY",
+    # "NYC District 12 - MS 286, NY",
     # "NYC District 11 - PS 78, NY",
     # "NYC District 11 - PS 97, NY",
     # "NYC District 11 - PS 105, NY",
     # "NYC District 11 - PS 106, NY",
-    "NYC District 9",
-    "Open Enrollment, National",
-    "Orleans Central Supervisory Union, VT",
-    "Pointe Coupee Parish, LA",
+    # "NYC District 9",
+    # "Open Enrollment, National",
+    # "Orleans Central Supervisory Union, VT",
+    # "Pointe Coupee Parish, LA",
     "Rochester City School District",
     "San Diego Unified School District, CA",
-    "Washington Parish, LA",
+    # "Washington Parish, LA",
     "West Contra Costa USD, CA",
-    "West Contra Costa USD - Murphy Elementary, CA",
+    # "West Contra Costa USD - Murphy Elementary, CA",
     "Wisconsin Department of Public Instruction"
   ),
   matched = list("matched", "unmatched")
@@ -99,32 +103,62 @@ params_list <- list(
 #   output_dir = here::here("Analysis/2020-2021/Mid-Year Report/Reports"),
 #   params = list(partner = .x, matched = .y)
 # ))
+
 # Loop over just partner
-walk(params_list$partner, ~ rmarkdown::render(
-  input = here::here("Analysis/2021-2022/Mid-Year Report/MidYearReport.Rmd"),
-  output_file = paste0("2021-2022-tl-report", "_", .x),
-  output_dir = here::here("Analysis/2021-2022/Mid-Year Report/Reports"),
-  params = list(partner = .x, matched = "unmatched")
-))
+walk(params_list$partner, ~ TeachingLab::partner_file_remove(partners = .x))
 
 # Test File
 
 # rmd_full <- list.files(here::here("Analysis/2020-2021/SY20-21Report/Reports"), full.names = T, pattern = "*.html")
 # rmd_partial <- list.files(here::here("Analysis/2020-2021/SY20-21Report/Reports"), pattern = "*.html")
 
-# Looping
+# Encryption
 
-# walk2(.x = list.files(here::here("Analysis/2020-2021/SY20-21Report/Reports"), full.names = T, pattern = "*.html"), 
-#       .y = list.files(here::here("Analysis/2020-2021/SY20-21Report/Reports"), pattern = "*.html"),
+# keys <- map2(.x = list.files(here::here("Analysis/2021-2022/Mid-Year Report/Reports"), full.names = T, 
+#                                  pattern = "*.html"),
+#       .y = list.files(here::here("Analysis/2021-2022/Mid-Year Report/Reports"), pattern = "*.html"),
 #      ~ encryptedRmd::encrypt_html_file(path = .x, message_key = T,
-#                                        output_path = paste0(here::here("Analysis/2020-2021/SY20-21Report/Encrypted"),
+#                                        output_path = paste0(here::here("Analysis/2021-2022/Mid-Year Report/Reports/Encrypted/"),
 #                                                             .y)))
+# 
+# keys$names <- set_names(keys, params_list$partner %>% as.character())
+# 
+# key_names <- map_dfr(keys$names, ~ tibble(key = paste(as.character(.x), collapse = ""))) %>%
+#   mutate(site = names(keys$names))
+# 
+# key_names %>%
+#   clipr::write_clip()
 
 # Output to website folder Teaching Lab
-walk(list.files(here::here("Analysis/2021-2022/Mid-Year Report/Reports"), full.names = T, pattern = "*.html"), 
-     ~ file.copy(from = .x, to = "/Users/dunk/Teaching Lab/Coding/teachinglab.github.io/2022Reports", overwrite = T))
+purrr::walk(list.files(here::here("Analysis/2021-2022/Mid-Year Report/Reports"), 
+                full.names = T, 
+                pattern = "*.html"), 
+     ~ file.copy(from = .x, 
+                 to = "/Users/dunk/Teaching Lab/Coding/teachinglab.github.io/2022Reports", 
+                 overwrite = T))
 
+# walk(list.files(here::here("Analysis/2021-2022/Mid-Year Report/Reports/Encrypted"), 
+#                 full.names = T, 
+#                 pattern = "*.html"), 
+#      ~ file.copy(from = .x, 
+#                  to = "/Users/dunk/Teaching Lab/Coding/teachinglab.github.io/2022EncryptedReports", 
+#                  overwrite = T))
 
+# stopCluster(cl)
 
+# rmarkdown::render_site(input = "~/Teaching Lab/Coding/teachinglab.github.io", encoding = 'UTF-8')
+
+###### Password writing, does not need changing ######
+
+# map_chr(rep(8, 69), TeachingLab::password_generator) %>%
+#   as.data.frame() -> passwords
+# 
+# passwords$.[1] <- "teachinglab"
+# 
+# googlesheets4::range_write(ss = "https://docs.google.com/spreadsheets/d/1eAUdWEzc0R7WzpztOvutRp2FYDtpks37LSFV8sq8ezg/edit#gid=739665772",
+#                            sheet = "2021-2022",
+#                            range = "B2:B70",
+#                            data = passwords,
+#                            col_names = F)
 
 

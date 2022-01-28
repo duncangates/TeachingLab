@@ -156,7 +156,7 @@ check_email_domain <- function(email, domain) {
 #   purrr::as_vector() %>%
 #   append("kristen.taylor@teachinglab.org")
 # readr::write_rds(approved_emails_list, "Dashboards/SessionSurvey/Data/employees.rds")
-approved_emails_list <- readr::read_rds("Data/employees.rds")
+approved_emails_list <- readr::read_rds("data/employees.rds")
 
 check_email_approved <- function(email, approved_emails_list) {
   email %in% approved_emails_list

@@ -1,0 +1,170 @@
+---
+title: "list_sites_know_assess"
+author: "Duncan Gates"
+date: "1/11/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(googlesheets4)
+
+surveys <- surveymonkey::browse_surveys() %>%
+  dplyr::mutate(responses = map(id, ~ surveymonkey::fetch_survey_obj(id = .x)$`response_count`))
+
+surveys_final <- surveys %>%
+  dplyr::mutate(responses = as.numeric(responses)) %>%
+  dplyr::filter(responses > 0 & str_detect(title, "ELA|Math"))
+
+all_sites <- read_sheet("https://docs.google.com/spreadsheets/d/11jlo9UeWxZGwunhDb24hZBwAKc5b8ZKM9AYNWZaUyZY/edit#gid=0",
+                        sheet = 1,
+                        range = "C3:C",
+                        col_names = "Site")
+
+sites <- all_sites$Site %>%
+  purrr::keep( ~ !str_detect(.x, "Rochester")) %>%
+  append("Rochester City School District, NY") %>%
+  sort()
+
+sites %>% 
+  clipr::write_clip()
+
+# surveys$title %>% paste("## ", .) %>%
+#   clipr::write_clip()
+```
+
+##  ELA: CRSE PLC
+
+```{r}
+ela_crse_plc_sites <- surveymonkey::fetch_survey_obj(312484554) %>%
+  surveymonkey::parse_survey() %>%
+  pull(`Please select your site (district, parish, network, or school)`) %>%
+  levels()
+
+setdiff(sites, ela_crse_plc_sites)
+
+different <- c("Fannie Lou Hamer, NY",
+               "Amistad Dual Language, NY",)
+
+c("CityYear, NY",
+  "Hostos Lincoln Academy of Science, NY",
+  "NYC District 6 - MS311, NY",
+  "NYC District 9 - District-wide, NY",
+  "NYC District 10 - PS 386, NY",
+  "NYC District 11 - District-wide, NY",
+  "NYC District 11 - IS 498, NY",
+  "NYC District 11 - MS 127, NY",
+  "NYC District 11 - PS 178, NY",
+  "NYC District 11 - PS 19, NY",
+  "NYC District 11 - PS 481, NY",
+  "NYC District 11 - PS 83, NY",
+  "NYC District 12 - EMST-IS 190, NY",
+  "NYC District 12 - MS 286, NY",
+  "NYC District 27, Channel View School for Research, NY",
+  "Robinhood Schools (NYC), NY",
+  "St. Charles Parish, LA") %>% clipr::write_clip()
+
+```
+
+##  ELA General: Cycle of Inquiry - Speaking & Listening
+
+```{r}
+ela_general_cycle_inquiry_speaking_listening_sites <- surveymonkey::fetch_survey_obj(315708558) %>%
+  surveymonkey::parse_survey() %>%
+  pull(`Please select your site (district, parish, network, or school)`) %>%
+  levels()
+
+setdiff(sites, ela_general_cycle_inquiry_speaking_listening_sites)
+```
+
+##  Math: Cycle of Inquiry I - Eliciting Student Thinking
+
+```{r}
+
+```
+
+##  Math: Bootcamp
+
+```{r}
+
+```
+
+##  ELA: Guidebooks Diverse Learners Cycle of Inquiry - Vocabulary
+
+```{r}
+
+```
+
+##  ELA: Cycle of Inquiry - Curriculum Flex Foundational Skills
+
+```{r}
+
+```
+
+##  ELA: Bootcamp - General
+
+```{r}
+
+```
+
+##  Math: Bootcamp - EIC
+
+```{r}
+
+```
+
+##  Math: Accelerating Learning
+
+```{r}
+
+```
+
+##  ELA: Bootcamp - Foundational Skills Bootcamp Skills (K-2)
+
+```{r}
+
+```
+
+##  Math: Accelerating Learning - EIC
+
+```{r}
+
+```
+
+##  ELA: Guidebooks Diverse Learners Bootcamp Writing
+
+```{r}
+
+```
+
+##  ELA: Guidebooks Diverse Learners Bootcamp - Leader
+
+```{r}
+
+```
+
+##  ELA: HQIM & Enrichment
+
+```{r}
+
+```
+
+##  ELA: Guidebooks Diverse Learners Bootcamp - Teacher
+
+```{r}
+
+```
+
+##  School Leaders: ELA
+
+```{r}
+
+```
+
+##  Math: Cycle of Inquiry V- Sequencing and Connecting Representations
+
+```{r}
+
+```

@@ -527,18 +527,18 @@ reportServer <- function(id, in_site) {
       }
     )
     
-    observe({
-      course_survey_recent() %>% 
-        select(`Select your course.`, `Select your site (district, parish, network, or school).`) %>% 
-        transmute(course_site = paste0(`Select your course.`, ", ", `Select your site (district, parish, network, or school).`)) %>%
-        distinct(course_site) %>%
-        # {
-        #   if (length(course_site) > 3) dplyr::slice(., 1:3) %>% bind_rows(tibble::tibble(course_site = "and more")) else .
-        # } %>%
-        as_vector() %>%
-        paste(collapse = ", ") %>%
-        print()
-    })
+    # observe({
+    #   course_survey_recent() %>% 
+    #     select(`Select your course.`, `Select your site (district, parish, network, or school).`) %>% 
+    #     transmute(course_site = paste0(`Select your course.`, ", ", `Select your site (district, parish, network, or school).`)) %>%
+    #     distinct(course_site) %>%
+    #     # {
+    #     #   if (length(course_site) > 3) dplyr::slice(., 1:3) %>% bind_rows(tibble::tibble(course_site = "and more")) else .
+    #     # } %>%
+    #     as_vector() %>%
+    #     paste(collapse = ", ") %>%
+    #     print()
+    # })
     
     #### GENERATE THE DOCX REPORT ####
     

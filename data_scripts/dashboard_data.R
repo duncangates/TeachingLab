@@ -1,13 +1,19 @@
 library(magrittr)
+library(dplyr)
 
 ##### Course Survey #####
 
-old_df <- readr::read_rds("data/course_survey2021data.rds")
+old_df <- readr::read_rds("data-clean/data-move/dashboard_data/dashboard_data.rds")
 
 options(sm_oauth_token = "a22Dkw3KTSZB9v.TYV0g2GAV2fRK7dfmQ81WEk1iqnTrcUUQpcksI1fRc44J-H0fcN3OAovcaQRNb38fhScbHpiUJu4vDP-9SZuXuwHNwcNRK035sJ7VjQFPOUnKi3TT")
 
-course_survey <- surveymonkey::fetch_survey_obj(id = 308116695) %>%
-  surveymonkey::parse_survey() %>%
+surveymonkey_course <- surveymonkey::fetch_survey_obj(id = 308116695) %>%
+  surveymonkey::parse_survey()
+
+# write_rds(surveymonkey_course, here::here("data/course_surveymonkey_2022.rds"))
+# write_rds(surveymonkey_course, here::here("Dashboards/CourseSurvey/data/course_surveymonkey_2022.rds"))
+
+course_survey <- surveymonkey_course %>%
   dplyr::mutate(date_created = lubridate::date(date_created)) %>%
   dplyr::mutate(`Select your course.` = dplyr::coalesce(`Select your course.`, `Select your course._2`, `Select your course._3`,
                                           `Select your course._4`, `Select your course._5`, `Select your course._6`)) %>%
@@ -31,7 +37,7 @@ course_survey <- surveymonkey::fetch_survey_obj(id = 308116695) %>%
                                                                                                                                                                                                                                 "(?<! )Disagree" = "(2) Disagree",
                                                                                                                                                                                                                                 "(?<! )Strongly disagree" = "(1) Strongly disagree")))) %>%
   dplyr::mutate(`How much do you agree with the following statements about this course? - I am satisfied with how the course was facilitated.` = dplyr::na_if(`How much do you agree with the following statements about this course? - I am satisfied with how the course was facilitated.`, "-999")) %>%
-  dplyr::mutate(across(c(`How much do you agree with the following statements about this course? - I am satisfied with the overall quality of this course.`,
+  dplyr::mutate(dplyr::across(c(`How much do you agree with the following statements about this course? - I am satisfied with the overall quality of this course.`,
                          `How much do you agree with the following statements about this course? - I am satisfied with how the course was facilitated.`,
                          `How much do you agree with the following statements about this course? - The independent online work activities were well-designed to help me meet the learning targets.`,
                          `How much do you agree with the following statements about this course? - I felt a sense of community with the other participants in this course. even though we were meeting virtually.`,
@@ -39,7 +45,7 @@ course_survey <- surveymonkey::fetch_survey_obj(id = 308116695) %>%
 
 course_survey %>%
   dplyr::filter(date_created >= as.Date("2021-07-01")) %>%
-  readr::write_rds(., "data/course_survey2021data.rds")
+  readr::write_rds(., "data/course_survey_21_22.rds")
 readr::write_rds(course_survey, "data/course_surveymonkey.rds")
 readr::write_rds(course_survey, here::here("Dashboards/CourseSurvey/data/course_surveymonkey.rds"))
 
@@ -92,9 +98,9 @@ session_survey <- surveymonkey::fetch_survey_obj(id = 308115193) %>%
                                                                                     as.character(`Select your site (district, parish, network, or school).`)))
 
 session_survey %>%
-  readr::write_rds(., "data/session_survey2021data.rds")
-readr::write_rds(session_survey, "data-raw/session_surveymonkey.rds")
-readr::write_rds(session_survey, here::here("Dashboards/SessionSurvey/data/session_surveymonkey.rds"))
+  readr::write_rds(., "data/session_survey_21_22data.rds")
+readr::write_rds(session_survey, "data/session_survey_21_22data.rds")
+readr::write_rds(session_survey, here::here("Dashboards/SessionSurvey/data/session_survey_21_22data.rds"))
 
 ################################################################################################################################################################
 

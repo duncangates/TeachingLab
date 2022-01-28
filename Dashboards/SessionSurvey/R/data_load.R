@@ -43,8 +43,8 @@ options(sm_oauth_token = "BjVjlV9MiVBgfe1XpS2xPS547c6gkAygKWAgm4Vv539-KbFct5lsqy
 #                                                                                     as.character(`Select your site (district, parish, network, or school).`)))
 
 # readr::write_rds(session_survey, "data-raw/session_surveymonkey.rds")
-# readr::write_rds(session_survey, here::here("Dashboards/SessionSurvey/Data/session_surveymonkey.rds"))
-session_survey <- readr::read_rds("Data/session_surveymonkey.rds") #%>%
+# readr::write_rds(session_survey, here::here("Dashboards/SessionSurvey/data/session_surveymonkey.rds"))
+session_survey <- readr::read_rds("data/session_survey_21_22data.rds") #%>%
 #   dplyr::mutate(date_created = lubridate::date(date_created)) %>%
 #   dplyr::mutate(`Select your course.` = dplyr::coalesce(`Select your course.`, `Select your course._2`, `Select your course._3`,
 #                                           `Select your course._4`, `Select your course._5`, `Select your course._6`)) %>%

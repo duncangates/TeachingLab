@@ -78,7 +78,7 @@ uiNPS <- function(id, label = "Counter") {
             inputId = ns("date_slider"),
             label = h3("Select a date range", style = "font-weight: bold;"),
             value = c(
-              as.Date("2021-06-30"),
+              min(as.Date(course_survey$date_created), na.rm = T),
               max(as.Date(course_survey$date_created), na.rm = T)
             ),
             min = min(as.Date(course_survey$date_created), na.rm = T),
@@ -150,16 +150,10 @@ npsServer <- function(id, in_site) {
         {
           if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
         } %>%
-        select(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend? - `) %>%
-        mutate(
-          `On a scale of 0-10, how likely are you to recommend this course to a colleague or friend? - ` =
-            suppressWarnings(as.numeric(str_remove_all(
-              `On a scale of 0-10, how likely are you to recommend this course to a colleague or friend? - `,
-              " - Extremely likely| - Neither likely nor unlikely| - Not likely at all"
-            )))
-        ) %>%
+        select(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`) %>%
+        # mutate(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?` = readr::parse_number(as.character(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`))) %>%
         drop_na() %>%
-        group_by(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend? - `) %>%
+        group_by(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`) %>%
         count(sort = T) %>%
         ungroup() %>%
         mutate(Percent = round(100 * n / sum(n)))
@@ -176,22 +170,22 @@ npsServer <- function(id, in_site) {
     # Ggplot for nps plot
     output$nps_plot <- renderPlot({
       ggplot(data = data_plot_nps(), aes(
-        x = `On a scale of 0-10, how likely are you to recommend this course to a colleague or friend? - `,
+        x = `On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`,
         y = Percent,
-        fill = factor(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend? - `),
-        color = factor(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend? - `)
+        fill = factor(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`),
+        color = factor(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`)
       )) +
         geom_text(aes(label = if_else(Percent != 4, paste0(Percent, "%"), "")), vjust = -0.5) +
         geom_col() +
-        scale_fill_manual(values = c("1" = "#040404", "2" = "#03161E", "3" = "#032938", "4" = "#023C52", "5" = "#024E6C", "6" = "#016187", 
+        scale_fill_manual(values = c("0" = "#040404", "1" = "#040404", "2" = "#03161E", "3" = "#032938", "4" = "#023C52", "5" = "#024E6C", "6" = "#016187", 
                                      "7" = "#0174A1", "8" = "#0086BB", "9" = "#0099D5", "10" = "#00ACF0")) +
-        scale_color_manual(values = c("1" = "#040404", "2" = "#03161E", "3" = "#032938", "4" = "#023C52", "5" = "#024E6C", "6" = "#016187", 
+        scale_color_manual(values = c("0" = "#040404", "1" = "#040404", "2" = "#03161E", "3" = "#032938", "4" = "#023C52", "5" = "#024E6C", "6" = "#016187", 
                                      "7" = "#0174A1", "8" = "#0086BB", "9" = "#0099D5", "10" = "#00ACF0")) +
         labs(
           fill = "", title = "Likeliness to Recommend to a Friend or Colleague",
           x = "Rating", y = "Percent"
         ) +
-        scale_x_continuous(limits = c(1, 10.5), breaks = c(1:10)) +
+        scale_x_continuous(limits = c(1, 10.5), breaks = c(0:10)) +
         scale_y_continuous(labels = scales::percent_format(scale = 1), limits = c(0, max(data_plot_nps()$Percent, na.rm = T) + 10)) +
         theme_tl(legend = F) +
         theme(
@@ -225,12 +219,9 @@ npsServer <- function(id, in_site) {
         {
           if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
         } %>%
-        mutate(
-          `On a scale of 0-10, how likely are you to recommend this course to a colleague or friend? - ` =
-            str_remove_all(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend? - `, " - Not likely at all| - Neither likely nor unlikely| - Extremely likely")
-        ) %>%
-        mutate(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend? - ` = na_if(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend? - `, "No Response")) %>%
-        summarise(nps = round(calc_nps(suppressWarnings(as.numeric(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend? - `))))) %>%
+        mutate(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?` = readr::parse_number(as.character(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`))) %>%
+        mutate(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?` = na_if(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`, "No Response")) %>%
+        summarise(nps = calc_nps(suppressWarnings(as.numeric(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`)))) %>%
         mutate(
           x = 0,
           y = nps

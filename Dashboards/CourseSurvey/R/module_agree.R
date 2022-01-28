@@ -341,6 +341,24 @@ agreeServer <- function(id, in_site) {
       #### Return the data ####
       agree_plot
     })
+    
+    agree_plot_n <- reactive({
+      data_n <- course_survey %>%
+        dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
+        {
+          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
+        } %>%
+        {
+          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
+        } %>%
+        {
+          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today's professional learning session.` %in% input$content) else .
+        } %>%
+        {
+          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
+        }
+      nrow(data_n)
+    })
 
 
     # Ggplot for agree percent plot
@@ -354,7 +372,8 @@ agreeServer <- function(id, in_site) {
         )) +
         labs(
           fill = "", title = "Percent that Agree/Strongly Agree with\nEach of the Following Statements",
-          x = "", y = ""
+          x = "", y = "",
+          subtitle = glue::glue("Given the filters applied there are {agree_plot_n()} responses")
         ) +
         coord_flip() +
         guides(fill = guide_legend(reverse = T)) +

@@ -285,7 +285,7 @@ ipg_plot(data = ela_data,
          width = 7,
          height = 7,
          save_name = "ela_ac2",
-         wrap = 55,
+         wrap = 52,
          numeric = T,
          factor_level = "ac1")
 ## AD1
@@ -347,3 +347,27 @@ ipg_plot(data = ela_data,
          save_name = "ela_td4",
          wrap = 55,
          numeric = T)
+
+
+
+math_data %>%
+  ungroup() %>%
+  filter(str_detect(name, "Notes")) %>%
+  select(-n, -percent) %>%
+  gt::gt() %>%
+  tab_header("Math IPG Forms Notes") %>%
+  cols_label(name = "Notes", 
+             value = "Written Note") %>%
+  TeachingLab::gt_theme_tl() %>%
+  gtsave(here::here("images/ipg_forms/math_notes.png"))
+
+ela_data %>%
+  ungroup() %>%
+  filter(str_detect(name, "Notes")) %>%
+  select(-n, -percent) %>%
+  gt::gt() %>%
+  tab_header("ELA IPG Forms Notes") %>%
+  cols_label(name = "Notes", 
+             value = "Written Note") %>%
+  TeachingLab::gt_theme_tl() %>%
+  gtsave(here::here("images/ipg_forms/ela_notes.png"))

@@ -1,0 +1,13 @@
+name: MathematicaCourseSurvey
+title: MathematicaCourseSurvey
+username:
+account: teachinglabhq
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 5337605
+bundleId: 5513097
+url: https://teachinglabhq.shinyapps.io/MathematicaCourseSurvey/
+when: 1643260547.39174
+lastSyncTime: 1643260547.39175
+asMultiple: FALSE
+asStatic: FALSE

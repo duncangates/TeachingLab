@@ -533,6 +533,22 @@ reportServer <- function(id) {
                        quote2 = quote_viz_data2(),
                        quote3 = quote_viz_data3(),
                        subtitle = session_survey_recent() %>% 
+                         dplyr::filter(between(Date, input$date_slider[1], input$date_slider[2])) %>%
+                         {
+                           if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
+                         } %>%
+                         {
+                           if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
+                         } %>%
+                         {
+                           if (input$facilitator != "All Facilitators") dplyr::filter(., Facilitator %in% input$facilitator) else .
+                         } %>%
+                         {
+                           if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today’s professional learning session.` %in% input$content) else .
+                         } %>%
+                         {
+                           if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
+                         } %>%
                          select(Facilitator, `Select your site (district, parish, network, or school).`) %>% 
                          transmute(course_fac = paste0(`Select your site (district, parish, network, or school).`, ", ", Facilitator)) %>%
                          distinct(course_fac) %>%

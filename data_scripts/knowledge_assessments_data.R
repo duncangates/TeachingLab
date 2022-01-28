@@ -7,92 +7,257 @@ library(magrittr)
 
 options(sm_oauth_token = "wD.rd9HKenA2QV2Z2zV.kJwL7533YR3TcbP0Ii7--tHadLRlID-hv5Kz8oAVvHsKXUSn9KRnzz31DcKqb8vcLMqjuHjYz7r3vW7kQj3TZ3oboSG5mvxi5ZijlFhL8ylm")
 
-# surveys <- surveymonkey::browse_surveys()
-ids_surveys <- tibble::tibble(
-  title = c(
-    "ELA: Guidebooks Diverse Learners Bootcamp - Teacher",
-    "ELA: CRSE PLC", "Math: Cycle of Inquiry V- Sequencing and Connecting Representations",
-    "ELA: Bootcamp - Foundational Skills Bootcamp Skills (K-2)",
-    "ELA: Guidebooks Diverse Learners Bootcamp Writing", 
-    "Math: Bootcamp",
-    "ELA: Bootcamp - General", 
-    "Math: Cycle of Inquiry I - Eliciting Student Thinking",
-    "ELA: Guidebooks Diverse Learners Bootcamp - Leader", 
-    "School Leaders: ELA",
-    "Math: Bootcamp - EIC", 
-    "Math: Accelerating Learning", 
-    "ELA: HQIM & Enrichment",
-    "ELA General: Cycle of Inquiry - Complex Text", 
-    "ELA: Guidebooks Diverse Learners Cycle of Inquiry - Vocabulary",
-    "ELA: Guidebooks Diverse Learners Cycle of Inquiry - Fluency",
-    "ELA: Guidebooks Cycle of Inquiry 1", "ELA: Guidebooks Cycle of Inquiry 2"
-  ),
-  id = c(
-    "310008951", "312484554", "311404789", "309842602",
-    "310775522", "309842333", "309800566", "311433379", "311069987",
-    "312485414", "309893890", "310768681", "310009771", "311404498",
-    "310776879", "310776199", "310778066", "310777524"
-  )
+ids_surveys <- tibble::tribble(
+  ~title, ~id,
+  "School Leaders: ELA", 312485414L,
+  "ELA General: Cycle of Inquiry - Complex Text", 311404498L,
+  "ELA General: Cycle of Inquiry - Speaking & Listening", 315708558L,
+  "ELA: Bootcamp - Foundational Skills Bootcamp Skills (K-2)", 309842602L,
+  "ELA: Bootcamp - General", 309800566L,
+  "ELA: CRSE PLC", 312484554L,
+  "ELA: Cycle of Inquiry - Curriculum Flex Foundational Skills", 314564825L,
+  "ELA: Guidebooks Cycle of Inquiry 1", 310778066L,
+  "ELA: Guidebooks Cycle of Inquiry 2", 310777524L,
+  "ELA: Guidebooks Diverse Learners Bootcamp - Leader", 311069987L,
+  "ELA: Guidebooks Diverse Learners Bootcamp - Teacher", 310008951L,
+  "ELA: Guidebooks Diverse Learners Bootcamp Writing", 310775522L,
+  "ELA: Guidebooks Diverse Learners Cycle of Inquiry - Fluency", 310776199L,
+  "ELA: Guidebooks Diverse Learners Cycle of Inquiry - Vocabulary", 310776879L,
+  "ELA: HQIM & Enrichment", 310009771L,
+  "ELA: School Leader Coaching Series", 316752660L,
+  "Math: Accelerating Learning", 310768681L,
+  "Math: Accelerating Learning - EIC", 313784149L,
+  "Math: Bootcamp", 309842333L,
+  "Math: Bootcamp - Curriculum Flexible", 315770504L,
+  "Math: Bootcamp - EIC", 309893890L,
+  "Math: Cycle of Inquiry I - Eliciting Student Thinking", 311433379L,
+  "Math: Cycle of Inquiry I - Eliciting Student Thinking - Curriculum Flexible", 315770900L,
+  "Math: Cycle of Inquiry II - Making Math Visible", 316733968L,
+  "Math: Cycle of Inquiry V- Sequencing and Connecting Representations", 311404789L
 ) %>%
-  dplyr::mutate(count = dplyr::row_number())
+  dplyr::mutate(count = dplyr::row_number()) %>%
+  dplyr::slice(-23) # For now remove 23 (Making Math Visible), duplicate row issue - see Github issue
 
-fetch_survey_2 <- function(id, name) {
-  #### Get survey object and parse ####
-  survey <- surveymonkey::fetch_survey_obj(id = id) %>%
-    surveymonkey::parse_survey()
-  ### Standardize Site Column names ###
-  column_name_with_period <- c("Please select your site \\(district, parish, network, or school\\)\\.")
-  just_school <- "Your school"
-  if (sum(stringr::str_detect(colnames(survey), column_name_with_period)) >= 1) {
-    survey <- survey %>%
-      dplyr::rename_with( ~ stringr::str_replace_all(.x, 
-                                                     column_name_with_period, 
-                                                     "Please select your site (district, parish, network, or school)"))
-    print("Period removed")
-  } else if (sum(stringr::str_detect(colnames(survey), just_school)) >= 1) {
-    survey <- survey %>%
-      dplyr::rename_with( ~ stringr::str_replace_all(.x, 
-                                                     just_school, 
-                                                     "Please select your site (district, parish, network, or school)"))
-  }
-  #### Parse survey ####
-  survey_parsed <- survey %>%
-    {
-      if (nrow(.) > 1) {
-        dplyr::mutate(., id = dplyr::select(
-          .,
-          tidyselect::contains("3 initials"),
-          tidyselect::contains("birthday")
-        ) %>%
-          purrr::pmap_chr(., ~ paste0(tolower(.x[1]), "_", .x[2])))
-      } else {
-        .
-      }
-    } %>%
-    {
-      if (nrow(.) > 1) { # If there is any data create a new column with the answers from both site and district questions
-        dplyr::mutate(., `Please select your site (district, parish, network, or school)` = ifelse(is.na(`Please select your site (district, parish, network, or school)`),
-          `Please select your site (district, parish, network, or school) - Other (please specify)`,
-          `Please select your site (district, parish, network, or school)`
-        ))
-      }
-    }
-  #### Assign all to environment with format surveyname ####
-  assign(value = survey_parsed, x = paste0("survey", name), envir = .GlobalEnv)
-  #### Compile dataframe of all the surveys new names and add ####
-  name_df <- tibble::tibble(names = paste0("survey", name)) %>%
-    dplyr::mutate(count = name) %>%
-    dplyr::left_join(ids_surveys, by = "count") %>%
-    dplyr::mutate(title = stringr::str_replace_all(title, " ", "")) %>%
-    dplyr::mutate(title = stringr::str_replace_all(title, ":", ""))
-  print(name_df)
-  #### Write to data folder with original name####
-  purrr::map2(.x = name_df$names, .y = name_df$title, ~ readr::write_rds(x = get(.x), file = paste0(here::here("Dashboards/KnowledgeAssessments/data/"), .y, ".rds")))
-}
-
-purrr::map2(.x = ids_surveys$id, .y = ids_surveys$count, ~ fetch_survey_2(id = .x, name = .y))
+devtools::load_all()
+# TeachingLab::fetch_survey_2(id = ids_surveys$id[24], name = ids_surveys$count[24])
+purrr::map2(.x = ids_surveys$id, .y = ids_surveys$count, ~ purrr::safely(TeachingLab::fetch_survey_2(id = .x, name = .y)))
 ########################################################################################################################
 
+### School Leaders: ELA ###
+ela_school_leaders_correct <- tibble::tibble(
+  question = c(
+    "Which of the following are literacy instructional shifts? Select all that apply. - Regular practice with complex texts and their academic language.",
+    "Which of the following are literacy instructional shifts? Select all that apply. - Building knowledge through content-rich non-fiction.",
+    "Which of the following are literacy instructional shifts? Select all that apply. - Equal balance of text-based writing and writing from personal experiences. ",
+    "Which of the following are literacy instructional shifts? Select all that apply. - Regular opportunities for direct instruction on reading comprehension strategies.",
+    "Which of the following are literacy instructional shifts? Select all that apply. - I'm not sure.",
+    "Which of the following are examples of text-specific questions? Select all that apply. - What can you infer from Dr. King’s letter about the letter that he received?",
+    "Which of the following are examples of text-specific questions? Select all that apply. - In “The Lion, the Witch, and the Wardrobe”, how and why does Edmund change?",
+    "Which of the following are examples of text-specific questions? Select all that apply. - In “Casey at the Bat,” Casey strikes out. Describe a time when you failed at something.",
+    "Which of the following are examples of text-specific questions? Select all that apply. - In “Letter from a Birmingham Jail,” Dr. King discusses nonviolent protests. Write about a time when you wanted to fight against something that you felt was unfair.",
+    "Which of the following statements are true about the purpose of the Instructional Practice Guide (IPG)? Select all that apply. - It focuses on observations aligned to the ELA and literacy instructional shifts",
+    "Which of the following statements are true about the purpose of the Instructional Practice Guide (IPG)? Select all that apply. - It is a coaching tool that supports identifying equitable literacy practices.",
+    "Which of the following statements are true about the purpose of the Instructional Practice Guide (IPG)? Select all that apply. - It can be used to diagnose unfinished learning needs of students.",
+    "Which of the following statements are true about the purpose of the Instructional Practice Guide (IPG)? Select all that apply. - It is a tool that can be used to determine teacher effectiveness in formal observations.",
+    "Which of the following statements are true about the purpose of the Instructional Practice Guide (IPG)? Select all that apply. - I'm not sure.",
+    "Which of the following describes effective feedback to a teacher following an observation? Select all that apply. - The feedback is focused on teacher moves such as the questions the teachers posed as students read the text.",
+    "Which of the following describes effective feedback to a teacher following an observation? Select all that apply. - The interaction includes role-playing for the teacher to practice a new strategy which directly addresses a challenge from the observation.",
+    "Which of the following describes effective feedback to a teacher following an observation? Select all that apply. - The feedback makes clear the supervisor’s opinion about the teacher’s instruction pedagogy.",
+    "Which of the following describes effective feedback to a teacher following an observation? Select all that apply. - The feedback is delivered via email so that the teacher can respond in writing.",
+    "Which of the following describes effective feedback to a teacher following an observation? Select all that apply. - I'm not sure."),
+  answer = c(
+    "Regular practice with complex texts and their academic language.",
+    "Building knowledge through content-rich non-fiction.",
+    "Equal balance of text-based writing and writing from personal experiences.",
+    "Regular opportunities for direct instruction on reading comprehension strategies.",
+    "I’m not sure.",
+    "What can you infer from Dr. King’s letter about the letter that he received?",
+    "In “The Lion, the Witch, and the Wardrobe”, how and why does Edmund change?",
+    "In “Casey at the Bat,” Casey strikes out. Describe a time when you failed at something.",
+    "In “Letter from a Birmingham Jail,” Dr. King discusses nonviolent protests. Write about a time when you wanted to fight against something that you felt was unfair.",
+    "It focuses on observations aligned to the ELA and literacy instructional shifts",
+    "It is a coaching tool that supports identifying equitable literacy practices.",
+    "It can be used to diagnose unfinished learning needs of students.",
+    "It is a tool that can be used to determine teacher effectiveness in formal observations.",
+    "I’m not sure.",
+    "The feedback is focused on teacher moves such as the questions the teachers posed as students read the text.",
+    "The interaction includes role-playing for the teacher to practice a new strategy which directly addresses a challenge from the observation.",
+    "The feedback makes clear the supervisor’s opinion about the teacher’s instruction pedagogy.",
+    "The feedback is delivered via email so that the teacher can respond in writing.",
+    "I’m not sure."
+  )
+)
+
+readr::write_rds(
+  ela_school_leaders_correct,
+  here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_school_leaders.rds")
+)
+
+TeachingLab::save_processed_data(
+  data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/SchoolLeadersELA.rds"),
+  q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_school_leaders.rds"),
+  correct = c(
+    "Regular practice with complex texts and their academic language.",
+    "Building knowledge through content-rich non-fiction.",
+    "What can you infer from Dr. King’s letter about the letter that he received?",
+    "In “The Lion, the Witch, and the Wardrobe”, how and why does Edmund change?",
+    "It focuses on observations aligned to the ELA and literacy instructional shifts.",
+    "It is a coaching tool that supports identifying equitable literacy practices.",
+    "The feedback is focused on teacher moves such as the questions the teachers posed as students read the text.",
+    "The interaction includes role-playing for the teacher to practice a new strategy which directly addresses a challenge from the observation."
+  ),
+  save_name = "ela_school_leaders"
+)
+
+### ELA General: Cycle of Inquiry - Complex Text ###
+ela_cycle_inquiry_complex_text_correct <- tibble::tibble(
+  question = c(
+    "Which of the following is/are true of college- and career-ready standards and instructional shifts for English language arts? Select all that apply. - They expect teachers to ensure that students read texts whose complexity levels match their proficiency levels. ",
+    "Which of the following is/are true of college- and career-ready standards and instructional shifts for English language arts? Select all that apply. - They expect all students, regardless of their reading proficiency or performance, to engage with grade-level texts.",
+    "Which of the following is/are true of college- and career-ready standards and instructional shifts for English language arts? Select all that apply. - They emphasize text complexity throughout the grades, even in the early years when most students cannot decode. ",
+    "Which of the following is/are true of college- and career-ready standards and instructional shifts for English language arts? Select all that apply. - They emphasize text complexity primarily in the upper grades to smooth students' transitions to college and career. ",
+    "Which of the following is/are true of college- and career-ready standards and instructional shifts for English language arts? Select all that apply. - I'm not sure",
+    "Curriculum writers and teachers should consider the following when assessing a text's complexity EXCEPT:",
+    "Which of the following can effectively support students struggling to understand the main idea of a complex text? Select all that apply. - Fluently reading the text aloud for them",
+    "Which of the following can effectively support students struggling to understand the main idea of a complex text? Select all that apply. - Replacing the original text with a simplified version",
+    "Which of the following can effectively support students struggling to understand the main idea of a complex text? Select all that apply. - Supplementing the text with a simpler one on the same topic",
+    "Which of the following can effectively support students struggling to understand the main idea of a complex text? Select all that apply. - Opportunities to practice finding the main idea of texts on different topics",
+    "Which of the following can effectively support students struggling to understand the main idea of a complex text? Select all that apply. - I'm not sure",
+    "Which of the following is NOT a feature of an effective close reading lesson?"
+  ),
+  answer = c(
+    "They expect teachers to ensure that students read texts whose complexity levels match their proficiency levels.",
+    "They expect all students, regardless of their reading proficiency or performance, to engage with grade-level texts.",
+    "They emphasize text complexity throughout the grades, even in the early years when most students cannot decode.",
+    "They emphasize text complexity primarily in the upper grades to smooth students' transitions to college and career.",
+    "I'm not sure",
+    "The length of the text",
+    "Fluently reading the text aloud for them",
+    "Replacing the original text with a simplified version",
+    "Supplementing the text with a simpler one on the same topic",
+    "Opportunities to practice finding the main idea of texts on different topics",
+    "I'm not sure",
+    "Emphasis on strategies for making inferences"
+  )
+)
+
+readr::write_rds(
+  ela_cycle_inquiry_complex_text_correct,
+  here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_cycle_inquiry_complex_text.rds")
+)
+
+TeachingLab::save_processed_data(
+  data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELAGeneralCycleofInquiry-ComplexText.rds"),
+  q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_cycle_inquiry_complex_text.rds"),
+  correct = c(
+    "They expect all students, regardless of their reading proficiency or performance, to engage with grade-level texts.",
+    "They emphasize text complexity throughout the grades, even in the early years when most students cannot decode.",
+    "The length of the text",
+    "Fluently reading the text aloud for them",
+    "Supplementing the text with a simpler one on the same topic",
+    "Emphasis on strategies for making inferences"
+  ),
+  save_name = "ela_cycle_inquiry_complex_text"
+)
+
+### ELA General: Cycle of Inquiry - Speaking & Listening ###
+ela_cycle_inquiry_speaking_listening_correct <- tibble::tibble(
+  question = c(
+    "Below are some statements about how protocols and total participation techniques (TPTs) can be used to ensure equity in the classroom. Please select all that are true. - They ensure every student has a voice and their ideas are heard and recognized as being valuable.",
+    "Below are some statements about how protocols and total participation techniques (TPTs) can be used to ensure equity in the classroom. Please select all that are true. - Every student is engaged and held accountable for his or her learning.",
+    "Below are some statements about how protocols and total participation techniques (TPTs) can be used to ensure equity in the classroom. Please select all that are true. - Teachers can group students homogeneously to ensure students are conversing in ability-alike groups.",
+    "Below are some statements about how protocols and total participation techniques (TPTs) can be used to ensure equity in the classroom. Please select all that are true. - They give teachers greater control over what students ultimately produce.",
+    "How do protocols and TPTs support students’ comprehension of complex text?",
+    "Below are some observations from a text-based classroom conversation. Which are the characteristics of an effective text-based classroom conversation? - Most of the conversation takes place between students.",
+    "Below are some observations from a text-based classroom conversation. Which are the characteristics of an effective text-based classroom conversation? - The students analyze chunks of text to see how they fit together.",
+    "Below are some observations from a text-based classroom conversation. Which are the characteristics of an effective text-based classroom conversation? - Most of the conversation involves students making connections between the text and themselves.",
+    "Below are some observations from a text-based classroom conversation. Which are the characteristics of an effective text-based classroom conversation? - The teacher begins by summarizing the text that students just read."
+  ),
+  answer = c(
+    "They ensure every student has a voice and their ideas are heard and recognized as being valuable.",
+    "Every student is engaged and held accountable for his or her learning.",
+    "Teachers can group students homogeneously to ensure students are conversing in ability-alike groups.",
+    "They give teachers greater control over what students ultimately produce.",
+    "They provide every student with the opportunity to process their ideas with their peers.",
+    "Most of the conversation takes place between students.",
+    "The students analyze chunks of text to see how they fit together.",
+    "Most of the conversation involves students making connections between the text and themselves.",
+    "The teacher begins by summarizing the text that students just read."
+  )
+)
+
+readr::write_rds(
+  ela_cycle_inquiry_speaking_listening_correct,
+  here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_cycle_inquiry_speaking_listening_correct.rds")
+)
+
+TeachingLab::save_processed_data(
+  data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELAGeneralCycleofInquiry-Speaking&Listening.rds"),
+  q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_cycle_inquiry_speaking_listening_correct.rds"),
+  correct = c(
+    "They ensure every student has a voice and their ideas are heard and recognized as being valuable.",
+    "Every student is engaged and held accountable for his or her learning.",
+    "They provide every student with the opportunity to process their ideas with their peers.",
+    "Most of the conversation takes place between students.",
+    "The students analyze chunks of text to see how they fit together."
+  ),
+  save_name = "ela_cycle_inquiry_speaking_listening"
+)
+
+### ELA Foundational Skills: Bootcamp ###
+ela_foundational_skills_correct <- tibble::tibble(
+  question = c(
+    "For each of the following, indicate if it is a component of the foundational skills of reading. Select all that apply. - Print concepts",
+    "For each of the following, indicate if it is a component of the foundational skills of reading. Select all that apply. - Phonological awareness",
+    "For each of the following, indicate if it is a component of the foundational skills of reading. Select all that apply. - Vocabulary development",
+    "For each of the following, indicate if it is a component of the foundational skills of reading. Select all that apply. - Fluency",
+    "For each of the following, indicate if it is a component of the foundational skills of reading. Select all that apply. - Reading comprehension",
+    "A structured phonics program is important in K-2 for the following reasons EXCEPT:",
+    "A structured phonics program is important in K-2 for the following reasons EXCEPT:",
+    "A structured phonics program is important in K-2 for the following reasons EXCEPT:",
+    "A structured phonics program is important in K-2 for the following reasons EXCEPT:",
+    "A structured phonics program is important in K-2 for the following reasons EXCEPT:",
+    "When planning for differentiated small group instruction to support the foundational skills, which of the following should teachers engage in? Select all that apply. - Utilize a variety of ongoing assessment data to determine the focus of instruction for small groups",
+    "When planning for differentiated small group instruction to support the foundational skills, which of the following should teachers engage in? Select all that apply. - Group students by their ongoing phase of development with regard to the foundational skills",
+    "When planning for differentiated small group instruction to support the foundational skills, which of the following should teachers engage in? Select all that apply. - Only provide foundational skills instruction during small group time",
+    "When planning for differentiated small group instruction to support the foundational skills, which of the following should teachers engage in? Select all that apply. - Adhere to a same structure of number of groups and members of groups for the entirety of the year"
+  ),
+  answer = c(
+    "Print Concepts",
+    "Phonological awareness",
+    "Vocabulary development",
+    "Fluency",
+    "Reading comprehension",
+    "It is the most effective approach for the most students to learn how to read",
+    "It supports the development of foundational reading skills in a focused, systematic way",
+    "It explicitly teaches the sound/spelling patterns of English in a sequence",
+    "It prompts students to use context clues and pictures to decode words",
+    "I am not sure.",
+    "Utilize a variety of ongoing assessment data to determine the focus of instruction for small groups",
+    "Group students by their ongoing phase of development with regard to the foundational skills",
+    "Only provide foundational skills instruction during small group time",
+    "Adhere to a same structure of number of groups and members of groups for the entirety of the year"
+  )
+)
+
+readr::write_rds(
+  ela_foundational_skills_correct,
+  here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_foundational_skills.rds")
+)
+
+TeachingLab::save_processed_data(
+  data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELABootcamp-FoundationalSkillsBootcampSkills(K-2).rds"),
+  q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_foundational_skills.rds"),
+  correct = c(
+    "Print concepts",
+    "Phonological awareness",
+    "Fluency",
+    "It prompts students to use context clues and pictures to decode words",
+    "Utilize a variety of ongoing assessment data to determine the focus of instruction for small groups",
+    "Group students by their ongoing phase of development with regard to the foundational skills"
+  ),
+  save_name = "ela_foundational_skills"
+)
 
 
 ### ELA General Bootcamp ###
@@ -163,60 +328,68 @@ TeachingLab::save_processed_data(
   save_name = "ela_general_bootcamp"
 )
 
-### ELA Foundational Skills: Bootcamp ###
-ela_foundational_skills_correct <- tibble::tibble(
-  question = c(
-    "For each of the following, indicate if it is a component of the foundational skills of reading. Select all that apply. - Print concepts",
-    "For each of the following, indicate if it is a component of the foundational skills of reading. Select all that apply. - Phonological awareness",
-    "For each of the following, indicate if it is a component of the foundational skills of reading. Select all that apply. - Vocabulary development",
-    "For each of the following, indicate if it is a component of the foundational skills of reading. Select all that apply. - Fluency",
-    "For each of the following, indicate if it is a component of the foundational skills of reading. Select all that apply. - Reading comprehension",
-    "A structured phonics program is important in K-2 for the following reasons EXCEPT:",
-    "A structured phonics program is important in K-2 for the following reasons EXCEPT:",
-    "A structured phonics program is important in K-2 for the following reasons EXCEPT:",
-    "A structured phonics program is important in K-2 for the following reasons EXCEPT:",
-    "A structured phonics program is important in K-2 for the following reasons EXCEPT:",
-    "When planning for differentiated small group instruction to support the foundational skills, which of the following should teachers engage in? Select all that apply. - Utilize a variety of ongoing assessment data to determine the focus of instruction for small groups",
-    "When planning for differentiated small group instruction to support the foundational skills, which of the following should teachers engage in? Select all that apply. - Group students by their ongoing phase of development with regard to the foundational skills",
-    "When planning for differentiated small group instruction to support the foundational skills, which of the following should teachers engage in? Select all that apply. - Only provide foundational skills instruction during small group time",
-    "When planning for differentiated small group instruction to support the foundational skills, which of the following should teachers engage in? Select all that apply. - Adhere to a same structure of number of groups and members of groups for the entirety of the year"
-  ),
+### ELA: CRSE PLC ### (This doesn't look like a knowledge assessment??)
+
+
+### ELA: Cycle of Inquiry - Curriculum Flex Foundational Skills ### (Can't find answer key)
+ela_cycle_inquiry_curriculum_flex_correct <- tibble::tibble(
+  question = c("For each of the following, indicate if it is a component of the foundational skills of reading. Select all that apply. - Print concepts",
+               "For each of the following, indicate if it is a component of the foundational skills of reading. Select all that apply. - Phonological awareness",
+               "For each of the following, indicate if it is a component of the foundational skills of reading. Select all that apply. - Vocabulary development",
+               "For each of the following, indicate if it is a component of the foundational skills of reading. Select all that apply. - Fluency",
+               "For each of the following, indicate if it is a component of the foundational skills of reading. Select all that apply. - Reading comprehension",
+               "Which of the following statements are true about the purpose of the Foundational Skills Observation Tool (FSOT)? Select all that apply. - It focuses on observations aligned to the Science of Reading and effective foundational skills instruction.",
+               "Which of the following statements are true about the purpose of the Foundational Skills Observation Tool (FSOT)? Select all that apply. - It supports identifying equitable literacy practices in the foundational skills.",
+               "Which of the following statements are true about the purpose of the Foundational Skills Observation Tool (FSOT)? Select all that apply. - It diagnoses unfinished learning needs of students.",
+               "Which of the following statements are true about the purpose of the Foundational Skills Observation Tool (FSOT)? Select all that apply. - It can determine teacher effectiveness in formal observations.",
+               "Which of the following statements are true about the purpose of the Foundational Skills Observation Tool (FSOT)? Select all that apply. - I’m not sure.",
+               "Which of the following describes effective feedback to a teacher following an observation? Select all that apply. - The feedback is focused on teacher moves such as the questions the teachers posed as students read the text.",
+               "Which of the following describes effective feedback to a teacher following an observation? Select all that apply. - The interaction includes role-playing for the teacher to practice a new strategy which directly addresses a challenge from the observation.",
+               "Which of the following describes effective feedback to a teacher following an observation? Select all that apply. - The feedback makes clear the supervisor’s opinion about the teacher’s instruction pedagogy.",
+               "Which of the following describes effective feedback to a teacher following an observation? Select all that apply. - The feedback is delivered via email so that the teacher can respond in writing.",
+               "Which of the following describes effective feedback to a teacher following an observation? Select all that apply. - I’m not sure."),
   answer = c(
-    "Print Concepts",
+    "Print concepts",
     "Phonological awareness",
     "Vocabulary development",
     "Fluency",
     "Reading comprehension",
-    "It is the most effective approach for the most students to learn how to read",
-    "It supports the development of foundational reading skills in a focused, systematic way",
-    "It explicitly teaches the sound/spelling patterns of English in a sequence",
-    "It prompts students to use context clues and pictures to decode words",
-    "I am not sure.",
-    "Utilize a variety of ongoing assessment data to determine the focus of instruction for small groups",
-    "Group students by their ongoing phase of development with regard to the foundational skills",
-    "Only provide foundational skills instruction during small group time",
-    "Adhere to a same structure of number of groups and members of groups for the entirety of the year"
+    "It focuses on observations aligned to the Science of Reading and effective foundational skills instruction.",
+    "It supports identifying equitable literacy practices in the foundational skills.",
+    "It diagnoses unfinished learning needs of students.",
+    "It can determine teacher effectiveness in formal observations.",
+    "I’m not sure.",
+    "The feedback is focused on teacher moves such as the questions the teachers posed as students read the text.",
+    "The interaction includes role-playing for the teacher to practice a new strategy which directly addresses a challenge from the observation.(Yes)",
+    "The feedback makes clear the supervisor’s opinion about the teacher’s instruction pedagogy. ",
+    "The feedback is delivered via email so that the teacher can respond in writing. ",
+    "I’m not sure."
   )
 )
-
 readr::write_rds(
-  ela_foundational_skills_correct,
-  here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_foundational_skills.rds")
+  ela_cycle_inquiry_curriculum_flex_correct,
+  here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_cycle_inquiry_curriculum_flex.rds")
 )
 
 TeachingLab::save_processed_data(
-  data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELABootcamp-FoundationalSkillsBootcampSkills(K-2).rds"),
-  q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_foundational_skills.rds"),
+  data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELACycleofInquiry-CurriculumFlexFoundationalSkills.rds"),
+  q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_cycle_inquiry_curriculum_flex.rds"),
   correct = c(
     "Print concepts",
     "Phonological awareness",
     "Fluency",
-    "It prompts students to use context clues and pictures to decode words",
-    "Utilize a variety of ongoing assessment data to determine the focus of instruction for small groups",
-    "Group students by their ongoing phase of development with regard to the foundational skills"
+    "It focuses on observations aligned to the Science of Reading and effective foundational skills instruction.",
+    "It supports identifying equitable literacy practices in the foundational skills.",
+    "The feedback is focused on teacher moves such as the questions the teachers posed as students read the text.",
+    "The interaction includes role-playing for the teacher to practice a new strategy which directly addresses a challenge from the observation."
   ),
-  save_name = "ela_foundational_skills"
+  save_name = "ela_cycle_inquiry_curriculum_flex"
 )
+
+### ELA: Guidebooks Cycle of Inquiry 1 ### (Not Completed)
+
+
+### ELA: Guidebooks Cycle of Inquiry 2 ### (Not Completed)
 
 ### ELA Guidebooks Diverse Learners: Bootcamp - Leader ###
 ela_guidebooks_diverse_learners_leader_correct <- tibble::tibble(
@@ -365,6 +538,56 @@ TeachingLab::save_processed_data(
   save_name = "ela_guidebooks_diverse_learners_bootcamp_writing"
 )
 
+### ELA: Guidebooks Diverse Learners Cycle of Inquiry - Fluency ### (No completes yet)
+
+
+### ELA: Guidebooks Diverse Learners Cycle of Inquiry - Vocabulary ###
+ela_guidebooks_diverse_learners_vocabulary_correct <- tibble::tibble(
+  question = c(
+    "Mrs. Richards is planning instruction for an upcoming unit anchored in a complex text. Which of the following criteria should she use to help determine which vocabulary words might warrant more intensive vocabulary instruction for her diverse learners? Select all that apply. - Words likely to appear in cross-disciplinary complex texts the students will read in the future.",
+    "Mrs. Richards is planning instruction for an upcoming unit anchored in a complex text. Which of the following criteria should she use to help determine which vocabulary words might warrant more intensive vocabulary instruction for her diverse learners? Select all that apply. - Words that are part of a semantic network.",
+    "Mrs. Richards is planning instruction for an upcoming unit anchored in a complex text. Which of the following criteria should she use to help determine which vocabulary words might warrant more intensive vocabulary instruction for her diverse learners? Select all that apply. - Words that are multisyllabic.",
+    "Mrs. Richards is planning instruction for an upcoming unit anchored in a complex text. Which of the following criteria should she use to help determine which vocabulary words might warrant more intensive vocabulary instruction for her diverse learners? Select all that apply. - Words that are cognates in a student’s native language.",
+    "Which of the following is a factor that contributes to vocabulary development and language development, especially in young children?",
+    "The data-driven dialogue protocol helps educators to do which of the following? Select all that apply. - Make instructional decisions based on evidence of student work.",
+    "The data-driven dialogue protocol helps educators to do which of the following? Select all that apply. - Identify gaps that should be addressed.",
+    "The data-driven dialogue protocol helps educators to do which of the following? Select all that apply. - Make instructional decisions based on teacher notes and prior knowledge of the students.",
+    "The data-driven dialogue protocol helps educators to do which of the following? Select all that apply. - Group students by reading ability.",
+    "Mrs. Richards is planning instruction for an upcoming unit and identifies several Tier 2 vocabulary words from the central text of the unit that warrant more intentional instruction. From working with her Diverse Learners through past units, she knows that they have benefited from targeted instruction that taps into prior knowledge and allows them to understand words through a multifaceted approach. Which vocabulary instructional strategy is this?"
+  ),
+  answer = c(
+    "Words likely to appear in cross-disciplinary complex texts the students will read in the future.",
+    "Words that are part of a semantic network.",
+    "Words that are multisyllabic.",
+    "Words that are cognates in a student’s native language.",
+    "Adult-child conversational exchanges.",
+    "Make instructional decisions based on evidence of student work.",
+    "Identify gaps that should be addressed.",
+    "Make instructional decisions based on teacher notes and prior knowledge of the students.",
+    "Group students by reading ability.",
+    "Frayer Model: having students create definitions, examples, nonexamples, characteristics, and a visual representation of a new vocabulary word connecting new learning about that word to what they already know."
+  )
+)
+
+readr::write_rds(
+  ela_guidebooks_diverse_learners_vocabulary_correct,
+  here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_diverse_learners_vocabulary.rds")
+)
+
+TeachingLab::save_processed_data(
+  data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELAGuidebooksDiverseLearnersCycleofInquiry-Vocabulary.rds"),
+  q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_diverse_learners_vocabulary.rds"),
+  correct = c(
+    "Words likely to appear in cross-disciplinary complex texts the students will read in the future.",
+    "Words that are part of a semantic network.",
+    "Adult-child conversational exchanges.",
+    "Make instructional decisions based on evidence of student work.",
+    "Identify gaps that should be addressed.",
+    "Frayer Model: having students create definitions, examples, nonexamples, characteristics, and a visual representation of a new vocabulary word connecting new learning about that word to what they already know."
+  ),
+  save_name = "ela_guidebooks_diverse_learners_vocabulary"
+)
+
 ### ELA EL: HQIM & Enrichment ###
 ela_hqim_enrichment_correct <- tibble::tibble(
   question = c(
@@ -412,10 +635,75 @@ TeachingLab::save_processed_data(
     "Includes universal screening of all students, multiple tiers of instruction and support services, and integrated data collection and assessment systems to inform decisions at each tier of instruction"
   ),
   save_name = "el_ela_hqim_enrichment"
+) #### No sites here???
+
+### ELA: School Leader Coaching Series ### (Only one test response here)
+
+
+### Math: Accelerating Learning ###
+math_accelerating_learning_correct <- tibble::tibble(
+  question = c(
+    "Which of the following actions BEST describes equitable instructional strategies for supporting students with unfinished learning in math?",
+    "Ms. Clark is preparing to teach a new unit and the first lesson builds off of work from the previous grade level. She has identified 6 students who have unfinished learning around this topic in her class of 25 and, she determines that students need to have a conceptual understanding of the topic, but not necessarily procedural skill to fully engage in the lesson. Select all strategies that will best support her students. - Pull the 6 students for a small group to discuss the connections between different strategies they’ve used in previous grades.",
+    "Ms. Clark is preparing to teach a new unit and the first lesson builds off of work from the previous grade level. She has identified 6 students who have unfinished learning around this topic in her class of 25 and, she determines that students need to have a conceptual understanding of the topic, but not necessarily procedural skill to fully engage in the lesson. Select all strategies that will best support her students. - Plan an activity with multiple entry points to engage the whole class in.",
+    "Ms. Clark is preparing to teach a new unit and the first lesson builds off of work from the previous grade level. She has identified 6 students who have unfinished learning around this topic in her class of 25 and, she determines that students need to have a conceptual understanding of the topic, but not necessarily procedural skill to fully engage in the lesson. Select all strategies that will best support her students. - Pull the 6 students for a small group to review a step-by-step process for solving problems from the previous grade which are related to the topic.",
+    "Ms. Clark is preparing to teach a new unit and the first lesson builds off of work from the previous grade level. She has identified 6 students who have unfinished learning around this topic in her class of 25 and, she determines that students need to have a conceptual understanding of the topic, but not necessarily procedural skill to fully engage in the lesson. Select all strategies that will best support her students. - Review the step-by-step procedure with the whole class as a warm-up before the lesson.",
+    "When supporting students with unfinished learning, which of the following are MISSTEPS when it comes to maintaining focus and coherence? Select all that apply. - Trying to address every gap a student has",
+    "When supporting students with unfinished learning, which of the following are MISSTEPS when it comes to maintaining focus and coherence? Select all that apply. - Focus on Major Work clusters from current or previous grades as it relates to upcoming content",
+    "When supporting students with unfinished learning, which of the following are MISSTEPS when it comes to maintaining focus and coherence? Select all that apply. - Use formative data to gauge student understanding and inform pacing",
+    "When supporting students with unfinished learning, which of the following are MISSTEPS when it comes to maintaining focus and coherence? Select all that apply. - Choosing content for intervention based solely on students’ weakest area",
+    "When supporting students with unfinished learning, which of the following are MISSTEPS when it comes to maintaining focus and coherence? Select all that apply. - I’m not sure",
+    "Which of the following is the most effective at addressing unfinished learning?"
+  ),
+  answer = c(
+    "Identifying unfinished learning leading up to the current topic and teach 1-2 lessons targeting those prerequisites at the beginning of the topic. (Correct)",
+    "Pull the 6 students for a small group to discuss the connections between different strategies they’ve used in previous grades.",
+    "Plan an activity with multiple entry points to engage the whole class in.",
+    "Pull the 6 students for a small group to review a step-by-step process for solving problems from the previous grade which are related to the topic.",
+    "Review the step-by-step procedure with the whole class as a warm-up before the lesson.",
+    "Trying to address every gap a student has",
+    "Focus on Major Work clusters from current or previous grades as it relates to upcoming content",
+    "Use formative data to gauge student understanding and inform pacing",
+    "Choosing content for intervention based solely on students’ weakest area",
+    "I’m not sure",
+    "Stick to grade-level content and instructional rigor"
+  )
 )
 
-########## Special Section, Same Questions for Math: Bootcamp EIC, and Math Bootcamp ##########
-### Math: Bootcamp EIC ###
+readr::write_rds(
+  math_accelerating_learning_correct,
+  here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_accelerating_learning.rds")
+)
+
+TeachingLab::save_processed_data(
+  data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/MathAcceleratingLearning.rds"),
+  q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_accelerating_learning.rds"),
+  correct = c(
+    "Identifying unfinished learning leading up to the current topic and teach 1-2 lessons targeting those prerequisites at the beginning of the topic.",
+    "Pull the 6 students for a small group to discuss the connections between different strategies they’ve used in previous grades.",
+    "Plan an activity with multiple entry points to engage the whole class in.",
+    "Trying to address every gap a student has",
+    "Choosing content for intervention based solely on students’ weakest area",
+    "Stick to grade-level content and instructional rigor"
+  ),
+  save_name = "math_accelerating_learning"
+)
+
+TeachingLab::save_processed_data(
+  data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/MathAcceleratingLearning.rds"),
+  q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_accelerating_learning.rds"),
+  correct = c(
+    "Identifying unfinished learning leading up to the current topic and teach 1-2 lessons targeting those prerequisites at the beginning of the topic.",
+    "Pull the 6 students for a small group to discuss the connections between different strategies they’ve used in previous grades.",
+    "Plan an activity with multiple entry points to engage the whole class in.",
+    "Trying to address every gap a student has",
+    "Choosing content for intervention based solely on students’ weakest area",
+    "Stick to grade-level content and instructional rigor"
+  ),
+  save_name = "math_accelerating_learning_eic"
+)
+
+### Math: Bootcamp & Math: Bootcamp EIC ###
 math_bootcamp_correct <- tibble::tibble(
   question = c(
     "Which of the following statements describe math instructional shifts associated with college-and-career readiness standards? Select all that apply. - Going deeper into fewer math topics.",
@@ -477,7 +765,6 @@ TeachingLab::save_processed_data(
   save_name = "math_bootcamp_eic"
 )
 
-### Math: Bootcamp ###
 TeachingLab::save_processed_data(
   data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/MathBootcamp.rds"),
   q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_bootcamp.rds"),
@@ -493,8 +780,10 @@ TeachingLab::save_processed_data(
   save_name = "math_bootcamp"
 )
 
+### Math: Bootcamp - Curriculum Flexible ### (Not Completed Yet)
+
 ### Math Cycle of Inquiry I - Eliciting Student Thinking ###
-math_cycle_inquiry_1_eic_correct <- tibble::tibble(
+math_cycle_inquiry_1_elicit_student_thinking_correct <- tibble::tibble(
   question = c(
     "Which of the following are focusing questions? Select all that apply. - What kind of equation does y=3x+2 represent?",
     "Which of the following are focusing questions? Select all that apply. - Notice that this line passes through (0,0) on the graph. What kind of relationship does this show?",
@@ -602,13 +891,13 @@ math_cycle_inquiry_1_eic_correct <- tibble::tibble(
 )
 
 readr::write_rds(
-  math_cycle_inquiry_1_eic_correct,
-  here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_cycle_inquiry_1.rds")
+  math_cycle_inquiry_1_elicit_student_thinking_correct,
+  here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_cycle_inquiry_1_elicit_student_thinking.rds")
 )
 
 TeachingLab::save_processed_data(
   data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/MathCycleofInquiryI-ElicitingStudentThinking.rds"),
-  q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_cycle_inquiry_1.rds"),
+  q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_cycle_inquiry_1_elicit_student_thinking.rds"),
   correct = c(
     "How do we know that y=3x+2 represents a linear relationship?",
     "What key features of this graph tells us that the line represents a proportional relationship?",
@@ -622,6 +911,13 @@ TeachingLab::save_processed_data(
   ),
   save_name = "math_cycle_of_inquiry_i"
 )
+
+### Math: Cycle of Inquiry I - Eliciting Student Thinking - Curriculum Flexible ### 
+######### (Must be a DUPLICATE) #########
+
+
+### Math: Cycle of Inquiry II - Making Math Visible ###
+
 
 ### Math: Cycle of Inquiry V- Sequencing and Connecting Representations ###
 math_cycle_inquiry_5_scr_correct <- tibble::tibble(
@@ -706,113 +1002,4 @@ TeachingLab::save_processed_data(
   save_name = "math_cycle_inquiry_iv"
 )
 
-### School Leaders: ELA ###
-ela_school_leaders_correct <- tibble::tibble(
-  question = c(
-    "Which of the following are literacy instructional shifts? Select all that apply. - Regular practice with complex texts and their academic language.",
-    "Which of the following are literacy instructional shifts? Select all that apply. - Building knowledge through content-rich non-fiction.",
-    "Which of the following are literacy instructional shifts? Select all that apply. - Equal balance of text-based writing and writing from personal experiences. ",
-    "Which of the following are literacy instructional shifts? Select all that apply. - Regular opportunities for direct instruction on reading comprehension strategies.",
-    "Which of the following are literacy instructional shifts? Select all that apply. - I'm not sure.",
-    "Which of the following are examples of text-specific questions? Select all that apply. - What can you infer from Dr. King’s letter about the letter that he received?",
-    "Which of the following are examples of text-specific questions? Select all that apply. - In “The Lion, the Witch, and the Wardrobe”, how and why does Edmund change?",
-    "Which of the following are examples of text-specific questions? Select all that apply. - In “Casey at the Bat,” Casey strikes out. Describe a time when you failed at something.",
-    "Which of the following are examples of text-specific questions? Select all that apply. - In “Letter from a Birmingham Jail,” Dr. King discusses nonviolent protests. Write about a time when you wanted to fight against something that you felt was unfair.",
-    "Which of the following statements are true about the purpose of the Instructional Practice Guide (IPG)? Select all that apply. - It focuses on observations aligned to the ELA and literacy instructional shifts",
-    "Which of the following statements are true about the purpose of the Instructional Practice Guide (IPG)? Select all that apply. - It is a coaching tool that supports identifying equitable literacy practices.",
-    "Which of the following statements are true about the purpose of the Instructional Practice Guide (IPG)? Select all that apply. - It can be used to diagnose unfinished learning needs of students.",
-    "Which of the following statements are true about the purpose of the Instructional Practice Guide (IPG)? Select all that apply. - It is a tool that can be used to determine teacher effectiveness in formal observations.",
-    "Which of the following statements are true about the purpose of the Instructional Practice Guide (IPG)? Select all that apply. - I'm not sure.",
-    "Which of the following describes effective feedback to a teacher following an observation? Select all that apply. - The feedback is focused on teacher moves such as the questions the teachers posed as students read the text.",
-    "Which of the following describes effective feedback to a teacher following an observation? Select all that apply. - The interaction includes role-playing for the teacher to practice a new strategy which directly addresses a challenge from the observation.",
-    "Which of the following describes effective feedback to a teacher following an observation? Select all that apply. - The feedback makes clear the supervisor’s opinion about the teacher’s instruction pedagogy.",
-    "Which of the following describes effective feedback to a teacher following an observation? Select all that apply. - The feedback is delivered via email so that the teacher can respond in writing.",
-    "Which of the following describes effective feedback to a teacher following an observation? Select all that apply. - I'm not sure."
-  ),
-  answer = c(
-    "Regular practice with complex texts and their academic language.",
-    "Building knowledge through content-rich non-fiction.",
-    "Equal balance of text-based writing and writing from personal experiences.",
-    "Regular opportunities for direct instruction on reading comprehension strategies.",
-    "I’m not sure.",
-    "What can you infer from Dr. King’s letter about the letter that he received?",
-    "In “The Lion, the Witch, and the Wardrobe”, how and why does Edmund change?",
-    "In “Casey at the Bat,” Casey strikes out. Describe a time when you failed at something.",
-    "In “Letter from a Birmingham Jail,” Dr. King discusses nonviolent protests. Write about a time when you wanted to fight against something that you felt was unfair.",
-    "It focuses on observations aligned to the ELA and literacy instructional shifts",
-    "It is a coaching tool that supports identifying equitable literacy practices.",
-    "It can be used to diagnose unfinished learning needs of students.",
-    "It is a tool that can be used to determine teacher effectiveness in formal observations.",
-    "I’m not sure.",
-    "The feedback is focused on teacher moves such as the questions the teachers posed as students read the text.",
-    "The interaction includes role-playing for the teacher to practice a new strategy which directly addresses a challenge from the observation.",
-    "The feedback makes clear the supervisor’s opinion about the teacher’s instruction pedagogy.",
-    "The feedback is delivered via email so that the teacher can respond in writing.",
-    "I’m not sure."
-  )
-)
-
-readr::write_rds(
-  ela_school_leaders_correct,
-  here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_school_leaders.rds")
-)
-
-TeachingLab::save_processed_data(
-  data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/SchoolLeadersELA.rds"),
-  q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_school_leaders.rds"),
-  correct = c(
-    "Regular practice with complex texts and their academic language.",
-    "Building knowledge through content-rich non-fiction.",
-    "What can you infer from Dr. King’s letter about the letter that he received?",
-    "In “The Lion, the Witch, and the Wardrobe”, how and why does Edmund change?",
-    "It focuses on observations aligned to the ELA and literacy instructional shifts.",
-    "It is a coaching tool that supports identifying equitable literacy practices.",
-    "The feedback is focused on teacher moves such as the questions the teachers posed as students read the text.",
-    "The interaction includes role-playing for the teacher to practice a new strategy which directly addresses a challenge from the observation."
-  ),
-  save_name = "ela_school_leaders"
-)
-
 ################################################################################################################################
-
-####### ISSUE: Figure out grading later #########
-surveys <- list.files(here::here("Dashboards/KnowledgeAssessments/data/processed"), full.names = T)
-
-correct_by_district <- function(filename) {
-  df <- readr::read_rds(filename)
-
-  if (nrow(df) > 1) {
-    df %>%
-      dplyr::group_by(`Please select your site (district, parish, network, or school)`) %>%
-      
-  } else {
-    print("No responses yet")
-  }
-}
-check <- correct_by_district(surveys[1])
-
-n_overall <- function(data) {
-  nrow(eval(parse(text = paste0("survey", data))))
-}
-
-map_dfc(1:18, ~n_overall(data = .x)) %>%
-  pivot_longer(everything()) %>%
-  summarise(sum = sum(value))
-
-other_text <- function(data) {
-  eval(parse(text = paste0("survey", data))) %>%
-    dplyr::select(`Please select your site (district, parish, network, or school) - Other (please specify)`)
-}
-
-map_dfr(1:18, ~other_text(data = .x))
-
-
-
-
-
-
-
-
-  
-  
-  

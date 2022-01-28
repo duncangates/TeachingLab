@@ -10,7 +10,7 @@ options(httr_oob_default = TRUE,
 # token <- read_rds(here::here("Tokens/gs4_token.rds"))
 
 # Authorize google drive
-drive_auth(path = "Data/thermal-cathode-310719-1445194b99c7.json")
+drive_auth(path = "data/thermal-cathode-310719-1445194b99c7.json")
 gs4_auth(token = drive_token()) # REMEMBER YOU JUST CHANGED THIS
 
 # Register sheet
@@ -20,7 +20,7 @@ sheet <- gs4_find("Staffing Input Request")
 init_data <- read_sheet(ss = sheet$id, sheet = "Input", col_types = "c")
 
 # Read new data
-new_data <- read_rds("Data/new_data.rds")
+new_data <- read_rds("data/new_data.rds")
 
 # Append to data
 data <- bind_rows(new_data, init_data)
@@ -32,6 +32,6 @@ write_sheet(ss = sheet$id, data = data, sheet = "Input")
 
 all_input <- read_sheet(ss = sheet$id, sheet = "Input")
 
-write_rds(all_input, here("Data/AllInput.rds"))
+write_rds(all_input, here::here("data/AllInput.rds"))
 
 

@@ -21,7 +21,11 @@ facilitator_names_emails_list <- read_sheet("https://docs.google.com/spreadsheet
   # mutate(Zearn = case_when(Zearn == FALSE ~ 0,
   #                          Zearn == TRUE ~ 1)) %>%
   rename(Facilitators = 1, Emails = 2) %>%
-  drop_na(`Emails`)
+  drop_na(`Emails`) %>%
+  drop_na(Facilitators)
 
 walk(list(pm_list, sites_list, facilitator_names_emails_list, course_list), ~ 
-       write_rds(x = .x, file = paste0("Data/", colnames(.x)[1], ".rds")))
+       write_rds(x = .x, file = paste0("data/", colnames(.x)[1], ".rds")))
+
+# walk(list(pm_list, sites_list, facilitator_names_emails_list, course_list), ~ 
+#        write_rds(x = .x, file = paste0("Dashboards/Staffing/data/", colnames(.x)[1], ".rds")))
