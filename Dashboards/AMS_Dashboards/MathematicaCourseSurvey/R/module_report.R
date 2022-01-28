@@ -183,52 +183,16 @@ reportServer <- function(id, in_site) {
       data_plot <- course_survey_recent() %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
         {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
+          if (any(input$site != "All Sites")) dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
         } %>%
         {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
+          if (any(input$role != "All Roles")) dplyr::filter(., `Select your role.` %in% input$role) else .
         } %>%
         {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
+          if (any(input$course != "All Courses")) dplyr::filter(., `Select your course.` %in% input$course) else .
         } %>%
         {
-          if ("K" %in% input$grades) dplyr::filter(., "_K" %in% grades_merge) else .
-        } %>%
-        {
-          if ("1" %in% input$grades) dplyr::filter(., "_1" %in% grades_merge) else .
-        } %>%
-        {
-          if ("2" %in% input$grades) dplyr::filter(., "_2" %in% grades_merge) else .
-        } %>%
-        {
-          if ("3" %in% input$grades) dplyr::filter(., "_3" %in% grades_merge) else .
-        } %>%
-        {
-          if ("4" %in% input$grades) dplyr::filter(., "_4" %in% grades_merge) else .
-        } %>%
-        {
-          if ("5" %in% input$grades) dplyr::filter(., "_5" %in% grades_merge) else .
-        } %>%
-        {
-          if ("6" %in% input$grades) dplyr::filter(., "_6" %in% grades_merge) else .
-        } %>%
-        {
-          if ("7" %in% input$grades) dplyr::filter(., "_7" %in% grades_merge) else .
-        } %>%
-        {
-          if ("8" %in% input$grades) dplyr::filter(., "_8" %in% grades_merge) else .
-        } %>%
-        {
-          if ("9" %in% input$grades) dplyr::filter(., "_9" %in% grades_merge) else .
-        } %>%
-        {
-          if ("10" %in% input$grades) dplyr::filter(., "_10" %in% grades_merge) else .
-        } %>%
-        {
-          if ("11" %in% input$grades) dplyr::filter(., "_11" %in% grades_merge) else .
-        } %>%
-        {
-          if ("12" %in% input$grades) dplyr::filter(., "_12" %in% grades_merge) else .
+          if (any(input$grades != "All Grades")) dplyr::filter(., stringr::str_detect(grades_merge, grade_select())) else .
         } %>%
         select(
           date_created,
@@ -289,52 +253,16 @@ reportServer <- function(id, in_site) {
       agree_plot <- course_survey_recent() %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
         {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
+          if (any(input$site != "All Sites")) dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
         } %>%
         {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
+          if (any(input$role != "All Roles")) dplyr::filter(., `Select your role.` %in% input$role) else .
         } %>%
         {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
+          if (any(input$course != "All Courses")) dplyr::filter(., `Select your course.` %in% input$course) else .
         } %>%
         {
-          if ("K" %in% input$grades) dplyr::filter(., "_K" %in% grades_merge) else .
-        } %>%
-        {
-          if ("1" %in% input$grades) dplyr::filter(., "_1" %in% grades_merge) else .
-        } %>%
-        {
-          if ("2" %in% input$grades) dplyr::filter(., "_2" %in% grades_merge) else .
-        } %>%
-        {
-          if ("3" %in% input$grades) dplyr::filter(., "_3" %in% grades_merge) else .
-        } %>%
-        {
-          if ("4" %in% input$grades) dplyr::filter(., "_4" %in% grades_merge) else .
-        } %>%
-        {
-          if ("5" %in% input$grades) dplyr::filter(., "_5" %in% grades_merge) else .
-        } %>%
-        {
-          if ("6" %in% input$grades) dplyr::filter(., "_6" %in% grades_merge) else .
-        } %>%
-        {
-          if ("7" %in% input$grades) dplyr::filter(., "_7" %in% grades_merge) else .
-        } %>%
-        {
-          if ("8" %in% input$grades) dplyr::filter(., "_8" %in% grades_merge) else .
-        } %>%
-        {
-          if ("9" %in% input$grades) dplyr::filter(., "_9" %in% grades_merge) else .
-        } %>%
-        {
-          if ("10" %in% input$grades) dplyr::filter(., "_10" %in% grades_merge) else .
-        } %>%
-        {
-          if ("11" %in% input$grades) dplyr::filter(., "_11" %in% grades_merge) else .
-        } %>%
-        {
-          if ("12" %in% input$grades) dplyr::filter(., "_12" %in% grades_merge) else .
+          if (any(input$grades != "All Grades")) dplyr::filter(., stringr::str_detect(grades_merge, grade_select())) else .
         } %>%
         select(c(
           "How much do you agree with the following statements about this course? - I am satisfied with the overall quality of this course.",
@@ -372,52 +300,16 @@ reportServer <- function(id, in_site) {
       data_n <- course_survey_recent() %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
         {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
+          if (any(input$site != "All Sites")) dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
         } %>%
         {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
+          if (any(input$role != "All Roles")) dplyr::filter(., `Select your role.` %in% input$role) else .
         } %>%
         {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
+          if (any(input$course != "All Courses")) dplyr::filter(., `Select your course.` %in% input$course) else .
         } %>%
         {
-          if ("K" %in% input$grades) dplyr::filter(., "_K" %in% grades_merge) else .
-        } %>%
-        {
-          if ("1" %in% input$grades) dplyr::filter(., "_1" %in% grades_merge) else .
-        } %>%
-        {
-          if ("2" %in% input$grades) dplyr::filter(., "_2" %in% grades_merge) else .
-        } %>%
-        {
-          if ("3" %in% input$grades) dplyr::filter(., "_3" %in% grades_merge) else .
-        } %>%
-        {
-          if ("4" %in% input$grades) dplyr::filter(., "_4" %in% grades_merge) else .
-        } %>%
-        {
-          if ("5" %in% input$grades) dplyr::filter(., "_5" %in% grades_merge) else .
-        } %>%
-        {
-          if ("6" %in% input$grades) dplyr::filter(., "_6" %in% grades_merge) else .
-        } %>%
-        {
-          if ("7" %in% input$grades) dplyr::filter(., "_7" %in% grades_merge) else .
-        } %>%
-        {
-          if ("8" %in% input$grades) dplyr::filter(., "_8" %in% grades_merge) else .
-        } %>%
-        {
-          if ("9" %in% input$grades) dplyr::filter(., "_9" %in% grades_merge) else .
-        } %>%
-        {
-          if ("10" %in% input$grades) dplyr::filter(., "_10" %in% grades_merge) else .
-        } %>%
-        {
-          if ("11" %in% input$grades) dplyr::filter(., "_11" %in% grades_merge) else .
-        } %>%
-        {
-          if ("12" %in% input$grades) dplyr::filter(., "_12" %in% grades_merge) else .
+          if (any(input$grades != "All Grades")) dplyr::filter(., stringr::str_detect(grades_merge, grade_select())) else .
         }
       nrow(data_n)
     })
@@ -436,52 +328,16 @@ reportServer <- function(id, in_site) {
       quote_reactive1 <- course_survey_recent() %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
         {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
+          if (any(input$site != "All Sites")) dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
         } %>%
         {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
+          if (any(input$role != "All Roles")) dplyr::filter(., `Select your role.` %in% input$role) else .
         } %>%
         {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
+          if (any(input$course != "All Courses")) dplyr::filter(., `Select your course.` %in% input$course) else .
         } %>%
         {
-          if ("K" %in% input$grades) dplyr::filter(., "_K" %in% grades_merge) else .
-        } %>%
-        {
-          if ("1" %in% input$grades) dplyr::filter(., "_1" %in% grades_merge) else .
-        } %>%
-        {
-          if ("2" %in% input$grades) dplyr::filter(., "_2" %in% grades_merge) else .
-        } %>%
-        {
-          if ("3" %in% input$grades) dplyr::filter(., "_3" %in% grades_merge) else .
-        } %>%
-        {
-          if ("4" %in% input$grades) dplyr::filter(., "_4" %in% grades_merge) else .
-        } %>%
-        {
-          if ("5" %in% input$grades) dplyr::filter(., "_5" %in% grades_merge) else .
-        } %>%
-        {
-          if ("6" %in% input$grades) dplyr::filter(., "_6" %in% grades_merge) else .
-        } %>%
-        {
-          if ("7" %in% input$grades) dplyr::filter(., "_7" %in% grades_merge) else .
-        } %>%
-        {
-          if ("8" %in% input$grades) dplyr::filter(., "_8" %in% grades_merge) else .
-        } %>%
-        {
-          if ("9" %in% input$grades) dplyr::filter(., "_9" %in% grades_merge) else .
-        } %>%
-        {
-          if ("10" %in% input$grades) dplyr::filter(., "_10" %in% grades_merge) else .
-        } %>%
-        {
-          if ("11" %in% input$grades) dplyr::filter(., "_11" %in% grades_merge) else .
-        } %>%
-        {
-          if ("12" %in% input$grades) dplyr::filter(., "_12" %in% grades_merge) else .
+          if (any(input$grades != "All Grades")) dplyr::filter(., stringr::str_detect(grades_merge, grade_select())) else .
         } %>%
         select(`Overall, what went well in this course?`) %>%
         pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
@@ -505,52 +361,16 @@ reportServer <- function(id, in_site) {
       quote_reactive2 <- course_survey_recent() %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
         {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
+          if (any(input$site != "All Sites")) dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
         } %>%
         {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
+          if (any(input$role != "All Roles")) dplyr::filter(., `Select your role.` %in% input$role) else .
         } %>%
         {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
+          if (any(input$course != "All Courses")) dplyr::filter(., `Select your course.` %in% input$course) else .
         } %>%
         {
-          if ("K" %in% input$grades) dplyr::filter(., "_K" %in% grades_merge) else .
-        } %>%
-        {
-          if ("1" %in% input$grades) dplyr::filter(., "_1" %in% grades_merge) else .
-        } %>%
-        {
-          if ("2" %in% input$grades) dplyr::filter(., "_2" %in% grades_merge) else .
-        } %>%
-        {
-          if ("3" %in% input$grades) dplyr::filter(., "_3" %in% grades_merge) else .
-        } %>%
-        {
-          if ("4" %in% input$grades) dplyr::filter(., "_4" %in% grades_merge) else .
-        } %>%
-        {
-          if ("5" %in% input$grades) dplyr::filter(., "_5" %in% grades_merge) else .
-        } %>%
-        {
-          if ("6" %in% input$grades) dplyr::filter(., "_6" %in% grades_merge) else .
-        } %>%
-        {
-          if ("7" %in% input$grades) dplyr::filter(., "_7" %in% grades_merge) else .
-        } %>%
-        {
-          if ("8" %in% input$grades) dplyr::filter(., "_8" %in% grades_merge) else .
-        } %>%
-        {
-          if ("9" %in% input$grades) dplyr::filter(., "_9" %in% grades_merge) else .
-        } %>%
-        {
-          if ("10" %in% input$grades) dplyr::filter(., "_10" %in% grades_merge) else .
-        } %>%
-        {
-          if ("11" %in% input$grades) dplyr::filter(., "_11" %in% grades_merge) else .
-        } %>%
-        {
-          if ("12" %in% input$grades) dplyr::filter(., "_12" %in% grades_merge) else .
+          if (any(input$grades != "All Grades")) dplyr::filter(., stringr::str_detect(grades_merge, grade_select())) else .
         } %>%
         select(`Overall, what could have been better in this course?`) %>%
         pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
@@ -574,52 +394,16 @@ reportServer <- function(id, in_site) {
       quote_reactive3 <- course_survey_recent() %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
         {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
+          if (any(input$site != "All Sites")) dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
         } %>%
         {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
+          if (any(input$role != "All Roles")) dplyr::filter(., `Select your role.` %in% input$role) else .
         } %>%
         {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
+          if (any(input$course != "All Courses")) dplyr::filter(., `Select your course.` %in% input$course) else .
         } %>%
         {
-          if ("K" %in% input$grades) dplyr::filter(., "_K" %in% grades_merge) else .
-        } %>%
-        {
-          if ("1" %in% input$grades) dplyr::filter(., "_1" %in% grades_merge) else .
-        } %>%
-        {
-          if ("2" %in% input$grades) dplyr::filter(., "_2" %in% grades_merge) else .
-        } %>%
-        {
-          if ("3" %in% input$grades) dplyr::filter(., "_3" %in% grades_merge) else .
-        } %>%
-        {
-          if ("4" %in% input$grades) dplyr::filter(., "_4" %in% grades_merge) else .
-        } %>%
-        {
-          if ("5" %in% input$grades) dplyr::filter(., "_5" %in% grades_merge) else .
-        } %>%
-        {
-          if ("6" %in% input$grades) dplyr::filter(., "_6" %in% grades_merge) else .
-        } %>%
-        {
-          if ("7" %in% input$grades) dplyr::filter(., "_7" %in% grades_merge) else .
-        } %>%
-        {
-          if ("8" %in% input$grades) dplyr::filter(., "_8" %in% grades_merge) else .
-        } %>%
-        {
-          if ("9" %in% input$grades) dplyr::filter(., "_9" %in% grades_merge) else .
-        } %>%
-        {
-          if ("10" %in% input$grades) dplyr::filter(., "_10" %in% grades_merge) else .
-        } %>%
-        {
-          if ("11" %in% input$grades) dplyr::filter(., "_11" %in% grades_merge) else .
-        } %>%
-        {
-          if ("12" %in% input$grades) dplyr::filter(., "_12" %in% grades_merge) else .
+          if (any(input$grades != "All Grades")) dplyr::filter(., stringr::str_detect(grades_merge, grade_select())) else .
         } %>%
         select(`What is the learning from this course that you are most excited about trying out?`) %>%
         pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
@@ -643,52 +427,16 @@ reportServer <- function(id, in_site) {
       quote_reactive4 <- course_survey_recent() %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
         {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
+          if (any(input$site != "All Sites")) dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
         } %>%
         {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
+          if (any(input$role != "All Roles")) dplyr::filter(., `Select your role.` %in% input$role) else .
         } %>%
         {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
+          if (any(input$course != "All Courses")) dplyr::filter(., `Select your course.` %in% input$course) else .
         } %>%
         {
-          if ("K" %in% input$grades) dplyr::filter(., "_K" %in% grades_merge) else .
-        } %>%
-        {
-          if ("1" %in% input$grades) dplyr::filter(., "_1" %in% grades_merge) else .
-        } %>%
-        {
-          if ("2" %in% input$grades) dplyr::filter(., "_2" %in% grades_merge) else .
-        } %>%
-        {
-          if ("3" %in% input$grades) dplyr::filter(., "_3" %in% grades_merge) else .
-        } %>%
-        {
-          if ("4" %in% input$grades) dplyr::filter(., "_4" %in% grades_merge) else .
-        } %>%
-        {
-          if ("5" %in% input$grades) dplyr::filter(., "_5" %in% grades_merge) else .
-        } %>%
-        {
-          if ("6" %in% input$grades) dplyr::filter(., "_6" %in% grades_merge) else .
-        } %>%
-        {
-          if ("7" %in% input$grades) dplyr::filter(., "_7" %in% grades_merge) else .
-        } %>%
-        {
-          if ("8" %in% input$grades) dplyr::filter(., "_8" %in% grades_merge) else .
-        } %>%
-        {
-          if ("9" %in% input$grades) dplyr::filter(., "_9" %in% grades_merge) else .
-        } %>%
-        {
-          if ("10" %in% input$grades) dplyr::filter(., "_10" %in% grades_merge) else .
-        } %>%
-        {
-          if ("11" %in% input$grades) dplyr::filter(., "_11" %in% grades_merge) else .
-        } %>%
-        {
-          if ("12" %in% input$grades) dplyr::filter(., "_12" %in% grades_merge) else .
+          if (any(input$grades != "All Grades")) dplyr::filter(., stringr::str_detect(grades_merge, grade_select())) else .
         } %>%
         select(`Which activities best supported your learning in this course?`) %>%
         pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
@@ -712,52 +460,16 @@ reportServer <- function(id, in_site) {
       quote_reactive5 <- course_survey_recent() %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
         {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
+          if (any(input$site != "All Sites")) dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
         } %>%
         {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
+          if (any(input$role != "All Roles")) dplyr::filter(., `Select your role.` %in% input$role) else .
         } %>%
         {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
+          if (any(input$course != "All Courses")) dplyr::filter(., `Select your course.` %in% input$course) else .
         } %>%
         {
-          if ("K" %in% input$grades) dplyr::filter(., "_K" %in% grades_merge) else .
-        } %>%
-        {
-          if ("1" %in% input$grades) dplyr::filter(., "_1" %in% grades_merge) else .
-        } %>%
-        {
-          if ("2" %in% input$grades) dplyr::filter(., "_2" %in% grades_merge) else .
-        } %>%
-        {
-          if ("3" %in% input$grades) dplyr::filter(., "_3" %in% grades_merge) else .
-        } %>%
-        {
-          if ("4" %in% input$grades) dplyr::filter(., "_4" %in% grades_merge) else .
-        } %>%
-        {
-          if ("5" %in% input$grades) dplyr::filter(., "_5" %in% grades_merge) else .
-        } %>%
-        {
-          if ("6" %in% input$grades) dplyr::filter(., "_6" %in% grades_merge) else .
-        } %>%
-        {
-          if ("7" %in% input$grades) dplyr::filter(., "_7" %in% grades_merge) else .
-        } %>%
-        {
-          if ("8" %in% input$grades) dplyr::filter(., "_8" %in% grades_merge) else .
-        } %>%
-        {
-          if ("9" %in% input$grades) dplyr::filter(., "_9" %in% grades_merge) else .
-        } %>%
-        {
-          if ("10" %in% input$grades) dplyr::filter(., "_10" %in% grades_merge) else .
-        } %>%
-        {
-          if ("11" %in% input$grades) dplyr::filter(., "_11" %in% grades_merge) else .
-        } %>%
-        {
-          if ("12" %in% input$grades) dplyr::filter(., "_12" %in% grades_merge) else .
+          if (any(input$grades != "All Grades")) dplyr::filter(., stringr::str_detect(grades_merge, grade_select())) else .
         } %>%
         select(`Feel free to leave us any additional comments, concerns, or questions.`) %>%
         pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
@@ -797,7 +509,7 @@ reportServer <- function(id, in_site) {
                        quote5 = quote_viz_data5(),
                        subtitle = course_survey_recent() %>% 
                          {
-                           if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
+                           if (any(input$site != "All Sites")) dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
                          } %>%
                          select(`Select your course.`, `Select your site (district, parish, network, or school).`) %>% 
                          transmute(course_site = paste0(`Select your course.`, ", ", `Select your site (district, parish, network, or school).`)) %>%
@@ -857,13 +569,16 @@ reportServer <- function(id, in_site) {
                        subtitle = course_survey_recent() %>% 
                          dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
                          {
-                           if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
+                           if (any(input$site != "All Sites")) dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
                          } %>%
                          {
-                           if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
+                           if (any(input$role != "All Roles")) dplyr::filter(., `Select your role.` %in% input$role) else .
                          } %>%
                          {
-                           if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
+                           if (any(input$course != "All Courses")) dplyr::filter(., `Select your course.` %in% input$course) else .
+                         } %>%
+                         {
+                           if (any(input$grades != "All Grades")) dplyr::filter(., stringr::str_detect(grades_merge, grade_select())) else .
                          } %>%
                          select(`Select your course.`, `Select your site (district, parish, network, or school).`) %>% 
                          transmute(course_site = paste0(`Select your course.`, ", ", `Select your site (district, parish, network, or school).`)) %>%
@@ -888,52 +603,16 @@ reportServer <- function(id, in_site) {
         df <- course_survey_recent() %>%
           dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
           {
-            if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
+            if (any(input$site != "All Sites")) dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
           } %>%
           {
-            if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
+            if (any(input$role != "All Roles")) dplyr::filter(., `Select your role.` %in% input$role) else .
           } %>%
           {
-            if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
+            if (any(input$course != "All Courses")) dplyr::filter(., `Select your course.` %in% input$course) else .
           } %>%
           {
-            if ("K" %in% input$grades) dplyr::filter(., "_K" %in% grades_merge) else .
-          } %>%
-          {
-            if ("1" %in% input$grades) dplyr::filter(., "_1" %in% grades_merge) else .
-          } %>%
-          {
-            if ("2" %in% input$grades) dplyr::filter(., "_2" %in% grades_merge) else .
-          } %>%
-          {
-            if ("3" %in% input$grades) dplyr::filter(., "_3" %in% grades_merge) else .
-          } %>%
-          {
-            if ("4" %in% input$grades) dplyr::filter(., "_4" %in% grades_merge) else .
-          } %>%
-          {
-            if ("5" %in% input$grades) dplyr::filter(., "_5" %in% grades_merge) else .
-          } %>%
-          {
-            if ("6" %in% input$grades) dplyr::filter(., "_6" %in% grades_merge) else .
-          } %>%
-          {
-            if ("7" %in% input$grades) dplyr::filter(., "_7" %in% grades_merge) else .
-          } %>%
-          {
-            if ("8" %in% input$grades) dplyr::filter(., "_8" %in% grades_merge) else .
-          } %>%
-          {
-            if ("9" %in% input$grades) dplyr::filter(., "_9" %in% grades_merge) else .
-          } %>%
-          {
-            if ("10" %in% input$grades) dplyr::filter(., "_10" %in% grades_merge) else .
-          } %>%
-          {
-            if ("11" %in% input$grades) dplyr::filter(., "_11" %in% grades_merge) else .
-          } %>%
-          {
-            if ("12" %in% input$grades) dplyr::filter(., "_12" %in% grades_merge) else .
+            if (any(input$grades != "All Grades")) dplyr::filter(., stringr::str_detect(grades_merge, grade_select())) else .
           }
       } else {
         df <- course_survey_recent()

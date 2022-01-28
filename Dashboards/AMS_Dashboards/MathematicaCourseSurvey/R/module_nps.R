@@ -137,52 +137,16 @@ npsServer <- function(id, in_site) {
       reactive_nps <- course_survey %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
         {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
+          if (any(input$site != "All Sites")) dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
         } %>%
         {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
+          if (any(input$role != "All Roles")) dplyr::filter(., `Select your role.` %in% input$role) else .
         } %>%
         {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
+          if (any(input$course != "All Courses")) dplyr::filter(., `Select your course.` %in% input$course) else .
         } %>%
         {
-          if ("K" %in% input$grades) dplyr::filter(., `What grade(s) do you teach, support, and/or lead? You can select more than one. - K` == "K") else .
-        } %>%
-        {
-          if ("1" %in% input$grades) dplyr::filter(., `What grade(s) do you teach, support, and/or lead? You can select more than one. - 1` == "1") else .
-        } %>%
-        {
-          if ("2" %in% input$grades) dplyr::filter(., `What grade(s) do you teach, support, and/or lead? You can select more than one. - 2` == "2") else .
-        } %>%
-        {
-          if ("3" %in% input$grades) dplyr::filter(., `What grade(s) do you teach, support, and/or lead? You can select more than one. - 3` == "3") else .
-        } %>%
-        {
-          if ("4" %in% input$grades) dplyr::filter(., `What grade(s) do you teach, support, and/or lead? You can select more than one. - 4` == "4") else .
-        } %>%
-        {
-          if ("5" %in% input$grades) dplyr::filter(., `What grade(s) do you teach, support, and/or lead? You can select more than one. - 5` == "5") else .
-        } %>%
-        {
-          if ("6" %in% input$grades) dplyr::filter(., `What grade(s) do you teach, support, and/or lead? You can select more than one. - 6` == "6") else .
-        } %>%
-        {
-          if ("7" %in% input$grades) dplyr::filter(., `What grade(s) do you teach, support, and/or lead? You can select more than one. - 7` == "7") else .
-        } %>%
-        {
-          if ("8" %in% input$grades) dplyr::filter(., `What grade(s) do you teach, support, and/or lead? You can select more than one. - 8` == "8") else .
-        } %>%
-        {
-          if ("9" %in% input$grades) dplyr::filter(., `What grade(s) do you teach, support, and/or lead? You can select more than one. - 9` == "9") else .
-        } %>%
-        {
-          if ("10" %in% input$grades) dplyr::filter(., `What grade(s) do you teach, support, and/or lead? You can select more than one. - 10` == "10") else .
-        } %>%
-        {
-          if ("11" %in% input$grades) dplyr::filter(., `What grade(s) do you teach, support, and/or lead? You can select more than one. - 11` == "11") else .
-        } %>%
-        {
-          if ("12" %in% input$grades) dplyr::filter(., `What grade(s) do you teach, support, and/or lead? You can select more than one. - 12` == "12") else .
+          if (any(input$grades != "All Grades")) dplyr::filter(., stringr::str_detect(grades_merge, grade_select())) else .
         } %>%
         select(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`) %>%
         # mutate(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?` = readr::parse_number(as.character(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`))) %>%
@@ -242,58 +206,22 @@ npsServer <- function(id, in_site) {
       sum <- course_survey %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
         {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
+          if (any(input$site != "All Sites")) dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
         } %>%
         {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
+          if (any(input$role != "All Roles")) dplyr::filter(., `Select your role.` %in% input$role) else .
         } %>%
         {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
+          if (any(input$course != "All Courses")) dplyr::filter(., `Select your course.` %in% input$course) else .
         } %>%
         {
-          if ("K" %in% input$grades) dplyr::filter(., `What grade(s) do you teach, support, and/or lead? You can select more than one. - K` == "K") else .
-        } %>%
-        {
-          if ("1" %in% input$grades) dplyr::filter(., `What grade(s) do you teach, support, and/or lead? You can select more than one. - 1` == "1") else .
-        } %>%
-        {
-          if ("2" %in% input$grades) dplyr::filter(., `What grade(s) do you teach, support, and/or lead? You can select more than one. - 2` == "2") else .
-        } %>%
-        {
-          if ("3" %in% input$grades) dplyr::filter(., `What grade(s) do you teach, support, and/or lead? You can select more than one. - 3` == "3") else .
-        } %>%
-        {
-          if ("4" %in% input$grades) dplyr::filter(., `What grade(s) do you teach, support, and/or lead? You can select more than one. - 4` == "4") else .
-        } %>%
-        {
-          if ("5" %in% input$grades) dplyr::filter(., `What grade(s) do you teach, support, and/or lead? You can select more than one. - 5` == "5") else .
-        } %>%
-        {
-          if ("6" %in% input$grades) dplyr::filter(., `What grade(s) do you teach, support, and/or lead? You can select more than one. - 6` == "6") else .
-        } %>%
-        {
-          if ("7" %in% input$grades) dplyr::filter(., `What grade(s) do you teach, support, and/or lead? You can select more than one. - 7` == "7") else .
-        } %>%
-        {
-          if ("8" %in% input$grades) dplyr::filter(., `What grade(s) do you teach, support, and/or lead? You can select more than one. - 8` == "8") else .
-        } %>%
-        {
-          if ("9" %in% input$grades) dplyr::filter(., `What grade(s) do you teach, support, and/or lead? You can select more than one. - 9` == "9") else .
-        } %>%
-        {
-          if ("10" %in% input$grades) dplyr::filter(., `What grade(s) do you teach, support, and/or lead? You can select more than one. - 10` == "10") else .
-        } %>%
-        {
-          if ("11" %in% input$grades) dplyr::filter(., `What grade(s) do you teach, support, and/or lead? You can select more than one. - 11` == "11") else .
-        } %>%
-        {
-          if ("12" %in% input$grades) dplyr::filter(., `What grade(s) do you teach, support, and/or lead? You can select more than one. - 12` == "12") else .
+          if (any(input$grades != "All Grades")) dplyr::filter(., stringr::str_detect(grades_merge, grade_select())) else .
         } %>%
         mutate(nps = suppressWarnings(as.numeric(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`))) %>%
         drop_na(nps) %>%
         summarise(nine_ten = length(which(nps %in% c(9, 10))) / length(nps),
                   zero_six = length(which(nps %in% c(0:6))) / length(nps)) %>%
-        print() %>%
+        # print() %>%
         mutate(nps = round(100*(nine_ten - zero_six))) #%>%
         # summarise(nps = calc_nps(nps)) %>%
         # mutate(
