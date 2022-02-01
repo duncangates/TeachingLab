@@ -1,0 +1,17 @@
+.DS_Store
+.RData
+.Rhistory
+.Rproj.user
+.Ruserdata
+*.json
+Analysis
+Dashboards/*/data
+Dashboards/*/Data
+Dashboards/*/rsconnect/
+data-clean/
+data-raw/
+email_creds_staffing
+HTML/
+images/
+shiny-scrollytell
+Tokens/
