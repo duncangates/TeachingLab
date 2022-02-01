@@ -7,9 +7,10 @@ HTML/
 Data/
 !*Data/course_survey2021data.rds
 email_creds_staffing
-Data-Clean/
+data-clean/
 .Rhistory
 Dashboards/*/rsconnect/
 Dashboards/*/Data
 Tokens/
 shiny-scrollytell
+data-raw/

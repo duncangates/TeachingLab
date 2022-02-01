@@ -13,10 +13,10 @@ ExternalShare/
 PDF/
 HTML/
 ParticipantFeedback/
-Data/
+data/
 FacilitatorPay/
 email_creds_staffing
-Data-Clean/
+data-dlean/
 ^LICENSE\.md$
 ^data-raw$
 data-raw/
