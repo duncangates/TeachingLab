@@ -4,13 +4,12 @@
 Images/
 PDF/
 HTML/
-Data/
-!*Data/course_survey2021data.rds
 email_creds_staffing
 data-clean/
 .Rhistory
 Dashboards/*/rsconnect/
 Dashboards/*/Data
+Dashboards/*/data
 Tokens/
 shiny-scrollytell
 data-raw/
