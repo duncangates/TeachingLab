@@ -89,7 +89,7 @@ table_maker <- function(data, column_names, title, spanner, n1, n2, rows_positiv
       style = list(
         gt::cell_fill(color = "#00ACF0")
       ),
-      locations = cells_body(
+      locations = gt::cells_body(
         columns = c(2),
         rows = `name_1` > 80
       )
@@ -382,11 +382,13 @@ gt_arrow <- function(data, colors = c("#800000", "#98AFC7"), column_one, column_
 #' @return a ggplot/gt that visualizes text
 #' 
 #' @examples
+#' \dontrun{
 #' df <- TeachingLab::survey_monkey
 #' quote_viz(data = df, 
-#'           text_col = `What is the learning from this course that you are most excited about trying out?`, 
+#'           text_col = word,
 #'           viz_type = "gt",
 #'           title = "Responses from Survey Monkey")
+#'}
 #' @export
 
 quote_viz <- function(data, text_col = colnames(data)[1], extra_cols = NULL, viz_type = "gt", custom_highlight = F, width = 60, 
@@ -522,7 +524,7 @@ gt_know_assess <- function(data, know_assess) {
     dplyr::ungroup() %>%
     dplyr::group_by(answer, question, prepost) %>%
     dplyr::mutate(n = sum(n)) %>%
-    dplyr::summarise(percent = weighted.mean(percent, n),
+    dplyr::summarise(percent = stats::weighted.mean(percent, n),
                      n = n) %>% # Adjust percent to be based on weighted mean
     dplyr::ungroup() %>%
     dplyr::distinct() %>%
@@ -530,7 +532,7 @@ gt_know_assess <- function(data, know_assess) {
     tidyr::pivot_wider(names_from = prepost, values_from = c(percent, n), values_fill = 0) %>%
     dplyr::mutate(highlight = dplyr::if_else(stringr::str_detect(answer, "04abeb"), T, F))
   
-  title <- stringr::str_to_title(str_replace_all(know_assess, "_", " ")) %>%
+  title <- stringr::str_to_title(stringr::str_replace_all(know_assess, "_", " ")) %>%
     stringr::str_replace_all(., "Ela", "ELA") %>%
     stringr::str_replace_all(., "Eic", "EIC") # Correct title casing
   # Weighted averages
@@ -637,25 +639,25 @@ gt_know_assess <- function(data, know_assess) {
     {if (is.numeric(plot_data$percent_pre) == T) gt::summary_rows(.,
                                                                   fns = list(`Average % Correct` = ~ return(pre_percent_correct)),
                                                                   columns = c(percent_pre),
-                                                                  formatter = fmt_percent,
+                                                                  formatter = gt::fmt_percent,
                                                                   scale_values = F,
                                                                   decimals = 0
-    ) else summary_rows(.,
+    ) else gt::summary_rows(.,
                         fns = list(`Average % Correct` = ~ return(pre_percent_correct)),
                         columns = c(percent_pre),
-                        formatter = fmt_missing,
+                        formatter = gt::fmt_missing,
                         missing_text = "no data"
     )} %>%
     {if (is.numeric(plot_data$percent_post) == T) gt::summary_rows(.,
                                                                    fns = list(`Average % Correct` = ~ return(post_percent_correct)),
                                                                    columns = c(percent_post),
-                                                                   formatter = fmt_percent,
+                                                                   formatter = gt::fmt_percent,
                                                                    scale_values = F,
                                                                    decimals = 0
-    ) else summary_rows(.,
+    ) else gt::summary_rows(.,
                         fns = list(`Average % Correct` = ~ return(post_percent_correct)),
                         columns = c(percent_post),
-                        formatter = fmt_missing
+                        formatter = gt::fmt_missing
     )} %>%
     TeachingLab::gt_theme_tl()
   

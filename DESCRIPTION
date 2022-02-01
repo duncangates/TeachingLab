@@ -36,7 +36,16 @@ Imports:
     ggtext,
     base,
     graphics,
-    stats
+    stats,
+    here,
+    surveymonkey,
+    readr,
+    stringr,
+    rvest,
+    forcats,
+    assertthat,
+    fontawesome,
+    ggwordcloud
 RoxygenNote: 7.1.2
 Depends: 
     R (>= 2.10)

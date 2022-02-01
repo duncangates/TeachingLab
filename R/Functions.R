@@ -575,6 +575,7 @@ round_even <- function(x) {
 #' @title File path 
 #' @description Gives the file path without double slash bug
 #' @param ... The file path
+#' @param fsep the file separation
 #' @return fp a file path
 #' @export
 file.path2 <- function(..., fsep = .Platform$file.sep) {
@@ -620,7 +621,9 @@ coalesce_by_column <- function(df) {
 #' @param save_name a folder for the plot ready data to be saved
 #' @param question_html_wrap number of characters before <br> insertion in question
 #' @return a plot ready dataframe
-#' @examples save_processed_data(data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELABootcamp-FoundationalSkillsBootcampSkills(K-2).rds"),
+#' @examples 
+#' \dontrun{
+#' save_processed_data(data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELABootcamp-FoundationalSkillsBootcampSkills(K-2).rds"),
 #' q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_foundational_skills.rds"),
 #' correct = c("Print concepts",
 #'            "Phonological awareness",
@@ -629,6 +632,7 @@ coalesce_by_column <- function(df) {
 #'            "Utilize a variety of ongoing assessment data to determine the focus of instruction for small groups",
 #'            "Group students by their ongoing phase of development with regard to the foundational skills"),
 #' save_name = "ela_foundational_skills")
+#' }
 #' @export
 #' 
 save_processed_data <- function(data, q_and_a, correct, save_name, question_html_wrap = 45) {
@@ -682,7 +686,9 @@ save_processed_data <- function(data, q_and_a, correct, save_name, question_html
 #' @param save_name a folder for the plot ready data to be saved
 #' @param question_html_wrap number of characters before <br> insertion in question
 #' @return a plot ready dataframe
-#' @examples save_processed_data2(data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELABootcamp-FoundationalSkillsBootcampSkills(K-2).rds"),
+#' @examples 
+#' \dontrun{
+#' save_processed_data2(data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELABootcamp-FoundationalSkillsBootcampSkills(K-2).rds"),
 #' q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_foundational_skills.rds"),
 #' correct = c("Print concepts",
 #'            "Phonological awareness",
@@ -691,11 +697,12 @@ save_processed_data <- function(data, q_and_a, correct, save_name, question_html
 #'            "Utilize a variety of ongoing assessment data to determine the focus of instruction for small groups",
 #'            "Group students by their ongoing phase of development with regard to the foundational skills"),
 #' save_name = "ela_foundational_skills")
+#' }
 #' @export
 #' 
 save_processed_data2 <- function(data, q_and_a, correct, save_name, question_html_wrap = 45) {
   #### Check which knowledge assessment it is for later adaptation purposes due to data entry mistakes ####
-  know_assess <- str_remove(q_and_a, ".*questions_and_answers/")
+  know_assess <- stringr::str_remove(q_and_a, ".*questions_and_answers/")
   #### Input Survey ####
   data_with_id <- readr::read_rds(data) %>%
     dplyr::group_by(respondent_id) %>% # By respondent id reduce to one row per respondent
@@ -735,7 +742,7 @@ save_processed_data2 <- function(data, q_and_a, correct, save_name, question_htm
     }
     if ((data_with_id$site == "San Diego Unified School District, CA") && (know_assess == "math_bootcamp") && (data_with_id$date_created >= as.Date("2021-10-01"))) {
       data_with_id <- dplyr::mutate(data_with_id, 
-                    prepost = ifelse(between(date_created, as.Date("2021-10-05"), as.Date("2021-10-07")),
+                    prepost = ifelse(dplyr::between(date_created, as.Date("2021-10-05"), as.Date("2021-10-07")),
                                      "pre",
                                      "post"),
                     site = "math_cycle_of_inquiry_i")

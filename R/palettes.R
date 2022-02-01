@@ -1,12 +1,13 @@
 #' Teaching Lab Color Palette Maker
 #'
-#' @param palette choice of color palette
 #' @param theme if theme is light or dark
 #' @param n number of colors to generate
 #' @param color the color palette to generate
 #' @return color ramp palette function
 #' @export
-tl_palette <- function(color = c("blue", "orange", "purple", "green", "teal", "tl_colors"), theme = c("dark"), n) {
+tl_palette <- function(color = c("blue", "orange", "purple", "green", "teal", "tl_colors"), 
+                       theme = c("dark"), 
+                       n = 6) {
   base_color_start <- if (theme == "light") {
     "#F7FBFD"
   } else if (theme == "dark") {
@@ -32,16 +33,21 @@ tl_palette <- function(color = c("blue", "orange", "purple", "green", "teal", "t
   col(n)
 }
 
+#' @title TL Default Blue Palette
+#' 
+#' @export
 tl_pal_blue <- c("#040404", "#031C25", "#023447", "#024C69", "#01648A", "#017CAC", "#0094CE", "#00ACF0")
 
-#' A muted, qualitative color palette
+#' @title A muted, qualitative color palette
 #'
 #' @export
 #' @examples
+#' \dontrun{
 #' library(scales)
 #' scales::show_col(tl_pal_blue()(9))
+#' }
 tl_pal <- function() {
-  scales::manual_pal(tl_pal_blue)
+  scales::manual_pal(TeachingLab::tl_pal_blue)
 }
 
 #' Discrete color & fill scales based on the Teaching Lab palette
@@ -56,7 +62,7 @@ tl_pal <- function() {
 #' @export
 scale_colour_tl <- function(n, color = "blue", ...) {
   # ggplot2::discrete_scale("colour", "tl", tl_pal(), ...)
-  ggplot2::scale_color_manual(values = tl_palette(color = color, theme = "dark", n = n))
+  ggplot2::scale_color_manual(values = TeachingLab::tl_palette(color = color, theme = "dark", n = n))
 }
 
 #' @export
@@ -67,5 +73,5 @@ scale_color_tl <- scale_colour_tl
 #' @rdname scale_tl
 scale_fill_tl <- function(n, color = c("blue", "orange", "purple", "green", "teal", "tl_colors"), ...) {
   # ggplot2::discrete_scale("fill", "tl", tl_pal(), ...)
-  ggplot2::scale_fill_manual(values = tl_palette(color = "blue", theme = "dark", n = n))
+  ggplot2::scale_fill_manual(values = TeachingLab::tl_palette(color = "blue", theme = "dark", n = n))
 }

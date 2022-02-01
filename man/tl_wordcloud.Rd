@@ -34,5 +34,7 @@ a wordcloud
 takes a dataframe and makes a wordcloud
 }
 \examples{
+\dontrun{
 tl_wordcloud(data = iris, text_col = Species)
+}
 }

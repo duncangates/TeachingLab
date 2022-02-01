@@ -6,8 +6,7 @@ Analysis/
 PartnerShare/
 Survey/
 Tokens/
-YearlyDashboard/
-YearlyDashboard2/
+Dashboards/
 Staffing/
 ExternalShare/
 PDF/
@@ -21,3 +20,4 @@ data-dlean/
 ^data-raw$
 data-raw/
 data-clean/
+rsconnect/

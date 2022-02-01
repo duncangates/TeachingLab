@@ -8,6 +8,8 @@ file.path2(..., fsep = .Platform$file.sep)
 }
 \arguments{
 \item{...}{The file path}
+
+\item{fsep}{the file separation}
 }
 \value{
 fp a file path

@@ -12,6 +12,17 @@ html_template(
   ...
 )
 }
+\arguments{
+\item{template_name}{template file name}
+
+\item{template_path}{template location}
+
+\item{template_dependencies}{js and css dependencies}
+
+\item{pandoc_args}{pandoc additional args}
+
+\item{...}{additional arguments to pass to pkgdown args}
+}
 \description{
 Shared HTML template function
 }

@@ -24,6 +24,7 @@ a plot ready dataframe
 A function to use on already loaded data
 }
 \examples{
+\dontrun{
 save_processed_data(data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELABootcamp-FoundationalSkillsBootcampSkills(K-2).rds"),
 q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_foundational_skills.rds"),
 correct = c("Print concepts",
@@ -33,4 +34,5 @@ correct = c("Print concepts",
            "Utilize a variety of ongoing assessment data to determine the focus of instruction for small groups",
            "Group students by their ongoing phase of development with regard to the foundational skills"),
 save_name = "ela_foundational_skills")
+}
 }

@@ -7,7 +7,7 @@
 tl_palette(
   color = c("blue", "orange", "purple", "green", "teal", "tl_colors"),
   theme = c("dark"),
-  n
+  n = 6
 )
 }
 \arguments{
@@ -16,8 +16,6 @@ tl_palette(
 \item{theme}{if theme is light or dark}
 
 \item{n}{number of colors to generate}
-
-\item{palette}{choice of color palette}
 }
 \value{
 color ramp palette function

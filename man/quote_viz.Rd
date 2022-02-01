@@ -45,9 +45,11 @@ a ggplot/gt that visualizes text
 takes a dataframe and makes a gt table or ggplot that shows a quote
 }
 \examples{
+\dontrun{
 df <- TeachingLab::survey_monkey
 quote_viz(data = df, 
-          text_col = `What is the learning from this course that you are most excited about trying out?`, 
+          text_col = word,
           viz_type = "gt",
           title = "Responses from Survey Monkey")
+}
 }

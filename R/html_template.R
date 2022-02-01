@@ -1,6 +1,9 @@
 #' @title Shared HTML template function
-#' 
-#' 
+#' @param template_name template file name
+#' @param template_path template location
+#' @param template_dependencies js and css dependencies
+#' @param pandoc_args pandoc additional args
+#' @param ... additional arguments to pass to pkgdown args
 #' 
 #' @export
 

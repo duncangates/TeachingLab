@@ -12,14 +12,17 @@
 #' 
 #' @importFrom magrittr %>%
 #' 
-#' @examples score_compare_plot(data, question, prepost, score)
+#' @examples 
+#' \dontrun{
+#' score_compare_plot(data, question, prepost, score)
+#' }
 #' @export
 
 score_compare_plot <- function(data, question, order, prepost, score, split_variable, title) {
   
   data_wrapped <- data %>%
     dplyr::mutate(Question = factor(.data[[question]], levels = c(order))) %>%
-    dplyr::mutate(Question = html_wrap(Question, 25))
+    dplyr::mutate(Question = TeachingLab::html_wrap(Question, 25))
   
   graph_segments <- tibble::tibble(
     x = data_wrapped %>% dplyr::filter(stringr::str_detect(prepost, split_variable[1])) %>% dplyr::pull(score),
@@ -32,7 +35,7 @@ score_compare_plot <- function(data, question, order, prepost, score, split_vari
   
   ggplot2::ggplot() +
     ggplot2::geom_point(data = data_wrapped, mapping = ggplot2::aes(color = prepost, x = score, y = Question, size = score)) +
-    ggplot2::geom_segment(data = graph_segments, mapping = ggplot2::aes(x = x, xend = xend, y = y, yend = yend, alpha = 0.7), color = "black", size = 0.3, arrow = arrow(length = grid::unit(0.1, "inches"))) +
+    ggplot2::geom_segment(data = graph_segments, mapping = ggplot2::aes(x = x, xend = xend, y = y, yend = yend, alpha = 0.7), color = "black", size = 0.3, arrow = grid::arrow(length = grid::unit(0.1, "inches"))) +
     ggtext::geom_richtext(data = graph_segments, fill = NA, label.color = NA,
                   ggplot2::aes(x = fall_text, y = y, label = paste0(x, "%")), 
                   color = "#ff7b43", vjust = -0.5, size = 4.85) +
@@ -86,7 +89,7 @@ know_assess_summary <- function(data, know_assess) {
     tidyr::pivot_longer(tidyselect::everything()) %>%
     dplyr::mutate(name = factor(name, levels = c("Before", "After")))
   
-  title <- stringr::str_to_title(str_replace_all(know_assess, "_", " ")) %>%
+  title <- stringr::str_to_title(stringr::str_replace_all(know_assess, "_", " ")) %>%
     stringr::str_replace_all(., "Ela", "ELA") %>%
     stringr::str_replace_all(., "Eic", "EIC") # Correct title casing
   
@@ -129,7 +132,7 @@ know_assess_summary <- function(data, know_assess) {
                   # title = paste0(title, "\n% Correct before and after")#,
                   title = paste0(title, "<br>% Correct <b style='color:#d17df7'>before (n = ", n1, ")</b> and <b style='color:#55bbc7'>after (n = ", n2, ")</b>")
     ) +
-    ggplot2::scale_y_continuous(labels = percent_format(scale = 1), expand = c(0.1, 0),
+    ggplot2::scale_y_continuous(labels = scales::percent_format(scale = 1), expand = c(0.1, 0),
                                 limits = c(0, 100)) +
     # TeachingLab::theme_tl(markdown = F) +
     ggplot2::theme_minimal() +
@@ -235,7 +238,7 @@ ipg_plot <- function(data, name, save_name, height = 5, width = 8.5, wrap = 60, 
     ggplot2::theme(plot.caption = ggplot2::element_text(size = 10*sizing),
                    axis.text.x = ggplot2::element_text(size = 15*sizing),
                    axis.text.y = ggplot2::element_text(size = 15*sizing),
-                   plot.title = element_text(hjust = 0, face = "bold", size = 18*sizing))
+                   plot.title = ggplot2::element_text(hjust = 0, face = "bold", size = 18*sizing))
   
   
   ggplot2::ggsave(here::here(glue::glue("images/ipg_forms/{save_name}.png")), width = width, height = height, bg = "white", dpi = dpi)
@@ -292,13 +295,13 @@ gt_percent_n <- function(df, column, custom_title, no_title = T, base_font = 10,
                              fns = list(
                                Total = ~ sum(.)
                              ),
-                             formatter = fmt_number,
+                             formatter = gt::fmt_number,
                              decimals = 0) %>%
       gt::grand_summary_rows(columns = c(Percent),
                              fns = list(
                                Total = ~ sum(.)
                              ),
-                             formatter = fmt_percent,
+                             formatter = gt::fmt_percent,
                              scale_values = F,
                              decimals = 0) %>%
       TeachingLab::gt_theme_tl(base_font = base_font, heading_font = heading_font)
@@ -313,10 +316,10 @@ gt_percent_n <- function(df, column, custom_title, no_title = T, base_font = 10,
       dplyr::rename({{ custom_column_name }} := {{ column }}) %>%
       dplyr::mutate(prop = 100 * (Percent / sum(Percent)),
                     ypos = cumsum(prop) - 0.5 * prop,
-                    {{ custom_column_name }} := forcats::fct_reorder(!!ensym(custom_column_name), Percent))
+                    {{ custom_column_name }} := forcats::fct_reorder(!!rlang::ensym(custom_column_name), Percent))
     ggplot_data %>%
       ggplot2::ggplot(ggplot2::aes(x = "", y = Percent, 
-                                   fill = !!ensym(custom_column_name))) +
+                                   fill = !!rlang::ensym(custom_column_name))) +
       ggplot2::geom_col(key_glyph = draw_key_point) +
       ggplot2::geom_text(ggplot2::aes(label = paste0(Percent, "%"),
                                       y = ypos),
@@ -336,7 +339,7 @@ gt_percent_n <- function(df, column, custom_title, no_title = T, base_font = 10,
       ggplot2::theme_void(base_family = "Calibri") +
       ggplot2::theme(legend.position = "bottom",
                      legend.title = ggplot2::element_blank(),
-                     plot.title = element_text(hjust = 0.5, face = "bold")) +
+                     plot.title = ggplot2::element_text(hjust = 0.5, face = "bold")) +
       ggplot2::guides(fill = ggplot2::guide_legend(override.aes = list(shape = 21, size = 10), reverse = T))
   } else if (viz_type == "waffle") {
     ggplot_data <- df %>%
@@ -348,7 +351,7 @@ gt_percent_n <- function(df, column, custom_title, no_title = T, base_font = 10,
       dplyr::rename({{ custom_column_name }} := {{ column }}) %>%
       dplyr::mutate(prop = 100 * (Percent / sum(Percent)),
                     ypos = cumsum(prop) - 0.5 * prop,
-                    {{ custom_column_name }} := forcats::fct_reorder(!!ensym(custom_column_name), Percent))
+                    {{ custom_column_name }} := forcats::fct_reorder(!!rlang::ensym(custom_column_name), Percent))
     
     subtitle <- ggplot_data %>%
       dplyr::select({{ custom_column_name }}, Percent, n) %>%
@@ -358,11 +361,11 @@ gt_percent_n <- function(df, column, custom_title, no_title = T, base_font = 10,
       dplyr::pull(text)
     
     ggplot_data %>%
-      ggplot2::ggplot(ggplot2::aes(fill = !!ensym(custom_column_name),
+      ggplot2::ggplot(ggplot2::aes(fill = !!rlang::ensym(custom_column_name),
                                    values = n)) +
       waffle::geom_waffle(n_rows = 10, size = 1, colour = "white", 
                           make_proportional = TRUE,
-                          radius = unit(2, "pt"),
+                          radius = grid::unit(2, "pt"),
                           height = 0.9, width = 0.9) +
       ggplot2::labs(title = paste0(custom_column_name, " (n = ", sum(ggplot_data$n, na.rm = T), ")"),
                     subtitle = subtitle) +
@@ -370,8 +373,9 @@ gt_percent_n <- function(df, column, custom_title, no_title = T, base_font = 10,
                                                                   n = length(unique(ggplot_data[[custom_column_name]])))) +
       ggplot2::theme_void(base_family = "Calibri") +
       ggplot2::theme(legend.position = "none",
-                     plot.title = element_text(hjust = 0.5, face = "bold"),
-                     plot.subtitle = element_markdown(hjust = 0.5, face = "italic", lineheight = 1.15))
+                     plot.title = ggplot2::element_text(hjust = 0.5, face = "bold"),
+                     plot.subtitle = ggtext::element_markdown(hjust = 0.5, face = "italic", 
+                                                              lineheight = 1.15))
   } else if (viz_type == "treemap") {
     ggplot_data <- df %>%
       dplyr::group_by(!!column) %>%
@@ -382,12 +386,12 @@ gt_percent_n <- function(df, column, custom_title, no_title = T, base_font = 10,
       dplyr::rename({{ custom_column_name }} := {{ column }}) %>%
       dplyr::mutate(prop = 100 * (Percent / sum(Percent)),
                     ypos = cumsum(prop) - 0.5 * prop,
-                    {{ custom_column_name }} := forcats::fct_reorder(!!ensym(custom_column_name), Percent))
+                    {{ custom_column_name }} := forcats::fct_reorder(!!rlang::ensym(custom_column_name), Percent))
     ggplot_data %>%
       ggplot2::ggplot(ggplot2::aes(area = Percent, 
-                                   fill = !!ensym(custom_column_name))) +
+                                   fill = !!rlang::ensym(custom_column_name))) +
       treemapify::geom_treemap(key_glyph = draw_key_point) +
-      treemapify::geom_treemap_text(ggplot2::aes(label = paste0(!!ensym(custom_column_name), ": ", Percent, "%")),
+      treemapify::geom_treemap_text(ggplot2::aes(label = paste0(!!rlang::ensym(custom_column_name), ": ", Percent, "%")),
                                     family = "Calibri",
                                     fontface = "bold",
                                     # grow = T,
@@ -402,7 +406,7 @@ gt_percent_n <- function(df, column, custom_title, no_title = T, base_font = 10,
       ggplot2::theme_void(base_family = "Calibri") +
       ggplot2::theme(legend.position = "none",
                      legend.title = ggplot2::element_blank(),
-                     plot.title = element_text(hjust = 0.5, face = "bold"))
+                     plot.title = ggplot2::element_text(hjust = 0.5, face = "bold"))
   }
   
 }
@@ -420,7 +424,9 @@ gt_percent_n <- function(df, column, custom_title, no_title = T, base_font = 10,
 #' @importFrom magrittr %>%
 #' 
 #' @examples
+#' \dontrun{
 #' tl_wordcloud(data = iris, text_col = Species)
+#' }
 #' @export
 
 tl_wordcloud <- function(data, text_col, colors = c("blue", "orange"), n_min = 2, size = 20,
@@ -430,12 +436,14 @@ tl_wordcloud <- function(data, text_col, colors = c("blue", "orange"), n_min = 2
                            "pentagon", "star"
                          )) {
   
-  # text_col <- enquo(text_col)
+  my_text_col <- rlang::ensym(text_col)
   
   stop_words <- tidytext::stop_words
   
+  print(my_text_col)
+  
   words <- data %>%
-    tidytext::unnest_tokens(word, text_col) %>%
+    tidytext::unnest_tokens(word, as.character(my_text_col)) %>%
     dplyr::anti_join(stop_words) %>%
     dplyr::group_by(word) %>%
     dplyr::count(sort = T) %>%

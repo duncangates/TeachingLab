@@ -36,5 +36,7 @@ a colored gt table
 Makes a ggplot comparison table
 }
 \examples{
+\dontrun{
 score_compare_plot(data, question, prepost, score)
+}
 }

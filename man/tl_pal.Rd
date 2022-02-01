@@ -10,6 +10,8 @@ tl_pal()
 A muted, qualitative color palette
 }
 \examples{
+\dontrun{
 library(scales)
 scales::show_col(tl_pal_blue()(9))
+}
 }

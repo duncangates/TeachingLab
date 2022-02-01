@@ -52,14 +52,15 @@ session_agree_plot_ts <- function(data, scale = "1 month") {
               Date = Date)
   
   df %>%
-    ggplot2::ggplot(aes(x = lubridate::ymd(Date), 
+    ggplot2::ggplot(mapping = ggplot2::aes(x = lubridate::ymd(Date), 
              y = Percent)) +
-    ggplot2::geom_area(color = "gray50", aes(fill = Rating), alpha = 0.6, position = position_identity()) + # position_identity is absolutely necessary here, not sure why
-    ggplot2::geom_ribbon(color = "transparent", aes(
+    ggplot2::geom_area(color = "gray50", mapping = ggplot2::aes(fill = Rating), 
+                       alpha = 0.6, position = ggplot2::position_identity()) + # position_identity is absolutely necessary here, not sure why
+    ggplot2::geom_ribbon(color = "transparent", ggplot2::aes(
       ymin = Percent, ymax = 100,
       fill = "Neither Agree nor Disagree/Disagree/Strongly Disagree"
     ), alpha = 0.85) +
-    ggplot2::geom_line(size = 1.25, alpha = 0.9, aes(group = 1)) +
+    ggplot2::geom_line(size = 1.25, alpha = 0.9, mapping = ggplot2::aes(group = 1)) +
     ggplot2::geom_point(size = 1, alpha = 0.9) +
     ggplot2::facet_wrap(~ fct_reorder(question, .x = `Percent`, .fun = mean, .desc = T)) +
     ggplot2::coord_cartesian() +
@@ -74,7 +75,7 @@ session_agree_plot_ts <- function(data, scale = "1 month") {
       labels = scales::percent_format(scale = 1), expand = c(0, 0)
     ) +
     ggplot2::scale_fill_manual(values = c(rev(tl_palette(n = 2, color = "blue", theme = "dark")))) +
-    labs(x = "Date", title = glue::glue("{if (scale == '1 month') {'Monthly'} else if (scale == '1 week') {'Weekly'} else if (scale == '1 day') {'Daily'}} Percent that Agree/Strongly Agree")) +
+    ggplot2::labs(x = "Date", title = glue::glue("{if (scale == '1 month') {'Monthly'} else if (scale == '1 week') {'Weekly'} else if (scale == '1 day') {'Daily'}} Percent that Agree/Strongly Agree")) +
     ggplot2::theme_bw() + # BW Panel panel elements
     ggplot2::theme(
       legend.position = "bottom",
@@ -110,9 +111,9 @@ session_agree_plot <- function(data) {
       "How much do you agree with the following statements about this facilitator today? - They were fully prepared for the session.",
       "How much do you agree with the following statements about this facilitator today? - They responded to the group’s needs."
     )) %>%
-    tidyr::pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
+    tidyr::pivot_longer(tidyselect::everything(), names_to = "Question", values_to = "Response") %>%
     tidyr::drop_na() %>%
-    dplyr::mutate(Question = str_remove_all(
+    dplyr::mutate(Question = stringr::str_remove_all(
       Question,
       "How much do you agree with the following statements about this facilitator today\\? - "
     )) %>%
@@ -120,7 +121,7 @@ session_agree_plot <- function(data) {
     dplyr::count() %>%
     dplyr::ungroup() %>%
     dplyr::group_by(Question) %>%
-    dplyr::mutate(Question = str_wrap(Question, width = 30)) %>%
+    dplyr::mutate(Question = stringr::str_wrap(Question, width = 30)) %>%
     dplyr::summarise(
       n = n,
       Response = Response,
@@ -130,7 +131,8 @@ session_agree_plot <- function(data) {
   df %>%
     ggplot2::ggplot(data = df, mapping = ggplot2::aes(x = Question, y = Percent, fill = factor(Response))) +
     ggplot2::geom_col() +
-    ggplot2::geom_text(mapping = ggplot2::aes(label = dplyr::if_else(Percent >= 3, paste0(round(Percent), "%"), "")), position = position_stack(vjust = 0.5)) +
+    ggplot2::geom_text(mapping = ggplot2::aes(label = dplyr::if_else(Percent >= 3, paste0(round(Percent), "%"), "")), 
+                       position = ggplot2::position_stack(vjust = 0.5)) +
     ggplot2::scale_fill_manual(values = c(
       "(1) Strongly disagree" = "#040404", "(2) Disagree" = "#032E3F",
       "(3) Neither agree nor disagree" = "#02587A", "(4) Agree" = "#0182B4", "(5) Strongly agree" = "#00ACF0"
@@ -141,7 +143,7 @@ session_agree_plot <- function(data) {
       subtitle = glue::glue("Given the filters applied there are {n} responses")
     ) +
     ggplot2::coord_flip() +
-    ggplot2::guides(fill = guide_legend(reverse = T)) +
+    ggplot2::guides(fill = ggplot2::guide_legend(reverse = T)) +
     ggplot2::scale_y_continuous(labels = scales::percent_format(scale = 1)) +
     TeachingLab::theme_tl(legend = T) +
     ggplot2::theme(
