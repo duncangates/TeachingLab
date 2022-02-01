@@ -18,6 +18,12 @@ gt_theme_tl(
 
 \item{all_caps}{Whether or not to capitalize titles}
 
+\item{align}{Align options are "left", "center", "right"}
+
+\item{base_font}{the font size}
+
+\item{heading_font}{the title font size}
+
 \item{...}{Optional additional arguments to gt::table_options()}
 }
 \value{

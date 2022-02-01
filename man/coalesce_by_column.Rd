@@ -16,7 +16,10 @@ the dataframe coalesced
 Takes all columns and splices them into dots for combination
 }
 \examples{
+df <- data.frame(a = c(1, 2, 3),
+                 b = c(NA, NA, NA),
+                 id = c("xxx", "xxx", "xxx"))
 df \%>\%
-   group_by(A) \%>\%
-   summarise_all(coalesce_by_column)
+   dplyr::group_by(id) \%>\%
+   dplyr::summarise_all(TeachingLab::coalesce_by_column)
 }

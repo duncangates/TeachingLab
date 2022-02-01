@@ -11,6 +11,8 @@ tl_palette(
 )
 }
 \arguments{
+\item{color}{the color palette to generate}
+
 \item{theme}{if theme is light or dark}
 
 \item{n}{number of colors to generate}

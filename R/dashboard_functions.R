@@ -1,6 +1,5 @@
 #' @title Dashboard Time Series Plot
 #' @description Creates a plot for session survey data with an adjustable time series component
-#'
 #' @param data the data to be input
 #' @param scale the date scale to use for the plot
 #' @return Returns a ggplot
@@ -93,9 +92,8 @@ session_agree_plot_ts <- function(data, scale = "1 month") {
     )
 }
 
-#' @title Dashboard Agree Type % Plot
-#' @description Creates a plot for session survey data that shows % in each likert category
-#'
+#' @title Dashboard Agree Type \% Plot
+#' @description Creates a plot for session survey data that shows \% in each Likert category
 #' @param data the data to be input
 #' @return Returns a ggplot
 #' @export
@@ -132,7 +130,7 @@ session_agree_plot <- function(data) {
   df %>%
     ggplot2::ggplot(data = df, mapping = ggplot2::aes(x = Question, y = Percent, fill = factor(Response))) +
     ggplot2::geom_col() +
-    ggplot2::geom_text(mapping = ggplot2::aes(label = if_else(Percent >= 3, paste0(round(Percent), "%"), "")), position = position_stack(vjust = 0.5)) +
+    ggplot2::geom_text(mapping = ggplot2::aes(label = dplyr::if_else(Percent >= 3, paste0(round(Percent), "%"), "")), position = position_stack(vjust = 0.5)) +
     ggplot2::scale_fill_manual(values = c(
       "(1) Strongly disagree" = "#040404", "(2) Disagree" = "#032E3F",
       "(3) Neither agree nor disagree" = "#02587A", "(4) Agree" = "#0182B4", "(5) Strongly agree" = "#00ACF0"
@@ -160,7 +158,6 @@ session_agree_plot <- function(data) {
 
 #' @title Dashboard Quotes
 #' @description Creates a gt table for qualitative responses
-#'
 #' @param data the data to be input
 #' @return Returns a gt
 #' @export

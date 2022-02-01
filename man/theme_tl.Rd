@@ -68,6 +68,8 @@ theme_tl(
 
 \item{axis_title_just}{axis title font justification \code{blmcrt}}
 
+\item{axis_text_size}{axis text size}
+
 \item{dark}{dark mode \code{TRUE}, \code{FALSE}}
 
 \item{grid}{panel grid (\code{TRUE}, \code{FALSE}, or a combination of

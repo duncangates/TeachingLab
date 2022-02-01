@@ -10,7 +10,7 @@ file.path2(..., fsep = .Platform$file.sep)
 \item{...}{The file path}
 }
 \value{
-a file path
+fp a file path
 }
 \description{
 Gives the file path without double slash bug

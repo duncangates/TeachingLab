@@ -367,11 +367,301 @@ gt_arrow <- function(data, colors = c("#800000", "#98AFC7"), column_one, column_
 
 
   
+#' @title Quote Visualization
+#' @description takes a dataframe and makes a gt table or ggplot that shows a quote
+#' @param data the dataframe
+#' @param text_col the text to visualize
+#' @param viz_type ggplot or gt visualization
+#' @param title the title of the ggplot or gt
+#' @param custom_highlight Whether to provide custom highlight arguments through `highlight =` or auto highlight 3 most frequent words
+#' @param width The width of the table generated
+#' @param extra_cols Under development, to add additional columns to table
+#' @param suppress_warnings T/F suppression of warnings
+#' @param align the table alignment: "left", "center", "right"
+#' @param ... Arguments passed onto the gt table
+#' @return a ggplot/gt that visualizes text
+#' 
+#' @examples
+#' df <- TeachingLab::survey_monkey
+#' quote_viz(data = df, 
+#'           text_col = `What is the learning from this course that you are most excited about trying out?`, 
+#'           viz_type = "gt",
+#'           title = "Responses from Survey Monkey")
+#' @export
+
+quote_viz <- function(data, text_col = colnames(data)[1], extra_cols = NULL, viz_type = "gt", custom_highlight = F, width = 60, 
+                      title = NULL, suppress_warnings = T, align = "center", ...) {
+  
+  # highlight_mutate <- function(x) {
+  #   dplyr::mutate(color_text = str_replace_all(color_text, x, paste0("<a style='color:#04abeb'>", x, "</a>")))
+  # }
+  
+  text_col <- rlang::enquo(text_col)
+  
+  if (viz_type == "ggplot") {
+    data %>%
+      dplyr::mutate(text = stringr::str_replace_all(stringr::str_wrap(.data[[text_col]], width = 60), "\n", "<br>")) %>%
+      dplyr::mutate(text = paste0("\"<i>", text, "\"")) %>%
+      dplyr::mutate(x = 0,
+                    y = dplyr::row_number()) %>%
+      ggplot2::ggplot() +
+      ggtext::geom_richtext(fill = NA, label.color = NA, family = "Calibri",
+                            ggplot2::aes(label = text, x = x, y = y)) + 
+      ggplot2::scale_y_discrete(expand = c(0, 0.3)) +
+      ggplot2::theme_void() + 
+      ggplot2::theme(text = ggplot2::element_text(family = "Calibri"))
+  } else if (viz_type == "gt") {
+    # Automated highlighting extract most frequent words
+    if (custom_highlight == F) {
+      
+      stop_words <- tidytext::stop_words
+      
+      highlight <- data %>%
+        tidytext::unnest_tokens(word, .data[[text_col]]) %>%
+        # Suppress warnings gets rid of the warnings from this later
+        # This makes sure to get rid of numbers in consideration for highlighting
+        dplyr::filter(is.na(as.numeric(word))) %>%
+        dplyr::count(word, sort = T) %>%
+        dplyr::anti_join(stop_words) %>%
+        utils::head(3) %>%
+        dplyr::pull(word) %>%
+        suppressWarnings()
+      
+      if (suppress_warnings == F) {
+        cat("Highlighted words: ", highlight)
+      }
+    } else if (custom_highlight == T) {
+      highlight <- highlight # Custom highlighting
+    }
+    
+    # print(highlight)
+    
+    data_text <- data %>%
+      dplyr::mutate(text = stringr::str_replace_all(stringr::str_wrap(.data[[text_col]], width = width), "\n", "<br>")) #%>%
+    # dplyr::mutate(text = paste0("\"<i>", text, "\""))
+    
+    # Make a new column for the data
+    # Issue: this allows for overlay of html tags since it doesn't all occur at once
+    data_text <- data_text %>%
+      dplyr::mutate(color_text = text) %>%
+      dplyr::mutate(color_text = stringr::str_replace_all(color_text, paste0(highlight[1]), paste0("<span style='color:#04abeb; font-weight:bold;'>", highlight[1], "</span>"))) %>%
+      dplyr::mutate(color_text = stringr::str_replace_all(color_text, paste0(highlight[2]), paste0("<span style='color:#04abeb; font-weight:bold;'>", highlight[2], "</span>"))) %>%
+      dplyr::mutate(color_text = stringr::str_replace_all(color_text, paste0(highlight[3]), paste0("<span style='color:#04abeb; font-weight:bold;'>", highlight[3], "</span>"))) #%>%
+    # dplyr::mutate(color_text = stringr::str_replace_all(color_text, paste0(highlight[4]), paste0("<span style='color:#04abeb; font-weight:bold;'>", highlight[4], "</span>")))
+    
+    # Highlight most common words
+    # data_text <- map_df(highlight, ~ data_text %>% 
+    #       transmute(color_text = str_replace_all(color_text, 
+    #                                           .x, 
+    #                                           paste0("<a style='color:#04abeb; font-weight:bold;'>", .x, "</a>"))))
+    # Make gt table with all HTML Formatting
+    data_text %>%
+      dplyr::select(color_text#,
+                    # extra_cols
+      ) %>%
+      # dplyr::arrange(desc(.data[[extra_cols]])) %>%
+      gt::gt() %>%
+      gt::cols_label(
+        color_text = gt::html(glue::glue("{title}"))
+      ) %>%
+      # text_transform(
+      #   locations = cells_body(
+      #     columns = gt::everything()
+      #   ),
+      #   fn = function(x) {
+      # stringr::str_replace_all(x, paste0(" ", highlight[1], " "), paste0("<span style='color:#04abeb; font-weight:bold;'> ", highlight[1], " </span>"))
+      # stringr::str_replace_all(x, paste0(" ", highlight[2], " "), paste0("<span style='color:#04abeb; font-weight:bold;'> ", highlight[2], " </span>"))
+      # stringr::str_replace_all(x, paste0(" ", highlight[3], " "), paste0("<span style='color:#04abeb; font-weight:bold;'> ", highlight[3], " </span>"))
+      # map_chr(highlight, ~ stringr::str_replace_all(x, .x, paste0("<span style='color:#04abeb'>", .x, "</span>")))
+      # }
+      #) %>%
+    gt::fmt_markdown(columns = gt::everything()) %>%
+      gt::tab_style(
+        style = gt::cell_fill(color = "gray85"),
+        locations = gt::cells_body(
+          # Highlights every other cell to be gray
+          rows = c(1:length(data[[rlang::quo_name(text_col)]]))[c(T, F)]
+        )
+      ) %>%
+      gt::cols_align(align = align) %>%
+      gt::tab_style(
+        style = list(
+          gt::cell_text(
+            size = "medium"
+          )
+        ),
+        locations = gt::cells_body(
+          columns = gt::everything(),
+          rows = gt::everything()
+        )
+      ) %>%
+      TeachingLab::gt_theme_tl(align = align, ...)
+  }
+  
+  
+}
 
 
 
-
-
+#' @title Knowledge Assessment Graphs
+#' @description Creates a graph specifically for Knowledge Assessments in mid year reports
+#' @param data the data
+#' @param know_assess the knowledge assessment to make a table for
+#' @return a gt table
+#' @export
+gt_know_assess <- function(data, know_assess) {
+  
+  # Format to wide pre and post
+  plot_data <- data %>%
+    dplyr::filter(know_assess == !!rlang::enquo(know_assess)) %>%
+    dplyr::ungroup() %>%
+    dplyr::select(-site) %>% # Get rid of site for when there is more than one
+    dplyr::group_by(answer, question, prepost) %>%
+    dplyr::summarise(n = round(percent * (n/100)),
+                     percent = percent) %>% # Adjust n for each individual obs
+    dplyr::ungroup() %>%
+    dplyr::group_by(answer, question, prepost) %>%
+    dplyr::mutate(n = sum(n)) %>%
+    dplyr::summarise(percent = weighted.mean(percent, n),
+                     n = n) %>% # Adjust percent to be based on weighted mean
+    dplyr::ungroup() %>%
+    dplyr::distinct() %>%
+    dplyr::mutate(percent = tidyr::replace_na(percent, 0)) %>%
+    tidyr::pivot_wider(names_from = prepost, values_from = c(percent, n), values_fill = 0) %>%
+    dplyr::mutate(highlight = dplyr::if_else(stringr::str_detect(answer, "04abeb"), T, F))
+  
+  title <- stringr::str_to_title(str_replace_all(know_assess, "_", " ")) %>%
+    stringr::str_replace_all(., "Ela", "ELA") %>%
+    stringr::str_replace_all(., "Eic", "EIC") # Correct title casing
+  # Weighted averages
+  if ("percent_pre" %in% colnames(plot_data)) {
+    pre_percent_correct <- plot_data %>%
+      dplyr::ungroup() %>%
+      dplyr::filter(highlight == T) %>%
+      dplyr::summarise(correct = mean(percent_pre)) %>%
+      dplyr::pull(correct)
+  } else {
+    pre_percent_correct <- NA
+    plot_data <- plot_data %>%
+      dplyr::mutate(percent_pre = NA)
+  }
+  if ("percent_post" %in% colnames(plot_data)) {
+    post_percent_correct <- plot_data %>%
+      dplyr::ungroup() %>%
+      dplyr::filter(highlight == T) %>%
+      dplyr::summarise(correct = mean(percent_post, na.rm = T)) %>%
+      dplyr::pull(correct)
+  } else {
+    post_percent_correct <- NA
+    plot_data <- plot_data %>%
+      dplyr::mutate(percent_post = NA)
+  }
+  
+  
+  n1 <- data %>%
+    dplyr::filter(know_assess == !!rlang::enquo(know_assess)) %>%
+    dplyr::ungroup() %>%
+    dplyr::group_by(prepost) %>%
+    dplyr::summarise(n = max(n, na.rm = T)) %>%
+    dplyr::filter(prepost == "pre") %>% 
+    dplyr::pull(n)
+  
+  n2 <- data %>%
+    dplyr::filter(know_assess == !!rlang::enquo(know_assess)) %>%
+    dplyr::ungroup() %>%
+    dplyr::group_by(prepost) %>%
+    dplyr::summarise(n = max(n, na.rm = T)) %>%
+    dplyr::filter(prepost == "post") %>% 
+    dplyr::pull(n)
+  
+  if (length(n1) == 0) {
+    n1 <- 0
+  }
+  
+  if (length(n2) == 0) {
+    n2 <- 0
+  }
+  
+  cols_to_hide <- if (c("n_pre", "n_post", "highlight") %in% colnames(plot_data) %>% sum() == 3) {
+    c("n_pre", "n_post", "highlight")
+  } else if (c("n_pre", "highlight") %in% colnames(plot_data) %>% sum() == 2) {
+    c("n_pre", "highlight")
+  } else if(c("n_post", "highlight") %in% colnames(plot_data) %>% sum() == 2) {
+    c("n_post", "highlight")
+  }
+  
+  
+  gt_table <- plot_data %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(question = stringr::str_replace_all(question, "<br>", " ")) %>%
+    dplyr::group_by(question) %>%
+    gt::gt(
+      # rowname_col = "answer"
+    ) %>%
+    gt::cols_hide(
+      columns = cols_to_hide
+    ) %>%
+    gt::cols_move_to_end(percent_post) %>%
+    gt::tab_header(
+      title = gt::html(glue::glue("<b>{title} Knowledge Assessments Scoring</b>")),
+      subtitle = gt::html("<i style='color:#04abeb'>Correct Answers are Highlighted in Blue</i>")
+    ) %>%
+    gt::cols_label(answer = "Answer",
+                   question = "Question",
+                   percent_post = gt::html(glue::glue("Post<br>(n = {n2})")),
+                   percent_pre = gt::html(glue::glue("Pre<br>(n = {n1})"))) %>%
+    gt::tab_style(
+      style = list(
+        gt::cell_text(color = "#04abeb",
+                      weight = "bolder")
+      ),
+      locations = gt::cells_body(columns = c(percent_pre, percent_post),
+                                 rows = highlight == T
+      )
+    ) %>%
+    gt::tab_style(
+      style = list(
+        gt::cell_text(weight = "bolder")
+      ),
+      locations = gt::cells_row_groups()
+    ) %>%
+    gt::fmt_markdown(columns = gt::everything()) %>%
+    gt::fmt_percent(columns = tidyselect:::where(is.numeric),
+                    scale_values = F,
+                    decimals = 0) %>%
+    gt::fmt_missing(
+      columns = tidyselect:::where(is.logical),
+      missing_text = "no data"
+    ) %>%
+    # Impute in total averages
+    {if (is.numeric(plot_data$percent_pre) == T) gt::summary_rows(.,
+                                                                  fns = list(`Average % Correct` = ~ return(pre_percent_correct)),
+                                                                  columns = c(percent_pre),
+                                                                  formatter = fmt_percent,
+                                                                  scale_values = F,
+                                                                  decimals = 0
+    ) else summary_rows(.,
+                        fns = list(`Average % Correct` = ~ return(pre_percent_correct)),
+                        columns = c(percent_pre),
+                        formatter = fmt_missing,
+                        missing_text = "no data"
+    )} %>%
+    {if (is.numeric(plot_data$percent_post) == T) gt::summary_rows(.,
+                                                                   fns = list(`Average % Correct` = ~ return(post_percent_correct)),
+                                                                   columns = c(percent_post),
+                                                                   formatter = fmt_percent,
+                                                                   scale_values = F,
+                                                                   decimals = 0
+    ) else summary_rows(.,
+                        fns = list(`Average % Correct` = ~ return(post_percent_correct)),
+                        columns = c(percent_post),
+                        formatter = fmt_missing
+    )} %>%
+    TeachingLab::gt_theme_tl()
+  
+  gt_table %>%
+    gt::gtsave(filename = glue::glue("{know_assess}.png"), path = here::here("images/report_images"))
+}
 
 
 

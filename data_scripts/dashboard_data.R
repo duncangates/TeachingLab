@@ -157,3 +157,6 @@ readr::write_rds(session_survey, here::here("Dashboards/PersonalFacilitator/data
 
 ################################################################################################################################################################
 
+file.edit(here::here("Dashboards/CourseSurvey/app.R"))
+file.edit(here::here("Dashboards/SessionSurvey/app.R"))
+file.edit(here::here("Dashboards/PersonalFacilitator/app.R"))

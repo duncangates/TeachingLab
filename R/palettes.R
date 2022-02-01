@@ -3,7 +3,7 @@
 #' @param palette choice of color palette
 #' @param theme if theme is light or dark
 #' @param n number of colors to generate
-#'
+#' @param color the color palette to generate
 #' @return color ramp palette function
 #' @export
 tl_palette <- function(color = c("blue", "orange", "purple", "green", "teal", "tl_colors"), theme = c("dark"), n) {

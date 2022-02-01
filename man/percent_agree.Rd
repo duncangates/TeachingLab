@@ -7,7 +7,7 @@
 percent_agree(agree_col)
 }
 \arguments{
-\item{data}{the vector or column to summarise}
+\item{agree_col}{the vector or column to summarise}
 }
 \value{
 integer
