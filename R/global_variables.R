@@ -1,4 +1,5 @@
 #' @title Global Variables
+#' 
 #' @description Necessary global variables for \code{devtools::check()}
 utils::globalVariables(c(":=",
                          "!!",

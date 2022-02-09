@@ -598,7 +598,7 @@ reportServer <- function(id, in_site) {
     
     download_reactive <- reactive({
       
-      if (input$recent_sessions != "No Selection") {
+      if (!is.null(input$recent_sessions)) {
         df <- course_survey_recent() %>%
           dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
           {

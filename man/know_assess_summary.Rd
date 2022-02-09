@@ -4,12 +4,14 @@
 \alias{know_assess_summary}
 \title{Knowledge Assessment Graph Summary}
 \usage{
-know_assess_summary(data, know_assess)
+know_assess_summary(data, know_assess, summary_path = "report_summary_images")
 }
 \arguments{
 \item{data}{the data}
 
 \item{know_assess}{the knowledge assessment to make plot for}
+
+\item{summary_path}{optional path to save plot to a file, if NULL does not save anywhere}
 }
 \value{
 a ggplot

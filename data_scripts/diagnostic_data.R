@@ -1,5 +1,7 @@
+##### Get Diagnostic Educator Survey from Survey Monkey #####
+##### Writes to both diagnostic survey dashboard as well as data folder #####
 library(magrittr)
-##### Get Diagnostic from Survey Monkey #####
+
 ### Set OAuth for SurveyMonkey ###
 options(sm_oauth_token = "nTxsBf-VruLlFgxHpCRlmMJMRqC060bQZGd6VzrfDm5oX4Il5u-IhH2CxD4lwCiblicg3896pqYH0HzhmOr1b0SWMF9bTaX8-B9PmQVS2zFkNmfs5xRVNU1PMZoVfeBG")
 ## Get Diagnostic ##

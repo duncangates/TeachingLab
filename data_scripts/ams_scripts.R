@@ -1,3 +1,6 @@
+####### This is a script specifically designed for the AMS dashboards created for Ijun ######
+####### ALL it does is filter for AMS sites and writes that to the dashboards data file ######
+
 course_survey <- readr::read_rds(here::here("data/course_surveymonkey.rds"))
 session_survey <- readr::read_rds(here::here("data/session_survey_21_22data.rds"))
 

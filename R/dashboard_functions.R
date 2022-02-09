@@ -172,3 +172,4 @@ session_quotes <- function(data) {
     TeachingLab::gt_theme_tl()
 }
 
+

@@ -5,9 +5,10 @@ account: teachinglabhq
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 5337605
-bundleId: 5530796
+bundleId: 5531933
 url: https://teachinglabhq.shinyapps.io/MathematicaCourseSurvey/
-when: 1643722911.87942
-lastSyncTime: 1643722911.87943
+when: 1643742130.86497
+lastSyncTime: 1643742130.86498
 asMultiple: FALSE
 asStatic: FALSE
+ignoredFiles: data/.DS_Store
