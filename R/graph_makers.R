@@ -145,7 +145,8 @@ know_assess_summary <- function(data, know_assess, summary_path = "report_summar
   
   if (!is.null(summary_path)) {
     ggplot2::ggsave(plot = p,
-                    path = here::here(glue::glue("images/{summary_path}/{know_assess}.png")), 
+                    filename = glue::glue("{know_assess}.png"),
+                    path = here::here(glue::glue("images/{summary_path}")), 
                     bg = "white", 
                     device = "png",
                     height = 5, width = 5)
@@ -864,7 +865,7 @@ fake_bar_graph_create <- function(title,
       label_df <- tibble::tibble(
         x = c(0.75, 1.25, 1.75, 2.25),
         y = c(15, 15, 15, 15), # ORDER IS 4, 1, 3, 2 FOR SOME REASON
-        label = rep(multiple_labels, 2)
+        label = rep(multiple_labels, 2) %>% sort()
       ) %>%
         dplyr::mutate(label = stringr::str_wrap(label, 15))
     } else {
@@ -873,12 +874,12 @@ fake_bar_graph_create <- function(title,
     
     p <- plot_data %>%
       ggplot2::ggplot(ggplot2::aes(x = name, y = value, fill = fill)) +
-      ggplot2::geom_col(position = position_dodge()) +
+      ggplot2::geom_col(position = ggplot2::position_dodge()) +
       ggplot2::geom_text(ggplot2::aes(label = paste0(round(value), "%")),
                          vjust = -1,
                          fontface = "bold",
                          family = "Calibri",
-                         position = position_dodge(width = 0.9)) +
+                         position = ggplot2::position_dodge(width = 0.9)) +
       ggplot2::geom_text(data = label_df,
                          ggplot2::aes(label = label, x = x, y = y, fill = NULL),
                          size = 4,
@@ -891,7 +892,7 @@ fake_bar_graph_create <- function(title,
       #                       aes(x = name, y = value, label = label)) +
       ggplot2::labs(x = "", y = "",
                     # title = paste0(title, "\n% Correct before and after")#,
-                    title = paste0(title, "<br><b style='color:#55bbc7'>before (n = ", n1, ")</b> and <b style='color:#d17df7'>after (n = ", n2, ")</b>")
+                    title = paste0(title, "<br>", ifelse(know_graph == T, "% Correct ", ""), "<b style='color:#55bbc7'>before (n = ", n1, ")</b> and <b style='color:#d17df7'>after (n = ", n2, ")</b>")
       ) +
       ggplot2::scale_y_continuous(labels = scales::percent_format(scale = 1), expand = c(0.1, 0),
                                   limits = c(0, 100)) +
@@ -932,13 +933,13 @@ fake_line_graph_create <- function(title, fake_data_fun = "time_data",
                                    custom_n = NULL,
                                    custom_n_range = 0) {
   
-  point1_1 <- TeachingLab::runif_round(0, 25)
-  point2_1 <- TeachingLab::runif_round(20, 40)
-  point3_1 <- TeachingLab::runif_round(35, 60)
-  point4_1 <- TeachingLab::runif_round(55, 80)
-  point1_2 <- TeachingLab::runif_round(5, 15)
-  point2_2 <- TeachingLab::runif_round(10, 30)
-  point3_2 <- TeachingLab::runif_round(25, 40)
+  point1_1 <- TeachingLab::runif_round(0, 35)
+  point2_1 <- TeachingLab::runif_round(20, 50)
+  point3_1 <- TeachingLab::runif_round(35, 70)
+  point4_1 <- TeachingLab::runif_round(55, 85)
+  point1_2 <- TeachingLab::runif_round(10, 20)
+  point2_2 <- TeachingLab::runif_round(15, 35)
+  point3_2 <- TeachingLab::runif_round(30, 50)
   point4_2 <- TeachingLab::runif_round(35, 50)
   
   if (!is.null(custom_n)) {
@@ -980,22 +981,26 @@ fake_line_graph_create <- function(title, fake_data_fun = "time_data",
   
   p <- plot_data %>%
     ggplot2::ggplot(ggplot2::aes(x = name, y = value, color = color)) +
-    ggplot2::geom_line(aes(group = color)) +
+    ggplot2::geom_line(ggplot2::aes(group = color)) +
     ggplot2::geom_point() +
-    ggplot2::geom_text(data = label_df,
+    ggrepel::geom_text_repel(data = label_df,
                        ggplot2::aes(label = label, x = x, y = y),
-                       vjust = -0.75,
+                       nudge_x = 1,
+                       nudge_y = 5,
+                       arrow = grid::arrow(length = grid::unit(0.02, "npc")),
+                       # vjust = -0.25,
                        color = "black",
                        fontface = "bold",
                        family = "Calibri",
-                       hjust = -0.2) +
+                       hjust = 0) +
     # ggplot2::scale_fill_manual(values = c("Before" = "#D17DF7", "After" = "#55BBC7")) +
     ggplot2::labs(x = "", y = "Percent Positive Indicators on IPG",
-                  title = paste0(title, " (N size ranges from <b>", n2, "</b> to <b>", n1, "</b>)")
+                  title = paste0(title, " (N size ranges from <b>", ifelse(n2 > n1, n1, n2), "</b> to <b>", ifelse(n2 < n1, n1, n2), "</b>)")
     ) +
     ggplot2::scale_y_continuous(labels = scales::percent_format(scale = 1), expand = c(0.1, 0),
                                 limits = c(0, 100)) +
     ggplot2::scale_color_manual(values = c("line1" = "#314482", "line2" = "#d1c926")) +
+    ggplot2::expand_limits(x = c(0, length(unique(plot_data$name)) + 1)) +
     ggplot2::theme_minimal() +
     ggplot2::theme(
       plot.title = ggtext::element_markdown(lineheight = 1.1, hjust = 0.5),

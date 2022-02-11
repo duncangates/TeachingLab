@@ -9,7 +9,7 @@ uiAgree <- function(id, label = "Counter") {
           shiny::selectizeInput(
             inputId = ns("question"),
             label = h3("Select a Question"),
-            choices = colnames(ipg_forms)[12:length(colnames(ipg_forms))],
+            choices = ipg_plot_select_names,
             multiple = F,
             options = list(plugins = list("remove_button"))
           ),
@@ -100,22 +100,22 @@ uiAgree <- function(id, label = "Counter") {
           icon = shiny.semantic::icon("calendar alternate")
         )
       ),
-    main_panel = shiny.semantic::main_panel(
-      width = 4,
-      div(
-        class = "ui two column stackable grid container",
+      main_panel = shiny.semantic::main_panel(
+        width = 4,
         div(
-          class = "sixteen wide column",
-          plotOutput(ns("percent_agree_plot"), height = "800px") %>%
-            withSpinner(type = 3, color.background = "white")
-        ),
-        div(
-          class = "sixteen wide column",
-          plotOutput(ns("agree_plot_ts"), height = "800px") %>%
-            withSpinner(type = 3, color.background = "white")
+          class = "ui two column stackable grid container",
+          div(
+            class = "sixteen wide column",
+            plotOutput(ns("percent_agree_plot"), height = "800px") %>%
+              withSpinner(type = 3, color.background = "white")
+          ),
+          div(
+            class = "sixteen wide column",
+            plotOutput(ns("agree_plot_ts"), height = "800px") %>%
+              withSpinner(type = 3, color.background = "white")
+          )
         )
       )
-    )
     )
   )
 }
@@ -150,24 +150,30 @@ agreeServer <- function(id) {
         } %>%
         pivot_longer(!c(1:11)) %>%
         drop_na(value) %>%
-        group_by(name, value) %>%
+        group_by(name, value, `Timeline of Obs`) %>%
         summarise(n = n()) %>%
         ungroup(value) %>%
-        mutate(percent = round(100*n/sum(n))) %>%
+        dplyr::group_by(name, `Timeline of Obs`) %>%
+        mutate(percent = round(100 * n / sum(n))) %>%
         filter(name == input$question)
 
       agree_plot_ts
     })
+    
+    observe({
+      print(data_plot_ts())
+    })
 
     # Ggplot for time series plot
     output$agree_plot_ts <- renderPlot({
-      dashboard_ipg_plot_ts(data = data_plot_ts(),
-                         name = input$question)
+      dashboard_ipg_plot_ts(
+        data = data_plot_ts(),
+        name = input$question
+      )
     })
 
     # Agree Percent Plot
     data_plot_agree <- reactive({
-      
       validate(
         need(!is.null(input$question), "Please select at least one question"),
         need(!is.null(input$teacher), "Please select at least one teacher"),
@@ -195,7 +201,7 @@ agreeServer <- function(id) {
         group_by(name, value) %>%
         summarise(n = n()) %>%
         ungroup(value) %>%
-        mutate(percent = round(100*n/sum(n))) %>%
+        mutate(percent = round(100 * n / sum(n))) %>%
         filter(name == input$question)
 
       agree_plot
@@ -204,9 +210,10 @@ agreeServer <- function(id) {
 
     # Ggplot for agree percent plot
     output$percent_agree_plot <- renderPlot({
-      dashboard_ipg_plot(data = data_plot_agree(),
-                         name = input$question)
+      dashboard_ipg_plot(
+        data = data_plot_agree(),
+        name = input$question
+      )
     })
-
   })
 }

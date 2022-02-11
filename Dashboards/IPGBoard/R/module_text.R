@@ -34,7 +34,7 @@ uiText <- function(id, label = "Counter") {
           shiny::selectizeInput(
             inputId = ns("question"),
             label = h3("Select a Question"),
-            choices = colnames(ipg_forms)[12:length(colnames(ipg_forms))],
+            choices = ipg_text_select_names,
             multiple = F,
             options = list(plugins = list("remove_button"))
           ),
@@ -198,9 +198,9 @@ textServer <- function(id) {
       nrow(count)
     })
     
-    observe({
-      print(reactive_1_count())
-    })
+    # observe({
+    #   print(reactive_1_count())
+    # })
     
     reactive_2_count <- reactive({
       
