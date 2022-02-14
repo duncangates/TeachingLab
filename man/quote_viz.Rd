@@ -7,9 +7,9 @@
 quote_viz(
   data,
   text_col = colnames(data)[1],
-  extra_cols = NULL,
   viz_type = "gt",
-  custom_highlight = F,
+  custom_highlight = NULL,
+  n = 3,
   width = 60,
   title = NULL,
   suppress_warnings = T,
@@ -20,13 +20,13 @@ quote_viz(
 \arguments{
 \item{data}{the dataframe}
 
-\item{text_col}{the text to visualize}
-
-\item{extra_cols}{Under development, to add additional columns to table}
+\item{text_col}{columns to create table for}
 
 \item{viz_type}{ggplot or gt visualization}
 
-\item{custom_highlight}{Whether to provide custom highlight arguments through `highlight =` or auto highlight 3 most frequent words}
+\item{custom_highlight}{a vector, optional custom highlighting}
+
+\item{n}{integer, number of words to auto-highlight}
 
 \item{width}{The width of the table generated}
 
@@ -47,9 +47,11 @@ takes a dataframe and makes a gt table or ggplot that shows a quote
 \examples{
 \dontrun{
 df <- TeachingLab::survey_monkey
-quote_viz(data = df, 
-          text_col = word,
-          viz_type = "gt",
-          title = "Responses from Survey Monkey")
+quote_viz(
+  data = df,
+  text_col = word,
+  viz_type = "gt",
+  title = "Responses from Survey Monkey"
+)
 }
 }

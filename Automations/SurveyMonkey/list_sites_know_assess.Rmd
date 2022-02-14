@@ -45,6 +45,8 @@ get_sites_to_clip <- function(id) {
     dplyr::pull(school_pull) %>%
     levels()
   
+  sites <- all_sites$Site
+  
   if (length(setdiff(sites, survey_sites)) == 0) {
     print("All sites in master list are in this survey")
   } else {
