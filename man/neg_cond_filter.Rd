@@ -4,14 +4,16 @@
 \alias{neg_cond_filter}
 \title{Negative Conditional Filter}
 \usage{
-neg_cond_filter(not_this, is_this, dat_filter)
+neg_cond_filter(data, if_not_this, filter_this, dat_filter)
 }
 \arguments{
-\item{not_this}{If value is not this}
+\item{data}{the dataframe to apply filter}
 
-\item{is_this}{Filter for this}
+\item{if_not_this}{If value is not this}
 
-\item{dat_filter}{Data column to filter}
+\item{filter_this}{Filter for this}
+
+\item{dat_filter}{Data column object to filter}
 }
 \value{
 filtered dataframe

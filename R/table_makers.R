@@ -405,14 +405,36 @@ find_highlight <- function(string, n = 3, print = F) {
 #'
 #' @export
 highlight_fun <- function(data, highlight) {
-  # If the word is not plural then add highlighting for the plural version of the same word
-  highlights <- unlist(
+  # If the word is not plural then add highlighting for the plural version of the same word, 
+  plural_highlights <- unlist(
     purrr::map(highlight, ~ if (stringr::str_sub(.x, -1) != "s") {
       paste0(.x, "s")
     })
   )
-  # Add plurals to list and ensure uniqueness
-  highlight <- append(highlight, highlights) %>%
+  # Also do the inverse
+  not_plural_highlights <- unlist(
+    purrr::map(highlight, ~ if (stringr::str_sub(.x, -1) == "s") {
+      str_remove(.x, "s$")
+    })
+  )
+  # If the word is not capitalized then add highlighting for the capitalized version of the same word, 
+  capital_highlights <- unlist(
+    purrr::map(highlight, ~ if (stringr::str_detect(stringr::str_sub(.x, 1, 1), "[:upper:]")) {
+      stringr::str_to_lower(.x)
+    })
+  )
+  # Also do the inverse
+  not_capital_highlights <- unlist(
+    purrr::map(highlight, ~ if (stringr::str_detect(stringr::str_sub(.x, 1, 1), "[:lower:]")) {
+      stringr::str_to_title(.x)
+    })
+  )
+  # Add plurals, capitalization to list and ensure uniqueness
+  highlight <- append(highlight, 
+                      c(plural_highlights, 
+                        not_plural_highlights, 
+                        capital_highlights, 
+                        not_capital_highlights)) %>%
     unique()
 
   # Create a vector for replacement with format <html>new_name</html> = old_name
@@ -444,6 +466,7 @@ highlight_fun <- function(data, highlight) {
 #' @param title the title of the ggplot or gt
 #' @param custom_highlight a vector, optional custom highlighting
 #' @param n integer, number of words to auto-highlight
+#' @param print T, whether or not to print the highlighted words to console
 #' @param width The width of the table generated
 #' @param suppress_warnings T/F suppression of warnings
 #' @param align the table alignment: "left", "center", "right"
@@ -453,9 +476,10 @@ highlight_fun <- function(data, highlight) {
 #' @examples
 #' \dontrun{
 #' df <- TeachingLab::survey_monkey
+#' colnames(df)[1] <- "What learning are you excited to try?"
 #' quote_viz(
 #'   data = df,
-#'   text_col = word,
+#'   text_col = "What learning are you excited to try?",
 #'   viz_type = "gt",
 #'   title = "Responses from Survey Monkey"
 #' )
@@ -467,6 +491,7 @@ quote_viz <- function(data,
                       viz_type = "gt",
                       custom_highlight = NULL,
                       n = 3,
+                      print = T,
                       width = 60,
                       title = NULL,
                       suppress_warnings = T,
@@ -494,10 +519,10 @@ quote_viz <- function(data,
   } else if (viz_type == "gt") {
     if (!tibble::is_tibble(data)) {
       data <- tibble::as_tibble(data)
-      text_col <- "value"
+      selecting_cols <- "value"
     }
 
-    # Automated highlighting extract most frequent words
+    # If not custom highlighting, find a specified number of words to highlight, n = 3 by default
     if (is.null(custom_highlight)) {
       highlight <- purrr::map_dfc(selecting_cols, ~ TeachingLab::find_highlight(string = data %>% pull(.x), n = n)) %>%
         suppressMessages()
@@ -507,24 +532,32 @@ quote_viz <- function(data,
       highlight <- custom_highlight # Custom highlighting
     }
 
-    print(highlight)
+    # Print out highlights for reference
+    if (print == T) {
+      print(highlight)
+    }
 
-    # Make a new column for the data
-    # Issue: this allows for overlay of html tags since it doesn't all occur at once
+    # Select just the relevant columns for highlighting
     data_text <- data %>%
-      dplyr::select(!!text_col) %>%
-      dplyr::ungroup() # %>%
-    # dplyr::mutate(dplyr::across(columns, ~ TeachingLab::highlight_fun(
-    #   TeachingLab::html_wrap(.x, n = width),
-    #   highlight
-    # )))
+      dplyr::select(!!text_col)
 
+    # Get all highlights as just one vector
+    all_highlights <- highlight %>%
+      tidyr::pivot_longer(dplyr::everything(), values_to = "highlight") %>%
+      dplyr::pull(highlight)
+
+    # First map function applies the highlighting column by column
+    # Second map function sorts the data so that the highlighted words are on top
+    # Issue: this allows for overlay of html tags since it doesn't all occur at once,
+    # NEED TO PREVENT <br> and <span> from getting highlighted
     data_final <- purrr::map2_dfc(data_text[selecting_cols], 1:length(colnames(highlight)), ~
-      TeachingLab::highlight_fun(
-        TeachingLab::html_wrap(.x, n = width),
-        highlight %>% dplyr::pull(.y)
-      )
-    )
+    TeachingLab::highlight_fun(
+      TeachingLab::html_wrap(.x, n = width),
+      highlight %>% dplyr::pull(.y)
+    )) %>% purrr::map_df(., ~ append(
+      sort(as.character(factor(.x, levels = unique(.x[stringr::str_detect(.x, "<span")])))),
+      .x[!stringr::str_detect(.x, "<span")]
+    ))
 
     # Make gt table with all HTML Formatting
     data_final %>%
