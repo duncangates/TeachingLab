@@ -4,7 +4,13 @@
 \alias{course_quotes}
 \title{Dashboard End of Course Quotes}
 \usage{
-course_quotes(data = TeachingLab::get_course_survey(), size = 10, n = 3)
+course_quotes(
+  data = TeachingLab::get_course_survey(),
+  size = 10,
+  n = 3,
+  all = F,
+  save = NULL
+)
 }
 \arguments{
 \item{data}{the data to be input}
@@ -12,9 +18,13 @@ course_quotes(data = TeachingLab::get_course_survey(), size = 10, n = 3)
 \item{size}{the number of rows of quotes to return}
 
 \item{n}{}
+
+\item{all}{Whether or not to return ALL data}
+
+\item{save}{}
 }
 \value{
-Returns a gt
+Returns a gt, unless save in which case it will return a saved file with gtsave
 }
 \description{
 Creates a gt table for qualitative responses

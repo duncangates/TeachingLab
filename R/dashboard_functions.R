@@ -185,18 +185,30 @@ session_quotes <- function(data = TeachingLab::get_session_survey(), size = 10, 
 #' @param data the data to be input
 #' @param n 
 #' @param size the number of rows of quotes to return
-#' @return Returns a gt
+#' @param all Whether or not to return ALL data
+#' @param include_columns A vector of additional columns to include in table
+#' @param save 
+#' @return Returns a gt, unless save in which case it will return a saved file with gtsave
 #' @export
-course_quotes <- function(data = TeachingLab::get_course_survey(), size = 10, n = 3) {
-  data %>%
+course_quotes <- function(data = TeachingLab::get_course_survey(), 
+                          size = 10,
+                          n = 3,
+                          all = F,
+                          save = NULL,
+                          include_columns = NULL) {
+  quotes_gt <- data %>%
     dplyr::select(c("Overall, what went well in this course?", # Qualitative feedback
                     "Overall, what could have been better in this course?", # Qualitative feedback
                     "What is the learning from this course that you are most excited about trying out?", # Qualitative feedback
                     "Which activities best supported your learning in this course?", # Qualitative feedback
-                    "Feel free to leave us any additional comments, concerns, or questions.")) %>%
-    purrr::map(., na.omit) %>%
-    # REMINDER ADD FILTERING WITH na_df ONCE ADDED TO TEACHINGLAB PACKAGE
-    purrr::map(., ~ sample(.x, size = size)) %>%
+                    "Feel free to leave us any additional comments, concerns, or questions."),
+                  include_columns) %>%
+    dplyr::mutate(dplyr::across(c(1:5), ~ replace(.x, .x %in% TeachingLab::na_df, NA))) %>%
+    janitor::remove_empty("rows") %>%
+    dplyr::mutate(dplyr::across(c(1:5), ~ tidyr::replace_na(.x, "No Response"))) %>%
+    {
+      if (all == F) purrr::map(., ~ sample(.x, size = size)) else .
+    } %>%
     tibble::as_tibble() %>%
     setNames(c("Overall, what went well in this course?", # Qualitative feedback
                "Overall, what could have been better in this course?", # Qualitative feedback
@@ -204,4 +216,11 @@ course_quotes <- function(data = TeachingLab::get_course_survey(), size = 10, n 
                "Which activities best supported your learning in this course?", # Qualitative feedback
                "Feel free to leave us any additional comments, concerns, or questions.")) %>%
     TeachingLab::quote_viz(text_col = colnames(.), n = n)
+  if (is.null(save)) {
+    quotes_gt
+  } else {
+    gt::gtsave(data = quotes_gt,
+               filename = here::here(paste0(save)))
+  }
+  
 }

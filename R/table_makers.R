@@ -370,9 +370,9 @@ gt_arrow <- function(data, colors = c("#800000", "#98AFC7"), column_one, column_
 #'
 #' @export
 find_highlight <- function(string, n = 3, print = F) {
-  stop_words <- tidytext::stop_words
-  
-  custom <- 
+  stop_words <- tidytext::stop_words %>%
+    dplyr::bind_rows(tibble::tibble(word = TeachingLab::na_df,
+                                    lexicon = "TL_NA"))
 
   highlight <- string %>%
     tibble::as_tibble_col(column_name = "txt") %>%
