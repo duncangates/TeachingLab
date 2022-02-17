@@ -135,12 +135,15 @@ if (nrow(as_tibble(params$quote1)) >= 1) {
   img1 <- quote_viz(
           data = params$quote3, text_col = "Response", viz_type = "gt",
           title = "What could have been better about today’s session?",
-          width = 40, align = "left"
+          width = 40, align = "left",
+          print = F
         ) %>%
     gtsave(filename = img1_loc)
 } else {
   img1 <- tibble("There were no comments to display here.") %>% 
-    quote_viz(title = "Nothing", width = 40) %>% 
+    quote_viz(title = "Nothing", 
+              width = 40,
+              print = F) %>% 
     gtsave(filename = img1_loc)
 }
 ```
@@ -158,12 +161,15 @@ if (nrow(as_tibble(params$quote2)) >= 1) {
   img2 <- quote_viz(
           data = params$quote2, text_col = "Response", viz_type = "gt",
           title = "What went well in today’s session?",
-          width = 40, align = "left"
+          width = 40, align = "left",
+          print = F
         ) %>%
     gtsave(filename = img2_loc)
 } else {
   img2 <- tibble("There were no comments to display here.") %>% 
-    quote_viz(title = "Nothing", width = 40) %>% 
+    quote_viz(title = "Nothing", 
+              width = 40,
+              print = F) %>% 
     gtsave(filename = img2_loc)
 }
 ```
@@ -180,12 +186,14 @@ if (nrow(as_tibble(params$quote3)) >= 1) {
   img3 <- quote_viz(
           data = params$quote1, text_col = "Response", viz_type = "gt",
           title = "What additional feedback do you have about their facilitation skills?",
-          width = 40, align = "left"
+          width = 40, align = "left",
+          print = F
         ) %>%
     gtsave(filename = img3_loc)
 } else {
   img3 <- tibble("There were no comments to display here.") %>% 
-    quote_viz(title = "Nothing", width = 40) %>% 
+    quote_viz(title = "Nothing", width = 40,
+              print = F) %>% 
     gtsave(filename = img3_loc)
 }
 ```

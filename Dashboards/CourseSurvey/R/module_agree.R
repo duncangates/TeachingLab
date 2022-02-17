@@ -1,3 +1,4 @@
+#### Course Survey Dashboard ####
 uiAgree <- function(id, label = "Counter") {
   ns <- NS(id)
   shiny::tagList(

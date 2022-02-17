@@ -158,18 +158,50 @@ session_agree_plot <- function(data) {
 }
 
 
-#' @title Dashboard Quotes
+#' @title Dashboard End of Session Quotes
 #' @description Creates a gt table for qualitative responses
 #' @param data the data to be input
+#' @param n 
+#' @param size the number of rows of quotes to return
 #' @return Returns a gt
 #' @export
-session_quotes <- function(data) {
+session_quotes <- function(data = TeachingLab::get_session_survey(), size = 10, n = 3) {
   data %>%
     dplyr::select(c("What is one thing from today's learning that you plan to take back to your classroom?",
                     "What went well in today’s session?",
                     "What could have been better about today’s session?")) %>%
-    gt::gt() %>%
-    TeachingLab::gt_theme_tl()
+    purrr::map(., na.omit) %>%
+    # REMINDER ADD FILTERING WITH na_df ONCE ADDED TO TEACHINGLAB PACKAGE
+    purrr::map(., ~ sample(.x, size = size)) %>%
+    tibble::as_tibble() %>%
+    setNames(c("What is one thing from today's learning that you plan to take back to your classroom?",
+             "What went well in today’s session?",
+             "What could have been better about today’s session?")) %>%
+    TeachingLab::quote_viz(text_col = colnames(.), n = n)
 }
 
-
+#' @title Dashboard End of Course Quotes
+#' @description Creates a gt table for qualitative responses
+#' @param data the data to be input
+#' @param n 
+#' @param size the number of rows of quotes to return
+#' @return Returns a gt
+#' @export
+course_quotes <- function(data = TeachingLab::get_course_survey(), size = 10, n = 3) {
+  data %>%
+    dplyr::select(c("Overall, what went well in this course?", # Qualitative feedback
+                    "Overall, what could have been better in this course?", # Qualitative feedback
+                    "What is the learning from this course that you are most excited about trying out?", # Qualitative feedback
+                    "Which activities best supported your learning in this course?", # Qualitative feedback
+                    "Feel free to leave us any additional comments, concerns, or questions.")) %>%
+    purrr::map(., na.omit) %>%
+    # REMINDER ADD FILTERING WITH na_df ONCE ADDED TO TEACHINGLAB PACKAGE
+    purrr::map(., ~ sample(.x, size = size)) %>%
+    tibble::as_tibble() %>%
+    setNames(c("Overall, what went well in this course?", # Qualitative feedback
+               "Overall, what could have been better in this course?", # Qualitative feedback
+               "What is the learning from this course that you are most excited about trying out?", # Qualitative feedback
+               "Which activities best supported your learning in this course?", # Qualitative feedback
+               "Feel free to leave us any additional comments, concerns, or questions.")) %>%
+    TeachingLab::quote_viz(text_col = colnames(.), n = n)
+}

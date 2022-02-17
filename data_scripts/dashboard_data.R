@@ -6,7 +6,46 @@ library(dplyr)
 
 ##### Course Survey #####
 
-old_df <- readr::read_rds("data-clean/data-move/dashboard_data/dashboard_data.rds")
+rename_old_df <- c(
+  "Do you have additional comments\\?" = "Feel free to leave us any additional comments, concerns, or questions\\.",
+  "Overall, what went well in this professional learning\\?" = "Overall, what went well in this course\\?",
+  "Which activities best supported your learning\\?" = "Which activities best supported your learning in this course\\?",
+  "What could have improved your experience\\?" = "Overall, what could have been better in this course\\?",
+  "Professional Training Session" = "Select your course\\.",
+  "District, Parish, Or Network" = "Select your site \\(district, parish, network, or school\\)\\.",
+  "% Satisfied With The Overall Quality Of Today's Professional Learning Session" = "How much do you agree with the following statements about this course? - I am satisfied with the overall quality of this course\\.",
+  "% Who Say Activities Of Today's Session Were Well-Designed To Help Me Learn" = "How much do you agree with the following statements about this course? - The independent online work activities were well-designed to help me meet the learning targets\\.",
+  "What is the learning from this professional learning that you are most excited about trying out\\?" = "What is the learning from this course that you are most excited about trying out\\?",
+  "How Likely Are You To Apply This Learning To Your Practice In The Next 4-6 Weeks\\?" = "How much do you agree with the following statements about this course? - I will apply what I have learned in this course to my practice in the next 4-6 weeks\\.",
+  "How Likely Are You To Recommend This Professional Learning To A Colleague Or Friend\\?" = "On a scale of 0-10, how likely are you to recommend this course to a colleague or friend\\?",
+  "Date for the session" = "Select the date for this session. - \n    Date / Time\n",
+  "Portfolio" = "Select the content area for today's professional learning session\\."
+)
+
+old_df <- readr::read_rds("data-clean/data-move/dashboard_data/dashboard_data.rds") %>%
+  dplyr::mutate(Portfolio = stringr::str_replace_all(Portfolio, c(
+    "EL" = "ELA",
+    "Guidebooks" = "ELA",
+    "Illustrative Mathematics" = "Math"
+  ))) %>%
+  dplyr::rename_with(~ stringr::str_replace_all(.x, rename_old_df)) %>%
+  dplyr::select(
+    "Feel free to leave us any additional comments, concerns, or questions.",
+    "Overall, what went well in this course?",
+    "Which activities best supported your learning in this course?",
+    "Overall, what could have been better in this course?",
+    "Select your course.",
+    "Select your site (district, parish, network, or school).",
+    "How much do you agree with the following statements about this course? - I am satisfied with the overall quality of this course.",
+    "How much do you agree with the following statements about this course? - The independent online work activities were well-designed to help me meet the learning targets.",
+    "What is the learning from this course that you are most excited about trying out?",
+    "How much do you agree with the following statements about this course? - I will apply what I have learned in this course to my practice in the next 4-6 weeks.",
+    "On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?",
+    "Select the date for this session. - \n    Date / Time\n",
+    "Select the content area for today's professional learning session."
+  )
+
+readr::write_rds(old_df, here::here("data/old_course_survey_reformatted.rds"))
 
 options(sm_oauth_token = "a22Dkw3KTSZB9v.TYV0g2GAV2fRK7dfmQ81WEk1iqnTrcUUQpcksI1fRc44J-H0fcN3OAovcaQRNb38fhScbHpiUJu4vDP-9SZuXuwHNwcNRK035sJ7VjQFPOUnKi3TT")
 
@@ -18,36 +57,52 @@ surveymonkey_course <- surveymonkey::fetch_survey_obj(id = 308116695) %>%
 
 course_survey <- surveymonkey_course %>%
   # Make data column a date type column
-  dplyr::mutate(date_created = lubridate::date(date_created)) %>%
+  dplyr::mutate(date_created = lubridate::date(date_created),
+                `Select the date for this session. - \n    Date / Time\n` = lubridate::date(lubridate::mdy(`Select the date for this session. - \n    Date / Time\n`))) %>%
+  # Add dataframe rows from prior to 21-22
+  dplyr::bind_rows(old_df) %>%
+  # Coalesce old date column with new
+  dplyr::mutate(date_created = dplyr::coalesce(date_created,
+                                               `Select the date for this session. - \n    Date / Time\n`)) %>%
+  # Make NPS numeric and fix non-numerics
+  dplyr::mutate(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?` =
+                  readr::parse_number(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`)) %>%
   # Coalesce all select your course columns
   dplyr::mutate(`Select your course.` = dplyr::coalesce(
-    `Select your course.`, `Select your course._2`, `Select your course._3`,
-    `Select your course._4`, `Select your course._5`, `Select your course._6`
+    `Select your course.`,
+    `Select your course._2`,
+    `Select your course._3`,
+    `Select your course._4`,
+    `Select your course._5`,
+    `Select your course._6`
   )) %>%
   # Coalesce what went well in the course
   dplyr::mutate(`Overall, what went well in this course?` = dplyr::coalesce(
-    `Overall, what went well in this course?`, `Overall, what went well in this course?_2`
+    `Overall, what went well in this course?`,
+    `Overall, what went well in this course?_2`
   )) %>%
   # Coalesce what could have been better in the course
   dplyr::mutate(`Overall, what could have been better in this course?` = dplyr::coalesce(
-    `Overall, what could have been better in this course?`, `Overall, what could have been better in this course?_2`
+    `Overall, what could have been better in this course?`,
+    `Overall, what could have been better in this course?_2`
   )) %>%
   # Coalesce learning from the course excited about
   dplyr::mutate(`What is the learning from this course that you are most excited about trying out?` = dplyr::coalesce(
-    `What is the learning from this course that you are most excited about trying out?`, `What is the learning from this course that you are most excited about trying out?_2`
+    `What is the learning from this course that you are most excited about trying out?`, 
+    `What is the learning from this course that you are most excited about trying out?_2`
   )) %>%
   # Coalesce best activities supporting learning
   dplyr::mutate(`Which activities best supported your learning in this course?` = dplyr::coalesce(
-    `Which activities best supported your learning in this course?`, `Which activities best supported your learning in this course?_2`
+    `Which activities best supported your learning in this course?`, 
+    `Which activities best supported your learning in this course?_2`
   )) %>%
   # Coalesce additional comments, concerns, or questions
   dplyr::mutate(`Feel free to leave us any additional comments, concerns, or questions.` = dplyr::coalesce(
-    `Feel free to leave us any additional comments, concerns, or questions.`, `Feel free to leave us any additional comments, concerns, or questions._2`
+    `Feel free to leave us any additional comments, concerns, or questions.`,
+    `Feel free to leave us any additional comments, concerns, or questions._2`
   )) %>%
   # Probably redundant, check later
   dplyr::mutate(`date_created` = as.Date(`date_created`)) %>%
-  # Add dataframe from prior to 21-22
-  dplyr::bind_rows(old_df) %>%
   # Fix Pointe Coupee
   dplyr::mutate(`Select your site (district, parish, network, or school).` = stringr::str_replace_all(`Select your site (district, parish, network, or school).`, "Pt. Coupee Parish", "Pointe Coupee Parish")) %>%
   # Remove extra parts of names so they will be the same
@@ -57,8 +112,8 @@ course_survey <- surveymonkey_course %>%
   )) %>%
   # Make Rochester all the same name regardless of school
   dplyr::mutate(`Select your site (district, parish, network, or school).` = ifelse(stringr::str_detect(`Select your site (district, parish, network, or school).`, "Rochester"),
-                                                                                    "Rochester City School District",
-                                                                                    as.character(`Select your site (district, parish, network, or school).`)
+    "Rochester City School District",
+    as.character(`Select your site (district, parish, network, or school).`)
   )) %>%
   # Get rid of random -999 in responses
   dplyr::mutate(`How much do you agree with the following statements about this course? - I am satisfied with how the course was facilitated.` = dplyr::na_if(`How much do you agree with the following statements about this course? - I am satisfied with how the course was facilitated.`, "-999")) %>%
@@ -86,9 +141,31 @@ course_survey <- surveymonkey_course %>%
     `How much do you agree with the following statements about this course? - The independent online work activities were well-designed to help me meet the learning targets.`,
     `How much do you agree with the following statements about this course? - I felt a sense of community with the other participants in this course. even though we were meeting virtually.`,
     `How much do you agree with the following statements about this course? - I will apply what I have learned in this course to my practice in the next 4-6 weeks.`
-  ), ~ dplyr::na_if(.x, "No Response"))) #%>%
+  ), ~ dplyr::na_if(.x, "No Response"))) %>%
 ###### Make it select just the necessary columns to reduce data input to dashboards
-  # dplyr::select(date_created)
+  dplyr::select(date_created, # Date
+                `Select your site (district, parish, network, or school).`, # Site
+                `Select your role.`, # Role
+                `Select the content area for today's professional learning session.`, # Content area
+                `Select your course.`, # Course
+                `Overall, what went well in this course?`, # Qualitative feedback
+                `Overall, what could have been better in this course?`, # Qualitative feedback
+                `What is the learning from this course that you are most excited about trying out?`, # Qualitative feedback
+                `Which activities best supported your learning in this course?`, # Qualitative feedback
+                `Feel free to leave us any additional comments, concerns, or questions.`, # Qualitative feedback
+                ###### Quantitative feedback #####
+                `How much do you agree with the following statements about this course? - I am satisfied with the overall quality of this course.`,
+                `How much do you agree with the following statements about this course? - I am satisfied with how the course was facilitated.`,
+                `How much do you agree with the following statements about this course? - The independent online work activities were well-designed to help me meet the learning targets.`,
+                `How much do you agree with the following statements about this course? - I felt a sense of community with the other participants in this course. even though we were meeting virtually.`,
+                `How much do you agree with the following statements about this course? - The strategies I’ve learned in this course will improve my instruction.`,
+                `How much do you agree with the following statements about this course? - The strategies I’ve learned in this course will improve my coaching or supervision of teachers.`,
+                `How much do you agree with the following statements about this course? - The strategies I’ve learned in the course are easy to implement.`,
+                `How much do you agree with the following statements about this course? - I will apply what I have learned in this course to my practice in the next 4-6 weeks.`,
+                `How much do you agree with the following statements about this course? - This course has supported me in being responsive to students' backgrounds, cultures, and points of view.`,
+                # NPS
+                `On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`
+                )
 
 # Write the data for just this year
 course_survey %>%
@@ -103,12 +180,18 @@ readr::write_rds(course_survey, here::here("Dashboards/CourseSurvey/data/course_
 
 options(sm_oauth_token = "BjVjlV9MiVBgfe1XpS2xPS547c6gkAygKWAgm4Vv539-KbFct5lsqyVGRCZun0GDt21lnJrgn9hDvSjF.KybF58vc.P.jdeKJ8A2UEUHnE2.50e0lp.86EmQmy8-y9tm")
 
-session_survey <- surveymonkey::fetch_survey_obj(id = 308115193) %>%
-  surveymonkey::parse_survey() %>%
+surveymonkey_session <- surveymonkey::fetch_survey_obj(id = 308115193) %>%
+  surveymonkey::parse_survey()
+
+session_survey <- surveymonkey_session %>%
   dplyr::mutate(date_created = lubridate::date(date_created)) %>%
   dplyr::mutate(`Select your course.` = dplyr::coalesce(
-    `Select your course.`, `Select your course._2`, `Select your course._3`,
-    `Select your course._4`, `Select your course._5`, `Select your course._6`
+    `Select your course.`, 
+    `Select your course._2`, 
+    `Select your course._3`,
+    `Select your course._4`, 
+    `Select your course._5`, 
+    `Select your course._6`
   )) %>%
   dplyr::mutate(Date = lubridate::ymd(date_created)) %>%
   # Fix this cluttering of names the others result in a bunch of different formats
@@ -199,7 +282,23 @@ session_survey <- surveymonkey::fetch_survey_obj(id = 308115193) %>%
   dplyr::mutate(`Select your site (district, parish, network, or school).` = ifelse(stringr::str_detect(`Select your site (district, parish, network, or school).`, "Rochester"),
     "Rochester City School District",
     as.character(`Select your site (district, parish, network, or school).`)
-  ))
+  )) %>%
+  dplyr::select(Facilitator, # Facilitator
+                Date, # Date
+                `Select your site (district, parish, network, or school).`, # Site
+                `Select your role.`, # Role
+                `Select the content area for today’s professional learning session.`, # Content area
+                `Select your course.`, # Course
+                ###### Quantitative feedback #####
+                `How much do you agree with the following statements about this facilitator today? - They demonstrated  deep knowledge of the content they facilitated.`,
+                `How much do you agree with the following statements about this facilitator today? - They facilitated the content clearly.`,
+                `How much do you agree with the following statements about this facilitator today? - They effectively built a safe learning community.`,
+                `How much do you agree with the following statements about this facilitator today? - They were fully prepared for the session.`,
+                `How much do you agree with the following statements about this facilitator today? - They responded to the group’s needs.`,
+                Facilitation_Feedback, # Qualitative feedback
+                `What went well in today’s session?`,
+                `What could have been better about today’s session?`
+  )
 
 session_survey %>%
   readr::write_rds(., "data/session_survey_21_22data.rds")
@@ -297,46 +396,58 @@ file.edit(here::here("Dashboards/SessionSurvey/app.R"))
 
 options(rsconnect.force.update.apps = TRUE)
 ### Deploy Course Survey ###
-rsconnect::deployApp(appDir = here::here("Dashboards/CourseSurvey"), 
-                     account = "teachinglabhq", 
-                     server = "shinyapps.io", 
-                     appName = "CourseSurvey", 
-                     appId = 4505718, 
-                     launch.browser = function(url) {
-                       message("Deployment completed: ", url)
-                       }, 
-                     lint = FALSE, 
-                     metadata = list(asMultiple = FALSE, 
-                                     asStatic = FALSE, 
-                                     ignoredFiles = "data/.DS_Store"), 
-                     logLevel = "verbose")
+rsconnect::deployApp(
+  appDir = here::here("Dashboards/CourseSurvey"),
+  account = "teachinglabhq",
+  server = "shinyapps.io",
+  appName = "CourseSurvey",
+  appId = 4505718,
+  launch.browser = function(url) {
+    message("Deployment completed: ", url)
+  },
+  lint = FALSE,
+  metadata = list(
+    asMultiple = FALSE,
+    asStatic = FALSE,
+    ignoredFiles = "data/.DS_Store"
+  ),
+  logLevel = "verbose"
+)
 
 ### Deploy Session Survey ###
-rsconnect::deployApp(appDir = here::here("Dashboards/SessionSurvey"), 
-                     account = "teachinglabhq", 
-                     server = "shinyapps.io", 
-                     appName = "SessionSurvey", 
-                     appId = 4505754, 
-                     launch.browser = function(url) {
-                       message("Deployment completed: ", url)
-                     }, 
-                     lint = FALSE, 
-                     metadata = list(asMultiple = FALSE, 
-                                     asStatic = FALSE, 
-                                     ignoredFiles = "data/.DS_Store"), 
-                     logLevel = "verbose")
+rsconnect::deployApp(
+  appDir = here::here("Dashboards/SessionSurvey"),
+  account = "teachinglabhq",
+  server = "shinyapps.io",
+  appName = "SessionSurvey",
+  appId = 4505754,
+  launch.browser = function(url) {
+    message("Deployment completed: ", url)
+  },
+  lint = FALSE,
+  metadata = list(
+    asMultiple = FALSE,
+    asStatic = FALSE,
+    ignoredFiles = "data/.DS_Store"
+  ),
+  logLevel = "verbose"
+)
 
 ### Deploy Personal Facilitator Survey ###
-rsconnect::deployApp(appDir = here::here("Dashboards/PersonalFacilitator"), 
-                     account = "teachinglabhq", 
-                     server = "shinyapps.io", 
-                     appName = "PersonalFacilitator", 
-                     appId = 4489188, 
-                     launch.browser = function(url) {
-                       message("Deployment completed: ", url)
-                     }, 
-                     lint = FALSE, 
-                     metadata = list(asMultiple = FALSE, 
-                                     asStatic = FALSE, 
-                                     ignoredFiles = "data/.DS_Store"), 
-                     logLevel = "verbose")
+rsconnect::deployApp(
+  appDir = here::here("Dashboards/PersonalFacilitator"),
+  account = "teachinglabhq",
+  server = "shinyapps.io",
+  appName = "PersonalFacilitator",
+  appId = 4489188,
+  launch.browser = function(url) {
+    message("Deployment completed: ", url)
+  },
+  lint = FALSE,
+  metadata = list(
+    asMultiple = FALSE,
+    asStatic = FALSE,
+    ignoredFiles = "data/.DS_Store"
+  ),
+  logLevel = "verbose"
+)

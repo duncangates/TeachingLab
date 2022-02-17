@@ -1,4 +1,4 @@
-
+#### Session Survey Dashboard ####
 textGridTemplate <- grid_template(
   default = list(
     areas = rbind(
@@ -345,13 +345,16 @@ textServer <- function(id) {
     
     observeEvent(c(input$refresh1, input$site, input$role, input$content, input$course, input$quote_length, input$date_slider, input$facilitator), {
       quote1$table1 <- quote_viz_data1() %>%
-        slice_sample(n = 10)
+        {
+          if (nrow(.) > 0) slice_sample(., n = ifelse(nrow(.) > 10, 10, nrow(.))) else .
+        }
     })
     
     output$quote_gt1 <- gt::render_gt(
       quote_viz(
         data = quote1$table1, text_col = "Response", viz_type = "gt",
         title = "What additional feedback do you have about their facilitation skills?",
+        print = F,
         width = 60
       ) %>%
         suppressWarnings() %>%
@@ -397,13 +400,16 @@ textServer <- function(id) {
     
     observeEvent(c(input$refresh2, input$site, input$role, input$content, input$course, input$quote_length, input$date_slider, input$facilitator), {
       quote2$table2 <- quote_viz_data2() %>%
-        slice_sample(n = 10)
+        {
+          if (nrow(.) > 0) slice_sample(., n = ifelse(nrow(.) > 10, 10, nrow(.))) else .
+        }
     })
     
     output$quote_gt2 <- gt::render_gt(
       quote_viz(
         data = quote2$table2, text_col = "Response", viz_type = "gt",
         title = "What went well in today’s session?",
+        print = F,
         width = 60
       ) %>%
         suppressWarnings() %>%
@@ -449,13 +455,16 @@ textServer <- function(id) {
     
     observeEvent(c(input$refresh3, input$site, input$role, input$content, input$course, input$quote_length, input$date_slider, input$facilitator), {
       quote3$table3 <- quote_viz_data3() %>%
-        slice_sample(n = 10)
+        {
+          if (nrow(.) > 0) slice_sample(., n = ifelse(nrow(.) > 10, 10, nrow(.))) else .
+        }
     })
 
     output$quote_gt3 <- gt::render_gt(
       quote_viz(
         data = quote3$table3, text_col = "Response", viz_type = "gt",
         title = "What could have been better about today’s session?",
+        print = F,
         width = 60
       ) %>%
         suppressWarnings() %>%

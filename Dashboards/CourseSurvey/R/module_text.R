@@ -1,4 +1,4 @@
-
+### Course Survey Dashboard ###
 textGridTemplate <- shiny.semantic::grid_template(
   default = list(
     areas = rbind(
@@ -552,14 +552,17 @@ textServer <- function(id, in_site) {
     
     observeEvent(c(input$refresh1, input$site, input$role, input$content, input$course, input$quote_length, input$date_slider), {
       quote1$table1 <- quote_viz_data1() %>%
-        slice_sample(n = 10)
+        {
+          if (nrow(.) > 0) slice_sample(., n = ifelse(nrow(.) > 10, 10, nrow(.))) else .
+        }
     })
 
     output$quote_gt1 <- gt::render_gt(
       quote_viz(
         data = quote1$table1, text_col = "Response", viz_type = "gt",
         title = "Overall, what went well in the course?",
-        width = 50
+        width = 50,
+        print = F
       ) %>%
         suppressWarnings() %>%
         suppressMessages()
@@ -569,14 +572,17 @@ textServer <- function(id, in_site) {
     
     observeEvent(c(input$refresh2, input$site, input$role, input$content, input$course, input$quote_length, input$date_slider), {
       quote2$table2 <- quote_viz_data2() %>%
-        slice_sample(n = 10)
+        {
+          if (nrow(.) > 0) slice_sample(., n = ifelse(nrow(.) > 10, 10, nrow(.))) else .
+        }
     })
 
     output$quote_gt2 <- gt::render_gt(
       quote_viz(
         data = quote2$table2, text_col = "Response", viz_type = "gt",
         title = "Overall, what could have been better in this course?",
-        width = 50
+        width = 50,
+        print = F
       ) %>%
         suppressWarnings() %>%
         suppressMessages()
@@ -586,14 +592,17 @@ textServer <- function(id, in_site) {
     
     observeEvent(c(input$refresh3, input$site, input$role, input$content, input$course, input$quote_length, input$date_slider), {
       quote3$table3 <- quote_viz_data3() %>%
-        slice_sample(n = 10)
+        {
+          if (nrow(.) > 0) slice_sample(., n = ifelse(nrow(.) > 10, 10, nrow(.))) else .
+        }
     })
 
     output$quote_gt3 <- gt::render_gt(
       quote_viz(
         data = quote3$table3, text_col = "Response", viz_type = "gt",
         title = "What is the learning from this course that you are most excited about trying out?",
-        width = 50
+        width = 50,
+        print = F
       ) %>%
         suppressWarnings() %>%
         suppressMessages()
@@ -603,14 +612,17 @@ textServer <- function(id, in_site) {
     
     observeEvent(c(input$refresh4, input$site, input$role, input$content, input$course, input$quote_length, input$date_slider), {
       quote4$table4 <- quote_viz_data4() %>%
-        slice_sample(n = 10)
+        {
+          if (nrow(.) > 0) slice_sample(., n = ifelse(nrow(.) > 10, 10, nrow(.))) else .
+        }
     })
 
     output$quote_gt4 <- gt::render_gt(
       quote_viz(
         data = quote4$table4, text_col = "Response", viz_type = "gt",
         title = "Which activities best supported your learning in this course?",
-        width = 50
+        width = 50,
+        print = F
       ) %>%
         suppressWarnings() %>%
         suppressMessages()
@@ -620,14 +632,17 @@ textServer <- function(id, in_site) {
     
     observeEvent(c(input$refresh5, input$site, input$role, input$content, input$course, input$quote_length, input$date_slider), {
       quote5$table5 <- quote_viz_data5() %>%
-        slice_sample(n = 10)
+        {
+          if (nrow(.) > 0) slice_sample(., n = ifelse(nrow(.) > 10, 10, nrow(.))) else .
+        }
     })
 
     output$quote_gt5 <- gt::render_gt(
       quote_viz(
         data = quote5$table5, text_col = "Response", viz_type = "gt",
         title = "Feel free to leave us any additional comments, concerns, or questions.",
-        width = 50
+        width = 50,
+        print = F
       ) %>%
         suppressWarnings() %>%
         suppressMessages()

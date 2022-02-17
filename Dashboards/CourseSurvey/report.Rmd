@@ -146,11 +146,16 @@ if (nrow(as_tibble(params$quote1)) >= 1) {
   quote_viz(
         data = as_tibble(params$quote1), text_col = "Response", viz_type = "gt",
         title = "Overall, what went well in the course?",
-        width = 40, align = "left"
+        width = 40, align = "left",
+          print = F
       ) %>%
   gtsave("img1.png", path = tempdir())
 } else {
-  tibble("There were no comments to display here.") %>% quote_viz(title = "Nothing", width = 40) %>% gtsave("nothing_image.png", path = tempdir())
+  tibble("There were no comments to display here.") %>% 
+    quote_viz(title = "Nothing", 
+              width = 40,
+              print = F) %>% 
+    gtsave("nothing_image.png", path = tempdir())
 }
 ```
 
@@ -161,11 +166,16 @@ if (nrow(as_tibble(params$quote2)) >= 1) {
   quote_viz(
         data = as_tibble(params$quote2), text_col = "Response", viz_type = "gt",
         title = "Overall, what could have been better in this course?",
-        width = 40, align = "left"
+        width = 40, align = "left",
+          print = F
       ) %>%
   gtsave("img2.png", path = tempdir())
 } else {
-  tibble("There were no comments to display here.") %>% quote_viz(title = "Nothing", width = 40) %>% gtsave("nothing_image.png", path = tempdir())
+  tibble("There were no comments to display here.") %>% 
+    quote_viz(title = "Nothing", 
+              width = 40,
+              print = F) %>% 
+    gtsave("nothing_image.png", path = tempdir())
 }
 ```
 
@@ -176,11 +186,16 @@ if (nrow(as_tibble(params$quote3)) >= 1) {
   quote_viz(
         data = as_tibble(params$quote3), text_col = "Response", viz_type = "gt",
         title = "What is the learning from this course that you are most excited about trying out?",
-        width = 40, align = "left"
+        width = 40, align = "left",
+        print = F
       ) %>%
   gtsave("img3.png", path = tempdir())
 } else {
-  tibble("There were no comments to display here.") %>% quote_viz(title = "Nothing", width = 40) %>% gtsave("nothing_image.png", path = tempdir())
+  tibble("There were no comments to display here.") %>% 
+    quote_viz(title = "Nothing", 
+              width = 40,
+              print = F) %>% 
+    gtsave("nothing_image.png", path = tempdir())
 }
 ```
 
@@ -191,11 +206,16 @@ if (nrow(as_tibble(params$quote4)) >= 1) {
   quote_viz(
         data = as_tibble(params$quote4), text_col = "Response", viz_type = "gt",
         title = "Which activities best supported your learning in this course?",
-        width = 40, align = "left"
+        width = 40, align = "left",
+        print = F
       ) %>%
   gtsave("img4.png", path = tempdir())
 } else {
-  tibble("There were no comments to display here.") %>% quote_viz(title = "Nothing", width = 40) %>% gtsave("nothing_image.png", path = tempdir())
+  tibble("There were no comments to display here.") %>% 
+    quote_viz(title = "Nothing", 
+              width = 40,
+              print = F) %>% 
+    gtsave("nothing_image.png", path = tempdir())
 }
 ```
 
@@ -207,11 +227,16 @@ if (nrow(as_tibble(params$quote5)) >= 1) {
   quote_viz(
         data = as_tibble(params$quote5), text_col = "Response", viz_type = "gt",
         title = "Feel free to leave us any additional comments, concerns, or questions.",
-        width = 40, align = "left"
+        width = 40, align = "left",
+        print = F
       ) %>%
   gtsave("img5.png", path = tempdir())
 } else {
-  tibble("There were no comments to display here.") %>% quote_viz(title = "Nothing", width = 40) %>% gtsave("nothing_image.png", path = tempdir())
+  tibble("There were no comments to display here.") %>% 
+    quote_viz(title = "Nothing", 
+              width = 40,
+              print = F) %>% 
+    gtsave("nothing_image.png", path = tempdir())
 }
 ```
 

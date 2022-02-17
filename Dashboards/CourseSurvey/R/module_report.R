@@ -1,3 +1,4 @@
+#### Course Survey Dashboard ####
 uiReport <- function(id, label = "Counter") {
   ns <- NS(id)
   shiny::tagList(
@@ -17,7 +18,7 @@ uiReport <- function(id, label = "Counter") {
               purrr::prepend("All Sites"),
             multiple = T,
             selected = "All Sites",
-            options = list(plugins= list('remove_button'))
+            options = list(plugins = list("remove_button"))
           ),
           icon = shiny.semantic::icon("location arrow")
         ),
@@ -34,7 +35,7 @@ uiReport <- function(id, label = "Counter") {
               purrr::prepend("All Roles"),
             multiple = T,
             selected = "All Roles",
-            options = list(plugins= list('remove_button'))
+            options = list(plugins = list("remove_button"))
           ),
           icon = shiny.semantic::icon("user")
         ),
@@ -51,7 +52,7 @@ uiReport <- function(id, label = "Counter") {
               purrr::prepend("All Content Areas"),
             multiple = T,
             selected = "All Content Areas",
-            options = list(plugins= list('remove_button'))
+            options = list(plugins = list("remove_button"))
           ),
           icon = shiny.semantic::icon("edit")
         ),
@@ -68,7 +69,7 @@ uiReport <- function(id, label = "Counter") {
               purrr::prepend("All Courses"),
             multiple = T,
             selected = "All Courses",
-            options = list(plugins= list('remove_button'))
+            options = list(plugins = list("remove_button"))
           ),
           icon = shiny.semantic::icon("clone")
         ),
@@ -99,9 +100,11 @@ uiReport <- function(id, label = "Counter") {
             br(),
             h3("Utilize the filters in the sidebar to download your custom report,"),
             h3(" OR click one of the following buttons to download one of the following most recent sessions found by a unique combination of site and course, and then just click download!"),
-            selectizeInput(ns("recent_sessions"), choices = recent_choices_final$choice, 
-                           label = NULL, selected = NULL, multiple = T,
-                           options = list(plugins= list('remove_button'))),
+            selectizeInput(ns("recent_sessions"),
+              choices = recent_choices_final$choice,
+              label = NULL, selected = NULL, multiple = T,
+              options = list(plugins = list("remove_button"))
+            ),
             br(),
             br(),
             br(),
@@ -115,20 +118,26 @@ uiReport <- function(id, label = "Counter") {
             br(),
             br(),
             br(),
-            downloadButton(ns("download_report1"), 
-                           label = tagList(tags$span("Download Report PDF"),
-                                           tags$img(src = "report_example_pdf.png", align = "center")), 
-                           icon = shiny::icon("file-download")) %>%
+            downloadButton(ns("download_report1"),
+              label = tagList(
+                tags$span("Download Report PDF"),
+                tags$img(src = "report_example_pdf.png", align = "center")
+              ),
+              icon = shiny::icon("file-download")
+            ) %>%
               withSpinner(),
             br(),
             br(),
             br(),
             br(),
             br(),
-            downloadButton(ns("download_report2"), 
-                           label = tagList(tags$span("Download Report DOCX"),
-                                           tags$img(src = "report_example_word.png", align = "center")), 
-                           icon = shiny::icon("file-download")) %>%
+            downloadButton(ns("download_report2"),
+              label = tagList(
+                tags$span("Download Report DOCX"),
+                tags$img(src = "report_example_word.png", align = "center")
+              ),
+              icon = shiny::icon("file-download")
+            ) %>%
               withSpinner()
           ),
           div(
@@ -136,10 +145,13 @@ uiReport <- function(id, label = "Counter") {
             align = "center",
             br(),
             br(),
-            downloadButton(ns("download_csv"), 
-                           label = tagList(tags$span("  Download a CSV of Raw Data"),
-                                           tags$img(src = "fake_raw.png", align = "center")), 
-                           icon = shiny::icon("save"))
+            downloadButton(ns("download_csv"),
+              label = tagList(
+                tags$span("  Download a CSV of Raw Data"),
+                tags$img(src = "fake_raw.png", align = "center")
+              ),
+              icon = shiny::icon("save")
+            )
           )
         )
       )
@@ -150,38 +162,34 @@ uiReport <- function(id, label = "Counter") {
 reportServer <- function(id, in_site) {
   ns <- NS(id)
   moduleServer(id, function(input, output, session) {
-    
+
     #### Applying Recent Groupings Logic ####
-    
+
     course_survey_recent <- reactive({
-      
       if (!is.null(input$recent_sessions)) {
-        
+
         # Get previously created choices dataframe for filtering by id
-        chosen <- recent_choices %>% 
+        chosen <- recent_choices %>%
           inner_join((recent_choices_final %>%
-                      dplyr::filter(choice %in% input$recent_sessions)), by = "id")
-      
+            dplyr::filter(choice %in% input$recent_sessions)), by = "id")
+
         course_survey <- course_survey %>%
           dplyr::filter(`Select your site (district, parish, network, or school).` %in% chosen$`Select your site (district, parish, network, or school).` &
-                          `Select your course.` %in% chosen$`Select your course.`)
-        
+            `Select your course.` %in% chosen$`Select your course.`)
       } else {
         course_survey
       }
-      
     })
 
     #### TIME SERIES INPUTS ####
     data_plot_ts <- reactive({
-      
       validate(
         need(!is.null(input$site), "Please select at least one site"),
         need(!is.null(input$role), "Please select at least one role"),
         need(!is.null(input$content), "Please select at least one content area"),
         need(!is.null(input$course), "Please select at least one course")
       )
-      
+
       data_plot <- course_survey_recent() %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
         {
@@ -227,31 +235,33 @@ reportServer <- function(id, in_site) {
             answer %in% c("Agree", "Strongly agree") ~ "Agree/Strongly Agree",
             answer %in% c("Neither agree nor disagree", "Disagree", "Strongly disagree") ~ "Neither/Disagree/Strongly Disagree"
           ),
-          date_group = case_when(as.integer(diff(range(as.Date(input$date_slider)))) >= 30 ~ paste0(lubridate::month(date_created, label = T, abbr = F), ", ", year(date_created)),
-                                 as.integer(diff(range(as.Date(input$date_slider)))) >= 14 & as.integer(diff(range(as.Date(input$date_slider)))) < 30 ~ paste0(year(date_created), lubridate::week(date_created)),
-                                 as.integer(diff(range(as.Date(input$date_slider)))) < 14 ~ paste0(lubridate::day(date_created)))
+          date_group = case_when(
+            as.integer(diff(range(as.Date(input$date_slider)))) >= 30 ~ paste0(lubridate::month(date_created, label = T, abbr = F), ", ", year(date_created)),
+            as.integer(diff(range(as.Date(input$date_slider)))) >= 14 & as.integer(diff(range(as.Date(input$date_slider)))) < 30 ~ paste0(year(date_created), lubridate::week(date_created)),
+            as.integer(diff(range(as.Date(input$date_slider)))) < 14 ~ paste0(lubridate::day(date_created))
+          )
         ) %>%
         ungroup() %>%
         group_by(date_group, question) %>%
         mutate(Percent = `Number Agree/Disagree` / sum(`Number Agree/Disagree`) * 100) %>%
         filter(Rating == "Agree/Strongly Agree") %>%
         group_by(date_group, Rating, question) %>%
-        summarise(Percent = round(sum(Percent), 2),
-                  date_created = date_created)
-
+        summarise(
+          Percent = round(sum(Percent), 2),
+          date_created = date_created
+        )
     })
 
     #### OVERALL AGREE PLOT ####
 
     data_plot_agree <- reactive({
-      
       validate(
         need(!is.null(input$site), "Please select at least one site"),
         need(!is.null(input$role), "Please select at least one role"),
         need(!is.null(input$content), "Please select at least one content area"),
         need(!is.null(input$course), "Please select at least one course")
       )
-      
+
       agree_plot <- course_survey_recent() %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
         {
@@ -293,10 +303,10 @@ reportServer <- function(id, in_site) {
           Response = Response,
           Percent = n / sum(n) * 100
         )
-      
+
       agree_plot
     })
-    
+
     #### Agree plot n size ####
     agree_plot_n <- reactive({
       data_n <- course_survey_recent() %>%
@@ -319,7 +329,6 @@ reportServer <- function(id, in_site) {
     #### QUOTES 1 ####
 
     quote_viz_data1 <- reactive({
-
       validate(
         need(!is.null(input$role), "Please select at least one role"),
         need(!is.null(input$site), "Please select at least one site"),
@@ -346,13 +355,14 @@ reportServer <- function(id, in_site) {
         drop_na() %>%
         filter(Response %!in% na_df) %>%
         select(Response) %>%
-        slice_sample(n = 10)
+        {
+          if (nrow(.) > 0) slice_sample(., n = ifelse(nrow(.) > 10, 10, nrow(.))) else .
+        }
     })
 
     #### QUOTES 2 ####
 
     quote_viz_data2 <- reactive({
-
       validate(
         need(!is.null(input$role), "Please select at least one role"),
         need(!is.null(input$site), "Please select at least one site"),
@@ -379,13 +389,14 @@ reportServer <- function(id, in_site) {
         drop_na() %>%
         filter(Response %!in% na_df) %>%
         select(Response) %>%
-        slice_sample(n = 10)
+        {
+          if (nrow(.) > 0) slice_sample(., n = ifelse(nrow(.) > 10, 10, nrow(.))) else .
+        }
     })
 
     #### QUOTES 3 ####
 
     quote_viz_data3 <- reactive({
-
       validate(
         need(!is.null(input$role), "Please select at least one role"),
         need(!is.null(input$site), "Please select at least one site"),
@@ -412,13 +423,15 @@ reportServer <- function(id, in_site) {
         drop_na() %>%
         filter(Response %!in% na_df) %>%
         select(Response) %>%
-        slice_sample(n = 10)
-      
+        {
+          if (nrow(.) > 0) slice_sample(., n = ifelse(nrow(.) > 10, 10, nrow(.))) else .
+        }
+
       quote_reactive3
     })
-    
+
     #### QUOTES 4 ####
-    
+
     quote_viz_data4 <- reactive({
       validate(
         need(!is.null(input$site), "Please select at least one site"),
@@ -445,13 +458,15 @@ reportServer <- function(id, in_site) {
         drop_na() %>%
         filter(Response %!in% na_df) %>%
         select(Response) %>%
-        slice_sample(n = 10)
-      
+        {
+          if (nrow(.) > 0) slice_sample(., n = ifelse(nrow(.) > 10, 10, nrow(.))) else .
+        }
+
       quote_reactive4
     })
-    
+
     #### QUOTES 5 ####
-    
+
     quote_viz_data5 <- reactive({
       validate(
         need(!is.null(input$site), "Please select at least one site"),
@@ -478,10 +493,25 @@ reportServer <- function(id, in_site) {
         drop_na() %>%
         filter(Response %!in% na_df) %>%
         select(Response) %>%
-        slice_sample(n = 10)
-      
+        {
+          if (nrow(.) > 0) slice_sample(., n = ifelse(nrow(.) > 10, 10, nrow(.))) else .
+        }
+
       quote_reactive5
     })
+
+    #### Error handling for either of the reports, or the csv
+    # observeEvent(c(input$site, input$role, input$content, input$course, input$date_created), {
+    #   if (nrow(download_reactive()) == 0) {
+    #     shinyjs::hide("download_report1")
+    #     shinyjs::hide("download_report2")
+    #     shinyjs::hide("download_csv")
+    #   } else {
+    #     shinyjs::show("download_report1")
+    #     shinyjs::show("download_report2")
+    #     shinyjs::show("download_csv")
+    #   }
+    # })
 
 
     #### GENERATE THE PDF REPORT ####
@@ -490,167 +520,160 @@ reportServer <- function(id, in_site) {
       # For HTML output, change this to "report.html"
       filename = "report.pdf",
       content = function(file) {
-        # Copy the report file to a temporary directory before processing it, in
-        # case we don't have write permissions to the current working dir (which
-        # can happen when deployed).
-        tempReport <- file.path(tempdir(), "report.Rmd")
-        file.copy("report.Rmd", tempReport, overwrite = TRUE)
-        tempFont <- file.path(tempdir(), "calibri.otf")
-        file.copy(from = "calibri.otf",
-                  to = tempFont,
-                  overwrite = TRUE)
+        shiny.semantic::with_progress(
+          message = "Downloading, please wait! This process generally takes 10-20 seconds.",
+          {
+            # Copy the report file to a temporary directory before processing it, in
+            # case we don't have write permissions to the current working dir (which
+            # can happen when deployed).
+            tempReport <- file.path(tempdir(), "report.Rmd")
+            file.copy("report.Rmd", tempReport, overwrite = TRUE)
+            tempFont <- file.path(tempdir(), "calibri.otf")
+            file.copy(
+              from = "calibri.otf",
+              to = tempFont,
+              overwrite = TRUE
+            )
 
-        # Set up parameters to pass to Rmd document
-        params <- list(plot_ts = data_plot_ts(),
-                       plot_agree = data_plot_agree(),
-                       agree_plot_n = agree_plot_n(),
-                       quote1 = quote_viz_data1(),
-                       quote2 = quote_viz_data2(),
-                       quote3 = quote_viz_data3(),
-                       quote4 = quote_viz_data4(),
-                       quote5 = quote_viz_data5(),
-                       subtitle = course_survey_recent() %>% 
-                         select(`Select your course.`, `Select your site (district, parish, network, or school).`) %>% 
-                         transmute(course_site = paste0(`Select your course.`, ", ", `Select your site (district, parish, network, or school).`)) %>%
-                         distinct(course_site) %>%
-                         as_vector() %>%
-                         paste(collapse = ", "))
+            # Set up parameters to pass to Rmd document
+            params <- list(
+              plot_ts = data_plot_ts(),
+              plot_agree = data_plot_agree(),
+              agree_plot_n = agree_plot_n(),
+              quote1 = quote_viz_data1(),
+              quote2 = quote_viz_data2(),
+              quote3 = quote_viz_data3(),
+              quote4 = quote_viz_data4(),
+              quote5 = quote_viz_data5(),
+              subtitle = course_survey_recent() %>%
+                dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
+                {
+                  if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
+                } %>%
+                {
+                  if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
+                } %>%
+                {
+                  if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today's professional learning session.` %in% input$content) else .
+                } %>%
+                {
+                  if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
+                } %>%
+                select(`Select your course.`, `Select your site (district, parish, network, or school).`) %>%
+                transmute(course_site = paste0(`Select your course.`, ", ", `Select your site (district, parish, network, or school).`)) %>%
+                distinct(course_site) %>%
+                as_vector() %>%
+                paste(collapse = ", ")
+            )
 
-        # Knit the document, passing in the `params` list, and eval it in a
-        # child of the global environment (this isolates the code in the document
-        # from the code in this app).
-        rmarkdown::render(tempReport,
-                          output_file = file,
-                          params = params,
-                          envir = new.env(parent = globalenv())
+            # Knit the document, passing in the `params` list, and eval it in a
+            # child of the global environment (this isolates the code in the document
+            # from the code in this app).
+            rmarkdown::render(tempReport,
+              output_file = file,
+              params = params,
+              envir = new.env(parent = globalenv())
+            )
+          }
         )
       }
     )
-    
-    # observe({
-    #   course_survey_recent() %>% 
-    #     select(`Select your course.`, `Select your site (district, parish, network, or school).`) %>% 
-    #     transmute(course_site = paste0(`Select your course.`, ", ", `Select your site (district, parish, network, or school).`)) %>%
-    #     distinct(course_site) %>%
-    #     # {
-    #     #   if (length(course_site) > 3) dplyr::slice(., 1:3) %>% bind_rows(tibble::tibble(course_site = "and more")) else .
-    #     # } %>%
-    #     as_vector() %>%
-    #     paste(collapse = ", ") %>%
-    #     print()
-    # })
-    
+
     #### GENERATE THE DOCX REPORT ####
-    
+
     output$download_report2 <- downloadHandler(
       # For HTML output, change this to "report.html"
       filename = "report.docx",
       content = function(file) {
-        # Copy the report file to a temporary directory before processing it, in
-        # case we don't have write permissions to the current working dir (which
-        # can happen when deployed).
-        tempReport <- file.path(tempdir(), "report_word.Rmd")
-        tempFont <- file.path(tempdir(), "calibri.otf")
-        file.copy("report_word.Rmd", tempReport, overwrite = TRUE)
-        file.copy(from = "calibri.otf",
-                  to = tempFont,
-                  overwrite = TRUE)
-        
-        # Set up parameters to pass to Rmd document
-        params <- list(plot_ts = data_plot_ts(),
-                       plot_agree = data_plot_agree(),
-                       agree_plot_n = agree_plot_n(),
-                       quote1 = quote_viz_data1(),
-                       quote2 = quote_viz_data2(),
-                       quote3 = quote_viz_data3(),
-                       quote4 = quote_viz_data4(),
-                       quote5 = quote_viz_data5(),
-                       subtitle = course_survey_recent() %>% 
-                         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
-                         {
-                           if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-                         } %>%
-                         {
-                           if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-                         } %>%
-                         {
-                           if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today's professional learning session.` %in% input$content) else .
-                         } %>%
-                         {
-                           if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-                         } %>%
-                         select(`Select your course.`, `Select your site (district, parish, network, or school).`) %>% 
-                         transmute(course_site = paste0(`Select your course.`, ", ", `Select your site (district, parish, network, or school).`)) %>%
-                         distinct(course_site) %>%
-                         as_vector() %>%
-                         paste(collapse = ", "))
-        
-        # Knit the document, passing in the `params` list, and eval it in a
-        # child of the global environment (this isolates the code in the document
-        # from the code in this app).
-        rmarkdown::render(tempReport,
-                          output_file = file,
-                          params = params,
-                          envir = new.env(parent = globalenv())
+        shiny.semantic::with_progress(
+          message = "Downloading, please wait! This process generally takes 10-20 seconds.",
+          {
+            # Copy the report file to a temporary directory before processing it, in
+            # case we don't have write permissions to the current working dir (which
+            # can happen when deployed).
+            tempReport <- file.path(tempdir(), "report_word.Rmd")
+            tempFont <- file.path(tempdir(), "calibri.otf")
+            file.copy("report_word.Rmd", tempReport, overwrite = TRUE)
+            file.copy(
+              from = "calibri.otf",
+              to = tempFont,
+              overwrite = TRUE
+            )
+
+            # Set up parameters to pass to Rmd document
+            params <- list(
+              plot_ts = data_plot_ts(),
+              plot_agree = data_plot_agree(),
+              agree_plot_n = agree_plot_n(),
+              quote1 = quote_viz_data1(),
+              quote2 = quote_viz_data2(),
+              quote3 = quote_viz_data3(),
+              quote4 = quote_viz_data4(),
+              quote5 = quote_viz_data5(),
+              subtitle = course_survey_recent() %>%
+                dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
+                {
+                  if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
+                } %>%
+                {
+                  if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
+                } %>%
+                {
+                  if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today's professional learning session.` %in% input$content) else .
+                } %>%
+                {
+                  if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
+                } %>%
+                select(`Select your course.`, `Select your site (district, parish, network, or school).`) %>%
+                transmute(course_site = paste0(`Select your course.`, ", ", `Select your site (district, parish, network, or school).`)) %>%
+                distinct(course_site) %>%
+                as_vector() %>%
+                paste(collapse = ", ")
+            )
+
+            # Knit the document, passing in the `params` list, and eval it in a
+            # child of the global environment (this isolates the code in the document
+            # from the code in this app).
+            rmarkdown::render(tempReport,
+              output_file = file,
+              params = params,
+              envir = new.env(parent = globalenv())
+            )
+          }
         )
       }
     )
-    
+
+    ### Generate csv download data ###
     download_reactive <- reactive({
-      
-      if (!is.null(input$recent_sessions)) {
-        df <- course_survey_recent() %>%
-          dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
-          {
-            if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-          } %>%
-          {
-            if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-          } %>%
-          {
-            if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today's professional learning session.` %in% input$content) else .
-          } %>%
-          {
-            if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-          }
-      } else {
-        df <- course_survey_recent()
-      }
-      
-      df
+      df <- course_survey_recent() %>%
+        dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
+        {
+          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
+        } %>%
+        {
+          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
+        } %>%
+        {
+          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today's professional learning session.` %in% input$content) else .
+        } %>%
+        {
+          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
+        }
     })
-    
+
     output$download_csv <- downloadHandler(
       filename = function() {
-        paste0("course_survey_data-", Sys.Date(), ".csv", sep="")
+        paste0("course_survey_data-", Sys.Date(), ".csv", sep = "")
       },
       content = function(file) {
-        write.csv(download_reactive(), file)
+        shiny.semantic::with_progress(
+          message = "Downloading, please wait! This process generally takes 10-20 seconds.",
+          {
+            write.csv(download_reactive(), file)
+          }
+        )
       }
     )
-    
-    # observeEvent(
-    #   session$userData$settings$in_site(), 
-    #   {
-    #     if (!is.na(session$userData$settings$in_site())) 
-    #       updateSelectizeInput(
-    #         session, 
-    #         "site", 
-    #         selected=session$userData$settings$in_site()
-    #       )
-    #   }
-    # )
-    
-    # return(
-    #   list(
-    #     in_site <- reactive({input$site}),
-    #     in_course <- reactive({input$course}),
-    #     in_role <- reactive({input$role}),
-    #     in_date_slider <- reactive({input$date_slider}),
-    #     in_content <- reactive({input$content})
-    #   )
-    # )
-    
-
   })
 }

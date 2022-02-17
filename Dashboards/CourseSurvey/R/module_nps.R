@@ -1,3 +1,4 @@
+#### Course Survey Dashboard ####
 uiNPS <- function(id, label = "Counter") {
   ns <- NS(id)
   shiny::tagList(

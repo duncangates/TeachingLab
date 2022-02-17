@@ -77,13 +77,6 @@ server <- function(input, output, session) {
   textServer("p2")
   reportServer("p3")
   
-  # rv_facilitator
-  # rv_content
-  # rv_course
-  # rv_site
-  # rv_role
-  # rv_date_slider
-  
 }
 
 shinyApp(ui, server)

@@ -371,6 +371,8 @@ gt_arrow <- function(data, colors = c("#800000", "#98AFC7"), column_one, column_
 #' @export
 find_highlight <- function(string, n = 3, print = F) {
   stop_words <- tidytext::stop_words
+  
+  custom <- 
 
   highlight <- string %>%
     tibble::as_tibble_col(column_name = "txt") %>%
@@ -404,17 +406,17 @@ find_highlight <- function(string, n = 3, print = F) {
 #' @return a vector of strings
 #'
 #' @export
-highlight_fun <- function(data, highlight) {
+highlight_fun <- function(data, highlight = TeachingLab::find_highlight(data)) {
   # If the word is not plural then add highlighting for the plural version of the same word, 
   plural_highlights <- unlist(
-    purrr::map(highlight, ~ if (stringr::str_sub(.x, -1) != "s") {
+    purrr::map(highlight, ~ if (stringr::str_sub(.x, -1, -1) != "s") {
       paste0(.x, "s")
     })
   )
   # Also do the inverse
   not_plural_highlights <- unlist(
-    purrr::map(highlight, ~ if (stringr::str_sub(.x, -1) == "s") {
-      str_remove(.x, "s$")
+    purrr::map(highlight, ~ if (stringr::str_sub(.x, -1, -1) == "s") {
+      stringr::str_remove(.x, "s$")
     })
   )
   # If the word is not capitalized then add highlighting for the capitalized version of the same word, 
@@ -524,7 +526,8 @@ quote_viz <- function(data,
 
     # If not custom highlighting, find a specified number of words to highlight, n = 3 by default
     if (is.null(custom_highlight)) {
-      highlight <- purrr::map_dfc(selecting_cols, ~ TeachingLab::find_highlight(string = data %>% pull(.x), n = n)) %>%
+      highlight <- purrr::map_dfc(selecting_cols, ~ TeachingLab::find_highlight(string = data %>% 
+                                                                                  dplyr::pull(.x), n = n)) %>%
         suppressMessages()
       highlight <- purrr::map_chr(1:length(highlight), ~ paste0("highlight", .x)) %>%
         setNames(highlight, nm = .)

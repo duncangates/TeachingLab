@@ -2,12 +2,16 @@
 % Please edit documentation in R/dashboard_functions.R
 \name{session_quotes}
 \alias{session_quotes}
-\title{Dashboard Quotes}
+\title{Dashboard End of Session Quotes}
 \usage{
-session_quotes(data)
+session_quotes(data = TeachingLab::get_session_survey(), size = 10, n = 3)
 }
 \arguments{
 \item{data}{the data to be input}
+
+\item{size}{the number of rows of quotes to return}
+
+\item{n}{}
 }
 \value{
 Returns a gt
