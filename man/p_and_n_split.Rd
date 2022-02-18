@@ -9,18 +9,22 @@ p_and_n_split(
   p1_2_range = c(70:100),
   p2_1_range = c(80:95),
   p2_2_range = c(85:100),
-  n1_range = rnorm(1, mean = 80, sd = 10),
-  n2_range = rnorm(1, mean = 50, sd = 10)
+  n1_range = stats::rnorm(1, mean = 80, sd = 10),
+  n2_range = stats::rnorm(1, mean = 50, sd = 10)
 )
 }
 \arguments{
+\item{p1_1_range}{the lower range of values to sample for p1}
+
+\item{p1_2_range}{the upper range of values to sample for p1}
+
+\item{p2_1_range}{the lower range of values to sample for p2}
+
+\item{p2_2_range}{the upper range of values to sample for p2}
+
 \item{n1_range}{the range of values to sample for n1}
 
 \item{n2_range}{the range of values to sample for n2}
-
-\item{p1_range}{the range of values to sample for p1}
-
-\item{p2_range}{the range of values to sample for p2}
 }
 \value{
 a randomised dataset

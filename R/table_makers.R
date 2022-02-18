@@ -440,7 +440,7 @@ highlight_fun <- function(data, highlight = TeachingLab::find_highlight(data)) {
     unique()
 
   # Create a vector for replacement with format <html>new_name</html> = old_name
-  replacement_vector <- setNames(
+  replacement_vector <- stats::setNames(
     paste0(
       "<span style='color:#04abeb; font-weight:bold;'>",
       highlight,
@@ -530,7 +530,7 @@ quote_viz <- function(data,
                                                                                   dplyr::pull(.x), n = n)) %>%
         suppressMessages()
       highlight <- purrr::map_chr(1:length(highlight), ~ paste0("highlight", .x)) %>%
-        setNames(highlight, nm = .)
+        stats::setNames(highlight, nm = .)
     } else if (is.character(custom_highlight)) {
       highlight <- custom_highlight # Custom highlighting
     }
@@ -565,6 +565,9 @@ quote_viz <- function(data,
     # Make gt table with all HTML Formatting
     data_final %>%
       gt::gt() %>%
+      {
+        if (!is.null(title)) gt::tab_header(data = ., title = gt::html(title)) else .
+      } %>%
       gt::fmt_markdown(columns = gt::everything()) %>%
       gt::cols_align(align = align) %>%
       gt::tab_style(
@@ -766,4 +769,91 @@ gt_know_assess <- function(data, know_assess) {
 
   gt_table %>%
     gt::gtsave(filename = glue::glue("{know_assess}.png"), path = here::here("images/report_images"))
+}
+
+
+#' @title Dashboard End of Session Quotes
+#' @description Creates a gt table for qualitative responses to the end of session survey
+#' @param data the data to be input
+#' @param n The number of words to highlight
+#' @param size the number of rows of quotes to return
+#' @param all Whether or not to return ALL data
+#' @param include_columns A vector of additional columns to include in table
+#' @param save NULL by default, a save path to make inside current package directory
+#' @return Returns a gt, unless save in which case it will return a saved file with gtsave
+#' @export
+session_quotes <- function(data = TeachingLab::get_session_survey(),
+                           size = 10,
+                           n = 3,
+                           all = F,
+                           save = NULL,
+                           include_columns = NULL) {
+  quotes_gt <- data %>%
+    dplyr::select(c("What is one thing from today's learning that you plan to take back to your classroom?",
+                    "What went well in today’s session?",
+                    "What could have been better about today’s session?"),
+                  include_columns) %>%
+    dplyr::mutate(dplyr::across(c(1:5), ~ replace(.x, .x %in% TeachingLab::na_df, NA))) %>%
+    janitor::remove_empty("rows") %>%
+    dplyr::mutate(dplyr::across(c(1:5), ~ tidyr::replace_na(.x, "No Response"))) %>%
+    {
+      if (all == F) purrr::map(., ~ sample(.x, size = size)) else .
+    } %>%
+    tibble::as_tibble() %>%
+    stats::setNames(c("What is one thing from today's learning that you plan to take back to your classroom?",
+               "What went well in today’s session?",
+               "What could have been better about today’s session?",
+               include_columns)) %>%
+    TeachingLab::quote_viz(text_col = colnames(.), n = n)
+  if (is.null(save)) {
+    quotes_gt
+  } else {
+    gt::gtsave(data = quotes_gt,
+               filename = here::here(paste0(save)))
+  }
+}
+
+#' @title Dashboard End of Course Quotes
+#' @description Creates a gt table for qualitative responses of the end of course survey
+#' @param data the data to be input
+#' @param n The number of words to highlight
+#' @param size the number of rows of quotes to return
+#' @param all F by default, whether or not to return ALL data
+#' @param include_columns A vector of additional columns to include in table
+#' @param save NULL by default, a save path to make inside current package directory
+#' @return Returns a gt, unless save in which case it will return a saved file with gtsave
+#' @export
+course_quotes <- function(data = TeachingLab::get_course_survey(), 
+                          size = 10,
+                          n = 3,
+                          all = F,
+                          save = NULL,
+                          include_columns = NULL) {
+  quotes_gt <- data %>%
+    dplyr::select(c("Overall, what went well in this course?", # Qualitative feedback
+                    "Overall, what could have been better in this course?", # Qualitative feedback
+                    "What is the learning from this course that you are most excited about trying out?", # Qualitative feedback
+                    "Which activities best supported your learning in this course?", # Qualitative feedback
+                    "Feel free to leave us any additional comments, concerns, or questions."),
+                  include_columns) %>%
+    dplyr::mutate(dplyr::across(c(1:5), ~ replace(.x, .x %in% TeachingLab::na_df, NA))) %>%
+    janitor::remove_empty("rows") %>%
+    dplyr::mutate(dplyr::across(c(1:5), ~ tidyr::replace_na(.x, "No Response"))) %>%
+    {
+      if (all == F) purrr::map(., ~ sample(.x, size = size)) else .
+    } %>%
+    tibble::as_tibble() %>%
+    stats::setNames(c("Overall, what went well in this course?", # Qualitative feedback
+               "Overall, what could have been better in this course?", # Qualitative feedback
+               "What is the learning from this course that you are most excited about trying out?", # Qualitative feedback
+               "Which activities best supported your learning in this course?", # Qualitative feedback
+               "Feel free to leave us any additional comments, concerns, or questions.")) %>%
+    TeachingLab::quote_viz(text_col = colnames(.), n = n)
+  if (is.null(save)) {
+    quotes_gt
+  } else {
+    gt::gtsave(data = quotes_gt,
+               filename = here::here(paste0(save)))
+  }
+  
 }

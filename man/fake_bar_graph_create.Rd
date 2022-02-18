@@ -26,6 +26,8 @@ fake_bar_graph_create(
 
 \item{custom_n}{custom n, one number}
 
+\item{custom_x_axis_labels}{custom x-axis labels}
+
 \item{custom_p_1}{custom percentage 1, vector with 1: initial percentage, and 2: amount to set maximum increase}
 
 \item{custom_p_2}{custom percentage 2, vector with 1: initial percentage, and 2: amount to set maximum increase}
@@ -40,5 +42,5 @@ fake_bar_graph_create(
 a ggplot object
 }
 \description{
-Creates a graph specifically for Knowledge assessments for SXSW Report
+Creates a bar graph specifically for Knowledge Assessments for SXSW Report
 }

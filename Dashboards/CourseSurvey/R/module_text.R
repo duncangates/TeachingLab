@@ -32,7 +32,7 @@ uiText <- function(id, label = "Counter") {
   shiny::tagList(
     sidebar = shiny.semantic::sidebar_layout(
       shiny.semantic::sidebar_panel(
-        style = "position:fixed;overflow-x:auto;overflow-y:auto;width:inherit;max-width:330px;",
+        style = sidebar_style,
         menu_item(
           tabName = "site_menu",
           shiny::selectizeInput(
@@ -177,24 +177,26 @@ textServer <- function(id, in_site) {
       
       count <- course_survey %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
-        {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-        } %>%
-        {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-        } %>%
-        {
-          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today’s professional learning session.` %in% input$content) else .
-        } %>%
-        {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-        } %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Sites",
+                                     filter_this = input$site,
+                                     dat_filter = `Select your site (district, parish, network, or school).`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Roles",
+                                     filter_this = input$role,
+                                     dat_filter = `Select your role.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Content Areas",
+                                     filter_this = input$content,
+                                     dat_filter = `Select the content area for today's professional learning session.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Courses",
+                                     filter_this = input$course,
+                                     dat_filter = `Select your course.`) %>%
         select(`Overall, what went well in this course?`) %>%
-        pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
         drop_na() %>%
-        filter(Response %!in% na_df) %>%
-        select(Response) %>%
-        filter(str_length(Response) > input$quote_length)
+        filter(`Overall, what went well in this course?` %!in% na_df) %>%
+        filter(str_length(`Overall, what went well in this course?`) > input$quote_length)
       nrow(count)
     })
     
@@ -209,24 +211,26 @@ textServer <- function(id, in_site) {
       
       count <- course_survey %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
-        {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-        } %>%
-        {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-        } %>%
-        {
-          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today’s professional learning session.` %in% input$content) else .
-        } %>%
-        {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-        } %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Sites",
+                                     filter_this = input$site,
+                                     dat_filter = `Select your site (district, parish, network, or school).`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Roles",
+                                     filter_this = input$role,
+                                     dat_filter = `Select your role.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Content Areas",
+                                     filter_this = input$content,
+                                     dat_filter = `Select the content area for today's professional learning session.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Courses",
+                                     filter_this = input$course,
+                                     dat_filter = `Select your course.`) %>%
         select(`Overall, what could have been better in this course?`) %>%
-        pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
         drop_na() %>%
-        filter(Response %!in% na_df) %>%
-        select(Response) %>%
-        filter(str_length(Response) > input$quote_length)
+        filter(`Overall, what could have been better in this course?` %!in% na_df) %>%
+        filter(str_length(`Overall, what could have been better in this course?`) > input$quote_length)
       nrow(count)
     })
     
@@ -241,24 +245,27 @@ textServer <- function(id, in_site) {
       
       count <- course_survey %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
-        {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-        } %>%
-        {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-        } %>%
-        {
-          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today’s professional learning session.` %in% input$content) else .
-        } %>%
-        {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-        } %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Sites",
+                                     filter_this = input$site,
+                                     dat_filter = `Select your site (district, parish, network, or school).`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Roles",
+                                     filter_this = input$role,
+                                     dat_filter = `Select your role.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Content Areas",
+                                     filter_this = input$content,
+                                     dat_filter = `Select the content area for today's professional learning session.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Courses",
+                                     filter_this = input$course,
+                                     dat_filter = `Select your course.`) %>%
         select(`What is the learning from this course that you are most excited about trying out?`) %>%
-        pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
         drop_na() %>%
-        filter(Response %!in% na_df) %>%
-        select(Response) %>%
-        filter(str_length(Response) > input$quote_length)
+        filter(`What is the learning from this course that you are most excited about trying out?` %!in% na_df) %>%
+        filter(str_length(`What is the learning from this course that you are most excited about trying out?`) > input$quote_length)
+      
       nrow(count)
     })
     
@@ -273,24 +280,27 @@ textServer <- function(id, in_site) {
       
       count <- course_survey %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
-        {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-        } %>%
-        {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-        } %>%
-        {
-          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today’s professional learning session.` %in% input$content) else .
-        } %>%
-        {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-        } %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Sites",
+                                     filter_this = input$site,
+                                     dat_filter = `Select your site (district, parish, network, or school).`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Roles",
+                                     filter_this = input$role,
+                                     dat_filter = `Select your role.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Content Areas",
+                                     filter_this = input$content,
+                                     dat_filter = `Select the content area for today's professional learning session.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Courses",
+                                     filter_this = input$course,
+                                     dat_filter = `Select your course.`) %>%
         select(`Which activities best supported your learning in this course?`) %>%
-        pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
         drop_na() %>%
-        filter(Response %!in% na_df) %>%
-        select(Response) %>%
-        filter(str_length(Response) > input$quote_length)
+        filter(`Which activities best supported your learning in this course?` %!in% na_df) %>%
+        filter(str_length(`Which activities best supported your learning in this course?`) > input$quote_length)
+      
       nrow(count)
     })
     
@@ -306,24 +316,27 @@ textServer <- function(id, in_site) {
       
       count <- course_survey %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
-        {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-        } %>%
-        {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-        } %>%
-        {
-          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today’s professional learning session.` %in% input$content) else .
-        } %>%
-        {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-        } %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Sites",
+                                     filter_this = input$site,
+                                     dat_filter = `Select your site (district, parish, network, or school).`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Roles",
+                                     filter_this = input$role,
+                                     dat_filter = `Select your role.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Content Areas",
+                                     filter_this = input$content,
+                                     dat_filter = `Select the content area for today's professional learning session.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Courses",
+                                     filter_this = input$course,
+                                     dat_filter = `Select your course.`) %>%
         select(`Feel free to leave us any additional comments, concerns, or questions.`) %>%
-        pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
         drop_na() %>%
-        filter(Response %!in% na_df) %>%
-        select(Response) %>%
-        filter(str_length(Response) > input$quote_length)
+        filter(`Feel free to leave us any additional comments, concerns, or questions.` %!in% na_df) %>%
+        filter(str_length(`Feel free to leave us any additional comments, concerns, or questions.`) > input$quote_length)
+      
       nrow(count)
     })
     
@@ -363,6 +376,7 @@ textServer <- function(id, in_site) {
 
     # Getting quotes for table
     quote_viz_data1 <- reactive({
+      
       validate(
         need(!is.null(input$site), "Please select at least one site"),
         need(!is.null(input$role), "Please select at least one role"),
@@ -372,24 +386,26 @@ textServer <- function(id, in_site) {
       
       quote_reactive1 <- course_survey %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
-        {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-        } %>%
-        {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-        } %>%
-        {
-          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today's professional learning session.` %in% input$content) else .
-        } %>%
-        {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-        } %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Sites",
+                                     filter_this = input$site,
+                                     dat_filter = `Select your site (district, parish, network, or school).`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Roles",
+                                     filter_this = input$role,
+                                     dat_filter = `Select your role.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Content Areas",
+                                     filter_this = input$content,
+                                     dat_filter = `Select the content area for today's professional learning session.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Courses",
+                                     filter_this = input$course,
+                                     dat_filter = `Select your course.`) %>%
         select(`Overall, what went well in this course?`) %>%
-        pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
         drop_na() %>%
-        filter(Response %!in% na_df) %>%
-        select(Response) %>%
-        filter(str_length(Response) > input$quote_length)
+        filter(`Overall, what went well in this course?` %!in% na_df) %>%
+        filter(str_length(`Overall, what went well in this course?`) > input$quote_length)
       
       #### Validate that there is data #### 
       validate(
@@ -401,32 +417,36 @@ textServer <- function(id, in_site) {
     })
 
     quote_viz_data2 <- reactive({
+      
       validate(
         need(!is.null(input$site), "Please select at least one site"),
         need(!is.null(input$role), "Please select at least one role"),
         need(!is.null(input$content), "Please select at least one content area"),
         need(!is.null(input$course), "Please select at least one course")
       )
+      
       quote_reactive2 <- course_survey %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
-        {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-        } %>%
-        {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-        } %>%
-        {
-          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today's professional learning session.` %in% input$content) else .
-        } %>%
-        {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-        } %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Sites",
+                                     filter_this = input$site,
+                                     dat_filter = `Select your site (district, parish, network, or school).`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Roles",
+                                     filter_this = input$role,
+                                     dat_filter = `Select your role.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Content Areas",
+                                     filter_this = input$content,
+                                     dat_filter = `Select the content area for today's professional learning session.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Courses",
+                                     filter_this = input$course,
+                                     dat_filter = `Select your course.`) %>%
         select(`Overall, what could have been better in this course?`) %>%
-        pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
         drop_na() %>%
-        filter(Response %!in% na_df) %>%
-        select(Response) %>%
-        filter(str_length(Response) > input$quote_length)
+        filter(`Overall, what could have been better in this course?` %!in% na_df) %>%
+        filter(str_length(`Overall, what could have been better in this course?`) > input$quote_length)
       
       #### Validate that there is data #### 
       validate(
@@ -446,24 +466,26 @@ textServer <- function(id, in_site) {
       )
       quote_reactive3 <- course_survey %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
-        {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-        } %>%
-        {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-        } %>%
-        {
-          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today's professional learning session.` %in% input$content) else .
-        } %>%
-        {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-        } %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Sites",
+                                     filter_this = input$site,
+                                     dat_filter = `Select your site (district, parish, network, or school).`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Roles",
+                                     filter_this = input$role,
+                                     dat_filter = `Select your role.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Content Areas",
+                                     filter_this = input$content,
+                                     dat_filter = `Select the content area for today's professional learning session.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Courses",
+                                     filter_this = input$course,
+                                     dat_filter = `Select your course.`) %>%
         select(`What is the learning from this course that you are most excited about trying out?`) %>%
-        pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
         drop_na() %>%
-        filter(Response %!in% na_df) %>%
-        select(Response) %>%
-        filter(str_length(Response) > input$quote_length)
+        filter(`What is the learning from this course that you are most excited about trying out?` %!in% na_df) %>%
+        filter(str_length(`What is the learning from this course that you are most excited about trying out?`) > input$quote_length)
       
       #### Validate that there is data #### 
       validate(
@@ -475,32 +497,36 @@ textServer <- function(id, in_site) {
     })
 
     quote_viz_data4 <- reactive({
+      
       validate(
         need(!is.null(input$site), "Please select at least one site"),
         need(!is.null(input$role), "Please select at least one role"),
         need(!is.null(input$content), "Please select at least one content area"),
         need(!is.null(input$course), "Please select at least one course")
       )
+      
       quote_reactive4 <- course_survey %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
-        {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-        } %>%
-        {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-        } %>%
-        {
-          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today's professional learning session.` %in% input$content) else .
-        } %>%
-        {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-        } %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Sites",
+                                     filter_this = input$site,
+                                     dat_filter = `Select your site (district, parish, network, or school).`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Roles",
+                                     filter_this = input$role,
+                                     dat_filter = `Select your role.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Content Areas",
+                                     filter_this = input$content,
+                                     dat_filter = `Select the content area for today's professional learning session.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Courses",
+                                     filter_this = input$course,
+                                     dat_filter = `Select your course.`) %>%
         select(`Which activities best supported your learning in this course?`) %>%
-        pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
         drop_na() %>%
-        filter(Response %!in% na_df) %>%
-        select(Response) %>%
-        filter(str_length(Response) > input$quote_length)
+        filter(`Which activities best supported your learning in this course?` %!in% na_df) %>%
+        filter(str_length(`Which activities best supported your learning in this course?`) > input$quote_length)
       
       #### Validate that there is data #### 
       validate(
@@ -512,32 +538,36 @@ textServer <- function(id, in_site) {
     })
 
     quote_viz_data5 <- reactive({
+      
       validate(
         need(!is.null(input$site), "Please select at least one site"),
         need(!is.null(input$role), "Please select at least one role"),
         need(!is.null(input$content), "Please select at least one content area"),
         need(!is.null(input$course), "Please select at least one course")
       )
+      
       quote_reactive5 <- course_survey %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
-        {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-        } %>%
-        {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-        } %>%
-        {
-          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today's professional learning session.` %in% input$content) else .
-        } %>%
-        {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-        } %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Sites",
+                                     filter_this = input$site,
+                                     dat_filter = `Select your site (district, parish, network, or school).`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Roles",
+                                     filter_this = input$role,
+                                     dat_filter = `Select your role.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Content Areas",
+                                     filter_this = input$content,
+                                     dat_filter = `Select the content area for today's professional learning session.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Courses",
+                                     filter_this = input$course,
+                                     dat_filter = `Select your course.`) %>%
         select(`Feel free to leave us any additional comments, concerns, or questions.`) %>%
-        pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
         drop_na() %>%
-        filter(Response %!in% na_df) %>%
-        select(Response) %>%
-        filter(str_length(Response) > input$quote_length)
+        filter(`Feel free to leave us any additional comments, concerns, or questions.` %!in% na_df) %>%
+        filter(str_length(`Feel free to leave us any additional comments, concerns, or questions.`) > input$quote_length)
       
       #### Validate that there is data #### 
       validate(
@@ -559,10 +589,11 @@ textServer <- function(id, in_site) {
 
     output$quote_gt1 <- gt::render_gt(
       quote_viz(
-        data = quote1$table1, text_col = "Response", viz_type = "gt",
-        title = "Overall, what went well in the course?",
-        width = 50,
-        print = F
+        data = quote1$table1,
+        viz_type = "gt",
+        width = 70,
+        print = F,
+        align = "center"
       ) %>%
         suppressWarnings() %>%
         suppressMessages()
@@ -579,9 +610,9 @@ textServer <- function(id, in_site) {
 
     output$quote_gt2 <- gt::render_gt(
       quote_viz(
-        data = quote2$table2, text_col = "Response", viz_type = "gt",
-        title = "Overall, what could have been better in this course?",
-        width = 50,
+        data = quote2$table2, 
+        viz_type = "gt",
+        width = 70,
         print = F
       ) %>%
         suppressWarnings() %>%
@@ -599,9 +630,9 @@ textServer <- function(id, in_site) {
 
     output$quote_gt3 <- gt::render_gt(
       quote_viz(
-        data = quote3$table3, text_col = "Response", viz_type = "gt",
-        title = "What is the learning from this course that you are most excited about trying out?",
-        width = 50,
+        data = quote3$table3,
+        viz_type = "gt",
+        width = 70,
         print = F
       ) %>%
         suppressWarnings() %>%
@@ -619,9 +650,9 @@ textServer <- function(id, in_site) {
 
     output$quote_gt4 <- gt::render_gt(
       quote_viz(
-        data = quote4$table4, text_col = "Response", viz_type = "gt",
-        title = "Which activities best supported your learning in this course?",
-        width = 50,
+        data = quote4$table4,
+        viz_type = "gt",
+        width = 70,
         print = F
       ) %>%
         suppressWarnings() %>%
@@ -639,36 +670,13 @@ textServer <- function(id, in_site) {
 
     output$quote_gt5 <- gt::render_gt(
       quote_viz(
-        data = quote5$table5, text_col = "Response", viz_type = "gt",
-        title = "Feel free to leave us any additional comments, concerns, or questions.",
-        width = 50,
+        data = quote5$table5, 
+        viz_type = "gt",
+        width = 70,
         print = F
       ) %>%
         suppressWarnings() %>%
         suppressMessages()
-    )
-    
-    # observeEvent(
-    #   input$site, 
-    #   {
-    #     if (!is.na(input$site)) 
-    #       updateSelectizeInput(
-    #         session, 
-    #         "site", 
-    #         selected = in_site()
-    #       )
-    #   }
-    # )
-    
-    
-    return(
-      list(
-        in_site <- reactive({input$site}),
-        in_course <- reactive({input$course}),
-        in_role <- reactive({input$role}),
-        in_date_slider <- reactive({input$date_slider}),
-        in_content <- reactive({input$content})
-      )
     )
     
   })

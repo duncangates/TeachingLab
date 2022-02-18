@@ -7,8 +7,8 @@
 p_and_n(
   p1_range = c(40:80),
   p2_range = c(70:100),
-  n1_range = rnorm(1, mean = 80, sd = 10),
-  n2_range = rnorm(1, mean = 50, sd = 10)
+  n1_range = stats::rnorm(1, mean = 80, sd = 10),
+  n2_range = stats::rnorm(1, mean = 50, sd = 10)
 )
 }
 \arguments{

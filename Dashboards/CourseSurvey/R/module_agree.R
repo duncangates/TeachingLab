@@ -4,7 +4,7 @@ uiAgree <- function(id, label = "Counter") {
   shiny::tagList(
     shiny.semantic::sidebar_layout(
       sidebar_panel = shiny.semantic::sidebar_panel(
-        style = "position:fixed;overflow-x:auto;overflow-y:auto;width:inherit;max-width:330px;",
+        style = sidebar_style,
         menu_item(
           tabName = "site_menu",
           shiny::selectizeInput(
@@ -175,18 +175,22 @@ agreeServer <- function(id, in_site) {
       
       data_plot <- course_survey %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
-        {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-        } %>%
-        {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-        } %>%
-        {
-          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today's professional learning session.` %in% input$content) else .
-        } %>%
-        {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-        } %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Sites",
+                                     filter_this = input$site,
+                                     dat_filter = `Select your site (district, parish, network, or school).`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Roles",
+                                     filter_this = input$role,
+                                     dat_filter = `Select your role.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Content Areas",
+                                     filter_this = input$content,
+                                     dat_filter = `Select the content area for today's professional learning session.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Courses",
+                                     filter_this = input$course,
+                                     dat_filter = `Select your course.`) %>%
         select(
           date_created,
           c(
@@ -294,18 +298,22 @@ agreeServer <- function(id, in_site) {
       )
       agree_plot <- course_survey %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
-        {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-        } %>%
-        {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-        } %>%
-        {
-          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today's professional learning session.` %in% input$content) else .
-        } %>%
-        {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-        } %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Sites",
+                                     filter_this = input$site,
+                                     dat_filter = `Select your site (district, parish, network, or school).`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Roles",
+                                     filter_this = input$role,
+                                     dat_filter = `Select your role.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Content Areas",
+                                     filter_this = input$content,
+                                     dat_filter = `Select the content area for today's professional learning session.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Courses",
+                                     filter_this = input$course,
+                                     dat_filter = `Select your course.`) %>%
         select(c(
           "How much do you agree with the following statements about this course? - I am satisfied with the overall quality of this course.",
           "How much do you agree with the following statements about this course? - I am satisfied with how the course was facilitated.",
@@ -344,20 +352,25 @@ agreeServer <- function(id, in_site) {
     })
     
     agree_plot_n <- reactive({
+      
       data_n <- course_survey %>%
-        dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
-        {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-        } %>%
-        {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-        } %>%
-        {
-          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today's professional learning session.` %in% input$content) else .
-        } %>%
-        {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-        }
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Sites",
+                                     filter_this = input$site,
+                                     dat_filter = `Select your site (district, parish, network, or school).`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Roles",
+                                     filter_this = input$role,
+                                     dat_filter = `Select your role.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Content Areas",
+                                     filter_this = input$content,
+                                     dat_filter = `Select the content area for today's professional learning session.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Courses",
+                                     filter_this = input$course,
+                                     dat_filter = `Select your course.`)
+      
       nrow(data_n)
     })
 

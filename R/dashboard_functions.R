@@ -157,70 +157,68 @@ session_agree_plot <- function(data) {
     )
 }
 
-
-#' @title Dashboard End of Session Quotes
-#' @description Creates a gt table for qualitative responses
-#' @param data the data to be input
-#' @param n 
-#' @param size the number of rows of quotes to return
-#' @return Returns a gt
+#' @title Negative Conditional Filter
+#' @description Conditionally filters value given that it is not the first parameter, for use in shiny apps
+#' @param data the dataframe to apply filter
+#' @param if_not_this If value is not this
+#' @param filter_this Filter for this
+#' @param dat_filter Data column object to filter
+#' @return filtered dataframe
 #' @export
-session_quotes <- function(data = TeachingLab::get_session_survey(), size = 10, n = 3) {
-  data %>%
-    dplyr::select(c("What is one thing from today's learning that you plan to take back to your classroom?",
-                    "What went well in today’s session?",
-                    "What could have been better about today’s session?")) %>%
-    purrr::map(., na.omit) %>%
-    # REMINDER ADD FILTERING WITH na_df ONCE ADDED TO TEACHINGLAB PACKAGE
-    purrr::map(., ~ sample(.x, size = size)) %>%
-    tibble::as_tibble() %>%
-    setNames(c("What is one thing from today's learning that you plan to take back to your classroom?",
-             "What went well in today’s session?",
-             "What could have been better about today’s session?")) %>%
-    TeachingLab::quote_viz(text_col = colnames(.), n = n)
-}
-
-#' @title Dashboard End of Course Quotes
-#' @description Creates a gt table for qualitative responses
-#' @param data the data to be input
-#' @param n 
-#' @param size the number of rows of quotes to return
-#' @param all Whether or not to return ALL data
-#' @param include_columns A vector of additional columns to include in table
-#' @param save 
-#' @return Returns a gt, unless save in which case it will return a saved file with gtsave
-#' @export
-course_quotes <- function(data = TeachingLab::get_course_survey(), 
-                          size = 10,
-                          n = 3,
-                          all = F,
-                          save = NULL,
-                          include_columns = NULL) {
-  quotes_gt <- data %>%
-    dplyr::select(c("Overall, what went well in this course?", # Qualitative feedback
-                    "Overall, what could have been better in this course?", # Qualitative feedback
-                    "What is the learning from this course that you are most excited about trying out?", # Qualitative feedback
-                    "Which activities best supported your learning in this course?", # Qualitative feedback
-                    "Feel free to leave us any additional comments, concerns, or questions."),
-                  include_columns) %>%
-    dplyr::mutate(dplyr::across(c(1:5), ~ replace(.x, .x %in% TeachingLab::na_df, NA))) %>%
-    janitor::remove_empty("rows") %>%
-    dplyr::mutate(dplyr::across(c(1:5), ~ tidyr::replace_na(.x, "No Response"))) %>%
-    {
-      if (all == F) purrr::map(., ~ sample(.x, size = size)) else .
-    } %>%
-    tibble::as_tibble() %>%
-    setNames(c("Overall, what went well in this course?", # Qualitative feedback
-               "Overall, what could have been better in this course?", # Qualitative feedback
-               "What is the learning from this course that you are most excited about trying out?", # Qualitative feedback
-               "Which activities best supported your learning in this course?", # Qualitative feedback
-               "Feel free to leave us any additional comments, concerns, or questions.")) %>%
-    TeachingLab::quote_viz(text_col = colnames(.), n = n)
-  if (is.null(save)) {
-    quotes_gt
+neg_cond_filter <- function(data, if_not_this, filter_this, dat_filter) {
+  
+  # Get quo for filtering the data
+  quo_filter <- rlang::enquo(dat_filter)
+  
+  # Get a vector of the inputs to filter minus the "All x" pattern
+  filter_this_no_all <- filter_this[filter_this != if_not_this]
+  
+  # Check if any of the filters are not the "All x" pattern and filter for the inputs if that is TRUE
+  if (any(filter_this != if_not_this)) {
+    df <- data %>%
+      dplyr::filter(!!quo_filter %in% filter_this_no_all)
   } else {
-    gt::gtsave(data = quotes_gt,
-               filename = here::here(paste0(save)))
+    df <- data
   }
   
+  df
+  
 }
+
+#' @title Verify email domain
+#' @description Verifies that an email is of a specified domain
+#' @param email the email provided
+#' @param domain the domain to check that it is from
+#' @return TRUE or FALSE
+#' @export
+check_email_domain <- function(email, domain) {
+  grepl(paste0("@", domain, "$"), email, ignore.case = TRUE)
+}
+
+
+#' @title Verify email from vector
+#' @description Verifies that an email is in a list
+#' @param email the email provided
+#' @param approved_emails_list the email to check the list for
+#' @return TRUE or FALSE
+#' @export
+check_email_approved <- function(email, approved_emails_list) {
+  email %in% approved_emails_list
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

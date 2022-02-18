@@ -61,3 +61,23 @@ fetch_survey_2 <- function(id, name) {
   #### Write to data folder with original name####
   purrr::map2(.x = name_df$names, .y = name_df$title, ~ readr::write_rds(x = get(.x), file = paste0(here::here("Dashboards/KnowledgeAssessments/data/unprocessed/"), .y, ".rds")))
 }
+
+#' @title End of Session Dashboard Data
+#' @description Gets dashboard data by reading it in from data folder
+#' @param loc the location of the end of session data
+#' @return Returns a tibble
+#' @export
+get_session_survey <- function(loc = "data/session_survey_21_22data.rds") {
+  df <- readRDS(file = loc)
+  return(df)
+}
+
+#' @title End of Course Dashboard Data
+#' @description Gets dashboard data by reading it in from data folder
+#' @param loc the location of the end of course data
+#' @return Returns a tibble
+#' @export
+get_course_survey <- function(loc = "data/course_surveymonkey.rds") {
+  df <- readRDS(file = loc)
+  return(df)
+}

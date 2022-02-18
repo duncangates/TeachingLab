@@ -40,14 +40,16 @@ Imports:
     surveymonkey,
     readr,
     stringr,
-    rvest,
     forcats,
     assertthat,
-    fontawesome,
-    ggwordcloud
+    ggwordcloud,
+    rvest,
+    fontawesome
 RoxygenNote: 7.1.2
 Depends: 
     R (>= 2.10)
 Suggests: 
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    janitor,
+    ggrepel
 Config/testthat/edition: 3

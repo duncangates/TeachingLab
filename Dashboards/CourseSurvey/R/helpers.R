@@ -1,3 +1,4 @@
+#### Course Survey Dashboard ####
 suppressPackageStartupMessages(library(shiny))
 suppressPackageStartupMessages(library(shiny.router))
 suppressPackageStartupMessages(library(tidyverse))
@@ -18,18 +19,25 @@ suppressPackageStartupMessages(library(shiny.semantic))
 suppressPackageStartupMessages(library(glue))
 suppressPackageStartupMessages(library(Cairo))
 suppressPackageStartupMessages(library(grDevices))
-library(shinyjs)
-library(rmarkdown)
-library(googleAuthR)
+suppressPackageStartupMessages(library(shinyjs))
+suppressPackageStartupMessages(library(rmarkdown))
+suppressPackageStartupMessages(library(googleAuthR))
 
+## Add Calibri Fonts ##
 font_add(family = "Calibri", regular = "www/Calibri.ttf")
 font_add(family = "Calibri Bold", regular = "www/Calibri Bold.ttf")
 
+## Add CSS sidebar and report image styling ##
+sidebar_style <- "position:fixed;overflow-x:auto;overflow-y:auto;width:inherit;max-width:400px;"
+report_style <- "outline: 10px; border: 3px solid #04abeb; border-style: groove;"
+
+## Set Shiny port, google auth redirect, and spinner colors ##
 options(shiny.port = 7325)
 options("googleAuthR.redirect" = "https://teachinglabhq.shinyapps.io/CourseSurvey/")
 options(googleAuthR.webapp.client_id = "546593990572-dfgtk28971bf7etvhpn8t4p84n1i93ra.apps.googleusercontent.com")
 options(spinner.color = "#04ABEB")
 
+## Add information page with HTML pseudo-code ##
 info_page <- div(class = "ui container",
                  div(class = "ui center aligned header",
                      h2("Please watch the video below to learn how to use this dashboard, or provide"),
@@ -105,7 +113,5 @@ info_page <- div(class = "ui container",
                  )
 )
 
-# Verifying from @teachinglab.org
-check_email_domain <- function(email, domain) {
-  grepl(paste0("@",domain,"$"), email, ignore.case = TRUE)
-}
+
+

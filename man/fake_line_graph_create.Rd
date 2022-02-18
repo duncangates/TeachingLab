@@ -2,7 +2,7 @@
 % Please edit documentation in R/graph_makers.R
 \name{fake_line_graph_create}
 \alias{fake_line_graph_create}
-\title{FAKE Knowledge Assessment Graph Summary}
+\title{FAKE Knowledge Assessment Line Graph Summary}
 \usage{
 fake_line_graph_create(
   title,
@@ -19,6 +19,8 @@ fake_line_graph_create(
 
 \item{fake_data_fun}{time_data}
 
+\item{labels}{The labels for the lines}
+
 \item{x_axis}{the labels for the x-axis: yearly or pre-pl-post-pl}
 
 \item{lines}{number of lines to create, either 1 or 2}
@@ -31,5 +33,5 @@ fake_line_graph_create(
 a ggplot object
 }
 \description{
-Creates a graph specifically for Knowledge assessments for SXSW Report
+Creates a line graph specifically for Knowledge assessments for SXSW Report
 }

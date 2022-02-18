@@ -5,7 +5,24 @@ uiReport <- function(id, label = "Counter") {
     # tags$head(tags$style(HTML("#sidebar_panel{min-width:320px;padding:5px;height:100vh;}"))),
     shiny.semantic::sidebar_layout(
       sidebar_panel = shiny.semantic::sidebar_panel(
-        style = "position:fixed;overflow-x:auto;overflow-y:auto;width:inherit;max-width:330px;",
+        style = sidebar_style,
+        menu_item(
+          tabName = "recent_menu",
+          h5("Utilize the filters in the sidebar to download", style = "margin: calc(2rem - 3.1em) 0 1rem; margin-top:2px;"),
+          h5("your custom report,", style = "margin: calc(2rem - 3.1em) 0 1rem"),
+          h5("OR click one of the following recent", style = "margin: calc(2rem - 3.1em) 0 1rem"),
+          h5("sessions found by a unique ", style = "margin: calc(2rem - 3.1em) 0 1rem"),
+          h5("combination of site and course,", style = "margin: calc(2rem - 3.1em) 0 1rem"),
+          h5("and then just click download!", style = "margin: calc(2rem - 3.1em) 0 1rem"),
+          shiny::selectizeInput(ns("recent_sessions"),
+                         choices = recent_choices_final$choice,
+                         label = NULL, 
+                         selected = NULL, 
+                         multiple = T,
+                         options = list(plugins = list("remove_button"))
+          ),
+          icon = shiny.semantic::icon("free code camp")
+        ),
         menu_item(
           tabName = "site_menu",
           shiny::selectizeInput(
@@ -95,16 +112,35 @@ uiReport <- function(id, label = "Counter") {
         div(
           class = "ui three column stackable grid container",
           div(
-            class = "seven wide column",
+            class = "six wide column",
             br(),
             br(),
-            h3("Utilize the filters in the sidebar to download your custom report,"),
-            h3(" OR click one of the following buttons to download one of the following most recent sessions found by a unique combination of site and course, and then just click download!"),
-            selectizeInput(ns("recent_sessions"),
-              choices = recent_choices_final$choice,
-              label = NULL, selected = NULL, multiple = T,
-              options = list(plugins = list("remove_button"))
-            ),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            downloadButton(ns("download_report1"),
+                           label = tagList(
+                             tags$span(tags$html("  Download Report PDF")),
+                             tags$img(src = "report_example_pdf.png", 
+                                      align = "center", 
+                                      style = report_style)
+                           ),
+                           icon = shiny::icon("file-download")
+            ) %>%
+              withSpinner(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
             br(),
             br(),
             br(),
@@ -113,42 +149,57 @@ uiReport <- function(id, label = "Counter") {
             br()
           ),
           div(
-            class = "five wide column",
+            class = "four wide column",
             align = "center",
             br(),
             br(),
             br(),
-            downloadButton(ns("download_report1"),
-              label = tagList(
-                tags$span("Download Report PDF"),
-                tags$img(src = "report_example_pdf.png", align = "center")
-              ),
-              icon = shiny::icon("file-download")
-            ) %>%
-              withSpinner(),
+            br(),
+            br(),
+            br(),
+            br(),
             br(),
             br(),
             br(),
             br(),
             br(),
             downloadButton(ns("download_report2"),
-              label = tagList(
-                tags$span("Download Report DOCX"),
-                tags$img(src = "report_example_word.png", align = "center")
-              ),
-              icon = shiny::icon("file-download")
+                           label = tagList(
+                             tags$span("Download Report DOCX"),
+                             tags$img(src = "report_example_word.png", 
+                                      align = "center", 
+                                      style = report_style)
+                           ),
+                           icon = shiny::icon("file-download")
             ) %>%
               withSpinner()
           ),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
           div(
             class = "four wide column",
             align = "center",
             br(),
             br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
             downloadButton(ns("download_csv"),
               label = tagList(
                 tags$span("  Download a CSV of Raw Data"),
-                tags$img(src = "fake_raw.png", align = "center")
+                tags$img(src = "fake_raw.png", 
+                         align = "center", 
+                         style = report_style)
               ),
               icon = shiny::icon("save")
             )
@@ -192,18 +243,22 @@ reportServer <- function(id, in_site) {
 
       data_plot <- course_survey_recent() %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
-        {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-        } %>%
-        {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-        } %>%
-        {
-          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today's professional learning session.` %in% input$content) else .
-        } %>%
-        {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-        } %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Sites",
+                                     filter_this = input$site,
+                                     dat_filter = `Select your site (district, parish, network, or school).`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Roles",
+                                     filter_this = input$role,
+                                     dat_filter = `Select your role.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Content Areas",
+                                     filter_this = input$content,
+                                     dat_filter = `Select the content area for today's professional learning session.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Courses",
+                                     filter_this = input$course,
+                                     dat_filter = `Select your course.`) %>%
         select(
           date_created,
           c(
@@ -264,18 +319,22 @@ reportServer <- function(id, in_site) {
 
       agree_plot <- course_survey_recent() %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
-        {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-        } %>%
-        {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-        } %>%
-        {
-          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today's professional learning session.` %in% input$content) else .
-        } %>%
-        {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-        } %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Sites",
+                                     filter_this = input$site,
+                                     dat_filter = `Select your site (district, parish, network, or school).`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Roles",
+                                     filter_this = input$role,
+                                     dat_filter = `Select your role.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Content Areas",
+                                     filter_this = input$content,
+                                     dat_filter = `Select the content area for today's professional learning session.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Courses",
+                                     filter_this = input$course,
+                                     dat_filter = `Select your course.`) %>%
         select(c(
           "How much do you agree with the following statements about this course? - I am satisfied with the overall quality of this course.",
           "How much do you agree with the following statements about this course? - I am satisfied with how the course was facilitated.",
@@ -309,21 +368,28 @@ reportServer <- function(id, in_site) {
 
     #### Agree plot n size ####
     agree_plot_n <- reactive({
+      
       data_n <- course_survey_recent() %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
-        {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-        } %>%
-        {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-        } %>%
-        {
-          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today's professional learning session.` %in% input$content) else .
-        } %>%
-        {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-        }
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Sites",
+                                     filter_this = input$site,
+                                     dat_filter = `Select your site (district, parish, network, or school).`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Roles",
+                                     filter_this = input$role,
+                                     dat_filter = `Select your role.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Content Areas",
+                                     filter_this = input$content,
+                                     dat_filter = `Select the content area for today's professional learning session.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Courses",
+                                     filter_this = input$course,
+                                     dat_filter = `Select your course.`)
+        
       nrow(data_n)
+      
     })
 
     #### QUOTES 1 ####
@@ -338,18 +404,22 @@ reportServer <- function(id, in_site) {
 
       quote_reactive1 <- course_survey_recent() %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
-        {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-        } %>%
-        {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-        } %>%
-        {
-          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today's professional learning session.` %in% input$content) else .
-        } %>%
-        {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-        } %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Sites",
+                                     filter_this = input$site,
+                                     dat_filter = `Select your site (district, parish, network, or school).`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Roles",
+                                     filter_this = input$role,
+                                     dat_filter = `Select your role.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Content Areas",
+                                     filter_this = input$content,
+                                     dat_filter = `Select the content area for today's professional learning session.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Courses",
+                                     filter_this = input$course,
+                                     dat_filter = `Select your course.`) %>%
         select(`Overall, what went well in this course?`) %>%
         pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
         drop_na() %>%
@@ -372,18 +442,22 @@ reportServer <- function(id, in_site) {
 
       quote_reactive2 <- course_survey_recent() %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
-        {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-        } %>%
-        {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-        } %>%
-        {
-          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today's professional learning session.` %in% input$content) else .
-        } %>%
-        {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-        } %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Sites",
+                                     filter_this = input$site,
+                                     dat_filter = `Select your site (district, parish, network, or school).`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Roles",
+                                     filter_this = input$role,
+                                     dat_filter = `Select your role.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Content Areas",
+                                     filter_this = input$content,
+                                     dat_filter = `Select the content area for today's professional learning session.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Courses",
+                                     filter_this = input$course,
+                                     dat_filter = `Select your course.`) %>%
         select(`Overall, what could have been better in this course?`) %>%
         pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
         drop_na() %>%
@@ -406,18 +480,22 @@ reportServer <- function(id, in_site) {
 
       quote_reactive3 <- course_survey_recent() %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
-        {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-        } %>%
-        {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-        } %>%
-        {
-          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today's professional learning session.` %in% input$content) else .
-        } %>%
-        {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-        } %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Sites",
+                                     filter_this = input$site,
+                                     dat_filter = `Select your site (district, parish, network, or school).`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Roles",
+                                     filter_this = input$role,
+                                     dat_filter = `Select your role.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Content Areas",
+                                     filter_this = input$content,
+                                     dat_filter = `Select the content area for today's professional learning session.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Courses",
+                                     filter_this = input$course,
+                                     dat_filter = `Select your course.`) %>%
         select(`What is the learning from this course that you are most excited about trying out?`) %>%
         pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
         drop_na() %>%
@@ -441,18 +519,22 @@ reportServer <- function(id, in_site) {
       )
       quote_reactive4 <- course_survey_recent() %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
-        {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-        } %>%
-        {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-        } %>%
-        {
-          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today's professional learning session.` %in% input$content) else .
-        } %>%
-        {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-        } %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Sites",
+                                     filter_this = input$site,
+                                     dat_filter = `Select your site (district, parish, network, or school).`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Roles",
+                                     filter_this = input$role,
+                                     dat_filter = `Select your role.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Content Areas",
+                                     filter_this = input$content,
+                                     dat_filter = `Select the content area for today's professional learning session.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Courses",
+                                     filter_this = input$course,
+                                     dat_filter = `Select your course.`) %>%
         select(`Which activities best supported your learning in this course?`) %>%
         pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
         drop_na() %>%
@@ -476,18 +558,22 @@ reportServer <- function(id, in_site) {
       )
       quote_reactive5 <- course_survey_recent() %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
-        {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-        } %>%
-        {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-        } %>%
-        {
-          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today's professional learning session.` %in% input$content) else .
-        } %>%
-        {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-        } %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Sites",
+                                     filter_this = input$site,
+                                     dat_filter = `Select your site (district, parish, network, or school).`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Roles",
+                                     filter_this = input$role,
+                                     dat_filter = `Select your role.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Content Areas",
+                                     filter_this = input$content,
+                                     dat_filter = `Select the content area for today's professional learning session.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Courses",
+                                     filter_this = input$course,
+                                     dat_filter = `Select your course.`) %>%
         select(`Feel free to leave us any additional comments, concerns, or questions.`) %>%
         pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
         drop_na() %>%
@@ -513,6 +599,44 @@ reportServer <- function(id, in_site) {
     #   }
     # })
 
+    ### Generate csv download data ###
+    download_reactive <- reactive({
+      df <- course_survey_recent() %>%
+        dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Sites",
+                                     filter_this = input$site,
+                                     dat_filter = `Select your site (district, parish, network, or school).`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Roles",
+                                     filter_this = input$role,
+                                     dat_filter = `Select your role.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Content Areas",
+                                     filter_this = input$content,
+                                     dat_filter = `Select the content area for today's professional learning session.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Courses",
+                                     filter_this = input$course,
+                                     dat_filter = `Select your course.`)
+      
+      df
+      
+    })
+    
+    output$download_csv <- downloadHandler(
+      filename = function() {
+        paste0("course_survey_data-", Sys.Date(), ".csv", sep = "")
+      },
+      content = function(file) {
+        shiny.semantic::with_progress(
+          message = "Downloading, please wait! This process generally takes 10-20 seconds.",
+          {
+            write.csv(download_reactive(), file)
+          }
+        )
+      }
+    )
 
     #### GENERATE THE PDF REPORT ####
 
@@ -545,20 +669,7 @@ reportServer <- function(id, in_site) {
               quote3 = quote_viz_data3(),
               quote4 = quote_viz_data4(),
               quote5 = quote_viz_data5(),
-              subtitle = course_survey_recent() %>%
-                dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
-                {
-                  if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-                } %>%
-                {
-                  if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-                } %>%
-                {
-                  if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today's professional learning session.` %in% input$content) else .
-                } %>%
-                {
-                  if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-                } %>%
+              subtitle = download_reactive() %>%
                 select(`Select your course.`, `Select your site (district, parish, network, or school).`) %>%
                 transmute(course_site = paste0(`Select your course.`, ", ", `Select your site (district, parish, network, or school).`)) %>%
                 distinct(course_site) %>%
@@ -610,20 +721,7 @@ reportServer <- function(id, in_site) {
               quote3 = quote_viz_data3(),
               quote4 = quote_viz_data4(),
               quote5 = quote_viz_data5(),
-              subtitle = course_survey_recent() %>%
-                dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
-                {
-                  if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-                } %>%
-                {
-                  if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-                } %>%
-                {
-                  if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today's professional learning session.` %in% input$content) else .
-                } %>%
-                {
-                  if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-                } %>%
+              subtitle = download_reactive() %>%
                 select(`Select your course.`, `Select your site (district, parish, network, or school).`) %>%
                 transmute(course_site = paste0(`Select your course.`, ", ", `Select your site (district, parish, network, or school).`)) %>%
                 distinct(course_site) %>%
@@ -644,36 +742,5 @@ reportServer <- function(id, in_site) {
       }
     )
 
-    ### Generate csv download data ###
-    download_reactive <- reactive({
-      df <- course_survey_recent() %>%
-        dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
-        {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-        } %>%
-        {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-        } %>%
-        {
-          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today's professional learning session.` %in% input$content) else .
-        } %>%
-        {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-        }
-    })
-
-    output$download_csv <- downloadHandler(
-      filename = function() {
-        paste0("course_survey_data-", Sys.Date(), ".csv", sep = "")
-      },
-      content = function(file) {
-        shiny.semantic::with_progress(
-          message = "Downloading, please wait! This process generally takes 10-20 seconds.",
-          {
-            write.csv(download_reactive(), file)
-          }
-        )
-      }
-    )
   })
 }

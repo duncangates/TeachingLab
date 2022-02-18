@@ -4,7 +4,7 @@ uiNPS <- function(id, label = "Counter") {
   shiny::tagList(
     sidebar = shiny.semantic::sidebar_layout(
       shiny.semantic::sidebar_panel(
-        style = "position:fixed;overflow-x:auto;overflow-y:auto;width:inherit;max-width:330px;",
+        style = sidebar_style,
         menu_item(
           tabName = "site_menu",
           shiny::selectizeInput(
@@ -139,18 +139,22 @@ npsServer <- function(id, in_site) {
       )
       reactive_nps <- course_survey %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
-        {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-        } %>%
-        {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-        } %>%
-        {
-          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today's professional learning session.` %in% input$content) else .
-        } %>%
-        {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-        } %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Sites",
+                                     filter_this = input$site,
+                                     dat_filter = `Select your site (district, parish, network, or school).`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Roles",
+                                     filter_this = input$role,
+                                     dat_filter = `Select your role.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Content Areas",
+                                     filter_this = input$content,
+                                     dat_filter = `Select the content area for today's professional learning session.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Courses",
+                                     filter_this = input$course,
+                                     dat_filter = `Select your course.`) %>%
         select(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`) %>%
         # mutate(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?` = readr::parse_number(as.character(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`))) %>%
         drop_na() %>%
@@ -208,18 +212,22 @@ npsServer <- function(id, in_site) {
       )
       sum <- course_survey %>%
         dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
-        {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-        } %>%
-        {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-        } %>%
-        {
-          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today's professional learning session.` %in% input$content) else .
-        } %>%
-        {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-        } %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Sites",
+                                     filter_this = input$site,
+                                     dat_filter = `Select your site (district, parish, network, or school).`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Roles",
+                                     filter_this = input$role,
+                                     dat_filter = `Select your role.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Content Areas",
+                                     filter_this = input$content,
+                                     dat_filter = `Select the content area for today's professional learning session.`) %>%
+        TeachingLab::neg_cond_filter(.,
+                                     if_not_this = "All Courses",
+                                     filter_this = input$course,
+                                     dat_filter = `Select your course.`) %>%
         mutate(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?` = readr::parse_number(as.character(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`))) %>%
         mutate(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?` = na_if(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`, "No Response")) %>%
         summarise(nps = calc_nps(suppressWarnings(as.numeric(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`)))) %>%
@@ -257,28 +265,6 @@ npsServer <- function(id, in_site) {
         coord_fixed() +
         theme_void()
     })
-    
-    # observeEvent(
-    #   session$userData$settings$in_site(), 
-    #   {
-    #     if (!is.na(session$userData$settings$in_site())) 
-    #       updateSelectizeInput(
-    #         session, 
-    #         "site", 
-    #         selected=session$userData$settings$in_site()
-    #       )
-    #   }
-    # )
-    
-    return(
-      list(
-        in_site <- reactive({input$site}),
-        in_course <- reactive({input$course}),
-        in_role <- reactive({input$role}),
-        in_date_slider <- reactive({input$date_slider}),
-        in_content <- reactive({input$content})
-      )
-    )
     
   })
 }

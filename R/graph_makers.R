@@ -666,8 +666,8 @@ tl_wordcloud <- function(data, text_col, colors = c("blue", "orange"), n_min = 2
 #' @export
 p_and_n <- function(p1_range = c(40:80), 
                      p2_range = c(70:100), 
-                     n1_range = rnorm(1, mean = 80, sd = 10), 
-                     n2_range = rnorm(1, mean = 50, sd = 10)
+                     n1_range = stats::rnorm(1, mean = 80, sd = 10), 
+                     n2_range = stats::rnorm(1, mean = 50, sd = 10)
 ) {
   
   df <- tibble::tibble(
@@ -694,8 +694,10 @@ p_and_n <- function(p1_range = c(40:80),
 
 #' @title Fake p1_1, p1_2, p2_1, p2_2, n1, n2 data
 #' @description Creates fake data for knowledge assessments in SXSW report
-#' @param p1_range the range of values to sample for p1
-#' @param p2_range the range of values to sample for p2
+#' @param p1_1_range the lower range of values to sample for p1
+#' @param p1_2_range the upper range of values to sample for p1
+#' @param p2_1_range the lower range of values to sample for p2
+#' @param p2_2_range the upper range of values to sample for p2
 #' @param n1_range the range of values to sample for n1
 #' @param n2_range the range of values to sample for n2
 #' @return a randomised dataset
@@ -704,8 +706,8 @@ p_and_n_split <- function(p1_1_range = c(30:70),
                           p1_2_range = c(70:100), 
                           p2_1_range = c(80:95), 
                           p2_2_range = c(85:100), 
-                          n1_range = rnorm(1, mean = 80, sd = 10), 
-                          n2_range = rnorm(1, mean = 50, sd = 10)
+                          n1_range = stats::rnorm(1, mean = 80, sd = 10), 
+                          n2_range = stats::rnorm(1, mean = 50, sd = 10)
 ) {
   
   df <- tibble::tibble(
@@ -734,9 +736,10 @@ p_and_n_split <- function(p1_1_range = c(30:70),
 
 
 #' @title FAKE Knowledge Assessment Graph Summary
-#' @description Creates a graph specifically for Knowledge assessments for SXSW Report
+#' @description Creates a bar graph specifically for Knowledge Assessments for SXSW Report
 #' @param title the title for the knowledge assessment to make plot for
 #' @param fake_data_fun p_and_n, p_and_n_split
+#' @param custom_x_axis_labels custom x-axis labels
 #' @param custom_n custom n, one number
 #' @param custom_n_range custom n range the number to add/subtract for random number generation
 #' @param custom_p_1 custom percentage 1, vector with 1: initial percentage, and 2: amount to set maximum increase
@@ -910,16 +913,13 @@ fake_bar_graph_create <- function(title,
   
 }
 
-#' @title Generate one random number from a min and max
-runif_round <- function(min, max) {
-  round(stats::runif(n = 1, min = min, max = max))
-}
 
-#' @title FAKE Knowledge Assessment Graph Summary
-#' @description Creates a graph specifically for Knowledge assessments for SXSW Report
+#' @title FAKE Knowledge Assessment Line Graph Summary
+#' @description Creates a line graph specifically for Knowledge assessments for SXSW Report
 #' @param title the title for the plot
 #' @param fake_data_fun time_data
 #' @param x_axis the labels for the x-axis: yearly or pre-pl-post-pl
+#' @param labels The labels for the lines
 #' @param lines number of lines to create, either 1 or 2
 #' @param custom_n custom n, one number
 #' @param custom_n_range custom n range the number to add/subtract for random number generation
@@ -1021,7 +1021,7 @@ fake_line_graph_create <- function(title, fake_data_fun = "time_data",
 #' 
 #' @export
 rand_vect <- function(N, M, sd = 1, pos.only = TRUE) {
-  vec <- rnorm(N, M/N, sd)
+  vec <- stats::rnorm(N, M/N, sd)
   if (abs(sum(vec)) < 0.01) vec <- vec + 1
   vec <- round(vec / sum(vec) * M)
   deviation <- M - sum(vec)

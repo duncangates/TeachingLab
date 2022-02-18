@@ -9,42 +9,55 @@ router <- shiny.router::make_router(
 )
 
 ui <- semanticPage(
-  
-  # tags$head(
-  #   tags$link(rel="stylesheet", href="style.css", type="text/css")
-  # ),
-  
+
+  tags$head(
+    includeCSS("www/styles.css")
+  ),
+
   shinyjs::useShinyjs(),
-  
   conditionalPanel(
     condition = "output.loginButton != 'YES'",
     fluidRow(
       column(12,
-             align = "center", offset = 2,
-             h2("Please authenticate using your teachinglab.org gmail account."),
-             googleSignInUI("loginButton")
+        align = "center", offset = 2,
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        h2("Please authenticate using your @teachinglab.org gmail account."),
+        googleSignInUI("loginButton")
       )
     )
   ),
-  
   conditionalPanel(
     condition = "output.loginButton == 'YES'",
-      title = "End of Course Dashboard",
-      theme = "cosmo",
-      # Define tabs
-      shiny.semantic::horizontal_menu(
-        list(
-          list(name = "Info", link = route_link("index"), icon = "info"),
-          list(name = "Quantitative", link = route_link("agree"), icon = "chart area"),
-          list(name = "NPS", link = route_link("nps"), icon = "star"),
-          list(name = "Qualitative", link = route_link("text"), icon = "align justify"),
-          list(name = "Report/Download", link = route_link("report"), icon = "file")
-        ), logo = "imgs/teachinglab_logo.png"
+    title = "End of Course Dashboard",
+    theme = "cosmo",
+    # Define tabs
+    shiny.semantic::horizontal_menu(
+      list(
+        list(name = "Info", link = route_link("index"), icon = "info"),
+        list(name = "Quantitative", link = route_link("agree"), icon = "chart area"),
+        list(name = "NPS", link = route_link("nps"), icon = "star"),
+        list(name = "Qualitative", link = route_link("text"), icon = "align justify"),
+        list(name = "Report/Download", link = route_link("report"), icon = "file")
       ),
-  
-      router$ui
+      logo = "imgs/teachinglab_logo.png"
+    ),
+    router$ui
   ),
-  
   conditionalPanel(
     condition = "output.loginButton == 'NO'",
     div(style = "display:inline-block; left:39%; position:fixed;", helpText("Need to login with a valid email domain to see content"))
@@ -58,12 +71,15 @@ ui <- semanticPage(
 
 server <- function(input, output, session) {
   
+  ## Get googleSignIn module from googleAuthR ##
   sign_ins <- callModule(googleSignIn, "loginButton")
-  
-  # only display content to verified domain users
+
+  ## Only display content to verified domain users, ##
+  ## or special approvals added manually in R/data_load.R ##
   output$loginButton <- renderText({
-    if(!is.null(sign_ins())){
-      if(check_email_domain(sign_ins()$email, "teachinglab.org")){
+    if (!is.null(sign_ins())) {
+      if (TeachingLab::check_email_domain(sign_ins()$email, "teachinglab.org") |
+          TeachingLab::check_email_approved(sign_ins()$email, special_approvals)) {
         return("YES")
       } else {
         print("unknown")
@@ -73,17 +89,16 @@ server <- function(input, output, session) {
     print("no")
     "NO"
   })
-  
-  # need this so it works when conditionalPanel hides content
+
+  ## need this so it works when conditionalPanel hides content ##
   outputOptions(output, "loginButton", suspendWhenHidden = F)
-  
+
+  ## Server pages ##
   router$server(input, output, session)
   agreeServer("p1", in_site)
   npsServer("p2", in_site)
   textServer("p3", in_site)
   reportServer("p4", in_site)
-  
-  
 }
 
 shinyApp(ui = ui, server = server)

@@ -52,13 +52,13 @@ ui <- semanticPage(
 
 server <- function(input, output, session) {
 
+  # Get googleSignIn module from googleAuthR
   sign_ins <- callModule(googleSignIn, "loginButton")
 
-  # only display content to verified domain users
+  # only display content to verified users in the list
   output$loginButton <- renderText({
     if(!is.null(sign_ins())){
-      # if(check_email_domain(sign_ins()$email, "teachinglab.org")){
-      if(check_email_approved(sign_ins()$email, approved_emails_list)){
+      if(TeachingLab::check_email_approved(sign_ins()$email, approved_emails_list)){
         return("YES")
       } else {
         print("unknown")

@@ -1,13 +1,35 @@
-options(googleAuthR.webapp.client_id = "342318881032-ui98nm42rcujf7v5cugcv38fmns8hjvg.apps.googleusercontent.com")
+#### End of Session Survey ####
+
+###### CSV is From Here: https://groups.google.com/a/teachinglab.org/g/employees/members ######
+## Get list of current employees from CSV ##
+# approved_emails_list <- readr::read_csv("Dashboards/SessionSurvey/data/employees.csv", skip = 1) %>%
+#   dplyr::select(1) %>%
+#   purrr::as_vector() %>%
+#   # Add extra people as requested
+#   append(c("dgreenberg@education-first.com",
+#            "sbriggs@education-first.com",
+#            "duncan.gates123@gmail.com",
+#            "kristen.taylor@teachinglab.org",
+#            "ryan.stewart@gmail.com"))
+## Write approved list to dashboard data folder ##
+# readr::write_rds(approved_emails_list, "Dashboards/SessionSurvey/data/employees.rds")
+
+approved_emails_list <- readr::read_rds("data/employees.rds")
+
+################################################################################################
+
+## App options ## 
 # options(googleAnalyticsR.webapp.client_secret = "gSfM4MILy7BUD17oM7XQWfxY")
-
+options(googleAuthR.webapp.client_id = "342318881032-ui98nm42rcujf7v5cugcv38fmns8hjvg.apps.googleusercontent.com")
 options("googleAuthR.redirect" = "https://teachinglabhq.shinyapps.io/SessionSurvey/")
-
 options(shiny.port = 7325)
+options(spinner.color = "#04ABEB")
+
+## App Libraries ##
 library(shiny)
 library(shiny.router)
 library(shiny.semantic)
-suppressPackageStartupMessages(library(tidyverse))
+library(tidyverse)
 library(surveymonkey)
 library(shinycssloaders)
 library(lubridate)
@@ -27,8 +49,7 @@ library(googleAuthR)
 library(shinyjs)
 library(rmarkdown)
 
-options(spinner.color = "#04ABEB")
-
+## Pseudo-HTML for page ##
 info_page <- div(class = "ui container",
                  div(class = "ui center aligned header",
                      h2("Please watch the video below to learn how to use this dashboard, or provide"),
@@ -142,24 +163,4 @@ info_page <- div(class = "ui container",
                      )
                  )
 )
-
-check_email_domain <- function(email, domain) {
-  grepl(paste0("@",domain,"$"), email, ignore.case = TRUE)
-}
-
-# From Here: https://groups.google.com/a/teachinglab.org/g/employees/members
-# approved_emails_list <- readr::read_csv(here::here("Dashboards/SessionSurvey/Data/employees.csv"), skip = 1) %>%
-#   dplyr::select(1) %>%
-#   purrr::as_vector()
-# approved_emails_list <- readr::read_csv("Dashboards/SessionSurvey/Data/employees.csv", skip = 1) %>%
-#   dplyr::select(1) %>%
-#   purrr::as_vector() %>%
-#   append("kristen.taylor@teachinglab.org")
-# readr::write_rds(approved_emails_list, "Dashboards/SessionSurvey/Data/employees.rds")
-approved_emails_list <- readr::read_rds("data/employees.rds") %>%
-  append(c("dgreenberg@education-first.com", "sbriggs@education-first.com", "duncan.gates123@gmail.com"))
-
-check_email_approved <- function(email, approved_emails_list) {
-  email %in% approved_emails_list
-}
 
