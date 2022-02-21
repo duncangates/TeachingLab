@@ -4,7 +4,7 @@ uiAgree <- function(id, label = "Counter") {
   shiny::tagList(
     shiny.semantic::sidebar_layout(
       sidebar_panel = shiny.semantic::sidebar_panel(
-        style = "position:fixed;overflow-x:hidden;overflow-y:auto;width:inherit;",
+        style = sidebar_style,
         shiny.semantic::menu_item(
           tabName = "facilitator_menu",
           shiny::selectizeInput(
@@ -17,7 +17,7 @@ uiAgree <- function(id, label = "Counter") {
               purrr::prepend("All Facilitators"),
             multiple = T,
             selected = "All Facilitators",
-            options = list(plugins= list('remove_button'))
+            options = list(plugins = list("remove_button"))
           ),
           icon = shiny.semantic::icon("clone")
         ),
@@ -34,7 +34,7 @@ uiAgree <- function(id, label = "Counter") {
               purrr::prepend("All Content Areas"),
             multiple = T,
             selected = "All Content Areas",
-            options = list(plugins= list('remove_button'))
+            options = list(plugins = list("remove_button"))
           ),
           icon = shiny.semantic::icon("edit")
         ),
@@ -51,7 +51,7 @@ uiAgree <- function(id, label = "Counter") {
               purrr::prepend("All Courses"),
             multiple = T,
             selected = "All Courses",
-            options = list(plugins= list('remove_button'))
+            options = list(plugins = list("remove_button"))
           ),
           icon = shiny.semantic::icon("clone")
         ),
@@ -68,7 +68,7 @@ uiAgree <- function(id, label = "Counter") {
               purrr::prepend("All Sites"),
             multiple = T,
             selected = "All Sites",
-            options = list(plugins= list('remove_button'))
+            options = list(plugins = list("remove_button"))
           ),
           icon = shiny.semantic::icon("location arrow")
         ),
@@ -85,23 +85,35 @@ uiAgree <- function(id, label = "Counter") {
               purrr::prepend("All Roles"),
             multiple = T,
             selected = "All Roles",
-            options = list(plugins= list('remove_button'))
+            options = list(plugins = list("remove_button"))
           ),
           icon = shiny.semantic::icon("user")
         ),
         br(),
         shiny.semantic::menu_item(
           tabName = "date_slider_menu",
-          shiny::sliderInput(
-            inputId = ns("date_slider"),
-            label = h3("Select a date range"),
-            value = c(
-              min(as.Date(session_survey$Date), na.rm = T),
-              max(as.Date(session_survey$Date), na.rm = T)
+          split_layout(
+            cell_widths = c("50%", "5-%"),
+            cell_args = "padding: 5px;",
+            style = "background-color: transparent;",
+            shinyWidgets::airDatepickerInput(
+              inputId = ns("date_min"),
+              label = h3("Select minimum date"),
+              value = min(as.Date(session_survey$Date), na.rm = T),
+              minDate = min(as.Date(session_survey$Date), na.rm = T),
+              maxDate = max(as.Date(session_survey$Date), na.rm = T),
+              dateFormat = "mm-dd-yyyy",
+              width = "100px"
             ),
-            min = min(as.Date(session_survey$Date), na.rm = T),
-            max = max(as.Date(session_survey$Date), na.rm = T),
-            timeFormat = "%b %d, %Y"
+            shinyWidgets::airDatepickerInput(
+              inputId = ns("date_max"),
+              label = h3("Select maximum date"),
+              value = max(as.Date(session_survey$Date), na.rm = T),
+              minDate = min(as.Date(session_survey$Date), na.rm = T),
+              maxDate = max(as.Date(session_survey$Date), na.rm = T),
+              dateFormat = "mm-dd-yyyy",
+              width = "100px"
+            )
           ),
           icon = shiny.semantic::icon("calendar alternate")
         ),
@@ -119,41 +131,54 @@ uiAgree <- function(id, label = "Counter") {
         br(),
         shiny.semantic::menu_item(
           tabName = "download_menu",
-          div(style = "display:inline-block;",
-              shiny.semantic::selectInput(inputId = ns("plot_choice"),
-                                          label = "Download",
-                                          choices = c("Percentage Plot", "Percentage Over Time Plot"))
+          div(
+            style = "display:inline-block;",
+            shiny.semantic::selectInput(
+              inputId = ns("plot_choice"),
+              label = "Download",
+              choices = c("Percentage Plot", "Percentage Over Time Plot")
+            )
           ),
-          div(style = "display:inline-block;margin-left:5px;",
-              shiny.semantic::selectInput(inputId = ns("download_option"),
-                                          label = "as",
-                                          choices = c("png", "pdf (coming soon)")))
+          div(
+            style = "display:inline-block;margin-left:5px;",
+            shiny.semantic::selectInput(
+              inputId = ns("download_option"),
+              label = "as",
+              choices = c("png", "pdf (coming soon)")
+            )
+          )
         ),
         shiny.semantic::menu_item(
           tabName = "download_params",
-          div(style = "display:inline-block;",
-              shiny.semantic::numericInput(
-                inputId = ns("width"),
-                label = "width",
-                value = 12,
-                step = 1,
-                min = 2,
-                max = 20
-              )),
-          div(style = "display:inline-block;margin-left:5px;",
-              shiny.semantic::numericInput(
-                inputId = ns("height"),
-                label = "height",
-                value = 7,
-                step = 1,
-                min = 2,
-                max = 20
-              )),
-          div(style = "display:inline-block;margin-left:10px;",
-              shiny::downloadButton(
-                outputId = ns("down"),
-                label = ""
-              ))
+          div(
+            style = "display:inline-block;",
+            shiny.semantic::numericInput(
+              inputId = ns("width"),
+              label = "width",
+              value = 12,
+              step = 1,
+              min = 2,
+              max = 20
+            )
+          ),
+          div(
+            style = "display:inline-block;margin-left:5px;",
+            shiny.semantic::numericInput(
+              inputId = ns("height"),
+              label = "height",
+              value = 7,
+              step = 1,
+              min = 2,
+              max = 20
+            )
+          ),
+          div(
+            style = "display:inline-block;margin-left:10px;",
+            shiny::downloadButton(
+              outputId = ns("down"),
+              label = ""
+            )
+          )
         )
       ),
       main_panel = shiny.semantic::main_panel(
@@ -182,17 +207,17 @@ agreeServer <- function(id) {
 
     # Time Series Plot
     data_plot_ts <- reactive({
-      
       validate(
         need(!is.null(input$facilitator), "Please select at least one facilitator"),
         need(!is.null(input$role), "Please select at least one role"),
         need(!is.null(input$site), "Please select at least one site"),
         need(!is.null(input$content), "Please select at least one content area"),
-        need(!is.null(input$course), "Please select at least one course")
+        need(!is.null(input$course), "Please select at least one course"),
+        need(input$date_min <= input$date_max, "Please select a minimum date that is less than the maximum.")
       )
-      
+
       agree_plot_ts <- session_survey %>%
-        dplyr::filter(between(Date, input$date_slider[1], input$date_slider[2])) %>%
+        dplyr::filter(between(Date, input$date_min, input$date_max)) %>%
         {
           if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
         } %>%
@@ -235,9 +260,11 @@ agreeServer <- function(id) {
             answer %in% c("Agree", "Strongly agree") ~ "Agree/Strongly Agree",
             answer %in% c("Neither agree nor disagree", "Disagree", "Strongly disagree") ~ "Neither/Disagree/Strongly Disagree"
           ),
-          date_group = case_when(input$scale_adjust == "1 month" ~ paste0(lubridate::month(Date, label = T, abbr = F), ", ", year(Date)),
-                                 input$scale_adjust == "1 week" ~ paste0(year(Date), lubridate::week(Date)),
-                                 input$scale_adjust == "1 day" ~ paste0(lubridate::day(Date)))
+          date_group = case_when(
+            input$scale_adjust == "1 month" ~ paste0(lubridate::month(Date, label = T, abbr = F), ", ", year(Date)),
+            input$scale_adjust == "1 week" ~ paste0(year(Date), lubridate::week(Date)),
+            input$scale_adjust == "1 day" ~ paste0(lubridate::day(Date))
+          )
         ) %>%
         ungroup() %>%
         dplyr::mutate(question = str_remove_all(
@@ -248,17 +275,21 @@ agreeServer <- function(id) {
         mutate(Percent = `Number Agree/Disagree` / sum(`Number Agree/Disagree`) * 100) %>%
         filter(Rating == "Agree/Strongly Agree") %>%
         group_by(date_group, Rating, question) %>%
-        summarise(Percent = round(sum(Percent), 2),
-                  Date = Date)
-      
+        summarise(
+          Percent = round(sum(Percent), 2),
+          Date = Date
+        )
+
       agree_plot_ts
     })
-    
+
     # Ggplot for time series plot
     output$agree_plot_ts <- renderPlot({
       data_plot_ts() %>%
-        ggplot(aes(x = ymd(Date), 
-                   y = Percent)) +
+        ggplot(aes(
+          x = ymd(Date),
+          y = Percent
+        )) +
         geom_area(color = "gray50", aes(fill = Rating), alpha = 0.6, position = position_identity()) + # position_identity is absolutely necessary here, not sure why
         geom_ribbon(color = "transparent", aes(
           ymin = Percent, ymax = 100,
@@ -270,7 +301,13 @@ agreeServer <- function(id) {
         coord_cartesian() +
         scale_x_date(
           date_breaks = input$scale_adjust,
-          date_labels = if (input$scale_adjust == "1 month") { "%b, %Y" } else if (input$scale_adjust == "1 week") { "%W" } else if (input$scale_adjust == "1 day") { "%W" },
+          date_labels = if (input$scale_adjust == "1 month") {
+            "%b, %Y"
+          } else if (input$scale_adjust == "1 week") {
+            "%W"
+          } else if (input$scale_adjust == "1 day") {
+            "%W"
+          },
           limits = c(min(data_plot_ts()$Date), max(data_plot_ts()$Date)),
           expand = c(0, 0)
         ) +
@@ -296,11 +333,11 @@ agreeServer <- function(id) {
           axis.line = element_line(size = 1.5)
         )
     })
-    
+
     # Agree plot n size
     agree_plot_n <- reactive({
       data_n <- session_survey %>%
-        dplyr::filter(between(Date, input$date_slider[1], input$date_slider[2])) %>%
+        dplyr::filter(between(Date, input$date_min, input$date_max)) %>%
         {
           if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
         } %>%
@@ -321,17 +358,17 @@ agreeServer <- function(id) {
 
     # Agree Percent Plot
     data_plot_agree <- reactive({
-      
       validate(
         need(!is.null(input$facilitator), "Please select at least one facilitator"),
         need(!is.null(input$role), "Please select at least one role"),
         need(!is.null(input$site), "Please select at least one site"),
         need(!is.null(input$content), "Please select at least one content area"),
-        need(!is.null(input$course), "Please select at least one course")
+        need(!is.null(input$course), "Please select at least one course"),
+        need(input$date_min <= input$date_max, "Please select a minimum date that is less than the maximum.")
       )
-      
+
       agree_plot <- session_survey %>%
-        dplyr::filter(between(Date, input$date_slider[1], input$date_slider[2])) %>%
+        dplyr::filter(between(Date, input$date_min, input$date_max)) %>%
         {
           if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
         } %>%
@@ -370,9 +407,8 @@ agreeServer <- function(id) {
           Response = Response,
           Percent = n / sum(n) * 100
         )
-      
+
       agree_plot
-      
     })
 
 
@@ -404,7 +440,7 @@ agreeServer <- function(id) {
           legend.text = element_text(size = 9)
         )
     })
-    
+
     downloadGraph <- reactive({
       download_graph <- ggplot(data = data_plot_agree(), aes(x = Question, y = Percent, fill = factor(Response))) +
         geom_col() +
@@ -430,7 +466,7 @@ agreeServer <- function(id) {
           legend.text = element_text(size = 9)
         )
     })
-    
+
     output$down <- downloadHandler(
       filename = function() {
         paste0("agree_plot.", input$download_option)
@@ -443,41 +479,7 @@ agreeServer <- function(id) {
           cairo_pdf(filename = file, width = input$width, height = input$height, family = "Calibri")
           downloadGraph()
         }
-        
       }
     )
-    
-    # rv_facilitator <- reactive({
-    #   input$facilitator
-    # })
-    # return(rv_facilitator)
-    # 
-    # rv_content <- reactive({
-    #   input$content
-    # })
-    # return(rv_content)
-    # 
-    # rv_course <- reactive({
-    #   input$course
-    # })
-    # return(rv_course)
-    # 
-    # rv_site <- reactive({
-    #   input$site
-    # })
-    # return(rv_site)
-    # 
-    # rv_role <- reactive({
-    #   input$role
-    # })
-    # return(rv_role)
-    # 
-    # rv_date_slider <- reactive({
-    #   input$date_slider
-    # })
-    # return(rv_date_slider)
-    
-    
-    
   })
 }

@@ -1,3 +1,4 @@
+/* SESSION SURVEY DASHBOARD */
 @import url('https://fonts.googleapis.com/css2?family=Calibri');
 
 * {
@@ -6,15 +7,37 @@
 
 /* .box { margin-bottom: 50; } */
 
-.ui.wide.left.sidebar, .ui.wide.right.sidebar {
-  width: 323px;
-}
 /*
-.col-sm-12.offset-md-2.col-sm-offset-2 {
-  transform: translate(0%, 500%);
+.ui.wide.left.sidebar, .ui.wide.right.sidebar {
+  width: 450px;
 }
 */
 
+.bttn {
+  position:relative!important;
+  margin-top: -20px!important; /* Makes buttons slightly above the tables */
+}
+
+.selectize-input {
+  width: 85%;
+}
+
+.irs--shiny {
+  width: 85%;
+}
+
+.ui.form {
+  width: 85%;
+}
+
 .h3 {
   line-height: 1.1;
+}
+
+.content-wrapper {
+               overflow: auto;
+}
+
+.form-group input {
+  width: 125px;
 }

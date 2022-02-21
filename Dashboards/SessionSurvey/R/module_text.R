@@ -28,7 +28,7 @@ uiText <- function(id, label = "Counter") {
   shiny::tagList(
     shiny.semantic::sidebar_layout(
       sidebar_panel = shiny.semantic::sidebar_panel(
-        style = "position:fixed;overflow-x:hidden;overflow-y:auto;width:inherit;",
+        style = sidebar_style,
         shiny.semantic::menu_item(
           tabName = "facilitator_menu",
           shiny::selectizeInput(
@@ -116,16 +116,15 @@ uiText <- function(id, label = "Counter") {
         br(),
         shiny.semantic::menu_item(
           tabName = "date_slider_menu",
-          shiny::sliderInput(
+          shinyWidgets::airDatepickerInput(
             inputId = ns("date_slider"),
             label = h3("Select a date range"),
-            value = c(
-              min(as.Date(session_survey$Date), na.rm = T),
-              max(as.Date(session_survey$Date), na.rm = T)
-            ),
-            min = min(as.Date(session_survey$Date), na.rm = T),
-            max = max(as.Date(session_survey$Date), na.rm = T),
-            timeFormat = "%b %d, %Y"
+            range = T,
+            value = c(min(as.Date(session_survey$Date), na.rm = T),
+                      max(as.Date(session_survey$Date), na.rm = T)),
+            minDate = min(as.Date(session_survey$Date), na.rm = T),
+            maxDate = max(as.Date(session_survey$Date), na.rm = T),
+            dateFormat = "mm-dd-yyyy"
           ),
           icon = shiny.semantic::icon("calendar alternate")
         ),
@@ -334,11 +333,10 @@ textServer <- function(id) {
           if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
         } %>%
         select(Facilitation_Feedback) %>%
-        pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
+        rename(`What additional feedback do you have about their facilitation skills?` = Facilitation_Feedback) %>%
         drop_na() %>%
-        filter(Response %!in% na_df) %>%
-        select(Response) %>%
-        filter(str_length(Response) > input$quote_length)
+        filter(`What additional feedback do you have about their facilitation skills?` %!in% na_df) %>%
+        filter(str_length(`What additional feedback do you have about their facilitation skills?`) > input$quote_length)
     })
     
     quote1 <- reactiveValues(table1 = NULL)
@@ -352,10 +350,10 @@ textServer <- function(id) {
     
     output$quote_gt1 <- gt::render_gt(
       quote_viz(
-        data = quote1$table1, text_col = "Response", viz_type = "gt",
-        title = "What additional feedback do you have about their facilitation skills?",
+        data = quote1$table1,
+        viz_type = "gt",
         print = F,
-        width = 60
+        width = 100
       ) %>%
         suppressWarnings() %>%
         suppressMessages()
@@ -389,11 +387,9 @@ textServer <- function(id) {
           if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
         } %>%
         select(`What went well in today’s session?`) %>%
-        pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
         drop_na() %>%
-        filter(Response %!in% na_df) %>%
-        select(Response) %>%
-        filter(str_length(Response) > input$quote_length)
+        filter(`What went well in today’s session?` %!in% na_df) %>%
+        filter(str_length(`What went well in today’s session?`) > input$quote_length)
     })
     
     quote2 <- reactiveValues(table2 = NULL)
@@ -407,10 +403,10 @@ textServer <- function(id) {
     
     output$quote_gt2 <- gt::render_gt(
       quote_viz(
-        data = quote2$table2, text_col = "Response", viz_type = "gt",
-        title = "What went well in today’s session?",
+        data = quote2$table2,
+        viz_type = "gt",
         print = F,
-        width = 60
+        width = 100
       ) %>%
         suppressWarnings() %>%
         suppressMessages()
@@ -444,11 +440,9 @@ textServer <- function(id) {
           if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
         } %>%
         select(`What could have been better about today’s session?`) %>%
-        pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
         drop_na() %>%
-        filter(Response %!in% na_df) %>%
-        select(Response) %>%
-        filter(str_length(Response) > input$quote_length)
+        filter(`What could have been better about today’s session?` %!in% na_df) %>%
+        filter(str_length(`What could have been better about today’s session?`) > input$quote_length)
     })
     
     quote3 <- reactiveValues(table3 = NULL)
@@ -462,21 +456,14 @@ textServer <- function(id) {
 
     output$quote_gt3 <- gt::render_gt(
       quote_viz(
-        data = quote3$table3, text_col = "Response", viz_type = "gt",
-        title = "What could have been better about today’s session?",
+        data = quote3$table3,
+        viz_type = "gt",
         print = F,
-        width = 60
+        width = 100
       ) %>%
         suppressWarnings() %>%
         suppressMessages()
     )
-    
-    #### Filters reactive to other module inputs ####
-    # facilitator_input <- callModule(agreeServer, "facilitator")
-    # session$userData$settings <- reactiveValues(chosen_facilitator = NA)
-    # observeEvent(facilitator_input(), {
-    #   session$userData$settings$chosen_facilitator <- facilitator_input()
-    # })
     
 
   })

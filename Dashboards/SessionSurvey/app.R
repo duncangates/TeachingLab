@@ -10,7 +10,9 @@ router <- shiny.router::make_router(
 
 ui <- semanticPage(
 
-  # includeCSS("www/styles.css"),
+  tags$head(
+    includeCSS("www/styles.css")
+  ),
   
   shinyjs::useShinyjs(),
 

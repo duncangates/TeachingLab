@@ -1,5 +1,6 @@
 #### Course Survey Dashboard ####
 
+# Making the initial routes to follow
 router <- shiny.router::make_router(
   shiny.router::route("index", info_page),
   shiny.router::route("agree", uiAgree("p1")),

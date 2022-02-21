@@ -1,8 +1,10 @@
 #### Course Survey Dashboard ####
+
+## App Libraries ##
 suppressPackageStartupMessages(library(shiny))
 suppressPackageStartupMessages(library(shiny.router))
+suppressPackageStartupMessages(library(shiny.semantic))
 suppressPackageStartupMessages(library(tidyverse))
-suppressPackageStartupMessages(library(surveymonkey))
 suppressPackageStartupMessages(library(ggtext))
 suppressPackageStartupMessages(library(scales))
 suppressPackageStartupMessages(library(TeachingLab))
@@ -13,9 +15,8 @@ suppressPackageStartupMessages(library(lubridate))
 suppressPackageStartupMessages(library(showtext))
 suppressPackageStartupMessages(library(shinyWidgets))
 suppressPackageStartupMessages(library(gt))
-suppressPackageStartupMessages(library(ggfx))
-suppressPackageStartupMessages(library(ggforce))
-suppressPackageStartupMessages(library(shiny.semantic))
+suppressPackageStartupMessages(library(ggfx)) # DIFFERENT THAN SESSION FOR NPS
+suppressPackageStartupMessages(library(ggforce)) # DIFFERENT THAN SESSION FOR NPS
 suppressPackageStartupMessages(library(glue))
 suppressPackageStartupMessages(library(Cairo))
 suppressPackageStartupMessages(library(grDevices))

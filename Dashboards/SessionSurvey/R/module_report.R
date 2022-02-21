@@ -4,7 +4,24 @@ uiReport <- function(id, label = "Counter") {
   shiny::tagList(
     shiny.semantic::sidebar_layout(
       sidebar_panel = shiny.semantic::sidebar_panel(
-        style = "position:fixed;overflow-x:hidden;overflow-y:scroll;width:inherit;",
+        style = sidebar_style,
+        menu_item(
+          tabName = "recent_menu",
+          h5("Utilize the filters in the sidebar to download", style = "margin: calc(2rem - 3.1em) 0 1rem; margin-top:2px;"),
+          h5("your custom report,", style = "margin: calc(2rem - 3.1em) 0 1rem"),
+          h5("OR click one of the following recent", style = "margin: calc(2rem - 3.1em) 0 1rem"),
+          h5("sessions found by a unique ", style = "margin: calc(2rem - 3.1em) 0 1rem"),
+          h5("combination of site and facilitator,", style = "margin: calc(2rem - 3.1em) 0 1rem"),
+          h5("and then just click download!", style = "margin: calc(2rem - 3.1em) 0 1rem"),
+          shiny::selectizeInput(ns("recent_sessions"),
+                                choices = recent_choices_final$choice,
+                                label = NULL, 
+                                selected = NULL, 
+                                multiple = T,
+                                options = list(plugins = list("remove_button"))
+          ),
+          icon = shiny.semantic::icon("free code camp")
+        ),
         shiny.semantic::menu_item(
           tabName = "facilitator_menu",
           shiny::selectizeInput(
@@ -92,16 +109,15 @@ uiReport <- function(id, label = "Counter") {
         br(),
         shiny.semantic::menu_item(
           tabName = "date_slider_menu",
-          shiny::sliderInput(
+          shinyWidgets::airDatepickerInput(
             inputId = ns("date_slider"),
             label = h3("Select a date range"),
-            value = c(
-              min(as.Date(session_survey$Date), na.rm = T),
-              max(as.Date(session_survey$Date), na.rm = T)
-            ),
-            min = min(as.Date(session_survey$Date), na.rm = T),
-            max = max(as.Date(session_survey$Date), na.rm = T),
-            timeFormat = "%b %d, %Y"
+            range = T,
+            value = c(min(as.Date(session_survey$Date), na.rm = T),
+                      max(as.Date(session_survey$Date), na.rm = T)),
+            minDate = min(as.Date(session_survey$Date), na.rm = T),
+            maxDate = max(as.Date(session_survey$Date), na.rm = T),
+            dateFormat = "mm-dd-yyyy"
           ),
           icon = shiny.semantic::icon("calendar alternate")
         )
@@ -111,16 +127,35 @@ uiReport <- function(id, label = "Counter") {
         div(
           class = "ui three column stackable grid container",
           div(
-            class = "seven wide column",
+            class = "six wide column",
             br(),
             br(),
-            h3("Utilize the filters in the sidebar to download your custom report,"),
-            h3(" OR click one of the following buttons to download one of the following most recent sessions found by a unique combination of site and facilitator, and then just click download!"),
-            selectizeInput(ns("recent_sessions"),
-              choices = recent_choices_final$choice,
-              label = NULL, selected = NULL, multiple = T,
-              options = list(plugins = list("remove_button"))
-            ),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            downloadButton(ns("download_report1"),
+                           label = tagList(
+                             tags$span(tags$html("  Download Report PDF")),
+                             tags$img(src = "report_example_pdf.png", 
+                                      align = "center", 
+                                      style = report_style)
+                           ),
+                           icon = shiny::icon("file-download")
+            ) %>%
+              withSpinner(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
             br(),
             br(),
             br(),
@@ -129,44 +164,59 @@ uiReport <- function(id, label = "Counter") {
             br()
           ),
           div(
-            class = "five wide column",
+            class = "four wide column",
             align = "center",
             br(),
             br(),
             br(),
-            downloadButton(ns("download_report1"),
-              label = tagList(
-                tags$span("Download Report PDF"),
-                tags$img(src = "report_example_pdf.png", align = "center")
-              ),
-              icon = shiny::icon("file-download")
-            ) %>%
-              withSpinner(),
+            br(),
+            br(),
+            br(),
+            br(),
             br(),
             br(),
             br(),
             br(),
             br(),
             downloadButton(ns("download_report2"),
-              label = tagList(
-                tags$span("Download Report DOCX"),
-                tags$img(src = "report_example_word.png", align = "center")
-              ),
-              icon = shiny::icon("file-download")
+                           label = tagList(
+                             tags$span("Download Report DOCX"),
+                             tags$img(src = "report_example_word.png", 
+                                      align = "center", 
+                                      style = report_style)
+                           ),
+                           icon = shiny::icon("file-download")
             ) %>%
               withSpinner()
           ),
+          br(),
+          br(),
+          br(),
+          br(),
+          br(),
           div(
             class = "four wide column",
             align = "center",
             br(),
             br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
             downloadButton(ns("download_csv"),
-              label = tagList(
-                tags$span("  Download a CSV of Raw Data"),
-                tags$img(src = "fake_raw.png", align = "center")
-              ),
-              icon = shiny::icon("save")
+                           label = tagList(
+                             tags$span("  Download a CSV of Raw Data"),
+                             tags$img(src = "fake_raw.png", 
+                                      align = "center", 
+                                      style = report_style)
+                           ),
+                           icon = shiny::icon("save")
             )
           )
         )

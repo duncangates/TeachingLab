@@ -1,6 +1,9 @@
 #### End of Session Survey ####
+
+## Load pipe ##
 library(magrittr)
-options(sm_oauth_token = "BjVjlV9MiVBgfe1XpS2xPS547c6gkAygKWAgm4Vv539-KbFct5lsqyVGRCZun0GDt21lnJrgn9hDvSjF.KybF58vc.P.jdeKJ8A2UEUHnE2.50e0lp.86EmQmy8-y9tm")
+
+## Read in data ##
 session_survey <- readr::read_rds("data/session_survey_21_22data.rds")
 
 ## NAs dataframe
