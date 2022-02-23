@@ -81,3 +81,13 @@ get_course_survey <- function(loc = "data/course_surveymonkey.rds") {
   df <- readRDS(file = loc)
   return(df)
 }
+
+#' @title IPG Data
+#' @description Gets data from IPG forms
+#' @return Returns a tibble
+#' @export
+get_ipg_forms <- function() {
+  df <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1L33wVpPERyUQdG8WO3sZiyjnHzPvDL91O4yVUQTN14A/edit#gid=1455024681",
+                                  sheet = 1)
+  return(df)
+}

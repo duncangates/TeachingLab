@@ -7,7 +7,7 @@
 #' @param na_type the form that NA takes - could be "No Response" as in the Participant Feedback dashboard, or any other form of "NA"
 #' @return Returns a dataframe with the percent, correct, number of non-na responses, and question itself
 #' @export
-#' 
+
 score_question <- function(data, question, coding, grouping, na_type = "NA") {
   
   groups <- as.list(rlang::enexpr(grouping))

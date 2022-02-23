@@ -264,7 +264,26 @@ drop1 <- function(before = T, options, envir, name) {
   
 }
 
-
+#' @title Temporary Image Save and Return
+#' @description Creates a temporary save location for an image and return it with `knitr::include_graphics`
+#' @param img the object to save as an image
+#' @return a png image
+#' @export
+temp_save <- function(img) {
+  
+  file_loc <- paste0(tempfile(), ".png")
+  
+  if ("gt_tbl" %in% class(img)) {
+    
+    print("saving...")
+    
+    img_return <- gt::gtsave(data = final_gt,
+                             path = here::here("images/report_images"),
+                             filename = tempfile(fileext = ".png"))
+    
+    return(img_return)
+  }
+}
 
 #' @title Password Generator
 #' @description Creates a password of n length
@@ -312,4 +331,11 @@ runif_round <- function(min, max) {
   round(stats::runif(n = 1, min = min, max = max))
 }
 
-
+#' @title First Letter Uppercase
+#' @param x string
+#' @return string
+#' @export
+first_up <- function(x) {
+  substr(x, 1, 1) <- toupper(substr(x, 1, 1))
+  x
+}

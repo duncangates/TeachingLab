@@ -93,7 +93,7 @@ uiAgree <- function(id, label = "Counter") {
         shiny.semantic::menu_item(
           tabName = "date_slider_menu",
           split_layout(
-            cell_widths = c("50%", "5-%"),
+            cell_widths = c("50%", "50%"),
             cell_args = "padding: 5px;",
             style = "background-color: transparent;",
             shinyWidgets::airDatepickerInput(

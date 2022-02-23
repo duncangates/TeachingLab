@@ -116,15 +116,28 @@ uiText <- function(id, label = "Counter") {
         br(),
         shiny.semantic::menu_item(
           tabName = "date_slider_menu",
-          shinyWidgets::airDatepickerInput(
-            inputId = ns("date_slider"),
-            label = h3("Select a date range"),
-            range = T,
-            value = c(min(as.Date(session_survey$Date), na.rm = T),
-                      max(as.Date(session_survey$Date), na.rm = T)),
-            minDate = min(as.Date(session_survey$Date), na.rm = T),
-            maxDate = max(as.Date(session_survey$Date), na.rm = T),
-            dateFormat = "mm-dd-yyyy"
+          split_layout(
+            cell_widths = c("50%", "50%"),
+            cell_args = "padding: 5px;",
+            style = "background-color: transparent;",
+            shinyWidgets::airDatepickerInput(
+              inputId = ns("date_min"),
+              label = h3("Select minimum date"),
+              value = min(as.Date(session_survey$Date), na.rm = T),
+              minDate = min(as.Date(session_survey$Date), na.rm = T),
+              maxDate = max(as.Date(session_survey$Date), na.rm = T),
+              dateFormat = "mm-dd-yyyy",
+              width = "100px"
+            ),
+            shinyWidgets::airDatepickerInput(
+              inputId = ns("date_max"),
+              label = h3("Select maximum date"),
+              value = max(as.Date(session_survey$Date), na.rm = T),
+              minDate = min(as.Date(session_survey$Date), na.rm = T),
+              maxDate = max(as.Date(session_survey$Date), na.rm = T),
+              dateFormat = "mm-dd-yyyy",
+              width = "100px"
+            )
           ),
           icon = shiny.semantic::icon("calendar alternate")
         ),
@@ -177,11 +190,12 @@ textServer <- function(id) {
         need(!is.null(input$role), "Please select at least one role"),
         need(!is.null(input$site), "Please select at least one site"),
         need(!is.null(input$content), "Please select at least one content area"),
-        need(!is.null(input$course), "Please select at least one course")
+        need(!is.null(input$course), "Please select at least one course"),
+        need(input$date_min <= input$date_max, "Please select a minimum date that is less than the maximum.")
       )
       
       count <- session_survey %>%
-        dplyr::filter(between(Date, input$date_slider[1], input$date_slider[2])) %>%
+        dplyr::filter(between(Date, input$date_min, input$date_max)) %>%
         {
           if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
         } %>%
@@ -213,11 +227,12 @@ textServer <- function(id) {
         need(!is.null(input$role), "Please select at least one role"),
         need(!is.null(input$site), "Please select at least one site"),
         need(!is.null(input$content), "Please select at least one content area"),
-        need(!is.null(input$course), "Please select at least one course")
+        need(!is.null(input$course), "Please select at least one course"),
+        need(input$date_min <= input$date_max, "Please select a minimum date that is less than the maximum.")
       )
       
       count <- session_survey %>%
-        dplyr::filter(between(Date, input$date_slider[1], input$date_slider[2])) %>%
+        dplyr::filter(between(Date, input$date_min, input$date_max)) %>%
         {
           if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
         } %>%
@@ -249,11 +264,12 @@ textServer <- function(id) {
         need(!is.null(input$role), "Please select at least one role"),
         need(!is.null(input$site), "Please select at least one site"),
         need(!is.null(input$content), "Please select at least one content area"),
-        need(!is.null(input$course), "Please select at least one course")
+        need(!is.null(input$course), "Please select at least one course"),
+        need(input$date_min <= input$date_max, "Please select a minimum date that is less than the maximum.")
       )
       
       count <- session_survey %>%
-        dplyr::filter(between(Date, input$date_slider[1], input$date_slider[2])) %>%
+        dplyr::filter(between(Date, input$date_min, input$date_max)) %>%
         {
           if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
         } %>%
@@ -312,11 +328,12 @@ textServer <- function(id) {
         need(!is.null(input$role), "Please select at least one role"),
         need(!is.null(input$site), "Please select at least one site"),
         need(!is.null(input$content), "Please select at least one content area"),
-        need(!is.null(input$course), "Please select at least one course")
+        need(!is.null(input$course), "Please select at least one course"),
+        need(input$date_min <= input$date_max, "Please select a minimum date that is less than the maximum.")
       )
       
       quote_reactive1 <- session_survey %>%
-        dplyr::filter(between(Date, input$date_slider[1], input$date_slider[2])) %>%
+        dplyr::filter(between(Date, input$date_min, input$date_max)) %>%
         {
           if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
         } %>%
@@ -366,11 +383,12 @@ textServer <- function(id) {
         need(!is.null(input$role), "Please select at least one role"),
         need(!is.null(input$site), "Please select at least one site"),
         need(!is.null(input$content), "Please select at least one content area"),
-        need(!is.null(input$course), "Please select at least one course")
+        need(!is.null(input$course), "Please select at least one course"),
+        need(input$date_min <= input$date_max, "Please select a minimum date that is less than the maximum.")
       )
       
       quote_reactive2 <- session_survey %>%
-        dplyr::filter(between(Date, input$date_slider[1], input$date_slider[2])) %>%
+        dplyr::filter(between(Date, input$date_min, input$date_max)) %>%
         {
           if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
         } %>%
@@ -419,11 +437,12 @@ textServer <- function(id) {
         need(!is.null(input$role), "Please select at least one role"),
         need(!is.null(input$site), "Please select at least one site"),
         need(!is.null(input$content), "Please select at least one content area"),
-        need(!is.null(input$course), "Please select at least one course")
+        need(!is.null(input$course), "Please select at least one course"),
+        need(input$date_min <= input$date_max, "Please select a minimum date that is less than the maximum.")
       )
       
       quote_reactive3 <- session_survey %>%
-        dplyr::filter(between(Date, input$date_slider[1], input$date_slider[2])) %>%
+        dplyr::filter(between(Date, input$date_min, input$date_max)) %>%
         {
           if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
         } %>%
