@@ -4,7 +4,7 @@ uiReport <- function(id, label = "Counter") {
   shiny::tagList(
     shiny.semantic::sidebar_layout(
       sidebar_panel = shiny.semantic::sidebar_panel(
-        style = report_style,
+        style = sidebar_style,
         menu_item(
           tabName = "recent_menu",
           h5("Utilize the filters in the sidebar to download", style = "margin: calc(2rem - 3.1em) 0 1rem; margin-top:2px;"),

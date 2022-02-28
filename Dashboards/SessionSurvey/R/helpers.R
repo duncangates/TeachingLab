@@ -36,6 +36,7 @@ suppressPackageStartupMessages(library(googleAuthR))
 ## Write approved list to dashboard data folder ##
 # readr::write_rds(approved_emails_list, "Dashboards/SessionSurvey/data/employees.rds")
 
+######## THIS WORKS BY RUNNING THE ABOVE CODE LOCALLY #######
 approved_emails_list <- readr::read_rds("data/employees.rds")
 
 ################################################################################################

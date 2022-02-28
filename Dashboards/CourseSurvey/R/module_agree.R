@@ -354,6 +354,7 @@ agreeServer <- function(id, in_site) {
     agree_plot_n <- reactive({
       
       data_n <- course_survey %>%
+        dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
         TeachingLab::neg_cond_filter(.,
                                      if_not_this = "All Sites",
                                      filter_this = input$site,
