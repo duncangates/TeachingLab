@@ -4,7 +4,7 @@ uiReport <- function(id, label = "Counter") {
   shiny::tagList(
     shiny.semantic::sidebar_layout(
       sidebar_panel = shiny.semantic::sidebar_panel(
-        style = sidebar_style,
+        style = report_style,
         menu_item(
           tabName = "recent_menu",
           h5("Utilize the filters in the sidebar to download", style = "margin: calc(2rem - 3.1em) 0 1rem; margin-top:2px;"),
@@ -668,7 +668,7 @@ reportServer <- function(id) {
 
     download_reactive <- reactive({
       df <- session_survey_recent() %>%
-        dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
+        dplyr::filter(between(Date, input$date_min, input$date_max)) %>%
         {
           if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
         } %>%

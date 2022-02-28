@@ -18,10 +18,14 @@ email_creds_staffing
 data-dlean/
 ^LICENSE\.md$
 ^data-raw$
-data-raw/
+data-raw/2021-leap-2025-state-lea-school-achievement-level-summary.xlsx
+data-raw/diagnostic_2021.csv
+data-raw/lableader_df_ela2.rds
+data-raw/session_surveymonkey.rds
 data-clean/
 rsconnect/
 Automations/
 ^MondayR\.httr-oauth$
 inst/testdata
 ^\.httr-oauth$
+videos/

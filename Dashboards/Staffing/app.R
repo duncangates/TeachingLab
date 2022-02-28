@@ -1,15 +1,13 @@
-source("global.R")
-source("sheet_read.R")
 
-# Read in necessary data
+## Read in necessary data
 PMs_Emails <- read_rds("data/PMs.rds")
-Courses <- read_rds("data/Courses.rds") #%>%
-  # dplyr::bind_rows(tibble::tibble(Courses = "K-2 Supported Planning"))
+Courses <- read_rds("data/Courses.rds") %>%
+  dplyr::bind_rows(tibble::tibble(Courses = "K-2 Supported Planning"))
 Facilitators_Emails <- read_rds("data/Facilitators.rds")
 Sites <- read_rds("data/Site.rds")
 
-# Organize rows as facilitator observation
-# Columns as dates
+## Organize rows as facilitator observation
+## Columns as dates
 
 bs4DashTheme <- create_theme(
   bs_vars_font(

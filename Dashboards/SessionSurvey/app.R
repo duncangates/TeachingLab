@@ -21,6 +21,22 @@ ui <- semanticPage(
     fluidRow(
       column(12,
              align = "center", offset = 2,
+             br(),
+             br(),
+             br(),
+             br(),
+             br(),
+             br(),
+             br(),
+             br(),
+             br(),
+             br(),
+             br(),
+             br(),
+             br(),
+             br(),
+             br(),
+             br(),
              h2("Please authenticate using your teachinglab.org gmail account."),
              googleSignInUI("loginButton")
       )

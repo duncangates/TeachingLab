@@ -390,9 +390,9 @@ readr::write_rds(session_survey, here::here("Dashboards/PersonalFacilitator/data
 
 ################################################################################################################################################################
 
-rstudioapi::navigateToFile(here::here("Dashboards/CourseSurvey/app.R"))
-rstudioapi::navigateToFile(here::here("Dashboards/SessionSurvey/app.R"))
-rstudioapi::navigateToFile(here::here("Dashboards/PersonalFacilitator/app.R"))
+# rstudioapi::navigateToFile(here::here("Dashboards/CourseSurvey/app.R"))
+# rstudioapi::navigateToFile(here::here("Dashboards/SessionSurvey/app.R"))
+# rstudioapi::navigateToFile(here::here("Dashboards/PersonalFacilitator/app.R"))
 
 options(rsconnect.force.update.apps = TRUE)
 ### Deploy Course Survey ###
