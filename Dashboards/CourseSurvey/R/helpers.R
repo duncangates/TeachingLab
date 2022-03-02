@@ -29,7 +29,8 @@ font_add(family = "Calibri", regular = "www/Calibri.ttf")
 font_add(family = "Calibri Bold", regular = "www/Calibri Bold.ttf")
 
 ## Add CSS sidebar and report image styling ##
-sidebar_style <- "position:fixed;overflow-x:auto;overflow-y:auto;width:inherit;max-width:400px;"
+sidebar_style <- "overflow-x:auto;width:inherit;max-width:400px;"
+# sidebar_style <- "position:fixed;overflow-x:auto;overflow-y:auto;width:inherit;max-width:400px;"
 report_style <- "outline: 10px; border: 3px solid #04abeb; border-style: groove;"
 
 ## Set Shiny port, google auth redirect, and spinner colors ##

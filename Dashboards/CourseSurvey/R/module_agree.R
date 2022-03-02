@@ -75,16 +75,28 @@ uiAgree <- function(id, label = "Counter") {
         br(),
         menu_item(
           tabName = "date_slider_menu",
-          shiny::sliderInput(
-            inputId = ns("date_slider"),
-            label = h3("Select a date range", style = "font-weight: bold;"),
-            value = c(
-              as.Date("2021-06-30"),
-              max(as.Date(course_survey$date_created), na.rm = T)
+          split_layout(
+            cell_widths = c("50%", "50%"),
+            cell_args = "padding: 5px;",
+            style = "background-color: transparent;",
+            shinyWidgets::airDatepickerInput(
+              inputId = ns("date_min"),
+              label = h3("Select minimum date"),
+              as.Date("2021-07-30"),
+              minDate = min(as.Date(course_survey$date_created), na.rm = T),
+              maxDate = max(as.Date(course_survey$date_created), na.rm = T),
+              dateFormat = "mm-dd-yyyy",
+              width = "100px"
             ),
-            min = min(as.Date(course_survey$date_created), na.rm = T),
-            max = max(as.Date(course_survey$date_created), na.rm = T),
-            timeFormat = "%b %d, %Y"
+            shinyWidgets::airDatepickerInput(
+              inputId = ns("date_max"),
+              label = h3("Select maximum date"),
+              value = max(as.Date(course_survey$date_created), na.rm = T),
+              minDate = min(as.Date(course_survey$date_created), na.rm = T),
+              maxDate = max(as.Date(course_survey$date_created), na.rm = T),
+              dateFormat = "mm-dd-yyyy",
+              width = "100px"
+            )
           ),
           icon = shiny.semantic::icon("calendar alternate")
         ),
@@ -174,7 +186,7 @@ agreeServer <- function(id, in_site) {
       )
       
       data_plot <- course_survey %>%
-        dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
+        dplyr::filter(between(date_created, input$date_min, input$date_max)) %>%
         TeachingLab::neg_cond_filter(.,
                                      if_not_this = "All Sites",
                                      filter_this = input$site,
@@ -297,7 +309,7 @@ agreeServer <- function(id, in_site) {
         need(!is.null(input$course), "Please select at least one course")
       )
       agree_plot <- course_survey %>%
-        dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
+        dplyr::filter(between(date_created, input$date_min, input$date_max)) %>%
         TeachingLab::neg_cond_filter(.,
                                      if_not_this = "All Sites",
                                      filter_this = input$site,
@@ -354,7 +366,7 @@ agreeServer <- function(id, in_site) {
     agree_plot_n <- reactive({
       
       data_n <- course_survey %>%
-        dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
+        dplyr::filter(between(date_created, input$date_min, input$date_max)) %>%
         TeachingLab::neg_cond_filter(.,
                                      if_not_this = "All Sites",
                                      filter_this = input$site,

@@ -230,7 +230,31 @@ uiReport <- function(id, label = "Counter") {
                                       style = report_style)
                            ),
                            icon = shiny::icon("save")
-            )
+            ),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br()
           )
         )
       )
@@ -316,9 +340,9 @@ reportServer <- function(id) {
             answer %in% c("Neither agree nor disagree", "Disagree", "Strongly disagree") ~ "Neither/Disagree/Strongly Disagree"
           ),
           date_group = case_when(
-            as.integer(diff(range(as.Date(input$date_slider)))) >= 30 ~ paste0(lubridate::month(Date, label = T, abbr = F), ", ", year(Date)),
-            as.integer(diff(range(as.Date(input$date_slider)))) >= 14 & as.integer(diff(range(as.Date(input$date_slider)))) < 30 ~ paste0(year(Date), lubridate::week(Date)),
-            as.integer(diff(range(as.Date(input$date_slider)))) < 14 ~ paste0(lubridate::day(Date))
+            as.integer(diff(range(as.Date(input$date_max), as.Date(input$date_min)))) >= 30 ~ paste0(lubridate::month(Date, label = T, abbr = F), ", ", year(Date)),
+            as.integer(diff(range(as.Date(input$date_max), as.Date(input$date_min)))) >= 14 & as.integer(diff(range(as.Date(input$date_max), as.Date(input$date_min)))) < 30 ~ paste0(year(Date), lubridate::week(Date)),
+            as.integer(diff(range(as.Date(input$date_max), as.Date(input$date_min)))) < 14 ~ paste0(lubridate::day(Date))
           )
         ) %>%
         ungroup() %>%
