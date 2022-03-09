@@ -1,32 +1,64 @@
+#### Personal Facilitator Dashboard ####
+
+## App Libraries ##
 library(shiny)
 library(shiny.router)
 library(shiny.semantic)
-library(shinyauthr)
 suppressPackageStartupMessages(library(tidyverse))
-library(surveymonkey)
-library(shinycssloaders)
-library(lubridate)
+library(ggtext)
 library(scales)
 library(TeachingLab)
-library(ggtext)
-library(showtext)
-font_add(family = "Calibri", regular = "www/Calibri.ttf")
-library(gt)
-library(glue)
-library(shinyWidgets)
 library(bookdown)
 library(tidytext)
+library(shinycssloaders)
+library(lubridate)
+library(showtext)
+library(shinyWidgets)
+library(gt)
+library(glue)
 library(Cairo)
 library(grDevices)
-library(shinymanager)
 library(shinyjs)
+library(rmarkdown)
 library(googleAuthR)
 
+## Add Calibri Fonts ##
+font_add(family = "Calibri", regular = "www/Calibri.ttf")
+font_add(family = "Calibri Bold", regular = "www/Calibri Bold.ttf")
+
+## Add CSS sidebar and report image styling ##
+sidebar_style <- "overflow-x:auto;width:inherit;max-width:400px;"
+# sidebar_style <- "position:fixed;overflow-x:auto;overflow-y:auto;width:inherit;max-width:400px;"
+report_style <- "outline: 10px; border: 3px solid #04abeb; border-style: groove;"
+
+inactivity <- "function idleTimer() {
+var t = setTimeout(logout, 120000);
+window.onmousemove = resetTimer; // catches mouse movements
+window.onmousedown = resetTimer; // catches mouse movements
+window.onclick = resetTimer;     // catches mouse clicks
+window.onscroll = resetTimer;    // catches scrolling
+window.onkeypress = resetTimer;  //catches keyboard actions
+
+function logout() {
+window.close();  //close the window
+}
+
+function resetTimer() {
+clearTimeout(t);
+t = setTimeout(logout, 120000);  // time is in milliseconds (1000 is 1 second)
+}
+}
+idleTimer();"
+
+result_auth <- reactiveValues(auth = "Temp Facilitator")
+
+## App options ##
 options(shiny.port = 7325)
 options("googleAuthR.redirect" = "https://teachinglabhq.shinyapps.io/PersonalFacilitator/")
 options(googleAuthR.webapp.client_id = "827015879348-9v6dk2h43v682ht3j8m8km8bj6aqvkm8.apps.googleusercontent.com")
 options(spinner.color = "#04ABEB")
 
+## Add information page with HTML pseudo-code ##
 info_page <- div(class = "ui container",
                  div(class = "ui center aligned header",
                      h2("Please watch the video below to learn how to use this dashboard, or provide"),
@@ -141,93 +173,3 @@ info_page <- div(class = "ui container",
                  )
 )
 
-inactivity <- "function idleTimer() {
-var t = setTimeout(logout, 120000);
-window.onmousemove = resetTimer; // catches mouse movements
-window.onmousedown = resetTimer; // catches mouse movements
-window.onclick = resetTimer;     // catches mouse clicks
-window.onscroll = resetTimer;    // catches scrolling
-window.onkeypress = resetTimer;  //catches keyboard actions
-
-function logout() {
-window.close();  //close the window
-}
-
-function resetTimer() {
-clearTimeout(t);
-t = setTimeout(logout, 120000);  // time is in milliseconds (1000 is 1 second)
-}
-}
-idleTimer();"
-
-result_auth <- reactiveValues(auth = "Temp Facilitator")
-
-# result_auth_final <- function() {
-#   if (!exists("sign_ins")) {
-#     "Temp Facilitator"
-#   } else if (is.null(sign_ins())) {
-#     "Temp Facilitator"
-#   } else if (exists("sign_ins")) {
-#     sign_ins()$name
-#   }
-# }
-
-# credentials <- data.frame(
-#   user = c(
-#     "Anita Walls", "Andrea Fitzgerald", "Brad Haggerty",
-#     "Christi Denning", "Erin Abraham", "Evan Rushton", "John Silverthorne",
-#     "Justin Endicott", "Katie Endicott", "Lindsay Tomlinson", "Meredith Starks",
-#     "Rod Naquin", "Stacy Weldon", "Zoe Rind", "Elizabeth Van Hoesen",
-#     "Greta Anderson", "Carla Seeger", "Amy Youngblood", "Lexie Oosting",
-#     "Yvette McLean Piliner", "Fabienne Bennett", "Kristen Taylor",
-#     "Nick Satyal", "Mary Shaw-Lewis", "Jasmine Caleb", "Kyra Caldwell Templeton",
-#     "Anastasia McRay", "Megan Lewis", "Callie Herring", "Brian Collier",
-#     "Laura Mayer", "Cheryl Fricchione", "Ashmeet Sahni", "Maurissa Roberts",
-#     "Miraha Smith", "Jana Briggs", "Alisha Powers", "Katie Montani",
-#     "Courtney Dumas", "Sabreen Thorne", "Patricia Thibodeaux", "Erika Martin",
-#     "Corneisha Clarke", "Bianca Morgan", "Gregory Leap", "Kimberly Robertson",
-#     "Lysa Scott", "Mitchell Brookins", "Rayven Calloway", "Adelfa Hegarty",
-#     "Erin Lewis", "Angela McDonald", "Lashana Pollard", "Mary Willingham",
-#     "Spring Mercadel", "Renee Warner Gervais", "Karyn Baines", "Olivia Bertucci",
-#     "Bethany Brown", "Latrenda Knighten", "Cheryl Dobbertin", "Diana Bowles",
-#     "Haley Siegel", "Kelsey Wasser", "Amanda Parker", "Michele Morenz",
-#     "Lauren Schneider", "Emily Griffin"
-#   ),
-#   password = c(
-#     "mhSDsMpe", "FcfvAAMA", "61uBK2SI",
-#     "RcJw7qhQ", "NL46WYEi", "1S7eUpqm", "uHXeE6KX", "2mkSbyDa", "Jg307hcX",
-#     "IoSVIIXX", "5umHe0S6", "xKQEchwf", "j3Tbdly2", "tiVDjkD2", "Cr0sKkmy",
-#     "oB8jj0m7", "OMgeRCsk", "IZbaXqKQ", "ebEWPZF5", "GOdUF2jR", "5AriKtUN",
-#     "MRc5bxNy", "Ej58rZIH", "RKlQvbnn", "2OYe6AOE", "UFfW8KEj", "xhDOq5UF",
-#     "KxuuYUdi", "nkfHfbPR", "xNmmVpTf", "wkQoz1PL", "wWjWlvUf", "e1yGvH1N",
-#     "CO104CXh", "sYzJ0Vs4", "aDDtkRwe", "oR5sixOd", "RhrRenYs", "ilDK42md",
-#     "mudA3ff1", "HF6Tv3Gu", "m1Zl7RGU", "qdLmxhCL", "MrDVTknF", "J9NYuqqc",
-#     "SdCMVR17", "oftUFS4q", "x2hnG8fy", "ZpatVv04", "n8Ktepxs", "syB8uHLS",
-#     "Sq8LTtK0", "zWtvd4DL", "BKaRmyqj", "ckWfuKYK", "NRi7DtJE", "ZJxdMfxN",
-#     "8gRsRdva", "3leRsVh2", "Hcg4233n", "cn6HpW5T", "ORMaDIFH", "74elqflC",
-#     "O1e3lhok", "pa6FffWK", "UPfjcBDj", "v25uAOIy", "v9WLWQTu"
-#   ),
-#   stringsAsFactors = FALSE
-# )
-# 
-# # Check facilitator email
-check_email_domain <- function(email, domain) {
-  grepl(paste0("@",domain,"$"), email, ignore.case = TRUE)
-}
-
-#### Finding most recent groupings ####
-
-recent_choices <- session_survey %>% 
-  dplyr::filter(date_created > Sys.Date() - 14 & !is.na(Facilitator)) %>% # CURRENTLY SET TO LAST TWO WEEKS
-  dplyr::group_by(`Select your site (district, parish, network, or school).`, Facilitator) %>%
-  dplyr::summarise() %>%
-  tidyr::drop_na() %>%
-  dplyr::ungroup() %>%
-  dplyr::mutate(id = dplyr::row_number())
-
-recent_choices_final <- tibble::tibble(choice = paste(recent_choices$`Select your site (district, parish, network, or school).` %>% as.character() %>% stringr::str_replace_all(., ", ", " "),
-                                                      recent_choices$Facilitator, sep = ", ")) %>%
-  dplyr::mutate(id = dplyr::row_number())
-
-# NAs dataframe
-na_df <- c("none", "n/a", "N/A", "N/a", "NA", "na", "none", "none.", "na.", "NA.", "N/A.", "No Response")

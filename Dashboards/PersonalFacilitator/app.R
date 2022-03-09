@@ -1,4 +1,4 @@
-#### Facilitator Dashboard ####
+#### Personal Facilitator Dashboard ####
 
 router <- shiny.router::make_router(
   shiny.router::route("info", info_page),
@@ -17,6 +17,22 @@ ui <- semanticPage(
     fluidRow(
       column(12,
              align = "center", offset = 2,
+             br(),
+             br(),
+             br(),
+             br(),
+             br(),
+             br(),
+             br(),
+             br(),
+             br(),
+             br(),
+             br(),
+             br(),
+             br(),
+             br(),
+             br(),
+             br(),
              h2("Please authenticate using your teachinglab.org gmail account."),
              googleSignInUI("loginButton")
       )
@@ -71,6 +87,9 @@ server <- function(input, output, session) {
       result_auth$auth <- sign_ins()$name
     }
   })
+  
+  # observe(print(result_auth$auth))
+  # observe(print(sign_ins()$name))
   
   # only display content to verified domain users
   output$loginButton <- renderText({

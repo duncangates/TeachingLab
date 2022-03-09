@@ -21,4 +21,4 @@
 #'   ## Select best strings by using the minimum length unique string ##
 #'   
 #'   
-#' }
+# }

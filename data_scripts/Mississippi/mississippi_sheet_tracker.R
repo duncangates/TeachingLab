@@ -76,7 +76,7 @@ educator_df <- tibble::tibble(
 ### Student Survey Matching ###
 student_survey <- surveymonkey::fetch_survey_obj(312653807) %>%
   surveymonkey::parse_survey()
-## Filters for mississippi schools withy str_detect ##
+## Filters for mississippi schools with str_detect ##
 ## Pulls from ALL select your teacher columns ##
 ## Replaces just one occurrence of bad formatting teacher names at the bottom since thats all thats
 ## needed to check for string occurrence ##
@@ -87,10 +87,12 @@ teachers_names_student_survey <- student_survey %>%
   tidyr::drop_na() %>%
   pull(value) %>%
   unique_lower() %>%
-  str_replace_all(c("mabry" = "pearl mabry",
-                    "jackie leach" = "jacqueline leach",
-                    "rosiland norsworthy" = "rosalinda norsworthy",
-                    "principal - mr. mumford" = "jeff mumford")) %>%
+  str_replace_all(c(
+    "mabry" = "pearl mabry",
+    "jackie leach" = "jacqueline leach",
+    "rosiland norsworthy" = "rosalinda norsworthy",
+    "principal - mr. mumford" = "jeff mumford"
+  )) %>%
   sort()
 ########################################
 
@@ -155,11 +157,13 @@ ed_df_init <- educator_df %>%
 ### Student Work Survey matches by email ### CORRECT as of 3-1-22
 ### Classroom observation matches by name ### CORRECT as of 3-1-22
 sheet_with_response_tracking <- data %>%
-  mutate(initials_district = ifelse(tolower(paste0(`Teacher code`, str_replace_all(District, district_replace))) %in% ed_df_init$initials_district,
+  dplyr::mutate(initials_district = ifelse(tolower(
+    paste0(`Teacher code`, 
+           str_replace_all(District, district_replace))) %in% ed_df_init$initials_district,
     T,
     F
   )) %>%
-  mutate(
+  dplyr::mutate(
     `Educator Survey` = ifelse(initials_district == T,
       T, F
     ),
@@ -176,7 +180,7 @@ sheet_with_response_tracking <- data %>%
       T, F
     )
   ) %>%
-  select(-c(initials_district)) %>%
+  dplyr::select(-c(initials_district)) %>%
   identity()
 
 googlesheets4::write_sheet(sheet_with_response_tracking,
@@ -187,26 +191,26 @@ googlesheets4::write_sheet(sheet_with_response_tracking,
 
 ######### Individual Comparisons ###########
 
-# check_not_in_vector <- function(check_vector, data_compare) {
-#   sort(unique(check_vector[which(tolower(unique(check_vector)) %!in% tolower(data_compare))]))
-# }
-# 
-# ## Can't really check educator survey since it is a combination id ##
-# 
-# ###### Names to ignore (confirmed not from Mississippi) ######
-# names_ignore <- "evrret|everet|chimma|love|irving|mckee|forte|wilson|willson|valerie|gross|madison|aja"
-# 
-# ## Teacher Names in Student Survey not in Names - this seems accurate ##
-# ## Names in list are currently correct names
-# check_not_in_vector(teachers_names_student_survey, data$Name) %>%
-#   purrr::keep( ~ !str_detect(.x, names_ignore)) 
-# 
-# ## Student Survey Matches ##
-# check_not_in_vector(teachers_names_family_survey, data$Name) %>%
-#   purrr::keep( ~ !str_detect(.x, names_ignore))
-# 
-# ## Student Work Sample Matches ##
-# check_not_in_vector(student_work_emails, data$Email)
-# 
-# ## Classroom observation IPG Matches ##
-# check_not_in_vector(classroom_obs_names, data$Name)
+check_not_in_vector <- function(check_vector, data_compare) {
+  sort(unique(check_vector[which(tolower(unique(check_vector)) %!in% tolower(data_compare))]))
+}
+
+## Can't really check educator survey since it is a combination id ##
+
+###### Names to ignore (confirmed not from Mississippi) ######
+names_ignore <- "evrret|everet|chimma|love|irving|mckee|forte|wilson|willson|valerie|gross|madison|aja"
+
+## Teacher Names in Student Survey not in Names - this seems accurate ##
+## Names in list are currently correct names
+check_not_in_vector(teachers_names_student_survey, data$Name) %>%
+  purrr::keep( ~ !str_detect(.x, names_ignore))
+
+## Student Survey Matches ##
+check_not_in_vector(teachers_names_family_survey, data$Name) %>%
+  purrr::keep( ~ !str_detect(.x, names_ignore))
+
+## Student Work Sample Matches ##
+check_not_in_vector(student_work_emails, data$Email)
+
+## Classroom observation IPG Matches ##
+check_not_in_vector(classroom_obs_names, data$Name)

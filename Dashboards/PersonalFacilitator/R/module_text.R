@@ -1,4 +1,4 @@
-
+#### Personal Facilitator Dashboard ####
 textGridTemplate <- grid_template(
   default = list(
     areas = rbind(
@@ -28,7 +28,7 @@ uiText <- function(id, label = "Counter") {
   shiny::tagList(
     shiny.semantic::sidebar_layout(
       sidebar_panel = shiny.semantic::sidebar_panel(
-        style = "position:fixed;width:inherit;",
+        style = sidebar_style,
         shiny.semantic::menu_item(
           tabName = "content_menu",
           shiny.semantic::selectInput(
@@ -87,17 +87,29 @@ uiText <- function(id, label = "Counter") {
         br(),
         shiny.semantic::menu_item(
           tabName = "date_slider_menu",
-          shiny::sliderInput(
-            inputId = ns("date_slider"),
-            label = h3("Select a date range"),
-            value = c(
-              min(as.Date(session_survey$Date), na.rm = T),
-              max(as.Date(session_survey$Date), na.rm = T)
+            split_layout(
+              cell_widths = c("50%", "50%"),
+              cell_args = "padding: 5px;",
+              style = "background-color: transparent;",
+              shinyWidgets::airDatepickerInput(
+                inputId = ns("date_min"),
+                label = h3("Select minimum date"),
+                value = min(as.Date(session_survey$Date), na.rm = T),
+                minDate = min(as.Date(session_survey$Date), na.rm = T),
+                maxDate = max(as.Date(session_survey$Date), na.rm = T),
+                dateFormat = "mm-dd-yyyy",
+                width = "100px"
+              ),
+              shinyWidgets::airDatepickerInput(
+                inputId = ns("date_max"),
+                label = h3("Select maximum date"),
+                value = max(as.Date(session_survey$Date), na.rm = T),
+                minDate = min(as.Date(session_survey$Date), na.rm = T),
+                maxDate = max(as.Date(session_survey$Date), na.rm = T),
+                dateFormat = "mm-dd-yyyy",
+                width = "100px"
+              )
             ),
-            min = min(as.Date(session_survey$Date), na.rm = T),
-            max = max(as.Date(session_survey$Date), na.rm = T),
-            timeFormat = "%b %d, %Y"
-          ),
           icon = shiny.semantic::icon("calendar alternate")
         ),
         br(),
@@ -123,24 +135,9 @@ uiText <- function(id, label = "Counter") {
           btn2 = "margin:auto",
           btn3 = "margin:auto"
         ),
-        btn1 = shinyWidgets::actionBttn(
-          inputId = ns("refresh1"),
-          label = "Refresh",
-          style = "unite",
-          color = "primary"
-        ),
-        btn2 = shinyWidgets::actionBttn(
-          inputId = ns("refresh2"),
-          label = "Refresh",
-          style = "unite",
-          color = "primary"
-        ),
-        btn3 = shinyWidgets::actionBttn(
-          inputId = ns("refresh3"),
-          label = "Refresh",
-          style = "unite",
-          color = "primary"
-        ),
+        btn1 = uiOutput(ns("btn1")),
+        btn2 = uiOutput(ns("btn2")),
+        btn3 = uiOutput(ns("btn3")),
         gt1 = gt::gt_output(ns("quote_gt1")) %>%
           withSpinner(type = 3, color.background = "white"),
         gt2 = gt::gt_output(ns("quote_gt2")) %>%
@@ -157,12 +154,149 @@ textServer <- function(id, result_auth, in_content, in_course, in_site, in_role,
   ns <- NS(id)
   moduleServer(id, function(input, output, session) {
     
+    reactive_1_count <- reactive({
+      
+      validate(
+        need(!is.null(input$role), "Please select at least one role"),
+        need(!is.null(input$site), "Please select at least one site"),
+        need(!is.null(input$content), "Please select at least one content area"),
+        need(!is.null(input$course), "Please select at least one course"),
+        need(input$date_min <= input$date_max, "Please select a minimum date that is less than the maximum.")
+      )
+      
+      count <- session_survey %>%
+        dplyr::filter(Facilitator == result_auth) %>%
+        dplyr::filter(between(Date, input$date_min, input$date_max)) %>%
+        {
+          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
+        } %>%
+        {
+          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
+        } %>%
+        {
+          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today’s professional learning session.` %in% input$content) else .
+        } %>%
+        {
+          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
+        } %>%
+        select(Facilitation_Feedback) %>%
+        pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
+        drop_na() %>%
+        filter(Response %!in% na_df) %>%
+        select(Response) %>%
+        filter(str_length(Response) > input$quote_length)
+      
+      nrow(count)
+    })
+    
+    reactive_2_count <- reactive({
+      
+      validate(
+        need(!is.null(input$role), "Please select at least one role"),
+        need(!is.null(input$site), "Please select at least one site"),
+        need(!is.null(input$content), "Please select at least one content area"),
+        need(!is.null(input$course), "Please select at least one course"),
+        need(input$date_min <= input$date_max, "Please select a minimum date that is less than the maximum.")
+      )
+      
+      count <- session_survey %>%
+        dplyr::filter(Facilitator == result_auth) %>%
+        dplyr::filter(between(Date, input$date_min, input$date_max)) %>%
+        {
+          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
+        } %>%
+        {
+          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
+        } %>%
+        {
+          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today’s professional learning session.` %in% input$content) else .
+        } %>%
+        {
+          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
+        } %>%
+        select(`What went well in today’s session?`) %>%
+        pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
+        drop_na() %>%
+        filter(Response %!in% na_df) %>%
+        select(Response) %>%
+        filter(str_length(Response) > input$quote_length)
+      nrow(count)
+    })
+    
+    reactive_3_count <- reactive({
+      
+      validate(
+        need(!is.null(input$role), "Please select at least one role"),
+        need(!is.null(input$site), "Please select at least one site"),
+        need(!is.null(input$content), "Please select at least one content area"),
+        need(!is.null(input$course), "Please select at least one course"),
+        need(input$date_min <= input$date_max, "Please select a minimum date that is less than the maximum.")
+      )
+      
+      count <- session_survey %>%
+        dplyr::filter(Facilitator == result_auth) %>%
+        dplyr::filter(between(Date, input$date_min, input$date_max)) %>%
+        {
+          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
+        } %>%
+        {
+          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
+        } %>%
+        {
+          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today’s professional learning session.` %in% input$content) else .
+        } %>%
+        {
+          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
+        } %>%
+        select(`What could have been better about today’s session?`) %>%
+        pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
+        drop_na() %>%
+        filter(Response %!in% na_df) %>%
+        select(Response) %>%
+        filter(str_length(Response) > input$quote_length)
+      nrow(count)
+    })
+    
+    
+    output$btn1 <- renderUI({ 
+      shinyWidgets::actionBttn(
+        inputId = ns("refresh1"),
+        label = glue::glue("Refresh from\n{reactive_1_count()} responses"),
+        style = "unite",
+        color = "primary"
+      )
+    })
+    output$btn2 <- renderUI({ 
+      shinyWidgets::actionBttn(
+        inputId = ns("refresh2"),
+        label = glue::glue("Refresh from {reactive_2_count()} responses"),
+        style = "unite",
+        color = "primary"
+      )
+    })
+    output$btn3 <- renderUI({ 
+      shinyWidgets::actionBttn(
+        inputId = ns("refresh3"),
+        label = glue::glue("Refresh from {reactive_3_count()} responses"),
+        style = "unite",
+        color = "primary"
+      )
+    })
+    
     # Getting quotes for table
     quote_viz_data1 <- reactive({
       
+      validate(
+        need(!is.null(input$role), "Please select at least one role"),
+        need(!is.null(input$site), "Please select at least one site"),
+        need(!is.null(input$content), "Please select at least one content area"),
+        need(!is.null(input$course), "Please select at least one course"),
+        need(input$date_min <= input$date_max, "Please select a minimum date that is less than the maximum.")
+      )
+      
       quote_reactive1 <- session_survey %>%
         dplyr::filter(Facilitator == result_auth) %>%
-        dplyr::filter(between(Date, input$date_slider[1], input$date_slider[2])) %>%
+        dplyr::filter(between(Date, input$date_min, input$date_max)) %>%
         {
           if (input$site != "All Partners") dplyr::filter(., `Select your site (district, parish, network, or school).` == input$site) else .
         } %>%
@@ -185,28 +319,40 @@ textServer <- function(id, result_auth, in_content, in_course, in_site, in_role,
     
     quote1 <- reactiveValues(table1 = NULL)
     
-    observeEvent(c(input$refresh1, input$site, input$role, input$content, input$course, input$quote_length, input$date_slider), {
+    observeEvent(c(input$refresh1, input$site, input$role, input$content, input$course, input$quote_length, input$date_min, input$date_max), {
       quote1$table1 <- quote_viz_data1() %>%
-        slice_sample(n = 10)
+        {
+          if (nrow(.) > 0) slice_sample(., n = ifelse(nrow(.) > 10, 10, nrow(.))) else .
+        }
     })
     
     output$quote_gt1 <- gt::render_gt(
       
       quote_viz(
-        data = quote1$table1, text_col = "Response", viz_type = "gt",
-        title = "What additional feedback do you have about their facilitation skills?",
-        width = 60
+        data = quote1$table1,
+        viz_type = "gt",
+        print = F,
+        width = 100,
+        title = "Facilitator Feedback"
       ) %>%
         suppressWarnings() %>%
         suppressMessages()
+      
     )
 
     quote_viz_data2 <- reactive({
       
+      validate(
+        need(!is.null(input$role), "Please select at least one role"),
+        need(!is.null(input$site), "Please select at least one site"),
+        need(!is.null(input$content), "Please select at least one content area"),
+        need(!is.null(input$course), "Please select at least one course"),
+        need(input$date_min <= input$date_max, "Please select a minimum date that is less than the maximum.")
+      )
       
       quote_reactive2 <- session_survey %>%
         dplyr::filter(Facilitator == result_auth) %>%
-        dplyr::filter(between(Date, input$date_slider[1], input$date_slider[2])) %>%
+        dplyr::filter(between(Date, input$date_min, input$date_max)) %>%
         {
           if (input$site != "All Partners") dplyr::filter(., `Select your site (district, parish, network, or school).` == input$site) else .
         } %>%
@@ -232,28 +378,40 @@ textServer <- function(id, result_auth, in_content, in_course, in_site, in_role,
     
     observeEvent(c(input$refresh2, input$site, input$role, input$content, input$course, input$quote_length, input$date_slider), {
       quote2$table2 <- quote_viz_data2() %>%
-        slice_sample(n = 10)
+        {
+          if (nrow(.) > 0) slice_sample(., n = ifelse(nrow(.) > 10, 10, nrow(.))) else .
+        }
     })
     
     output$quote_gt2 <- gt::render_gt(
       
       quote_viz(
-        data = quote2$table2, text_col = "Response", viz_type = "gt",
-        title = "What went well in today’s session?",
-        width = 60
+        data = quote2$table2,
+        viz_type = "gt",
+        print = F,
+        width = 100,
+        title = "What went well in today’s session?"
       ) %>%
         suppressWarnings() %>%
         suppressMessages()
+      
     )
 
     quote_viz_data3 <- reactive({
       
       print(result_auth)
       
+      validate(
+        need(!is.null(input$role), "Please select at least one role"),
+        need(!is.null(input$site), "Please select at least one site"),
+        need(!is.null(input$content), "Please select at least one content area"),
+        need(!is.null(input$course), "Please select at least one course"),
+        need(input$date_min <= input$date_max, "Please select a minimum date that is less than the maximum.")
+      )
       
       quote_reactive3 <- session_survey %>%
         dplyr::filter(Facilitator == result_auth) %>%
-        dplyr::filter(between(Date, input$date_slider[1], input$date_slider[2])) %>%
+        dplyr::filter(between(Date, input$date_min, input$date_max)) %>%
         {
           if (input$site != "All Partners") dplyr::filter(., `Select your site (district, parish, network, or school).` == input$site) else .
         } %>%
@@ -278,18 +436,23 @@ textServer <- function(id, result_auth, in_content, in_course, in_site, in_role,
     
     observeEvent(c(input$refresh3, input$site, input$role, input$content, input$course, input$quote_length, input$date_slider), {
       quote3$table3 <- quote_viz_data3() %>%
-        slice_sample(n = 10)
+        {
+          if (nrow(.) > 0) slice_sample(., n = ifelse(nrow(.) > 10, 10, nrow(.))) else .
+        }
     })
 
     output$quote_gt3 <- gt::render_gt(
       
       quote_viz(
-        data = quote3$table3, text_col = "Response", viz_type = "gt",
-        title = "What could have been better about today’s session?",
-        width = 60
+        data = quote3$table3,
+        viz_type = "gt",
+        print = F,
+        width = 100,
+        title = "What could have been better about today’s session?"
       ) %>%
         suppressWarnings() %>%
         suppressMessages()
+      
     )
 
   })

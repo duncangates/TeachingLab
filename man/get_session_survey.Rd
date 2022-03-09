@@ -4,10 +4,12 @@
 \alias{get_session_survey}
 \title{End of Session Dashboard Data}
 \usage{
-get_session_survey(loc = "data/session_survey_21_22data.rds")
+get_session_survey(loc = "data/session_survey_21_22data.rds", update = F)
 }
 \arguments{
 \item{loc}{the location of the end of session data}
+
+\item{update}{FALSE, whether or not to update}
 }
 \value{
 Returns a tibble

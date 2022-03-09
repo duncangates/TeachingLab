@@ -755,7 +755,7 @@ fake_bar_graph_create <- function(title,
                                   custom_n = NULL,
                                   custom_x_axis_labels = NULL,
                                   custom_p_1 = NULL,
-                                  custom_p_2,
+                                  custom_p_2 = NULL,
                                   randomness = 0,
                                   multiple_labels = NULL,
                                   know_graph = F) {
@@ -919,6 +919,7 @@ fake_bar_graph_create <- function(title,
 #' @param title the title for the plot
 #' @param fake_data_fun time_data
 #' @param x_axis the labels for the x-axis: yearly or pre-pl-post-pl
+#' @param y_axis_label A custom y axis label
 #' @param labels The labels for the lines
 #' @param lines number of lines to create, either 1 or 2
 #' @param custom_n custom n, one number
@@ -929,6 +930,7 @@ fake_bar_graph_create <- function(title,
 fake_line_graph_create <- function(title, fake_data_fun = "time_data", 
                                    labels = c("Test 1", "Test 2"),
                                    x_axis = "yearly",
+                                   y_axis_label = NULL,
                                    lines = 2,
                                    custom_n = NULL,
                                    custom_n_range = 0) {
@@ -979,6 +981,12 @@ fake_line_graph_create <- function(title, fake_data_fun = "time_data",
     label_df$label <- ""
   }
   
+  y_axis_label <- if (is.null(y_axis_label)) {
+     "Percent Positive Indicators on IPG"
+  } else {
+    y_axis_label
+  }
+  
   p <- plot_data %>%
     ggplot2::ggplot(ggplot2::aes(x = name, y = value, color = color)) +
     ggplot2::geom_line(ggplot2::aes(group = color)) +
@@ -994,7 +1002,7 @@ fake_line_graph_create <- function(title, fake_data_fun = "time_data",
                        family = "Calibri",
                        hjust = 0) +
     # ggplot2::scale_fill_manual(values = c("Before" = "#D17DF7", "After" = "#55BBC7")) +
-    ggplot2::labs(x = "", y = "Percent Positive Indicators on IPG",
+    ggplot2::labs(x = "", y = y_axis_label,
                   title = paste0(title, " (N size ranges from <b>", ifelse(n2 > n1, n1, n2), "</b> to <b>", ifelse(n2 < n1, n1, n2), "</b>)")
     ) +
     ggplot2::scale_y_continuous(labels = scales::percent_format(scale = 1), expand = c(0.1, 0),

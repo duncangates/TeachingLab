@@ -314,85 +314,14 @@ options(sm_oauth_token = "6zpcKriMLjBWVEHno8VWb4Uvclqotpq0H53HudGcfcyLc6aW0vxfm-
 fake_fac <- readr::read_rds("data/fake_facilitator.rds")
 fake_dunc <- readr::read_rds("data/fake_duncan.rds")
 
-session_survey <- surveymonkey::fetch_survey_obj(id = 308115193) %>%
-  surveymonkey::parse_survey() %>%
-  dplyr::mutate(date_created = lubridate::date(date_created)) %>%
-  dplyr::mutate(`Select your course.` = dplyr::coalesce(
-    `Select your course.`, `Select your course._2`, `Select your course._3`,
-    `Select your course._4`, `Select your course._5`, `Select your course._6`
-  )) %>%
-  dplyr::mutate(Date = lubridate::mdy(`Select the date for this session. - \n    Date / Time\n`)) %>%
-  # Fix this cluttering of names the others result in a bunch of differernt formats
-  dplyr::mutate(dplyr::across(c(
-    "Select the name of your facilitator.", "Select the name of your facilitator. - Other (please specify)",
-    "Select the name of your facilitator._2", "Select the name of your facilitator. - Other (please specify)_2",
-    "Select the name of your facilitator._3", "Select the name of your facilitator. - Other (please specify)_3"
-  ), ~ dplyr::na_if(.x, "Name"))) %>%
-  dplyr::mutate(
-    Facilitator = dplyr::coalesce(
-      `Select the name of your facilitator.`,
-      `Select the name of your facilitator._2`,
-      `Select the name of your facilitator._3`,
-      `Select the name of your facilitator. - Other (please specify)_2`,
-      `Select the name of your facilitator. - Other (please specify)_3`
-    ),
-    Facilitation_Feedback = dplyr::coalesce(
-      `What additional feedback do you have about their facilitation skills?`,
-      `What additional feedback do you have about their facilitation skills?_2`,
-      `What additional feedback do you have about their facilitation skills?_3`
-    )
-  ) %>%
-  dplyr::mutate(
-    `How much do you agree with the following statements about this facilitator today? - They demonstrated  deep knowledge of the content they facilitated.` =
-      dplyr::coalesce(
-        `How much do you agree with the following statements about this facilitator today? - They demonstrated  deep knowledge of the content they facilitated.`,
-        `How much do you agree with the following statements about this facilitator today? - They demonstrated  deep knowledge of the content they facilitated._2`,
-        `How much do you agree with the following statements about this facilitator today? - They demonstrated  deep knowledge of the content they facilitated._3`
-      )
-  ) %>%
-  dplyr::mutate(
-    `How much do you agree with the following statements about this facilitator today? - They facilitated the content clearly.` =
-      dplyr::coalesce(
-        `How much do you agree with the following statements about this facilitator today? - They facilitated the content clearly.`,
-        `How much do you agree with the following statements about this facilitator today? - They facilitated the content clearly._2`,
-        `How much do you agree with the following statements about this facilitator today? - They facilitated the content clearly._3`
-      )
-  ) %>%
-  dplyr::mutate(
-    `How much do you agree with the following statements about this facilitator today? - They effectively built a safe learning community.` =
-      dplyr::coalesce(
-        `How much do you agree with the following statements about this facilitator today? - They effectively built a safe learning community.`,
-        `How much do you agree with the following statements about this facilitator today? - They effectively built a safe learning community._2`,
-        `How much do you agree with the following statements about this facilitator today? - They effectively built a safe learning community._3`
-      )
-  ) %>%
-  dplyr::mutate(
-    `How much do you agree with the following statements about this facilitator today? - They were fully prepared for the session.` =
-      dplyr::coalesce(
-        `How much do you agree with the following statements about this facilitator today? - They were fully prepared for the session.`,
-        `How much do you agree with the following statements about this facilitator today? - They were fully prepared for the session._2`,
-        `How much do you agree with the following statements about this facilitator today? - They were fully prepared for the session._3`
-      )
-  ) %>%
-  dplyr::mutate(
-    `How much do you agree with the following statements about this facilitator today? - They responded to the group’s needs.` =
-      dplyr::coalesce(
-        `How much do you agree with the following statements about this facilitator today? - They responded to the group’s needs.`,
-        `How much do you agree with the following statements about this facilitator today? - They responded to the group’s needs._2`,
-        `How much do you agree with the following statements about this facilitator today? - They responded to the group’s needs._3`
-      )
-  ) %>%
+facilitator_session_survey <- session_survey %>%
   # FOR A FAKE TEMPORARY FACILITATOR DATA BEFORE VERIFICATION
   dplyr::bind_rows(fake_fac, fake_dunc)
 
-readr::write_rds(session_survey, "data/session_facilitator_surveymonkey.rds")
-readr::write_rds(session_survey, here::here("Dashboards/PersonalFacilitator/data/session_facilitator_surveymonkey.rds"))
+readr::write_rds(facilitator_session_survey, "data/session_facilitator_surveymonkey.rds")
+readr::write_rds(facilitator_session_survey, here::here("Dashboards/PersonalFacilitator/data/session_facilitator_surveymonkey.rds"))
 
 ################################################################################################################################################################
-
-# rstudioapi::navigateToFile(here::here("Dashboards/CourseSurvey/app.R"))
-# rstudioapi::navigateToFile(here::here("Dashboards/SessionSurvey/app.R"))
-# rstudioapi::navigateToFile(here::here("Dashboards/PersonalFacilitator/app.R"))
 
 options(rsconnect.force.update.apps = TRUE)
 ### Deploy Course Survey ###
@@ -451,3 +380,7 @@ rsconnect::deployApp(
   ),
   logLevel = "verbose"
 )
+
+# rstudioapi::navigateToFile(here::here("Dashboards/CourseSurvey/app.R"))
+# rstudioapi::navigateToFile(here::here("Dashboards/SessionSurvey/app.R"))
+# rstudioapi::navigateToFile(here::here("Dashboards/PersonalFacilitator/app.R"))

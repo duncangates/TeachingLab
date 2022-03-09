@@ -1,32 +1,4 @@
-library(shiny)
-library(bslib)
-library(tidyverse)
-library(surveymonkey)
-library(gt)
-library(thematic)
-library(showtext)
-font_add(family = "Calibri", regular = "www/Calibri.ttf")
-library(patchwork)
-library(glue)
-library(shinyWidgets)
-library(TeachingLab)
-library(bookdown)
-library(ggiraph)
-library(tidytext)
-
-source("helpers.R")
-
-# Builds theme object to be supplied to ui
-my_theme <- bs_theme(
-  bootswatch = "cerulean",
-  base_font = font_google("Calibri")
-) %>%
-  bs_add_rules(sass::sass_file("styles.scss"))
-
-# Let thematic know to use the font from bs_lib
-thematic_shiny(font = "auto")
-
-
+### Diagnostic Completion Dashboard ###
 ui <- fluidPage(
   theme = my_theme,
   div(
@@ -49,7 +21,7 @@ ui <- fluidPage(
       "partner_selector", "Search for a partner",
       selectizeInput("partner",
         label = NULL,
-        choices = levels(partner_data$`Your site (district, parish, network, or school) <br><br>`) %>%
+        choices = levels(partner_data$your_site_district_parish_network_or_school) %>%
           sort() %>%
           purrr::prepend("All Partners"),
         selected = "All Partners",
@@ -104,7 +76,7 @@ server <- function(input, output, session) {
     
   partner_data_final <- reactive({
     partner_data2 <- partner_data %>%
-      group_by(`Your site (district, parish, network, or school) <br><br>`) %>%
+      group_by(your_site_district_parish_network_or_school) %>%
       summarise(
         n = n(),
         `Most Recent Observation` = lubridate::date(max(date_created))
@@ -141,13 +113,13 @@ server <- function(input, output, session) {
 
   partner_time_df <- reactive({
     validate(
-      need(input$partner %in% partner_data$`Your site (district, parish, network, or school) <br><br>` | input$partner == "All Partners",
+      need(input$partner %in% partner_data$your_site_district_parish_network_or_school | input$partner == "All Partners",
            "No Observations for this Site Yet")
     )
     partner_data %>% {
-      if (input$partner != "All Partners") dplyr::filter(., `Your site (district, parish, network, or school) <br><br>` == input$partner) else .
+      if (input$partner != "All Partners") dplyr::filter(., your_site_district_parish_network_or_school == input$partner) else .
     } %>%
-    group_by(lubridate::date(date_created), `Your site (district, parish, network, or school) <br><br>`) %>%
+    group_by(lubridate::date(date_created), your_site_district_parish_network_or_school) %>%
       count(sort = T) %>%
       ungroup() %>%
       rename(Date = 1, Site = 2, `Response Count` = 3)

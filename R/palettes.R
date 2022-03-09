@@ -73,5 +73,5 @@ scale_color_tl <- scale_colour_tl
 #' @rdname scale_tl
 scale_fill_tl <- function(n, color = c("blue", "orange", "purple", "green", "teal", "tl_colors"), ...) {
   # ggplot2::discrete_scale("fill", "tl", tl_pal(), ...)
-  ggplot2::scale_fill_manual(values = TeachingLab::tl_palette(color = "blue", theme = "dark", n = n))
+  ggplot2::scale_fill_manual(values = rev(TeachingLab::tl_palette(color = "blue", theme = "dark", n = n)))
 }

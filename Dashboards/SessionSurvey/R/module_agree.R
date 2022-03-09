@@ -207,6 +207,8 @@ agreeServer <- function(id) {
 
     # Time Series Plot
     data_plot_ts <- reactive({
+      
+      ## List of validators ##
       validate(
         need(!is.null(input$facilitator), "Please select at least one facilitator"),
         need(!is.null(input$role), "Please select at least one role"),
@@ -215,7 +217,8 @@ agreeServer <- function(id) {
         need(!is.null(input$course), "Please select at least one course"),
         need(input$date_min <= input$date_max, "Please select a minimum date that is less than the maximum.")
       )
-
+      
+      ## Data filters, then summarises ##
       agree_plot_ts <- session_survey %>%
         dplyr::filter(between(Date, input$date_min, input$date_max)) %>%
         {
@@ -285,6 +288,7 @@ agreeServer <- function(id) {
 
     # Ggplot for time series plot
     output$agree_plot_ts <- renderPlot({
+      
       data_plot_ts() %>%
         ggplot(aes(
           x = ymd(Date),
@@ -334,8 +338,9 @@ agreeServer <- function(id) {
         )
     })
 
-    # Agree plot n size
+    ## Agree plot n size ##
     agree_plot_n <- reactive({
+      
       data_n <- session_survey %>%
         dplyr::filter(between(Date, input$date_min, input$date_max)) %>%
         {
@@ -353,11 +358,14 @@ agreeServer <- function(id) {
         {
           if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
         }
+      
       nrow(data_n)
     })
 
     # Agree Percent Plot
     data_plot_agree <- reactive({
+      
+      ## List of validators ##
       validate(
         need(!is.null(input$facilitator), "Please select at least one facilitator"),
         need(!is.null(input$role), "Please select at least one role"),

@@ -36,7 +36,7 @@ ids_surveys <- tibble::tribble(
   "Math: Cycle of Inquiry V- Sequencing and Connecting Representations", 311404789L
 ) %>%
   dplyr::mutate(count = dplyr::row_number(),
-                responses = map(id, ~ surveymonkey::fetch_survey_obj(id = .x)$`response_count`)) %>%
+                responses = purrr::map(id, ~ surveymonkey::fetch_survey_obj(id = .x)$`response_count`)) %>%
   dplyr::filter(title != "Math: Cycle of Inquiry II - Making Math Visible" & responses > 0) # For now remove (Making Math Visible), duplicate row issue - see Github issue
 
 devtools::load_all()

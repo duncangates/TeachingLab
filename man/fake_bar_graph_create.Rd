@@ -11,7 +11,7 @@ fake_bar_graph_create(
   custom_n = NULL,
   custom_x_axis_labels = NULL,
   custom_p_1 = NULL,
-  custom_p_2,
+  custom_p_2 = NULL,
   randomness = 0,
   multiple_labels = NULL,
   know_graph = F

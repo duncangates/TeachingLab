@@ -23,6 +23,7 @@ diagnostic_final <- diagnostic %>%
   dplyr::mutate(id = TeachingLab::id_maker(initials = please_write_in_your_3_initials_if_you_do_not_have_a_middle_initial_please_write_x_br_this_is_used_to_link_the_diagnostic_and_follow_up_surveys_but_is_kept_confidential_br_br,
                               birthday = please_write_in_your_four_digit_birthday_mmdd_br_this_is_used_to_link_the_diagnostic_and_follow_up_surveys_but_is_kept_confidential))
 
-## Write to data folder, and 
+## Write to data folder, dashboard for completion, and dashboard for analysis ##
 readr::write_rds(diagnostic_final, here::here("Dashboards/DiagnosticSurvey/data/diagnostic.rds"))
+readr::write_rds(diagnostic_final, here::here("Dashboards/DiagnosticComplete/data/diagnostic.rds"))
 readr::write_rds(diagnostic_final, here::here("data/diagnostic_2022_data.rds"))

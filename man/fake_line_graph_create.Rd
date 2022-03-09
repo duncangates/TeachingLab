@@ -9,6 +9,7 @@ fake_line_graph_create(
   fake_data_fun = "time_data",
   labels = c("Test 1", "Test 2"),
   x_axis = "yearly",
+  y_axis_label = NULL,
   lines = 2,
   custom_n = NULL,
   custom_n_range = 0
@@ -22,6 +23,8 @@ fake_line_graph_create(
 \item{labels}{The labels for the lines}
 
 \item{x_axis}{the labels for the x-axis: yearly or pre-pl-post-pl}
+
+\item{y_axis_label}{A custom y axis label}
 
 \item{lines}{number of lines to create, either 1 or 2}
 

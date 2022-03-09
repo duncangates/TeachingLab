@@ -88,6 +88,12 @@ get_sites_to_clip(308115193)
 get_sites_to_clip(317612750)
 ```
 
+## ELA Foundational Skills: Cycle of Inquiry 2: Using Data to Inform Foundational Skills Instruction
+
+```{r}
+get_sites_to_clip(317871223)
+```
+
 ## ELA General: Cycle of Inquiry - Complex Text
 
 ```{r}
@@ -142,6 +148,12 @@ get_sites_to_clip(310008951)
 get_sites_to_clip(310775522)
 ```
 
+##  ELA: Guidebooks Diverse Learners Cycle of Inquiry - Fluency
+
+```{r}
+get_sites_to_clip(310776199)
+```
+
 ##  ELA: Guidebooks Diverse Learners Cycle of Inquiry - Vocabulary
 
 ```{r}
@@ -156,10 +168,10 @@ get_sites_to_clip(310009771)
 
 ## ELA: School Leader Coaching Series
 
-Not sure what's going on here, doesn't seem to be done yet.
+Not sure what's going on here, doesn't seem to be done yet. Doesn't need to be done.
 
 ```{r eval = F}
-get_sites_to_clip(316752660)
+# get_sites_to_clip(316752660)
 ```
 
 ##  School Leaders: ELA

@@ -358,7 +358,7 @@ textServer <- function(id) {
     
     quote1 <- reactiveValues(table1 = NULL)
     
-    observeEvent(c(input$refresh1, input$site, input$role, input$content, input$course, input$quote_length, input$date_slider, input$facilitator), {
+    observeEvent(c(input$refresh1, input$site, input$role, input$content, input$course, input$quote_length, input$date_min, input$date_max, input$facilitator), {
       quote1$table1 <- quote_viz_data1() %>%
         {
           if (nrow(.) > 0) slice_sample(., n = ifelse(nrow(.) > 10, 10, nrow(.))) else .
@@ -366,6 +366,7 @@ textServer <- function(id) {
     })
     
     output$quote_gt1 <- gt::render_gt(
+      
       quote_viz(
         data = quote1$table1,
         viz_type = "gt",
@@ -374,6 +375,7 @@ textServer <- function(id) {
       ) %>%
         suppressWarnings() %>%
         suppressMessages()
+      
     )
 
     quote_viz_data2 <- reactive({
@@ -412,7 +414,7 @@ textServer <- function(id) {
     
     quote2 <- reactiveValues(table2 = NULL)
     
-    observeEvent(c(input$refresh2, input$site, input$role, input$content, input$course, input$quote_length, input$date_slider, input$facilitator), {
+    observeEvent(c(input$refresh2, input$site, input$role, input$content, input$course, input$quote_length, input$date_min, input$date_max, input$facilitator), {
       quote2$table2 <- quote_viz_data2() %>%
         {
           if (nrow(.) > 0) slice_sample(., n = ifelse(nrow(.) > 10, 10, nrow(.))) else .
@@ -420,6 +422,7 @@ textServer <- function(id) {
     })
     
     output$quote_gt2 <- gt::render_gt(
+      
       quote_viz(
         data = quote2$table2,
         viz_type = "gt",
@@ -428,6 +431,7 @@ textServer <- function(id) {
       ) %>%
         suppressWarnings() %>%
         suppressMessages()
+      
     )
 
     quote_viz_data3 <- reactive({
@@ -466,7 +470,7 @@ textServer <- function(id) {
     
     quote3 <- reactiveValues(table3 = NULL)
     
-    observeEvent(c(input$refresh3, input$site, input$role, input$content, input$course, input$quote_length, input$date_slider, input$facilitator), {
+    observeEvent(c(input$refresh3, input$site, input$role, input$content, input$course, input$quote_length, input$date_min, input$date_max, input$facilitator), {
       quote3$table3 <- quote_viz_data3() %>%
         {
           if (nrow(.) > 0) slice_sample(., n = ifelse(nrow(.) > 10, 10, nrow(.))) else .
@@ -474,6 +478,7 @@ textServer <- function(id) {
     })
 
     output$quote_gt3 <- gt::render_gt(
+      
       quote_viz(
         data = quote3$table3,
         viz_type = "gt",
@@ -482,6 +487,7 @@ textServer <- function(id) {
       ) %>%
         suppressWarnings() %>%
         suppressMessages()
+      
     )
     
 

@@ -1,9 +1,10 @@
+#### Personal Facilitator Dashboard ####
 uiAgree <- function(id, label = "Counter") {
   ns <- NS(id)
   shiny::tagList(
     shiny.semantic::sidebar_layout(
       sidebar_panel = shiny.semantic::sidebar_panel(
-        style = "position:fixed;width:inherit;",
+        style = sidebar_style,
         shiny.semantic::menu_item(
           tabName = "content_menu",
           shiny.semantic::selectInput(
@@ -62,16 +63,28 @@ uiAgree <- function(id, label = "Counter") {
         br(),
         shiny.semantic::menu_item(
           tabName = "date_slider_menu",
-          shiny::sliderInput(
-            inputId = ns("date_slider"),
-            label = h3("Select a date range"),
-            value = c(
-              min(as.Date(session_survey$Date), na.rm = T),
-              max(as.Date(session_survey$Date), na.rm = T)
+          split_layout(
+            cell_widths = c("50%", "50%"),
+            cell_args = "padding: 5px;",
+            style = "background-color: transparent;",
+            shinyWidgets::airDatepickerInput(
+              inputId = ns("date_min"),
+              label = h3("Select minimum date"),
+              value = min(as.Date(session_survey$Date), na.rm = T),
+              minDate = min(as.Date(session_survey$Date), na.rm = T),
+              maxDate = max(as.Date(session_survey$Date), na.rm = T),
+              dateFormat = "mm-dd-yyyy",
+              width = "100px"
             ),
-            min = min(as.Date(session_survey$Date), na.rm = T),
-            max = max(as.Date(session_survey$Date), na.rm = T),
-            timeFormat = "%b %d, %Y"
+            shinyWidgets::airDatepickerInput(
+              inputId = ns("date_max"),
+              label = h3("Select maximum date"),
+              value = max(as.Date(session_survey$Date), na.rm = T),
+              minDate = min(as.Date(session_survey$Date), na.rm = T),
+              maxDate = max(as.Date(session_survey$Date), na.rm = T),
+              dateFormat = "mm-dd-yyyy",
+              width = "100px"
+            )
           ),
           icon = shiny.semantic::icon("calendar alternate")
         ),
@@ -89,41 +102,54 @@ uiAgree <- function(id, label = "Counter") {
         br(),
         shiny.semantic::menu_item(
           tabName = "download_menu",
-          div(style = "display:inline-block;",
-              shiny.semantic::selectInput(inputId = ns("plot_choice"),
-                                          label = "Download",
-                                          choices = c("Percentage Plot", "Percentage Over Time Plot"))
+          div(
+            style = "display:inline-block;",
+            shiny.semantic::selectInput(
+              inputId = ns("plot_choice"),
+              label = "Download",
+              choices = c("Percentage Plot", "Percentage Over Time Plot")
+            )
           ),
-          div(style = "display:inline-block;margin-left:5px;",
-              shiny.semantic::selectInput(inputId = ns("download_option"),
-                                          label = "as",
-                                          choices = c("png", "pdf (coming soon)")))
+          div(
+            style = "display:inline-block;margin-left:5px;",
+            shiny.semantic::selectInput(
+              inputId = ns("download_option"),
+              label = "as",
+              choices = c("png", "pdf (coming soon)")
+            )
+          )
         ),
         shiny.semantic::menu_item(
           tabName = "download_params",
-          div(style = "display:inline-block;",
-              shiny.semantic::numericInput(
-                inputId = ns("width"),
-                label = "width",
-                value = 12,
-                step = 1,
-                min = 2,
-                max = 20
-              )),
-          div(style = "display:inline-block;margin-left:5px;",
-              shiny.semantic::numericInput(
-                inputId = ns("height"),
-                label = "height",
-                value = 7,
-                step = 1,
-                min = 2,
-                max = 20
-              )),
-          div(style = "display:inline-block;margin-left:10px;",
-              shiny::downloadButton(
-                outputId = ns("down"),
-                label = ""
-              ))
+          div(
+            style = "display:inline-block;",
+            shiny.semantic::numericInput(
+              inputId = ns("width"),
+              label = "width",
+              value = 12,
+              step = 1,
+              min = 2,
+              max = 20
+            )
+          ),
+          div(
+            style = "display:inline-block;margin-left:5px;",
+            shiny.semantic::numericInput(
+              inputId = ns("height"),
+              label = "height",
+              value = 7,
+              step = 1,
+              min = 2,
+              max = 20
+            )
+          ),
+          div(
+            style = "display:inline-block;margin-left:10px;",
+            shiny::downloadButton(
+              outputId = ns("down"),
+              label = ""
+            )
+          )
         )
       ),
       main_panel = shiny.semantic::main_panel(
@@ -150,13 +176,22 @@ agreeServer <- function(id, result_auth, in_content, in_course, in_site, in_role
   ns <- NS(id)
   moduleServer(id, function(input, output, session) {
 
-    # Time Series Plot
+    ## Time Series Plot ##
     data_plot_ts <- reactive({
-      
-      
-      session_survey %>%
+
+      ## List of validators ##
+      validate(
+        need(!is.null(input$role), "Please select at least one role"),
+        need(!is.null(input$site), "Please select at least one site"),
+        need(!is.null(input$content), "Please select at least one content area"),
+        need(!is.null(input$course), "Please select at least one course"),
+        need(input$date_min <= input$date_max, "Please select a minimum date that is less than the maximum.")
+      )
+
+      ## Data filters then summarises ##
+      agree_plot_ts <- session_survey %>%
         dplyr::filter(Facilitator == result_auth) %>%
-        dplyr::filter(between(Date, input$date_slider[1], input$date_slider[2])) %>%
+        dplyr::filter(between(Date, input$date_min, input$date_max)) %>%
         {
           if (input$site != "All Partners") dplyr::filter(., `Select your site (district, parish, network, or school).` == input$site) else .
         } %>%
@@ -196,25 +231,36 @@ agreeServer <- function(id, result_auth, in_content, in_course, in_site, in_role
             answer %in% c("Agree", "Strongly agree") ~ "Agree/Strongly Agree",
             answer %in% c("Neither agree nor disagree", "Disagree", "Strongly disagree") ~ "Neither/Disagree/Strongly Disagree"
           ),
-          date_group = case_when(input$scale_adjust == "1 month" ~ paste0(lubridate::month(Date, label = T, abbr = F), ", ", year(Date)),
-                                 input$scale_adjust == "1 week" ~ paste0(year(Date), lubridate::week(Date)),
-                                 input$scale_adjust == "1 day" ~ paste0(lubridate::day(Date)))
+          date_group = case_when(
+            input$scale_adjust == "1 month" ~ paste0(lubridate::month(Date, label = T, abbr = F), ", ", year(Date)),
+            input$scale_adjust == "1 week" ~ paste0(year(Date), lubridate::week(Date)),
+            input$scale_adjust == "1 day" ~ paste0(lubridate::day(Date))
+          )
         ) %>%
         ungroup() %>%
+        dplyr::mutate(question = str_remove_all(
+          question,
+          "How much do you agree with the\nfollowing statements about this\nfacilitator today\\? - "
+        )) %>%
         group_by(date_group, question) %>%
         mutate(Percent = `Number Agree/Disagree` / sum(`Number Agree/Disagree`) * 100) %>%
         filter(Rating == "Agree/Strongly Agree") %>%
         group_by(date_group, Rating, question) %>%
-        summarise(Percent = round(sum(Percent), 2),
-                  Date = Date)
+        summarise(
+          Percent = round(sum(Percent), 2),
+          Date = Date
+        )
+
+      agree_plot_ts
     })
-    
+
     # Ggplot for time series plot
     output$agree_plot_ts <- renderPlot({
-      
       data_plot_ts() %>%
-        ggplot(aes(x = ymd(Date), 
-                   y = Percent)) +
+        ggplot(aes(
+          x = ymd(Date),
+          y = Percent
+        )) +
         geom_area(color = "gray50", aes(fill = Rating), alpha = 0.6, position = position_identity()) + # position_identity is absolutely necessary here, not sure why
         geom_ribbon(color = "transparent", aes(
           ymin = Percent, ymax = 100,
@@ -226,7 +272,13 @@ agreeServer <- function(id, result_auth, in_content, in_course, in_site, in_role
         coord_cartesian() +
         scale_x_date(
           date_breaks = input$scale_adjust,
-          date_labels = if (input$scale_adjust == "1 month") { "%b, %Y" } else if (input$scale_adjust == "1 week") { "%W" } else if (input$scale_adjust == "1 day") { "%W" },
+          date_labels = if (input$scale_adjust == "1 month") {
+            "%b, %Y"
+          } else if (input$scale_adjust == "1 week") {
+            "%W"
+          } else if (input$scale_adjust == "1 day") {
+            "%W"
+          },
           limits = c(min(data_plot_ts()$Date), max(data_plot_ts()$Date)),
           expand = c(0, 0)
         ) +
@@ -252,13 +304,44 @@ agreeServer <- function(id, result_auth, in_content, in_course, in_site, in_role
           axis.line = element_line(size = 1.5)
         )
     })
+    
+    ## Agree plot n size ##
+    agree_plot_n <- reactive({
+      
+      data_n <- session_survey %>%
+        dplyr::filter(between(Date, input$date_min, input$date_max)) %>%
+        {
+          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
+        } %>%
+        {
+          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
+        } %>%
+        {
+          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today’s professional learning session.` %in% input$content) else .
+        } %>%
+        {
+          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
+        }
+      
+      nrow(data_n)
+    })
 
     # Agree Percent Plot
     data_plot_agree <- reactive({
       
+      ## List of validators ##
+      validate(
+        need(!is.null(input$role), "Please select at least one role"),
+        need(!is.null(input$site), "Please select at least one site"),
+        need(!is.null(input$content), "Please select at least one content area"),
+        need(!is.null(input$course), "Please select at least one course"),
+        need(input$date_min <= input$date_max, "Please select a minimum date that is less than the maximum.")
+      )
+      
+      ## Data filters, then summarises ##
       agree_plot <- session_survey %>%
         dplyr::filter(Facilitator == result_auth) %>%
-        dplyr::filter(between(Date, input$date_slider[1], input$date_slider[2])) %>%
+        dplyr::filter(between(Date, input$date_min, input$date_max)) %>%
         {
           if (input$site != "All Partners") dplyr::filter(., `Select your site (district, parish, network, or school).` == input$site) else .
         } %>%
@@ -294,15 +377,13 @@ agreeServer <- function(id, result_auth, in_content, in_course, in_site, in_role
           Response = Response,
           Percent = n / sum(n) * 100
         )
-      
+
       agree_plot
-      
     })
 
 
     # Ggplot for agree percent plot
     output$percent_agree_plot <- renderPlot({
-      
       ggplot(data = data_plot_agree(), aes(x = Question, y = Percent, fill = factor(Response))) +
         geom_col() +
         geom_text(aes(label = if_else(Percent >= 3, paste0(round(Percent), "%"), "")), position = position_stack(vjust = 0.5)) +
@@ -327,10 +408,8 @@ agreeServer <- function(id, result_auth, in_content, in_course, in_site, in_role
           legend.text = element_text(size = 9)
         )
     })
-    
+
     downloadGraph <- reactive({
-      
-      
       download_graph <- ggplot(data = data_plot_agree(), aes(x = Question, y = Percent, fill = factor(Response))) +
         geom_col() +
         geom_text(aes(label = if_else(Percent >= 3, paste0(round(Percent), "%"), "")), position = position_stack(vjust = 0.5)) +
@@ -355,7 +434,7 @@ agreeServer <- function(id, result_auth, in_content, in_course, in_site, in_role
           legend.text = element_text(size = 9)
         )
     })
-    
+
     output$down <- downloadHandler(
       filename = function() {
         paste0("agree_plot.", input$download_option)
@@ -368,10 +447,7 @@ agreeServer <- function(id, result_auth, in_content, in_course, in_site, in_role
           cairo_pdf(filename = file, width = input$width, height = input$height, family = "Calibri")
           downloadGraph()
         }
-        
       }
     )
-    
-    
   })
 }
