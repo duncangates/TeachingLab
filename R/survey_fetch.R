@@ -72,7 +72,7 @@ get_session_survey <- function(update = F) {
     df <- readRDS(file = "data/session_survey_21_22data.rds")
     session_survey <- df
   } else {
-    options(sm_oauth_token = "BjVjlV9MiVBgfe1XpS2xPS547c6gkAygKWAgm4Vv539-KbFct5lsqyVGRCZun0GDt21lnJrgn9hDvSjF.KybF58vc.P.jdeKJ8A2UEUHnE2.50e0lp.86EmQmy8-y9tm")
+    options(sm_oauth_token = options(sm_oauth_token = Sys.getenv("session_token")))
     
     surveymonkey_session <- surveymonkey::fetch_survey_obj(id = 308115193) %>%
       surveymonkey::parse_survey()
@@ -214,7 +214,7 @@ get_course_survey <- function(update = F) {
     
     old_df <- readr::read_rds(here::here("data/old_course_survey_reformatted.rds"))
     
-    options(sm_oauth_token = "a22Dkw3KTSZB9v.TYV0g2GAV2fRK7dfmQ81WEk1iqnTrcUUQpcksI1fRc44J-H0fcN3OAovcaQRNb38fhScbHpiUJu4vDP-9SZuXuwHNwcNRK035sJ7VjQFPOUnKi3TT")
+    options(sm_oauth_token = Sys.getenv("course_token"))
     
     surveymonkey_course <- surveymonkey::fetch_survey_obj(id = 308116695) %>%
       surveymonkey::parse_survey()
