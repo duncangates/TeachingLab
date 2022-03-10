@@ -393,3 +393,49 @@ score_one_question_mindsets <- function(data, question, coding, na_remove = F, l
     dplyr::summarise(score = (sum(score)/(n()*2))*100,
                      n = dplyr::n())
 }
+
+
+
+#' @title Grade IPG Data
+#' @param x the data
+#' @param type character or numeric
+#' @description function for grading different parts of the ipg forms
+#' @return a percentage of correct either by checking 3 or 4 or yes
+#' @export
+
+grade_ipg <- function(x, type = "character") {
+  
+  x <- x[!is.na(x)]
+  x <- x[!is.null(x)]
+  x <- x[!str_detect(x, "Not Observed|Not observed|NULL")]
+  # purrr::keep( ~ !is.null(.x)) %>%
+  # purrr::keep( ~ !str_detect(.x, "Not Observed"))
+  
+  if (type == "character") {
+    x <- 100 * (sum(str_detect(x, "Yes"), na.rm = T))/
+      (sum(str_detect(x, "No"), na.rm = T) + sum(str_detect(x, "Yes"), na.rm = T))
+  } else if (type == "numeric") {
+    x <- 100 * (sum(str_detect(x, "3|4"), na.rm = T))/
+      (sum(!str_detect(x, "3|4"), na.rm = T) + sum(str_detect(x, "3|4"), na.rm = T))
+  }
+  
+}
+
+#' @title Grade Data
+#' @param data the data
+#' @param answer the answer
+#' @description function for grading in general
+#' @return a percentage of correct
+#' @export
+
+tl_score <- function(data, answer) {
+  data <- data[!is.na(data)]
+  data <- data[!is.null(data)]
+  
+  data_percent <- 100 * (sum(stringr::str_detect(data, answer), na.rm = T))/length(!is.na(data))
+  
+  data_percent
+  
+}
+
+

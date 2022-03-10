@@ -1,6 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^.*\.json$
+^.*\.rds$
 Images/
 Analysis/
 PartnerShare/
@@ -10,9 +11,7 @@ Dashboards/
 Staffing/
 ExternalShare/
 PDF/
-HTML/
 ParticipantFeedback/
-data/
 FacilitatorPay/
 email_creds_staffing
 data-dlean/

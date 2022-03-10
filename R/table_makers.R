@@ -865,13 +865,15 @@ course_quotes <- function(data = TeachingLab::get_course_survey(),
 #' @param data the data to be input
 #' @param grouping includes "equitable", "high_expectations", and "crse"
 #' @param summarise TRUE by default will summarise all data selected
+#' @param n_size NULL an optional n_size to include
 #' @param save F by default, a save path inside current working directory
 #' @return Returns a gt table, unless save in which case it will return a saved file with gtsave
 #' @export
 tl_summary_table <- function(data, 
                              save = F, 
                              summarise = T,
-                             grouping = NULL) {
+                             grouping = NULL,
+                             n_size = NULL) {
   ## Function to nicely format for table presenting
   reformat_cols <- function(x) {
     stringr::str_replace_all(
@@ -998,6 +1000,9 @@ tl_summary_table <- function(data,
                            ) %>% as.character(),
                            domain = NULL
                          )) %>%
+          {
+            if (!is.null(n_size)) gt::tab_source_note(data = ., source_note = paste0("n ranges from ", n_size[1], " to ", n_size[2])) else .
+          } %>%
           TeachingLab::gt_theme_tl(align = "left")
       } else {
         final_gt <- data_sums_final %>%
@@ -1006,7 +1011,7 @@ tl_summary_table <- function(data,
           ) %>%
           dplyr::rename(` ` = `groups`) %>%
           gt::gt() %>%
-          gt::tab_header(title = data_sums_final$groups[2]) %>%
+          gt::tab_header(title = md(paste0("**", data_sums_final$groups[2], "**"))) %>%
           gt::fmt_markdown(columns = c("Question", " ")) %>%
           # gtExtras::gt_color_box(
           #   columns = Percent,
@@ -1027,6 +1032,9 @@ tl_summary_table <- function(data,
                          columns = "Question") %>%
           gt::tab_footnote(footnote = "For the items in red, responses that align to equitable mindsets are strongly disagree/disagree.",
                            locations = cells_column_labels("Question")) %>%
+          {
+            if (!is.null(n_size)) gt::tab_source_note(data = ., source_note = paste0("n ranges from ", n_size[1], " to ", n_size[2])) else .
+          } %>%
           TeachingLab::gt_theme_tl(align = "left")
       }
     } else if (grouping %in% c("crse")) {
@@ -1074,6 +1082,9 @@ tl_summary_table <- function(data,
           gt::fmt_markdown(columns = "Question") %>%
           gt::cols_align(align = "left",
                          columns = gt::everything()) %>%
+          {
+            if (!is.null(n_size)) gt::tab_source_note(data = ., source_note = paste0("n ranges from ", n_size[1], " to ", n_size[2])) else .
+          } %>%
           TeachingLab::gt_theme_tl(align = "left")
         
       } else if (grouping == "crse") {
@@ -1093,6 +1104,9 @@ tl_summary_table <- function(data,
           gt::fmt_markdown(columns = "Question") %>%
           gt::cols_align(align = "left",
                          columns = "Question") %>%
+          {
+            if (!is.null(n_size)) gt::tab_source_note(data = ., source_note = paste0("n ranges from ", n_size[1], " to ", n_size[2])) else .
+          } %>%
           TeachingLab::gt_theme_tl(align = "left")
       }
   }
@@ -1114,6 +1128,9 @@ tl_summary_table <- function(data,
       gt::fmt_percent(gt::everything(),
                     scale_values = F,
                     decimals = 0) %>%
+      {
+        if (!is.null(n_size)) gt::tab_source_note(data = ., source_note = paste0("n ranges from ", n_size[1], " to ", n_size[2])) else .
+      } %>%
       TeachingLab::gt_theme_tl()
   }
   

@@ -4,7 +4,7 @@
 \alias{tl_summary_table}
 \title{Teaching Lab Summary Tables}
 \usage{
-tl_summary_table(data, save = F, summarise = T, grouping = NULL)
+tl_summary_table(data, save = F, summarise = T, grouping = NULL, n_size = NULL)
 }
 \arguments{
 \item{data}{the data to be input}
@@ -14,6 +14,8 @@ tl_summary_table(data, save = F, summarise = T, grouping = NULL)
 \item{summarise}{TRUE by default will summarise all data selected}
 
 \item{grouping}{includes "equitable", "high_expectations", and "crse"}
+
+\item{n_size}{NULL an optional n_size to include}
 }
 \value{
 Returns a gt table, unless save in which case it will return a saved file with gtsave

@@ -4,10 +4,10 @@
 \alias{get_course_survey}
 \title{End of Course Dashboard Data}
 \usage{
-get_course_survey(loc = "data/course_surveymonkey.rds")
+get_course_survey(update = F)
 }
 \arguments{
-\item{loc}{the location of the end of course data}
+\item{update}{F, optional to update end of course data or not}
 }
 \value{
 Returns a tibble
