@@ -746,7 +746,7 @@ p_and_n_split <- function(p1_1_range = c(30:70),
 #' @param custom_p_2 custom percentage 2, vector with 1: initial percentage, and 2: amount to set maximum increase
 #' @param randomness multiplier for amount of randomness in custom percentages, default 0
 #' @param multiple_labels a special label maker to add group labels in bar charts
-#' @param know_graph if it is a knowledge assessments graph then add % correct to title
+#' @param know_graph if it is a knowledge assessments graph then add \% correct to title
 #' @return a ggplot object
 #' @export
 fake_bar_graph_create <- function(title, 
@@ -1020,28 +1020,4 @@ fake_line_graph_create <- function(title, fake_data_fun = "time_data",
   
 }
 
-
-#' @title Random Vector
-#' @param N number of scalars to create
-#' @param M number to sum to
-#' @param sd Standard Deviation
-#' @param pos.only T
-#' 
-#' @export
-rand_vect <- function(N, M, sd = 1, pos.only = TRUE) {
-  vec <- stats::rnorm(N, M/N, sd)
-  if (abs(sum(vec)) < 0.01) vec <- vec + 1
-  vec <- round(vec / sum(vec) * M)
-  deviation <- M - sum(vec)
-  for (. in seq_len(abs(deviation))) {
-    vec[i] <- vec[i <- sample(N, 1)] + sign(deviation)
-  }
-  if (pos.only) while (any(vec < 0)) {
-    negs <- vec < 0
-    pos  <- vec > 0
-    vec[negs][i] <- vec[negs][i <- sample(sum(negs), 1)] + 1
-    vec[pos][i]  <- vec[pos ][i <- sample(sum(pos ), 1)] - 1
-  }
-  vec
-}
 

@@ -36,7 +36,7 @@ fake_bar_graph_create(
 
 \item{multiple_labels}{a special label maker to add group labels in bar charts}
 
-\item{know_graph}{if it is a knowledge assessments graph then add % correct to title}
+\item{know_graph}{if it is a knowledge assessments graph then add \% correct to title}
 }
 \value{
 a ggplot object
