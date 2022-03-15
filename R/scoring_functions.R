@@ -428,13 +428,32 @@ grade_ipg <- function(x, type = "character") {
 #' @return a percentage of correct
 #' @export
 
-tl_score <- function(data, answer) {
+tl_score_count <- function(data, answer) {
   data <- data[!is.na(data)]
   data <- data[!is.null(data)]
   
-  data_percent <- 100 * (sum(stringr::str_detect(data, answer), na.rm = T))/length(!is.na(data))
+  data_count <- sum(stringr::str_detect(data, answer))
   
-  data_percent
+  data_count
+  
+}
+
+#' @title Grade Data
+#' @param data the data
+#' @param answer the answer
+#' @description function for grading in general
+#' @return a percentage of correct
+#' @export
+
+tl_score <- function(data, answer) {
+  
+  data_counted <- TeachingLab::tl_score_count(data = data, answer = answer)
+  data_length <- sum(!is.na(data))
+  
+  data_percent <- round(100 * data_counted/data_length, 2)
+  
+  tbl <- data.frame(n_correct = data_counted, 
+                    n_selected = data_length)
   
 }
 

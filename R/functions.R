@@ -364,3 +364,23 @@ rand_vect <- function(N, M, sd = 1, pos.only = TRUE) {
   }
   vec
 }
+
+
+#' @title String Replace
+#' @description Detects a specific string pattern and replaces entire string with it
+#' @param string the string to look within
+#' @param string_detect the string to detect
+#' @param string_replace the string to replace detected string with
+#' @return a string
+#' @export
+string_replace <- function(string, string_detect, string_replace) {
+  ifelse(stringr::str_detect(string, string_detect),
+         string_replace,
+         string)
+}
+
+
+
+
+
+

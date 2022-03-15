@@ -866,6 +866,7 @@ course_quotes <- function(data = TeachingLab::get_course_survey(),
 #' @param grouping includes "equitable", "high_expectations", and "crse"
 #' @param summarise TRUE by default will summarise all data selected
 #' @param n_size NULL an optional n_size to include
+#' @param n_size_single NULL an optional single value for n_size
 #' @param save F by default, a save path inside current working directory
 #' @return Returns a gt table, unless save in which case it will return a saved file with gtsave
 #' @export
@@ -873,7 +874,8 @@ tl_summary_table <- function(data,
                              save = F, 
                              summarise = T,
                              grouping = NULL,
-                             n_size = NULL) {
+                             n_size = NULL,
+                             n_size_single = NULL) {
   ## Function to nicely format for table presenting
   reformat_cols <- function(x) {
     stringr::str_replace_all(
@@ -941,7 +943,7 @@ tl_summary_table <- function(data,
         ## Make long format
         tidyr::pivot_longer(tidyr::everything(), names_to = "Question", values_to = "Percent") %>%
         ## Add groups and red coloring for negative items
-        dplyr::mutate(groups = dplyr::case_when(Question %in% equitable_reformat ~ "Equitable Mindsets",
+        dplyr::mutate(groups = dplyr::case_when(Question %in% equitable_reformat ~ "Recognizing Race & Culture",
                                                 Question %in% high_expectations_reformat ~ "High Expectations"),
                       Question = ifelse(Question %in% c(equitable_reformat[1:2], high_expectations_reformat[1:3]),
                                         paste0("<span style = 'color:#cc3336;'>", Question, "</span>"),
@@ -1003,6 +1005,9 @@ tl_summary_table <- function(data,
           {
             if (!is.null(n_size)) gt::tab_source_note(data = ., source_note = paste0("n ranges from ", n_size[1], " to ", n_size[2])) else .
           } %>%
+          {
+            if (!is.null(n_size_single)) gt::tab_source_note(data = ., source_note = paste0("n = ", n_size_single[1])) else .
+          } %>%
           TeachingLab::gt_theme_tl(align = "left")
       } else {
         final_gt <- data_sums_final %>%
@@ -1030,10 +1035,13 @@ tl_summary_table <- function(data,
                          )) %>%
           gt::cols_align(align = "left",
                          columns = "Question") %>%
-          gt::tab_footnote(footnote = "For the items in red, responses that align to equitable mindsets are strongly disagree/disagree.",
+          gt::tab_footnote(footnote = "For the items in red, responses that align to equitable mindsets are strongly disagree/disagree. They have been reverse coded for these analyses, so that for all items, higher percentages correspond to holding equitable mindsets.",
                            locations = cells_column_labels("Question")) %>%
           {
             if (!is.null(n_size)) gt::tab_source_note(data = ., source_note = paste0("n ranges from ", n_size[1], " to ", n_size[2])) else .
+          } %>%
+          {
+            if (!is.null(n_size_single)) gt::tab_source_note(data = ., source_note = paste0("n = ", n_size_single[1])) else .
           } %>%
           TeachingLab::gt_theme_tl(align = "left")
       }
@@ -1085,6 +1093,9 @@ tl_summary_table <- function(data,
           {
             if (!is.null(n_size)) gt::tab_source_note(data = ., source_note = paste0("n ranges from ", n_size[1], " to ", n_size[2])) else .
           } %>%
+          {
+            if (!is.null(n_size_single)) gt::tab_source_note(data = ., source_note = paste0("n = ", n_size_single[1])) else .
+          } %>%
           TeachingLab::gt_theme_tl(align = "left")
         
       } else if (grouping == "crse") {
@@ -1106,6 +1117,9 @@ tl_summary_table <- function(data,
                          columns = "Question") %>%
           {
             if (!is.null(n_size)) gt::tab_source_note(data = ., source_note = paste0("n ranges from ", n_size[1], " to ", n_size[2])) else .
+          } %>%
+          {
+            if (!is.null(n_size_single)) gt::tab_source_note(data = ., source_note = paste0("n = ", n_size_single[1])) else .
           } %>%
           TeachingLab::gt_theme_tl(align = "left")
       }

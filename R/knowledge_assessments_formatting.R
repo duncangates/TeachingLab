@@ -7,7 +7,7 @@
 #' @param question_html_wrap number of characters before <br> insertion in question
 #' @return a plot ready dataframe
 #' @export
-#' 
+
 save_processed_data <- function(data, q_and_a, correct, save_name, question_html_wrap = 45) {
   # save_processed_data(data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELABootcamp-FoundationalSkillsBootcampSkills(K-2).rds"),
   # q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_foundational_skills.rds"),
@@ -69,7 +69,7 @@ save_processed_data <- function(data, q_and_a, correct, save_name, question_html
 #' @param question_html_wrap number of characters before <br> insertion in question
 #' @return a plot ready dataframe
 #' @export
-#' 
+
 save_processed_data2 <- function(data, q_and_a, correct, save_name, question_html_wrap = 45) {
   # save_processed_data2(data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELABootcamp-FoundationalSkillsBootcampSkills(K-2).rds"),
   # q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_foundational_skills.rds"),

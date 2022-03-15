@@ -1,5 +1,5 @@
 
-# create an html dependency for Magnific popup
+#' create an html dependency for Magnific popup
 html_dependency_magnific_popup <- function() {
   htmltools::htmlDependency(name = "magnific-popup",
                             version = "1.1.0",
@@ -8,7 +8,7 @@ html_dependency_magnific_popup <- function() {
                             stylesheet = "magnific-popup.css")
 }
 
-# create an html dependency for jquery-stickytableheaders
+#' create an html dependency for jquery-stickytableheaders
 html_dependency_jquery_stickytableheaders <- function()  {
   htmltools::htmlDependency(name = "jquery-stickytableheaders",
                             version = "0.1.11",
@@ -17,7 +17,7 @@ html_dependency_jquery_stickytableheaders <- function()  {
 }
 
 
-# create an html dependency for bootstrap (function copied from rmarkdown)
+#' create an html dependency for bootstrap (function copied from rmarkdown)
 html_dependency_bootstrap <- function(theme = "bootstrap") {
   htmltools::htmlDependency(name = "bootstrap",
                             version = "3.3.7",
