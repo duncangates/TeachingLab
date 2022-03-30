@@ -110,18 +110,28 @@ course_survey <- surveymonkey_course %>%
   )) %>%
   # Probably redundant, check later
   dplyr::mutate(`date_created` = as.Date(`date_created`)) %>%
-  # Fix Pointe Coupee
-  dplyr::mutate(`Select your site (district, parish, network, or school).` = stringr::str_replace_all(`Select your site (district, parish, network, or school).`, "Pt. Coupee Parish", "Pointe Coupee Parish")) %>%
-  # Remove extra parts of names so they will be the same
-  dplyr::mutate(`Select your site (district, parish, network, or school).` = stringr::str_remove_all(
-    `Select your site (district, parish, network, or school).`,
-    ", PA/DE|, LA|, PA|, CA|, SC|, VT|, IL|, NY|, NE|, MS|, RI"
-  )) %>%
-  # Make Rochester all the same name regardless of school
-  dplyr::mutate(`Select your site (district, parish, network, or school).` = ifelse(stringr::str_detect(`Select your site (district, parish, network, or school).`, "Rochester"),
-    "Rochester City School District",
-    as.character(`Select your site (district, parish, network, or school).`)
-  )) %>%
+  # Make District 11, District 9, Pointe Coupee, EMST, Rochester all the same name regardless of school
+  dplyr::mutate(`Select your site (district, parish, network, or school).` = TeachingLab::string_replace(`Select your site (district, parish, network, or school).`,
+                                                                                                         "District 11",
+                                                                                                         "NYC District 11 - District-wide, NY"),
+                `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(`Select your site (district, parish, network, or school).`,
+                                                                                                         "District 9",
+                                                                                                         "NYC District 9 - District-wide, NY"),
+                `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(`Select your site (district, parish, network, or school).`,
+                                                                                                         "EMST",
+                                                                                                         "NYC District 12 - EMST-IS 190, NY"),
+                `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(`Select your site (district, parish, network, or school).`,
+                                                                                                         "Coupee",
+                                                                                                         "Pointe Coupee Parish, LA"),
+                `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(`Select your site (district, parish, network, or school).`,
+                                                                                                         "Rochester",
+                                                                                                         "Rochester City School District - District-wide"),
+                `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(`Select your site (district, parish, network, or school).`,
+                                                                                                         "West Contra",
+                                                                                                         "West Contra Costa USD, CA"),
+                `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(`Select your site (district, parish, network, or school).`,
+                                                                                                         "Wisconsin Department",
+                                                                                                         "Wisconsin Department of Education, WI")) %>%
   # Get rid of random -999 in responses
   dplyr::mutate(`How much do you agree with the following statements about this course? - I am satisfied with how the course was facilitated.` = dplyr::na_if(`How much do you agree with the following statements about this course? - I am satisfied with how the course was facilitated.`, "-999")) %>%
   # Fix agree/not agree formatting
@@ -179,6 +189,9 @@ course_survey <- surveymonkey_course %>%
 course_survey %>%
   dplyr::filter(date_created >= as.Date("2021-07-01") & date_created <= as.Date("2022-06-30")) %>%
   readr::write_rds(., "data/course_survey_21_22.rds")
+course_survey %>%
+  dplyr::filter(date_created >= as.Date("2021-07-01") & date_created <= as.Date("2022-06-30")) %>%
+  readr::write_rds(., "Dashboards/SiteCollectionProgress/data/course_survey_21_22.rds")
 readr::write_rds(course_survey, "data/course_surveymonkey.rds")
 readr::write_rds(course_survey, here::here("Dashboards/CourseSurvey/data/course_surveymonkey.rds"))
 
@@ -354,8 +367,10 @@ course_survey_deploy <- function() {
   )
 }
 
-purrr::insistently(course_survey_deploy, 
-                   rate = rate_backoff(pause_base = 0.1, pause_min = 0.5, max_times = 4))
+course_survey_deploy()
+
+# purrr::insistently(course_survey_deploy(), 
+#                    rate = purrr::rate_backoff(pause_base = 0.1, pause_min = 0.5, max_times = 4))
 
 
 ### Deploy Session Survey ###

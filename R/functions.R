@@ -374,9 +374,13 @@ rand_vect <- function(N, M, sd = 1, pos.only = TRUE) {
 #' @return a string
 #' @export
 string_replace <- function(string, string_detect, string_replace) {
-  ifelse(stringr::str_detect(string, string_detect),
-         string_replace,
-         string)
+  
+  new_string <- ifelse(stringr::str_detect(string, string_detect),
+                       string_replace,
+                       as.character(string))
+  
+  new_string
+  
 }
 
 

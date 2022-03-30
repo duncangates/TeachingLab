@@ -186,14 +186,12 @@ server <- function(input, output, session) {
     shinyWidgets::pickerInput("specific_facilitator",
       label = labelMandatory("Select the facilitators you would like to email:"),
       choices = Facilitators_Emails %>%
-        mutate(across(`K-2`:Guidebooks, ~ case_when(.x == TRUE ~ 1,
-                                              .x == FALSE ~ 0))) %>%
         pivot_longer(!c(1, 2), names_to = "Curriculum") %>%
-        print() %>%
         arrange(Facilitators) %>%
         filter(Curriculum == input$curriculum & value == 1) %>%
         select(Facilitators) %>%
-        distinct(),
+        distinct() %>% 
+        print(),
       multiple = T,
       width = "400px",
       options = list(

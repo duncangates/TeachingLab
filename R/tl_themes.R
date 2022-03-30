@@ -298,7 +298,7 @@ theme_irp <- function(base_family = "Roboto Condensed",
 #'
 #' @param data An existing gt table object
 #' @param all_caps Whether or not to capitalize titles
-#' @param align Align options are "left", "center", "right"
+#' @param align Align options are "left", "center", "right" or NULL
 #' @param base_font the font size
 #' @param heading_font the title font size
 #' @param ... Optional additional arguments to gt::table_options()
@@ -346,7 +346,9 @@ gt_theme_tl <- function(data, all_caps = F, align = "center", base_font = 16, he
     )
   ) %>%
     # Set default to center align everything
-    gt::cols_align(align = "center") %>%
+    {
+      if (!is.null(align)) gt::cols_align(., align = align) else .
+    } %>%
     gt::tab_options(
       column_labels.background.color = "white",
       table.border.top.width = gt::px(3),

@@ -10,7 +10,8 @@ tl_summary_table(
   summarise = T,
   grouping = NULL,
   n_size = NULL,
-  n_size_single = NULL
+  n_size_single = NULL,
+  explain = F
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ tl_summary_table(
 \item{n_size}{NULL an optional n_size to include}
 
 \item{n_size_single}{NULL an optional single value for n_size}
+
+\item{explain}{add explanation for different percentage levels to the table}
 }
 \value{
 Returns a gt table, unless save in which case it will return a saved file with gtsave

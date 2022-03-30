@@ -789,18 +789,18 @@ session_quotes <- function(data = TeachingLab::get_session_survey(),
                            save = NULL,
                            include_columns = NULL) {
   quotes_gt <- data %>%
-    dplyr::select(c("What is one thing from today's learning that you plan to take back to your classroom?",
+    dplyr::select(c("Facilitation_Feedback",
                     "What went well in today’s session?",
                     "What could have been better about today’s session?"),
                   include_columns) %>%
-    dplyr::mutate(dplyr::across(c(1:5), ~ replace(.x, .x %in% TeachingLab::na_df, NA))) %>%
+    dplyr::mutate(dplyr::across(c(1:3), ~ replace(.x, .x %in% TeachingLab::na_df, NA))) %>%
     janitor::remove_empty("rows") %>%
-    dplyr::mutate(dplyr::across(c(1:5), ~ tidyr::replace_na(.x, "No Response"))) %>%
+    dplyr::mutate(dplyr::across(c(1:3), ~ tidyr::replace_na(.x, "No Response"))) %>%
     {
       if (all == F) purrr::map(., ~ sample(.x, size = size)) else .
     } %>%
     tibble::as_tibble() %>%
-    stats::setNames(c("What is one thing from today's learning that you plan to take back to your classroom?",
+    stats::setNames(c("General Facilitation Feedback",
                "What went well in today’s session?",
                "What could have been better about today’s session?",
                include_columns)) %>%
@@ -867,6 +867,7 @@ course_quotes <- function(data = TeachingLab::get_course_survey(),
 #' @param summarise TRUE by default will summarise all data selected
 #' @param n_size NULL an optional n_size to include
 #' @param n_size_single NULL an optional single value for n_size
+#' @param explain add explanation for different percentage levels to the table
 #' @param save F by default, a save path inside current working directory
 #' @return Returns a gt table, unless save in which case it will return a saved file with gtsave
 #' @export
@@ -875,7 +876,8 @@ tl_summary_table <- function(data,
                              summarise = T,
                              grouping = NULL,
                              n_size = NULL,
-                             n_size_single = NULL) {
+                             n_size_single = NULL,
+                             explain = F) {
   ## Function to nicely format for table presenting
   reformat_cols <- function(x) {
     stringr::str_replace_all(
@@ -1015,6 +1017,19 @@ tl_summary_table <- function(data,
             as.character(stringr::str_extract_all(groups, "<b>Overall Score</b>")), "character\\(0\\)", " ")
           ) %>%
           dplyr::rename(` ` = `groups`) %>%
+          {
+            if (explain == T) dplyr::mutate(., `Response (answer)` = dplyr::case_when(Percent == 20 & !stringr::str_detect(Question, "span") ~ "Strongly disagree",
+                                                                                 Percent == 40 & !stringr::str_detect(Question, "span") ~ "Disagree",
+                                                                                 Percent == 60 & !stringr::str_detect(Question, "span") ~ "Neither agree nor disagree",
+                                                                                 Percent == 80 & !stringr::str_detect(Question, "span") ~ "Agree",
+                                                                                 Percent == 100 & !stringr::str_detect(Question, "span") ~ "Strongly agree",
+                                                                                 Percent == 20 & stringr::str_detect(Question, "span") ~ "Strongly agree",
+                                                                                 Percent == 40 & stringr::str_detect(Question, "span") ~ "Agree",
+                                                                                 Percent == 60 & stringr::str_detect(Question, "span") ~ "Neither agree nor disagree",
+                                                                                 Percent == 80 & stringr::str_detect(Question, "span") ~ "Disagree",
+                                                                                 Percent == 100 & stringr::str_detect(Question, "span") ~ "Strongly disagree",
+                                                                                 ` ` == "<b>Overall Score</b>" ~ " ")) else .
+          } %>%
           gt::gt() %>%
           gt::tab_header(title = md(paste0("**", data_sums_final$groups[2], "**"))) %>%
           gt::fmt_markdown(columns = c("Question", " ")) %>%
@@ -1076,11 +1091,24 @@ tl_summary_table <- function(data,
           dplyr::bind_rows(data_sums_final)
         
         final_gt <- data_sums_final %>%
+          {
+            if (explain == T) dplyr::mutate(., `Response (1-10 scale)` = dplyr::case_when(Percent == 10 & Question != "<b>Overall Score</b>" ~ "1",
+                                                                                          Percent == 20 & Question != "<b>Overall Score</b>" ~ "2",
+                                                                                          Percent == 30 & Question != "<b>Overall Score</b>" ~ "3",
+                                                                                          Percent == 40 & Question != "<b>Overall Score</b>" ~ "4",
+                                                                                          Percent == 50 & Question != "<b>Overall Score</b>" ~ "5",
+                                                                                          Percent == 60 & Question != "<b>Overall Score</b>" ~ "6",
+                                                                                          Percent == 70 & Question != "<b>Overall Score</b>" ~ "7",
+                                                                                          Percent == 80 & Question != "<b>Overall Score</b>" ~ "8",
+                                                                                          Percent == 90 & Question != "<b>Overall Score</b>" ~ "9",
+                                                                                          Percent == 100 & Question != "<b>Overall Score</b>" ~ "10",
+                                                                                          Question == "<b>Overall Score</b>" ~ " ")) else .
+          } %>%
           gt::gt() %>%
           gt::fmt_percent(columns = "Percent",
                           decimals = 0,
                           scale_values = F) %>%
-          gt::data_color(columns = "Percent",
+          gt::data_color(columns = c(Percent),
                          colors = scales::col_bin(
                            palette = paletteer::paletteer_d(
                              palette = "ggsci::blue_material"
@@ -1089,14 +1117,17 @@ tl_summary_table <- function(data,
                          )) %>%
           gt::fmt_markdown(columns = "Question") %>%
           gt::cols_align(align = "left",
-                         columns = gt::everything()) %>%
+                         columns = c(Question, Percent)) %>%
           {
             if (!is.null(n_size)) gt::tab_source_note(data = ., source_note = paste0("n ranges from ", n_size[1], " to ", n_size[2])) else .
           } %>%
           {
             if (!is.null(n_size_single)) gt::tab_source_note(data = ., source_note = paste0("n = ", n_size_single[1])) else .
           } %>%
-          TeachingLab::gt_theme_tl(align = "left")
+          TeachingLab::gt_theme_tl(align = NULL) %>%
+          {
+            if (explain == T) gt::cols_align(., align = "center", columns = c(`Response (1-10 scale)`)) else .
+          }
         
       } else if (grouping == "crse") {
         data_sums_final <- data_sums
@@ -1110,6 +1141,19 @@ tl_summary_table <- function(data,
         
         final_gt <- data_sums_final %>%
           dplyr::rename(Average = Percent) %>%
+          {
+            if (explain == T) dplyr::mutate(., `Response (1-10 scale)` = dplyr::case_when(Percent == 10 ~ "1",
+                                                                                          Percent == 20 ~ "2",
+                                                                                          Percent == 30 ~ "3",
+                                                                                          Percent == 40 ~ "4",
+                                                                                          Percent == 50 ~ "5",
+                                                                                          Percent == 60 ~ "6",
+                                                                                          Percent == 70 ~ "7",
+                                                                                          Percent == 80 ~ "8",
+                                                                                          Percent == 90 ~ "9",
+                                                                                          Percent == 100 ~ "10",
+                                                                                          ` ` == "<b>Overall Score</b>" ~ " ")) else .
+          } %>%
           gt::gt(rowname_col = "groups") %>%
           # gt::fmt_integer(columns = "Average") %>%
           gt::fmt_markdown(columns = "Question") %>%

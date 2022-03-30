@@ -18,7 +18,7 @@ gt_theme_tl(
 
 \item{all_caps}{Whether or not to capitalize titles}
 
-\item{align}{Align options are "left", "center", "right"}
+\item{align}{Align options are "left", "center", "right" or NULL}
 
 \item{base_font}{the font size}
 

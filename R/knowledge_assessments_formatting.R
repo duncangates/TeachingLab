@@ -9,16 +9,7 @@
 #' @export
 
 save_processed_data <- function(data, q_and_a, correct, save_name, question_html_wrap = 45) {
-  # save_processed_data(data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELABootcamp-FoundationalSkillsBootcampSkills(K-2).rds"),
-  # q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_foundational_skills.rds"),
-  # correct = c("Print concepts",
-  #            "Phonological awareness",
-  #            "Fluency",
-  #            "It prompts students to use context clues and pictures to decode words",
-  #            "Utilize a variety of ongoing assessment data to determine the focus of instruction for small groups",
-  #            "Group students by their ongoing phase of development with regard to the foundational skills"),
-  # save_name = "ela_foundational_skills")
-  #### Input Survey ####
+  
   data_with_id <- readr::read_rds(data) %>%
     dplyr::group_by(respondent_id) %>% # By respondent id reduce to one row per respondent
     dplyr::summarise_all(TeachingLab::coalesce_by_column) %>% # Same as above
@@ -36,7 +27,7 @@ save_processed_data <- function(data, q_and_a, correct, save_name, question_html
   
   data_for_grading <- readr::read_rds(q_and_a) # Read in q_and_a dataframe
   
-  # Calculate percent saying each with score_question
+  ### Calculate percent saying each with score_question ###
   data_percents <- purrr::map2_df(data_for_grading$question,
                                   data_for_grading$answer, ~ 
                                     TeachingLab::score_question(data = data_with_id, 
@@ -71,15 +62,6 @@ save_processed_data <- function(data, q_and_a, correct, save_name, question_html
 #' @export
 
 save_processed_data2 <- function(data, q_and_a, correct, save_name, question_html_wrap = 45) {
-  # save_processed_data2(data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELABootcamp-FoundationalSkillsBootcampSkills(K-2).rds"),
-  # q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_foundational_skills.rds"),
-  # correct = c("Print concepts",
-  #            "Phonological awareness",
-  #            "Fluency",
-  #            "It prompts students to use context clues and pictures to decode words",
-  #            "Utilize a variety of ongoing assessment data to determine the focus of instruction for small groups",
-  #            "Group students by their ongoing phase of development with regard to the foundational skills"),
-  # save_name = "ela_foundational_skills")
   #### Check which knowledge assessment it is for later adaptation purposes due to data entry mistakes ####
   know_assess <- stringr::str_remove(q_and_a, ".*questions_and_answers/")
   #### Input Survey ####
@@ -101,14 +83,16 @@ save_processed_data2 <- function(data, q_and_a, correct, save_name, question_htm
     dplyr::mutate(id = paste0(tolower(initials), birthday)) %>% # Create id by concatenating lowercase initials and bday
     dplyr::group_by(id) %>%
     dplyr::mutate(n_response = dplyr::n(), # Get number of responses by person, sometimes there are more than 2 :/
-                  maxdate = max(date_created), # Get max date of creation for most recent response
-                  prepost = dplyr::if_else(n_response > 1 & maxdate == date_created | 
-                                             date_created > mean(date_created), 
-                                           "post", 
-                                           "pre")) #%>% # Define as post for matched if more than 1 response and date is max of date_created
+                  maxdate = max(date_created)) %>% # Get max date of creation for most recent response
+    dplyr::ungroup() %>%
+    dplyr::group_by(site) %>%
+    dplyr::mutate(prepost = ifelse((date_created > mean(date_created)) | (n_response > 1 & maxdate == date_created), 
+                                   "post", 
+                                   "pre")) %>% # Define as post for matched if more than 1 response and date is max of date_created
+    dplyr::ungroup()
   
   
-  # Conditionally assign pre or post for specific sites with specific parameters
+  ### Conditionally assign pre or post for specific sites with specific parameters ###
   if ((data_with_id$site == "San Diego Unified School District, CA") && (know_assess == "math_cycle_of_inquiry_i")) {
     data_with_id <- dplyr::mutate(data_with_id,
                                   prepost = "post") 
@@ -126,33 +110,53 @@ save_processed_data2 <- function(data, q_and_a, correct, save_name, question_htm
                                                    "post"),
                                   site = "math_cycle_of_inquiry_i")
   }
+  
+  ### Make pre/post determination a factor ###
   data_with_id <- data_with_id %>%
     dplyr::mutate(prepost = factor(prepost, levels = c("pre", "post")))
   
-  data_for_grading <- readr::read_rds(q_and_a) # Read in q_and_a dataframe
+  ### Read in q_and_a dataframe ###
+  data_for_grading <- readr::read_rds(q_and_a)
   
-  # Calculate percent saying each with score_question
-  data_percents <- purrr::map2_df(data_for_grading$question,
-                                  data_for_grading$answer, ~
-                                    TeachingLab::score_question(data = data_with_id,
-                                                                question = .x,
-                                                                coding = .y,
-                                                                grouping = c(site, prepost)))
+  names_select <- data_for_grading$question
+  
+  ### Reduce data and pivot ###
+  data_with_id_final <- data_with_id %>%
+    dplyr::ungroup() %>%
+    dplyr::select(site, names_select, prepost, id) %>%
+    tidyr::pivot_longer(!c(site, id, prepost), names_to = "question", values_to = "answer") %>%
+    dplyr::left_join(data_for_grading %>% dplyr::select(-answer), by = "question")
+  
+
+  ### Calculate percent saying each with score_question ###
+  data_percents <- data_with_id_final %>%
+    dplyr::mutate(question = stringr::str_remove_all(question, " Select all.*"),
+                  question = stringr::str_remove_all(question, "\\. - "),
+                  answer = as.character(answer)) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(incorrect = ifelse((!is.na(answer) & answer %!in% correct & group_correct > 1), 0.5, 0),
+                  correct = ifelse(answer %in% correct, 1, 0)) %>%
+    dplyr::group_by(question, id, prepost, site) %>%
+    dplyr::summarise(
+      percent = 100 * (sum(correct) - sum(incorrect)) / group_correct
+    ) %>%
+    dplyr::group_by(question, id, prepost, site) %>%
+    dplyr::summarise(percent = mean(percent)) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(percent = ifelse(percent < 0 , 0, percent)) %>%
+    dplyr::arrange(id)
+
   # Remove extra parts of questions, highlight answers that are correct, add <br> for plotting
   data_plot <- data_percents %>%
-    dplyr::mutate(question = stringr::str_remove_all(stringr::str_remove_all(question, "(?<=\\s-\\s).*| - "), " - ")) %>%
-    dplyr::group_by(question, site, prepost) %>%
-    dplyr::summarise(percent = percent,
-                     n = n,
-                     percent = dplyr::if_else(percent == 100, 100*(n/max(n)), percent),
-                     answer = unlist(answer)) %>%
-    dplyr::mutate(answer = TeachingLab::html_wrap(answer, n = 30),
-                  answer = dplyr::if_else(stringr::str_replace_all(answer, "<br>", " ") %in% correct,
-                                          paste0("<b style='color:#04abeb'>", answer, "</b>"),
-                                          answer),
-                  question = TeachingLab::html_wrap(question, n = question_html_wrap))
-  
+    dplyr::relocate(id, .before = 1) #%>%
+    # dplyr::mutate(answer = TeachingLab::html_wrap(answer, n = 30),
+    #               answer = dplyr::if_else(stringr::str_replace_all(answer, "<br>", " ") %in% correct,
+    #                                       paste0("<b style='color:#04abeb'>", answer, "</b>"),
+    #                                       answer),
+    #               question = TeachingLab::html_wrap(question, n = question_html_wrap))
+
   print(data_plot)
+
+  readr::write_rds(data_plot, here::here(glue::glue("data/knowledge_assessments/{save_name}.rds")))
   
-  readr::write_rds(data_plot, here::here(glue::glue("data/mid_year_reports/knowledge_assessments/{save_name}.rds")))
 }

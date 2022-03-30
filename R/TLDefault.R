@@ -37,6 +37,7 @@ TLDefault <- function(fig_width = 8,
                         gallery = FALSE,
                         toc_depth = 2,
                         embed_fonts = TRUE,
+                        fontawesome = TRUE,
                         use_bookdown = FALSE,
                         pandoc_args = NULL,
                         md_extensions = NULL,
@@ -47,7 +48,7 @@ TLDefault <- function(fig_width = 8,
     template_name = "TLDefault",
     template_path = "templates/template.html",
     template_dependencies = list(
-      html_dependency_TLDefault(embed_fonts)
+      html_dependency_TLDefault(embed_fonts, fontawesome)
     ),
     pandoc_args = pandoc_args,
     fig_width = fig_width,
@@ -68,12 +69,15 @@ TLDefault <- function(fig_width = 8,
 }
 
 # TLDefault js and css
-html_dependency_TLDefault <- function(embed_fonts = TRUE) {
+html_dependency_TLDefault <- function(embed_fonts = TRUE, fontawesome = TRUE) {
   stylesheets <- "TLDefault.css"
   if (embed_fonts) {
     stylesheets <- c(stylesheets, "TLDefault_fonts_embed.css")
   } else {
     stylesheets <- c(stylesheets, "TLDefault_fonts_download.css")
+  }
+  if (fontawesome) {
+    stylesheets <- c(stylesheets, "fontawesome-v4-shims.css", "fontawesome_all.css")
   }
   htmltools::htmlDependency(name = "TLDefault",
                             version = "0.1",

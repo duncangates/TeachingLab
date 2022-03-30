@@ -54,7 +54,7 @@ unique_lower <- function(x) {
 }
 
 ### Educator Survey Matching ###
-educator_survey <- readr::read_rds(here::here("data/diagnostic_2022_data.rds"))
+educator_survey <- readr::read_rds(here::here(data/diagnostic.rds))
 
 ## Has to be done by initials ##
 initials_fix <- function(x) {
@@ -76,10 +76,10 @@ educator_df <- tibble::tibble(
 ### Student Survey Matching ###
 student_survey <- surveymonkey::fetch_survey_obj(312653807) %>%
   surveymonkey::parse_survey()
-## Filters for mississippi schools with str_detect ##
+## Filters for Mississippi schools with str_detect ##
 ## Pulls from ALL select your teacher columns ##
-## Replaces just one occurrence of bad formatting teacher names at the bottom since thats all thats
-## needed to check for string occurrence ##
+## Replaces just one occurrence of bad formatting teacher names at the bottom since that is sufficient
+## to check for string occurrence ##
 teachers_names_student_survey <- student_survey %>%
   dplyr::filter(str_detect(`What is the name of your school, district, or parish?`, ", MS")) %>%
   dplyr::select(tidyselect::contains("select your teacher")) %>%
@@ -91,7 +91,13 @@ teachers_names_student_survey <- student_survey %>%
     "mabry" = "pearl mabry",
     "jackie leach" = "jacqueline leach",
     "rosiland norsworthy" = "rosalinda norsworthy",
-    "principal - mr. mumford" = "jeff mumford"
+    "principal - mr. mumford" = "jeff mumford",
+    "dr. davenport" = "shawnnay davenport",
+    "mrs. chirstmas" = "joshua christmas",
+    "mrs.leach" = "jacqueline leach",
+    "ms.leach" = "jacqueline leach",
+    "ms.norsworthy" = "rosalinda norsworthy",
+    "pearl pearl mabry" = "pearl mabry"
   )) %>%
   sort()
 ########################################
@@ -108,7 +114,8 @@ teachers_names_family_survey <- family_survey %>%
   tidyr::drop_na() %>%
   pull(value) %>%
   unique_lower() %>%
-  str_replace_all(c("dr. carrie chadic" = "carrie chadic"))
+  str_replace_all(c("dr. carrie chadic" = "carrie chadic",
+                    "mrs, robertson" = "nykol robertson"))
 ########################################
 
 ### Student Work Samples Matching ###
@@ -198,7 +205,7 @@ check_not_in_vector <- function(check_vector, data_compare) {
 ## Can't really check educator survey since it is a combination id ##
 
 ###### Names to ignore (confirmed not from Mississippi) ######
-names_ignore <- "evrret|everet|chimma|love|irving|mckee|forte|wilson|willson|valerie|gross|madison|aja"
+names_ignore <- "evrret|everet|chimma|love|irving|mckee|forte|wilson|willson|valerie|gross|madison|aja|parker|ms\\. rice|miari franklin|ms\\. hill"
 
 ## Teacher Names in Student Survey not in Names - this seems accurate ##
 ## Names in list are currently correct names
@@ -211,6 +218,7 @@ check_not_in_vector(teachers_names_family_survey, data$Name) %>%
 
 ## Student Work Sample Matches ##
 check_not_in_vector(student_work_emails, data$Email)
+#### IGNORE FOLLOWING EMAILS: darmaniaco@schools.nyc.gov, lchiapp@schools.nyc.gov, ravenhawes@gmail.com ###
 
 ## Classroom observation IPG Matches ##
 check_not_in_vector(classroom_obs_names, data$Name)
