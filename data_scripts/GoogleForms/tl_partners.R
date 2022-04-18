@@ -11,7 +11,7 @@ official_partner_list <- read_sheet("https://docs.google.com/spreadsheets/d/11jl
 official_partner_list %>%
   readr::write_rds(here::here("data/tl_partners.rds"))
 #### Write to site completion tracking data folder ####
-official_partner_list %>%
+official_partner_list_reduced <- official_partner_list %>%
   dplyr::mutate(
     `SITES (Educator, End of Session, End of Course, Knowledge Assessments, Attendance sheet)` = TeachingLab::string_replace(
       `SITES (Educator, End of Session, End of Course, Knowledge Assessments, Attendance sheet)`,
@@ -65,5 +65,5 @@ official_partner_list %>%
     )
   )
 
-official_partner_list %>%
+official_partner_list_reduced %>%
   readr::write_rds(here::here("Dashboards/SiteCollectionProgress/data/tl_partners.rds"))

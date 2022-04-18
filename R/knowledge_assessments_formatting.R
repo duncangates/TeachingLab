@@ -85,6 +85,7 @@ save_processed_data2 <- function(data, q_and_a, correct, save_name, question_htm
     dplyr::mutate(n_response = dplyr::n(), # Get number of responses by person, sometimes there are more than 2 :/
                   maxdate = max(date_created)) %>% # Get max date of creation for most recent response
     dplyr::ungroup() %>%
+    ### Group by site for date checking - if greater than mean per site is checked as opposed to overall ###
     dplyr::group_by(site) %>%
     dplyr::mutate(prepost = ifelse((date_created > mean(date_created)) | (n_response > 1 & maxdate == date_created), 
                                    "post", 
@@ -120,7 +121,7 @@ save_processed_data2 <- function(data, q_and_a, correct, save_name, question_htm
   
   names_select <- data_for_grading$question
   
-  ### Reduce data and pivot ###
+  ### Reduce data (columns) and pivot ###
   data_with_id_final <- data_with_id %>%
     dplyr::ungroup() %>%
     dplyr::select(site, names_select, prepost, id) %>%
@@ -130,24 +131,30 @@ save_processed_data2 <- function(data, q_and_a, correct, save_name, question_htm
 
   ### Calculate percent saying each with score_question ###
   data_percents <- data_with_id_final %>%
+    ## Make question consist of just the question being posed ##
     dplyr::mutate(question = stringr::str_remove_all(question, " Select all.*"),
                   question = stringr::str_remove_all(question, "\\. - "),
                   answer = as.character(answer)) %>%
     dplyr::ungroup() %>%
+    ## Calculate incorrect score which ISSUE: currently just subtracts 0.5 each incorrect answer given in the group ##
     dplyr::mutate(incorrect = ifelse((!is.na(answer) & answer %!in% correct & group_correct > 1), 0.5, 0),
+                  ## Calculate correct score which is just 1 if correct or 0 if not ##
                   correct = ifelse(answer %in% correct, 1, 0)) %>%
     dplyr::group_by(question, id, prepost, site) %>%
+    ## Calculate percentage correct per question, id, pre or post, and site by dividing by question group length ##
     dplyr::summarise(
       percent = 100 * (sum(correct) - sum(incorrect)) / group_correct
     ) %>%
+    ## Same as above but repeated for some reason ##
     dplyr::group_by(question, id, prepost, site) %>%
     dplyr::summarise(percent = mean(percent)) %>%
     dplyr::ungroup() %>%
+    ## If negative percent from being too incorrect just replace with 0 ##
     dplyr::mutate(percent = ifelse(percent < 0 , 0, percent)) %>%
     dplyr::arrange(id)
 
-  # Remove extra parts of questions, highlight answers that are correct, add <br> for plotting
-  data_plot <- data_percents %>%
+  ## Remove extra parts of questions, highlight answers that are correct, add <br> for plotting
+  data_final <- data_percents %>%
     dplyr::relocate(id, .before = 1) #%>%
     # dplyr::mutate(answer = TeachingLab::html_wrap(answer, n = 30),
     #               answer = dplyr::if_else(stringr::str_replace_all(answer, "<br>", " ") %in% correct,
@@ -155,8 +162,8 @@ save_processed_data2 <- function(data, q_and_a, correct, save_name, question_htm
     #                                       answer),
     #               question = TeachingLab::html_wrap(question, n = question_html_wrap))
 
-  print(data_plot)
+  print(data_final)
 
-  readr::write_rds(data_plot, here::here(glue::glue("data/knowledge_assessments/{save_name}.rds")))
+  readr::write_rds(data_final, here::here(glue::glue("data/knowledge_assessments/{save_name}.rds")))
   
 }

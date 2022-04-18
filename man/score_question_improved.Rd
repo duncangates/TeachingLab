@@ -27,6 +27,6 @@ score_question_improved(
 Returns a dataframe with the percent, correct, number of non-na responses, the question itself, and the percent that sustained/improved
 }
 \description{
-Calculate percentage of a pre question (column) and post question (column) in data (data) 
+Calculate percentage of a pre question (column) and post question (column) in data (data)
 that is in the right answer (coding).
 }

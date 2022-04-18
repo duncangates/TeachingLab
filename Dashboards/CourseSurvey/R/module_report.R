@@ -321,8 +321,6 @@ reportServer <- function(id, in_site) {
       
       data_plot
     })
-    
-    observe(print(data_plot_ts()))
 
     #### OVERALL AGREE PLOT ####
 

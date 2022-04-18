@@ -1,6 +1,5 @@
 ####### This script gets all data for the end of course survey, end of session survey, and
 ####### writes them to the relevant dashboards, as well as the personalized facilitator dashboard.
-####### ISSUE: rsconnect occasionally bugs out because of TeachingLab package
 library(magrittr)
 library(dplyr)
 
@@ -188,11 +187,11 @@ course_survey <- surveymonkey_course %>%
 # Write the data for just this year
 course_survey %>%
   dplyr::filter(date_created >= as.Date("2021-07-01") & date_created <= as.Date("2022-06-30")) %>%
-  readr::write_rds(., "data/course_survey_21_22.rds")
+  readr::write_rds(., here::here("data/course_survey_21_22.rds"))
 course_survey %>%
   dplyr::filter(date_created >= as.Date("2021-07-01") & date_created <= as.Date("2022-06-30")) %>%
   readr::write_rds(., "Dashboards/SiteCollectionProgress/data/course_survey_21_22.rds")
-readr::write_rds(course_survey, "data/course_surveymonkey.rds")
+readr::write_rds(course_survey, here::here("data/course_surveymonkey.rds"))
 readr::write_rds(course_survey, here::here("Dashboards/CourseSurvey/data/course_surveymonkey.rds"))
 
 ################################################################################################################################################################
@@ -300,10 +299,53 @@ session_survey <- surveymonkey_session %>%
         `How much do you agree with the following statements about this facilitator today? - They responded to the group’s needs._6`
       )
   ) %>%
-  dplyr::mutate(`Select your site (district, parish, network, or school).` = ifelse(stringr::str_detect(`Select your site (district, parish, network, or school).`, "Rochester"),
-    "Rochester City School District",
-    as.character(`Select your site (district, parish, network, or school).`)
-  )) %>%
+  dplyr::mutate(
+    `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+      `Select your site (district, parish, network, or school).`,
+      "th and|Andover",
+      "North Andover Public Schools, MA"
+    ),
+    `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+      `Select your site (district, parish, network, or school).`,
+      "District 11",
+      "NYC District 11 - District-wide, NY"
+    ),
+    `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+      `Select your site (district, parish, network, or school).`,
+      "District 9",
+      "NYC District 9 - District-wide, NY"
+    ),
+    `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+      `Select your site (district, parish, network, or school).`,
+      "EMST",
+      "NYC District 12 - EMST-IS 190, NY"
+    ),
+    `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+      `Select your site (district, parish, network, or school).`,
+      "Coupee",
+      "Pointe Coupee Parish, LA"
+    ),
+    `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+      `Select your site (district, parish, network, or school).`,
+      "Rochester",
+      "Rochester City School District - District-wide"
+    ),
+    `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+      `Select your site (district, parish, network, or school).`,
+      "San Diego",
+      "San Diego Unified School District, CA"
+    ),
+    `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+      `Select your site (district, parish, network, or school).`,
+      "West Contra",
+      "West Contra Costa USD, CA"
+    ),
+    `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+      `Select your site (district, parish, network, or school).`,
+      "Wisconsin Department",
+      "Wisconsin Department of Education, WI"
+    )
+  ) %>%
   dplyr::select(
     Facilitator, # Facilitator
     Date, # Date
@@ -324,7 +366,6 @@ session_survey <- surveymonkey_session %>%
 
 session_survey %>%
   readr::write_rds(., "data/session_survey_21_22data.rds")
-readr::write_rds(session_survey, "data/session_survey_21_22data.rds")
 readr::write_rds(session_survey, here::here("Dashboards/SessionSurvey/data/session_survey_21_22data.rds"))
 
 ################################################################################################################################################################
@@ -340,37 +381,30 @@ facilitator_session_survey <- session_survey %>%
   # FOR A FAKE TEMPORARY FACILITATOR DATA BEFORE VERIFICATION
   dplyr::bind_rows(fake_fac, fake_dunc)
 
-readr::write_rds(facilitator_session_survey, "data/session_facilitator_surveymonkey.rds")
+readr::write_rds(facilitator_session_survey, here::here("data/session_facilitator_surveymonkey.rds"))
 readr::write_rds(facilitator_session_survey, here::here("Dashboards/PersonalFacilitator/data/session_facilitator_surveymonkey.rds"))
 
 ################################################################################################################################################################
 
 options(rsconnect.force.update.apps = TRUE)
 ### Deploy Course Survey ###
-course_survey_deploy <- function() {
-  rsconnect::deployApp(
-    appDir = here::here("Dashboards/CourseSurvey"),
-    account = "teachinglabhq",
-    server = "shinyapps.io",
-    appName = "CourseSurvey",
-    appId = 4505718,
-    launch.browser = function(url) {
-      message("Deployment completed: ", url)
-    },
-    lint = FALSE,
-    metadata = list(
-      asMultiple = FALSE,
-      asStatic = FALSE,
-      ignoredFiles = "data/.DS_Store"
-    ),
-    logLevel = "verbose"
-  )
-}
-
-course_survey_deploy()
-
-# purrr::insistently(course_survey_deploy(), 
-#                    rate = purrr::rate_backoff(pause_base = 0.1, pause_min = 0.5, max_times = 4))
+rsconnect::deployApp(
+  appDir = here::here("Dashboards/CourseSurvey"),
+  account = "teachinglabhq",
+  server = "shinyapps.io",
+  appName = "CourseSurvey",
+  appId = 4505718,
+  launch.browser = function(url) {
+    message("Deployment completed: ", url)
+  },
+  lint = FALSE,
+  metadata = list(
+    asMultiple = FALSE,
+    asStatic = FALSE
+  ),
+  logLevel = "verbose",
+  forceUpdate = TRUE
+)
 
 
 ### Deploy Session Survey ###
@@ -383,33 +417,33 @@ rsconnect::deployApp(
   launch.browser = function(url) {
     message("Deployment completed: ", url)
   },
-  lint = FALSE,
+  lint = TRUE,
   metadata = list(
     asMultiple = FALSE,
-    asStatic = FALSE,
-    ignoredFiles = "data/.DS_Store"
+    asStatic = FALSE
   ),
+  forceUpdate = TRUE,
   logLevel = "verbose"
 )
-
-### Deploy Personal Facilitator Survey ###
-rsconnect::deployApp(
-  appDir = here::here("Dashboards/PersonalFacilitator"),
-  account = "teachinglabhq",
-  server = "shinyapps.io",
-  appName = "PersonalFacilitator",
-  appId = 4489188,
-  launch.browser = function(url) {
-    message("Deployment completed: ", url)
-  },
-  lint = FALSE,
-  metadata = list(
-    asMultiple = FALSE,
-    asStatic = FALSE,
-    ignoredFiles = "data/.DS_Store"
-  ),
-  logLevel = "verbose"
-)
+# 
+# ### Deploy Personal Facilitator Survey ###
+# rsconnect::deployApp(
+#   appDir = here::here("Dashboards/PersonalFacilitator"),
+#   account = "teachinglabhq",
+#   server = "shinyapps.io",
+#   appName = "PersonalFacilitator",
+#   appId = 4489188,
+#   launch.browser = function(url) {
+#     message("Deployment completed: ", url)
+#   },
+#   lint = FALSE,
+#   metadata = list(
+#     asMultiple = FALSE,
+#     asStatic = FALSE,
+#     ignoredFiles = "data/.DS_Store"
+#   ),
+#   logLevel = "verbose"
+# )
 
 # rstudioapi::navigateToFile(here::here("Dashboards/CourseSurvey/app.R"))
 # rstudioapi::navigateToFile(here::here("Dashboards/SessionSurvey/app.R"))

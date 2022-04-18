@@ -68,47 +68,32 @@ score_compare_plot <- function(data, question, order, prepost, score, split_vari
 know_assess_summary <- function(data, know_assess, summary_path = "report_summary_images") {
   plot_data <- data %>%
     dplyr::filter(know_assess == !!rlang::enquo(know_assess)) %>%
-    dplyr::ungroup() %>%
     dplyr::select(-site) %>% # Get rid of site for when there is more than one
-    dplyr::group_by(answer, question, prepost) %>%
-    dplyr::summarise(n = round(percent * (n/100)),
-                     percent = percent) %>% # Adjust n for each individual obs
+    dplyr::group_by(prepost) %>%
+    dplyr::summarise(percent = mean(percent, na.rm = T)) %>%
     dplyr::ungroup() %>%
-    dplyr::group_by(answer, question, prepost) %>%
-    dplyr::mutate(n = sum(n)) %>%
-    dplyr::summarise(percent = weighted.mean(percent, n),
-                     n = n) %>% # Adjust percent to be based on weighted mean
-    dplyr::ungroup() %>%
-    dplyr::distinct() %>%
-    dplyr::mutate(percent = tidyr::replace_na(percent, 0)) %>%
-    tidyr::pivot_wider(names_from = prepost, values_from = c(percent, n), values_fill = 0) %>%
-    dplyr::mutate(highlight = dplyr::if_else(stringr::str_detect(answer, "04abeb"), T, F)) %>%
-    dplyr::ungroup() %>%
-    dplyr::filter(highlight == T) %>%
-    dplyr::summarise(`Before` = ifelse("percent_pre" %in% names(.), mean(percent_pre), NA),
-                     `After` = ifelse("percent_post" %in% names(.), mean(percent_post), NA)) %>%
-    tidyr::pivot_longer(tidyselect::everything()) %>%
-    dplyr::mutate(name = factor(name, levels = c("Before", "After")))
+    dplyr::mutate(name = ifelse(prepost == "pre",
+                                "Before",
+                                "After"),
+                  value = percent,
+                  name = factor(name, levels = c("Before", "After"))) %>%
+    dplyr::select(name, value)
   
   title <- stringr::str_to_title(stringr::str_replace_all(know_assess, "_", " ")) %>%
     stringr::str_replace_all(., "Ela", "ELA") %>%
     stringr::str_replace_all(., "Eic", "EIC") # Correct title casing
   
   n1 <- data %>%
-    dplyr::filter(know_assess == !!rlang::enquo(know_assess)) %>%
-    dplyr::ungroup() %>%
-    dplyr::group_by(prepost) %>%
-    dplyr::summarise(n = max(n, na.rm = T)) %>%
-    dplyr::filter(prepost == "pre") %>% 
-    dplyr::pull(n)
+    dplyr::filter(know_assess == !!rlang::enquo(know_assess) & prepost == "pre") %>%
+    dplyr::pull(id) %>%
+    unique() %>%
+    length()
   
   n2 <- data %>%
-    dplyr::filter(know_assess == !!rlang::enquo(know_assess)) %>%
-    dplyr::ungroup() %>%
-    dplyr::group_by(prepost) %>%
-    dplyr::summarise(n = max(n, na.rm = T)) %>%
-    dplyr::filter(prepost == "post") %>% 
-    dplyr::pull(n)
+    dplyr::filter(know_assess == !!rlang::enquo(know_assess) & prepost == "post") %>%
+    dplyr::pull(id) %>%
+    unique() %>%
+    length()
   
   if (length(n1) == 0) {
     n1 <- 0

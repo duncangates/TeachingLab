@@ -17,8 +17,6 @@ output:
 knitr::opts_chunk$set(echo = F, warning = F, message = F)
 library(tidyverse)
 library(tlShiny)
-library(tidytext)
-library(bookdown)
 library(webshot)
 webshot::install_phantomjs()
 ```

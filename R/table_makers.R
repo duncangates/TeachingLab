@@ -601,45 +601,36 @@ gt_know_assess <- function(data, know_assess) {
     dplyr::filter(know_assess == !!rlang::enquo(know_assess)) %>%
     dplyr::ungroup() %>%
     dplyr::select(-site) %>% # Get rid of site for when there is more than one
-    dplyr::group_by(answer, question, prepost) %>%
-    dplyr::summarise(
-      n = round(percent * (n / 100)),
-      percent = percent
-    ) %>% # Adjust n for each individual obs
+    dplyr::group_by(question, prepost) %>%
+    dplyr::summarise(percent = mean(percent, na.rm = T)) %>%
     dplyr::ungroup() %>%
-    dplyr::group_by(answer, question, prepost) %>%
-    dplyr::mutate(n = sum(n)) %>%
-    dplyr::summarise(
-      percent = stats::weighted.mean(percent, n),
-      n = n
-    ) %>% # Adjust percent to be based on weighted mean
-    dplyr::ungroup() %>%
-    dplyr::distinct() %>%
-    dplyr::mutate(percent = tidyr::replace_na(percent, 0)) %>%
-    tidyr::pivot_wider(names_from = prepost, values_from = c(percent, n), values_fill = 0) %>%
-    dplyr::mutate(highlight = dplyr::if_else(stringr::str_detect(answer, "04abeb"), T, F))
+    tidyr::pivot_wider(names_from = "prepost", values_from = "percent") %>%
+    dplyr::select(percent_pre = pre,
+                  percent_post = post,
+                  question)
 
   title <- stringr::str_to_title(stringr::str_replace_all(know_assess, "_", " ")) %>%
     stringr::str_replace_all(., "Ela", "ELA") %>%
     stringr::str_replace_all(., "Eic", "EIC") # Correct title casing
-  # Weighted averages
-  if ("percent_pre" %in% colnames(plot_data)) {
-    pre_percent_correct <- plot_data %>%
-      dplyr::ungroup() %>%
-      dplyr::filter(highlight == T) %>%
-      dplyr::summarise(correct = mean(percent_pre)) %>%
-      dplyr::pull(correct)
+  
+  questions_and_answers <- readr::read_rds("data/all_knowledge_questions_and_answers.rds")
+  
+  ## Overall averages ##
+  if (sum(data$prepost == "pre") >= 1) {
+    pre_percent_correct <- data %>%
+      dplyr::filter(prepost == "pre") %>%
+      dplyr::summarise(percent = mean(percent, na.rm = T)) %>%
+      dplyr::pull(percent)
   } else {
     pre_percent_correct <- NA
     plot_data <- plot_data %>%
       dplyr::mutate(percent_pre = NA)
   }
-  if ("percent_post" %in% colnames(plot_data)) {
-    post_percent_correct <- plot_data %>%
-      dplyr::ungroup() %>%
-      dplyr::filter(highlight == T) %>%
-      dplyr::summarise(correct = mean(percent_post, na.rm = T)) %>%
-      dplyr::pull(correct)
+  if (sum(data$prepost == "post") >= 1) {
+    post_percent_correct <- data %>%
+      dplyr::filter(prepost == "post") %>%
+      dplyr::summarise(percent = mean(percent, na.rm = T)) %>%
+      dplyr::pull(percent)
   } else {
     post_percent_correct <- NA
     plot_data <- plot_data %>%
@@ -648,20 +639,16 @@ gt_know_assess <- function(data, know_assess) {
 
 
   n1 <- data %>%
-    dplyr::filter(know_assess == !!rlang::enquo(know_assess)) %>%
-    dplyr::ungroup() %>%
-    dplyr::group_by(prepost) %>%
-    dplyr::summarise(n = max(n, na.rm = T)) %>%
-    dplyr::filter(prepost == "pre") %>%
-    dplyr::pull(n)
-
+    dplyr::filter(know_assess == !!rlang::enquo(know_assess) & prepost == "pre") %>%
+    dplyr::pull(id) %>%
+    unique() %>%
+    length()
+  
   n2 <- data %>%
-    dplyr::filter(know_assess == !!rlang::enquo(know_assess)) %>%
-    dplyr::ungroup() %>%
-    dplyr::group_by(prepost) %>%
-    dplyr::summarise(n = max(n, na.rm = T)) %>%
-    dplyr::filter(prepost == "post") %>%
-    dplyr::pull(n)
+    dplyr::filter(know_assess == !!rlang::enquo(know_assess) & prepost == "post") %>%
+    dplyr::pull(id) %>%
+    unique() %>%
+    length()
 
   if (length(n1) == 0) {
     n1 <- 0
@@ -671,25 +658,12 @@ gt_know_assess <- function(data, know_assess) {
     n2 <- 0
   }
 
-  cols_to_hide <- if (c("n_pre", "n_post", "highlight") %in% colnames(plot_data) %>% sum() == 3) {
-    c("n_pre", "n_post", "highlight")
-  } else if (c("n_pre", "highlight") %in% colnames(plot_data) %>% sum() == 2) {
-    c("n_pre", "highlight")
-  } else if (c("n_post", "highlight") %in% colnames(plot_data) %>% sum() == 2) {
-    c("n_post", "highlight")
-  }
-
-
   gt_table <- plot_data %>%
-    dplyr::ungroup() %>%
-    dplyr::mutate(question = stringr::str_replace_all(question, "<br>", " ")) %>%
+    dplyr::left_join(questions_and_answers, by = "question") %>%
+    dplyr::mutate(highlight = T) %>%
     dplyr::group_by(question) %>%
-    gt::gt(
-      # rowname_col = "answer"
-    ) %>%
-    gt::cols_hide(
-      columns = cols_to_hide
-    ) %>%
+    gt::gt() %>%
+    gt::cols_hide(highlight) %>%
     gt::cols_move_to_end(percent_post) %>%
     gt::tab_header(
       title = gt::html(glue::glue("<b>{title} Knowledge Assessments Scoring</b>")),
@@ -767,8 +741,8 @@ gt_know_assess <- function(data, know_assess) {
     } %>%
     TeachingLab::gt_theme_tl()
 
-  gt_table %>%
-    gt::gtsave(filename = glue::glue("{know_assess}.png"), path = here::here("images/report_images"))
+  gt_table #%>%
+    # gt::gtsave(filename = glue::glue("{know_assess}.png"), path = here::here("images/report_images"))
 }
 
 

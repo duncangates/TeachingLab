@@ -17,9 +17,9 @@ df_name_select <- read_sheet("https://docs.google.com/spreadsheets/d/17SNPMYkV_G
   colnames()
 
 #### Find column letter for educator survey completion in sheet ####
-select <- which(df_name_select == "Completed TL New Mexico Educators Survey SY21-22 (pre) (Y/N) - SM")
-letters[select] %>%
-  str_to_upper() -> selection
+select_diagnostic <- which(df_name_select == "Completed TL New Mexico Educators Survey SY21-22 (pre) (Y/N) - SM")
+selection_diagnostic <- letters[select_diagnostic] %>%
+  str_to_upper()
 
 ##### Retrieve New Mexico Educator Survey #####
 nm_survey <- surveymonkey::fetch_survey_obj(315553653) %>%
@@ -47,7 +47,7 @@ joined_emails %>%
   range_write(
     ss = "https://docs.google.com/spreadsheets/d/17SNPMYkV_Gx-g-3TpKTs-YAi6guUw-WKCI18_x4Q1qU/edit#gid=0",
     sheet = 1,
-    range = glue::glue("{selection}2:{selection}{length(joined_emails$completed) + 1}"),
+    range = glue::glue("{selection_diagnostic}2:{selection_diagnostic}{length(joined_emails$completed) + 1}"),
     col_names = F,
     reformat = F
   )
@@ -75,6 +75,14 @@ if (length(check_emails) > 0) {
   break
 }
 
+#### Find column letter for new mexico survey completion in sheet ####
+select_role_devices <- which(df_name_select == "#10 (role)")
+selection_role_devices <- letters[select_role_devices] %>%
+  str_to_upper()
+select_role_devices_end <- which(df_name_select == "#29 Access to personal devices")
+selection_role_devices_end <- letters[select_role_devices_end] %>%
+  str_to_upper()
+
 #### Join tracker google sheet emails to new mexico survey then select completion columns and write to sheet ####
 names_and_emails %>%
   select(Email) %>%
@@ -87,7 +95,7 @@ names_and_emails %>%
   range_write(
     ss = "https://docs.google.com/spreadsheets/d/17SNPMYkV_Gx-g-3TpKTs-YAi6guUw-WKCI18_x4Q1qU/edit#gid=0",
     sheet = 1,
-    range = glue::glue("D2:G{length(names_and_emails$Email) + 1}"),
+    range = glue::glue("{selection_role_devices}2:{selection_role_devices_end}{length(names_and_emails$Email) + 1}"),
     col_names = F,
     reformat = F
   )
@@ -196,6 +204,13 @@ nm_student_survey_n <- nm_student_survey %>%
   count(sort = T) %>%
   drop_na(teacher_real_name)
 
+#### Find column letter for student survey completion in sheet ####
+select_student_survey <- which(df_name_select == "Administered Teaching Lab New Mexico Student Survey SY21-22 (pre) (Y/N) - SM")
+selection_student_survey <- letters[select_student_survey] %>%
+  str_to_upper()
+selection_student_survey_end <- letters[select_student_survey + 1] %>%
+  str_to_upper()
+
 #### Join names to student survey then select completed while replacing NA with "No Responses" to google sheet ####
 join_names %>%
   left_join(nm_student_survey_n, by = c("name" = "teacher_real_name")) %>%
@@ -204,7 +219,7 @@ join_names %>%
   range_write(
     ss = "https://docs.google.com/spreadsheets/d/17SNPMYkV_Gx-g-3TpKTs-YAi6guUw-WKCI18_x4Q1qU/edit#gid=0",
     sheet = 1,
-    range = glue::glue("W2:X{length(join_names$name) + 1}"),
+    range = glue::glue("{selection_student_survey}2:{selection_student_survey_end}{length(join_names$name) + 1}"),
     col_names = F,
     reformat = F
   )
@@ -263,13 +278,18 @@ join_completed_data_collection <- names_and_emails %>%
   select(`Participant Name`) %>%
   left_join(completed_data_collection, by = c("Participant Name" = "user.name"))
 
+#### Find column letter for data agreement in sheet ####
+select_data_agreement <- which(df_name_select == "Signed the Data Collection Agreement Form? (Y/N) - Canvas")
+selection_data_agreement <- letters[select_data_agreement] %>%
+  str_to_upper()
+
 ### Write just canvas data agreement completion column to google sheet ###
 join_completed_data_collection %>%
   select(completed) %>%
   range_write(
     ss = "https://docs.google.com/spreadsheets/d/17SNPMYkV_Gx-g-3TpKTs-YAi6guUw-WKCI18_x4Q1qU/edit#gid=0",
     sheet = 1,
-    range = glue::glue("N2:N{length(join_completed_data_collection$completed) + 1}"),
+    range = glue::glue("{selection_data_agreement}2:{selection_data_agreement}{length(join_completed_data_collection$completed) + 1}"),
     col_names = F,
     reformat = F
   )
@@ -284,13 +304,20 @@ completed_classroom_video <- course_gradebook %>%
   select(user.name, completed) %>%
   distinct(user.name, .keep_all = TRUE) %>%
   mutate(user.name = str_replace_all(user.name, name_replace_canvas)) %>%
-  left_join(names_and_emails, by = c("user.name" = "Participant Name"))
+  left_join(names_and_emails, by = c("user.name" = "Participant Name")) %>%
+  drop_na(Email)
 
 ### Join names to completed and change completed to admin if they are an admin ###
 join_classroom_video_completed <- names_and_emails %>%
   select(1, 3) %>%
   left_join(completed_classroom_video %>% select(1, 2), by = c("Participant Name" = "user.name")) %>%
-  mutate(completed = ifelse(Role == "Admin", "Admin", completed))
+  mutate(completed = case_when(Role == "Admin" ~ "Admin",
+                               T ~ completed))
+
+#### Find column letter for first classroom video observation in sheet ####
+select_classroom_obs_1 <- which(df_name_select == "Uploaded Classroom Observation Video Recording 1 (Y/N) - Canvas")
+selection_classroom_obs_1 <- letters[select_classroom_obs_1] %>%
+  str_to_upper()
 
 ### Write just canvas video completion to google sheet ###
 join_classroom_video_completed %>%
@@ -298,12 +325,78 @@ join_classroom_video_completed %>%
   range_write(
     ss = "https://docs.google.com/spreadsheets/d/17SNPMYkV_Gx-g-3TpKTs-YAi6guUw-WKCI18_x4Q1qU/edit#gid=0",
     sheet = 1,
-    range = glue::glue("O2:O{length(join_classroom_video_completed$completed) + 1}"),
+    range = glue::glue("{selection_classroom_obs_1}2:{selection_classroom_obs_1}{length(join_classroom_video_completed$completed) + 1}"),
     col_names = F,
     reformat = F
   )
 
+### Uploaded Classroom Observation Video Recording 2 (Y/N) - Canvas ###
+completed_classroom_video2 <- course_gradebook %>%
+  filter(assignment_name == "MLR Video Submission") %>%
+  mutate(
+    completed = ifelse(!is.na(submitted_at), "Yes", "No"),
+    user.name = str_to_title(user.name)
+  ) %>%
+  select(user.name, completed) %>%
+  distinct(user.name, .keep_all = TRUE) %>%
+  mutate(user.name = str_replace_all(user.name, name_replace_canvas)) %>%
+  left_join(names_and_emails, by = c("user.name" = "Participant Name"))
 
+### Join names to completed and change completed to admin if they are an admin ###
+join_classroom_video_completed2 <- names_and_emails %>%
+  select(1, 3) %>%
+  left_join(completed_classroom_video2 %>% select(1, 2), by = c("Participant Name" = "user.name")) %>%
+  mutate(completed = ifelse(Role == "Admin", "Admin", completed))
+
+#### Find column letter for second classroom video observation in sheet ####
+select_classroom_obs_2 <- which(df_name_select == "Uploaded Classroom Observation Video Recording 2 (Y/N) - Canvas")
+selection_classroom_obs_2 <- letters[select_classroom_obs_2] %>%
+  str_to_upper()
+
+### Write just canvas video completion to google sheet ###
+join_classroom_video_completed2 %>%
+  select(completed) %>%
+  range_write(
+    ss = "https://docs.google.com/spreadsheets/d/17SNPMYkV_Gx-g-3TpKTs-YAi6guUw-WKCI18_x4Q1qU/edit#gid=0",
+    sheet = 1,
+    range = glue::glue("{selection_classroom_obs_2}2:{selection_classroom_obs_2}{length(join_classroom_video_completed2$completed) + 1}"),
+    col_names = F,
+    reformat = F
+  )
+
+### Student work upload to canvas check ###
+completed_student_work <- course_gradebook %>%
+  filter(assignment_name == "Student Work Sample Submission") %>%
+  mutate(
+    completed = ifelse(!is.na(submitted_at), "Yes", "No"),
+    user.name = str_to_title(user.name)
+  ) %>%
+  select(user.name, completed) %>%
+  distinct(user.name, .keep_all = TRUE) %>%
+  mutate(user.name = str_replace_all(user.name, name_replace_canvas)) %>%
+  left_join(names_and_emails, by = c("user.name" = "Participant Name"))
+
+### Join names to completed and change completed to admin if they are an admin ###
+join_student_work_completed <- names_and_emails %>%
+  select(1, 3) %>%
+  left_join(completed_student_work %>% select(1, 2), by = c("Participant Name" = "user.name")) %>%
+  mutate(completed = ifelse(Role == "Admin", "Admin", completed))
+
+#### Find column letter for first student work sample in sheet ####
+select_student_work_1 <- which(df_name_select == "Uploaded Student Work 1 (Y/N) - Canvas")
+selection_student_work_1 <- letters[select_student_work_1] %>%
+  str_to_upper()
+
+### Write just canvas video completion to google sheet ###
+join_student_work_completed %>%
+  select(completed) %>%
+  range_write(
+    ss = "https://docs.google.com/spreadsheets/d/17SNPMYkV_Gx-g-3TpKTs-YAi6guUw-WKCI18_x4Q1qU/edit#gid=0",
+    sheet = 1,
+    range = glue::glue("{selection_student_work_1}2:{selection_student_work_1}{length(join_student_work_completed$completed) + 1}"),
+    col_names = F,
+    reformat = F
+  )
 
 
 ######## Not used section #######

@@ -1,10 +1,10 @@
-#### Personal Facilitator Dashboard ####
+#### End of Session Survey Dashboard ####
 
 ## Load pipe ##
 library(magrittr)
 
 ## Read in data ##
-session_survey <- readr::read_rds("data/session_facilitator_surveymonkey.rds")
+session_survey <- readr::read_rds("data/session_survey_21_22data.rds")
 
 ## NAs dataframe ##
 na_df <- tlShiny::na_df
@@ -18,7 +18,7 @@ recent_choices <- session_survey %>%
   dplyr::ungroup() %>%
   dplyr::mutate(id = dplyr::row_number())
 
-## Create dataframe of format ~(site, facilitator) and ~(id)
+## Create dataframe of format ~(site, facilitator) and ~(id) ##
 recent_choices_final <- tibble::tibble(choice = paste(recent_choices$`Select your site (district, parish, network, or school).` %>% as.character() %>% stringr::str_replace_all(., ", ", " "),
                                                       recent_choices$Facilitator, sep = ", ")) %>%
   dplyr::mutate(id = dplyr::row_number())

@@ -13,7 +13,7 @@ score_question(data, question, coding, grouping, na_type = "NA")
 
 \item{coding}{the coding to check for}
 
-\item{grouping}{a variable to group_by}
+\item{grouping}{a vector of variables to group_by}
 
 \item{na_type}{the form that NA takes - could be "No Response" as in the Participant Feedback dashboard, or any other form of "NA"}
 }

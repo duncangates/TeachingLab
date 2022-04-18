@@ -14,6 +14,7 @@ TLDefault(
   gallery = FALSE,
   toc_depth = 2,
   embed_fonts = TRUE,
+  fontawesome = TRUE,
   use_bookdown = FALSE,
   pandoc_args = NULL,
   md_extensions = NULL,

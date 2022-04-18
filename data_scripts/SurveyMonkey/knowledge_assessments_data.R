@@ -1452,3 +1452,10 @@ readr::write_rds(
   all_knowledge_assessments,
   here::here("Dashboards/SiteCollectionProgress/data/knowledge_assessments.rds")
 )
+
+questions_and_answers <- list.files(here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers"),
+           full.names = T)
+
+all_questions_and_answers <- purrr::map_dfr(questions_and_answers, read_rds)
+
+readr::write_rds(all_questions_and_answers, "data/all_knowledge_questions_and_answers.rds")

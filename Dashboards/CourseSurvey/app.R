@@ -1,4 +1,4 @@
-#### Course Survey Dashboard ####
+#### End of Course Survey Dashboard ####
 
 # Making the initial routes to follow
 router <- shiny.router::make_router(

@@ -73,8 +73,16 @@ server <- function(input, output, session) {
   ### Diagnostic Data ###
   diagnostic_data_n <- reactive({
     diagnostic %>%
-      group_by(your_site_district_parish_network_or_school_br_br) %>%
+      group_by(
+        your_site_district_parish_network_or_school_br_br,
+        which_subject_area_do_you_teach_lead_if_you_teach_support_both_please_select_the_one_where_you_expect_to_work_with_teaching_lab_this_year_br_br
+      ) %>%
       count(sort = T) %>%
+      rename(`Content Area` = which_subject_area_do_you_teach_lead_if_you_teach_support_both_please_select_the_one_where_you_expect_to_work_with_teaching_lab_this_year_br_br) %>%
+      mutate(`Content Area` = stringr::str_replace_all(`Content Area`, c(
+        "ELA/Literacy" = "ELA",
+        "Mathematics" = "Math"
+      ))) %>%
       ungroup()
   })
 
@@ -83,14 +91,22 @@ server <- function(input, output, session) {
     knowledge_assessments %>%
       group_by(site, prepost, know_assess) %>%
       summarise(n = length(unique(id)), .groups = "drop") %>%
-      pivot_wider(names_from = "prepost", values_from = "n")
+      pivot_wider(names_from = "prepost", values_from = "n") %>%
+      mutate(`Content Area` = ifelse(str_detect(know_assess, "ela"),
+        "ELA",
+        "Math"
+      ))
   })
 
   ### Course Survey Data ###
   course_survey_data_n <- reactive({
     course_survey %>%
-      group_by(`Select your site (district, parish, network, or school).`) %>%
+      group_by(
+        `Select your site (district, parish, network, or school).`,
+        `Select the content area for today's professional learning session.`
+      ) %>%
       count(sort = T) %>%
+      rename(`Content Area` = `Select the content area for today's professional learning session.`) %>%
       ungroup()
   })
 
@@ -98,25 +114,49 @@ server <- function(input, output, session) {
     final_df <- knowledge_assessments_data_n() %>%
       rename(
         `Knowledge Assessment` = know_assess,
-        `Pre n` = pre,
-        `Post n` = post
+        `Pre responses` = pre,
+        `Post responses` = post
       ) %>%
-      left_join(course_survey_data_n(), by = c("site" = "Select your site (district, parish, network, or school).")) %>%
-      rename(`End of Course n` = n) %>%
-      left_join(diagnostic_data_n(), by = c("site" = "your_site_district_parish_network_or_school_br_br")) %>%
-      rename(`Diagnostic Educator Survey n` = n) %>%
-      relocate(`Post n`, .after = `Pre n`) %>%
-      relocate(`End of Course n`, .after = site) %>%
-      relocate(`Diagnostic Educator Survey n`, .after = `End of Course n`) %>%
-      mutate(`Knowledge Assessment` = first_up(str_replace_all(`Knowledge Assessment`, "_", " "))) %>%
-      group_by(site) %>%
-      arrange(desc(`End of Course n`))
+      left_join(course_survey_data_n(), by = c(
+        "site" = "Select your site (district, parish, network, or school).",
+        "Content Area"
+      )) %>%
+      rename(`End of Course responses` = n) %>%
+      left_join(diagnostic_data_n(), by = c(
+        "site" = "your_site_district_parish_network_or_school_br_br",
+        "Content Area"
+      )) %>%
+      rename(`Diagnostic Educator Survey responses` = n) %>%
+      relocate(`Post responses`, .after = `Pre responses`) %>%
+      mutate(
+        `Knowledge Assessment` = str_replace_all(
+          str_to_title(str_replace_all(`Knowledge Assessment`, "_", " ")),
+          c(
+            "Ela" = "ELA",
+            "El" = "EL"
+          )
+        ),
+        site = replace_na(site, "Other"),
+        `End of Course responses` = replace_na(`End of Course responses`, 0),
+        `Diagnostic Educator Survey responses` = replace_na(`Diagnostic Educator Survey responses`, 0)
+      ) %>%
+      rename(Site = site) %>%
+      group_by(Site) %>%
+      mutate(across(c(
+        `End of Course responses`,
+        `Diagnostic Educator Survey responses`
+      ), ~ ifelse(row_number() == 1,
+        .x,
+        NA
+      ))) %>%
+      arrange(desc(`End of Course responses`))
 
     if (input$partner != "All Partners") {
       final_df <- rbind(
-        final_df %>% filter(site == input$partner),
-        final_df %>% filter(site != input$partner)
+        final_df %>% filter(Site == input$partner),
+        final_df %>% filter(Site != input$partner)
       )
+      print(final_df)
     }
 
     final_df
@@ -124,9 +164,21 @@ server <- function(input, output, session) {
 
   output$partner_gt <- render_gt(
     data_final() %>%
-      gt::gt() %>%
+      ### Group by ELA/Math and Site ###
+      gt::gt(groupname_col = c("Content Area", "Site")) %>%
+      ### Reformat NAs as "None" ###
+      gt::fmt_missing(
+        columns = c(`Pre responses`, `Post responses`),
+        missing_text = "None"
+      ) %>%
+      ### Reformat end of course and diagnostic to show only one instance per grouping ###
+      gt::fmt_missing(
+        columns = c(`End of Course responses`, `Diagnostic Educator Survey responses`),
+        missing_text = ""
+      ) %>%
+      ### Add color to table for n sizes of end of course, diagnostic, knowledge pre/post ###
       gt::data_color(
-        columns = c(`Diagnostic Educator Survey n`, `End of Course n`, `Pre n`, `Post n`),
+        columns = c(`End of Course responses`, `Diagnostic Educator Survey responses`, `Pre responses`, `Post responses`),
         colors = scales::col_numeric(
           palette = paletteer::paletteer_d(
             palette = "ggsci::blue_material"
@@ -134,8 +186,21 @@ server <- function(input, output, session) {
           domain = NULL
         )
       ) %>%
-      tlShiny::gt_theme_tl(),
-    width = px(1200)
+      ### Add tl theme ###
+      tlShiny::gt_theme_tl() %>%
+      ### Make column grouping a row ###
+      gt::tab_options(
+        row_group.as_column = FALSE,
+        row_group.font.weight = "bold",
+        row_group.font.size = px(17)
+      ) %>%
+      {
+        if (input$current_theme == "darkly") tab_options(., table.background.color = "#303030") else .
+      } %>%
+      {
+        if (input$current_theme == "darkly") tab_options(., column_labels.background.color = "#303030") else .
+      },
+    width = px(1080)
   )
 
   observe({

@@ -19,8 +19,6 @@ output:
 knitr::opts_chunk$set(echo = F, warning = F, message = F)
 library(tidyverse)
 library(tlShiny)
-library(tidytext)
-library(bookdown)
 library(webshot)
 webshot::install_phantomjs()
 ```
@@ -31,7 +29,7 @@ webshot::install_phantomjs()
 
 ## Overall
 
-```{r fig.width = 10, fig.height = 10}
+```{r fig.width = 11, fig.height = 10}
 ggplot(data = params$plot_agree, aes(x = Question, y = Percent, fill = factor(Response))) +
         geom_col() +
         geom_text(aes(label = if_else(Percent >= 3, paste0(round(Percent), "%"), "")), position = position_stack(vjust = 0.5)) +
@@ -47,15 +45,22 @@ ggplot(data = params$plot_agree, aes(x = Question, y = Percent, fill = factor(Re
         coord_flip() +
         guides(fill = guide_legend(reverse = T)) +
         scale_y_continuous(labels = scales::percent_format(scale = 1)) +
-        theme_tl(legend = T) +
+        theme_bw() +
         theme(
           axis.text.x = element_blank(),
           axis.text.y = element_text(lineheight = 1.1, size = 12),
-          legend.position = "bottom",
-          plot.title = element_text(lineheight = 1.1, size = 16, face = "bold"),
           plot.subtitle = element_text(size = 14, face = "bold"),
           legend.key.size = unit(0.75, "cm"),
-          legend.text = element_text(size = 9)
+          legend.position = "bottom",
+          legend.title = element_blank(),
+          legend.text = element_text(family = "Calibri", size = 9),
+          text = element_text(family = "Calibri", face = "bold"),
+          panel.grid.minor.x = element_blank(),
+          strip.background = element_rect(fill = "white"),
+          strip.text = element_text(size = 10),
+          axis.title.x = element_blank(),
+          axis.title.y = element_blank(),
+          plot.title = element_text(hjust = 0.5, family = "Calibri", size = 16, face = "bold")
         )
 ```
 
@@ -114,8 +119,7 @@ params$plot_ts %>%
           strip.text = element_text(size = 10),
           axis.title.x = element_blank(),
           axis.title.y = element_blank(),
-          plot.title = element_text(hjust = 0.5, family = "Calibri", size = 16, face = "bold"),
-          axis.line = element_line(size = 1.5)
+          plot.title = element_text(hjust = 0.5, family = "Calibri", size = 16, face = "bold")
         )
 ```
 

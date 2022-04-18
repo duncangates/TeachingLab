@@ -16,7 +16,7 @@ library(stringi)
 library(hover)
 
 # Immediately set authorization for google drive
-drive_auth(path = here("data/thermal-cathode-310719-1445194b99c7.json"))
+drive_auth(path = "data/thermal-cathode-310719-1445194b99c7.json")
 gs4_auth(token = drive_token()) # REMEMBER YOU JUST CHANGED THIS
 
 # add an asterisk to an input label

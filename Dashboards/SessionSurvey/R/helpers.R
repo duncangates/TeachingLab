@@ -44,6 +44,7 @@ approved_emails_list <- readr::read_rds("data/employees.rds")
 ## Add Calibri Fonts ##
 font_add(family = "Calibri", regular = "www/Calibri.ttf")
 font_add(family = "Calibri Bold", regular = "www/Calibri Bold.ttf")
+font_add(family = "Roboto", regular = "www/Roboto-Black.ttf")
 
 ## Add CSS sidebar and report image styling ##
 sidebar_style <- "overflow-x:auto;width:inherit;max-width:400px;"

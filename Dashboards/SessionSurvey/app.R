@@ -1,4 +1,4 @@
-#### Session Survey Dashboard ####
+#### End of Session Survey Dashboard ####
 
 # Making the initial routes to follow
 router <- shiny.router::make_router(
