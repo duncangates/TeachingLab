@@ -238,13 +238,10 @@ name_replace_canvas <- c(
   "Richard Greywolf" = "Rich Greywolf",
   "Amber Mccabe" = "P. Amber Mccabe",
   "Janet Gladu" = "Dr. Janet Gladu",
-  "Nagarajan Bandla" = "Raj Bandla",
   "Jami D. Jacobson" = "Jami Jacobson",
-  "Jamie Hephner" = "Jamie Lopez", # Might change later?
   "Susan J Cote" = "Sue Cote",
   "Amber M. Swinney" = "Amber Swinney",
   "Adrian A" = "Adrian Apodaca",
-  "Tiffany Barrion" = "Tiffany Portiz",
   "Monica J. Martinez-Archuleta" = "Monica Martinez-Archuleta",
   "Michael Yara" = "Mike Yara",
   "Jacob-Michael Kelly" = "Matthew Kelly",

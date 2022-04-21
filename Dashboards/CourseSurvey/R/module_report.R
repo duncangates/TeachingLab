@@ -652,12 +652,31 @@ reportServer <- function(id, in_site) {
         )
       }
     )
+    ### Create a download name for the file to be used later ###
+    download_name <- reactive({
+      
+      if (!is.null(input$recent_sessions)) {
+        download_reactive() %>%
+          select(`Select your course.`, `Select your site (district, parish, network, or school).`) %>%
+          transmute(course_site = paste0(`Select your course.`, " ", `Select your site (district, parish, network, or school).`)) %>%
+          distinct(course_site) %>%
+          as_vector() %>%
+          str_replace_all(c(" " = "_",
+                            "," = "_")) %>%
+          paste(collapse = "_")
+      } else {
+        str_replace_all(unique(input$site), c(" " = "_",
+                                              "," = "_")) %>%
+          paste(collapse = "_")
+      }
+    })
 
     #### GENERATE THE PDF REPORT ####
 
     output$download_report1 <- downloadHandler(
+      
       # For HTML output, change this to "report.html"
-      filename = "report.pdf",
+      filename = paste0("report_", download_name(), ".pdf"),
       content = function(file) {
         shiny.semantic::with_progress(
           message = "Downloading, please wait! This process generally takes 10-20 seconds.",

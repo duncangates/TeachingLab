@@ -166,19 +166,19 @@ textServer <- function(id) {
       
       count <- ipg_forms %>%
         dplyr::filter(between(day, input$date_slider[1], input$date_slider[2])) %>%
-        TeachingLab::neg_cond_filter(.,
+        tlShiny::neg_cond_filter(.,
                                      if_not_this = "All Sites",
                                      filter_this = input$site,
                                      dat_filter = `Name of Site (Parish, District, Network)`) %>%
-        TeachingLab::neg_cond_filter(.,
+        tlShiny::neg_cond_filter(.,
                                      if_not_this = "All Teachers",
                                      filter_this = input$teacher,
                                      dat_filter = `Teacher name`) %>%
-        TeachingLab::neg_cond_filter(.,
+        tlShiny::neg_cond_filter(.,
                                      if_not_this = "All IPG Rubrics",
                                      filter_this = input$ipg_rubric,
                                      dat_filter = `IPG Rubric`) %>%
-        TeachingLab::neg_cond_filter(.,
+        tlShiny::neg_cond_filter(.,
                                      if_not_this = "All Grade Levels/Content Areas",
                                      filter_this = input$grade_content,
                                      dat_filter = `Grade Level / Content Area`) %>%
@@ -226,19 +226,19 @@ textServer <- function(id) {
       
       quote_reactive1 <- ipg_forms %>%
         dplyr::filter(between(day, input$date_slider[1], input$date_slider[2])) %>%
-        TeachingLab::neg_cond_filter(.,
+        tlShiny::neg_cond_filter(.,
                                      if_not_this = "All Sites",
                                      filter_this = input$site,
                                      dat_filter = `Name of Site (Parish, District, Network)`) %>%
-        TeachingLab::neg_cond_filter(.,
+        tlShiny::neg_cond_filter(.,
                                      if_not_this = "All Teachers",
                                      filter_this = input$teacher,
                                      dat_filter = `Teacher name`) %>%
-        TeachingLab::neg_cond_filter(.,
+        tlShiny::neg_cond_filter(.,
                                      if_not_this = "All IPG Rubrics",
                                      filter_this = input$ipg_rubric,
                                      dat_filter = `IPG Rubric`) %>%
-        TeachingLab::neg_cond_filter(.,
+        tlShiny::neg_cond_filter(.,
                                      if_not_this = "All Grade Levels/Content Areas",
                                      filter_this = input$grade_content,
                                      dat_filter = `Grade Level / Content Area`) %>%

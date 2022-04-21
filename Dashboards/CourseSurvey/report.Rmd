@@ -84,7 +84,8 @@ In summary, we see the following % agree or strongly agree with the above statem
 Here by visualizing ratings of strongly agree/agree in blue areas, and all other ratings in black areas we visualize feedback over time (If there is just one point of feedback this appears as a dot).
 
 ```{r over-time-plot, fig.width = 10, fig.height = 10}
-params$plot_ts %>%
+if (nrow(params$plot_ts) >= 1) {
+  params$plot_ts %>%
         ggplot(aes(x = ymd(date_created),
                    y = Percent)) +
         geom_area(color = "gray50", aes(fill = Rating), alpha = 0.6, position = position_identity()) + # position_identity is absolutely necessary here, not sure why
@@ -127,6 +128,13 @@ params$plot_ts %>%
           axis.title.y = element_blank(),
           plot.title = element_text(hjust = 0.5, family = "Calibri", size = 16, face = "bold")
         )
+} else {
+  tibble("There was no data to show here.") %>% 
+    quote_viz(title = "Nothing", 
+              width = 40,
+              print = F) %>% 
+    gtsave("nothing_image.png", path = tempdir())
+}
 ```
 
 # Qualitative Data

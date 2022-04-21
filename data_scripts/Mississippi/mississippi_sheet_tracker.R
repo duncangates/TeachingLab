@@ -54,7 +54,7 @@ unique_lower <- function(x) {
 }
 
 ### Educator Survey Matching ###
-educator_survey <- readr::read_rds(here::here(data/diagnostic.rds))
+educator_survey <- readr::read_rds(here::here("data/diagnostic.rds"))
 
 ## Has to be done by initials ##
 initials_fix <- function(x) {
@@ -68,21 +68,20 @@ educator_initials <- map_chr(
 )
 
 educator_df <- tibble::tibble(
-  school = educator_survey$your_site_district_parish_network_or_school,
+  school = educator_survey$your_site_district_parish_network_or_school_br_br,
   initials = educator_initials
 )
 ########################################
 
 ### Student Survey Matching ###
-student_survey <- surveymonkey::fetch_survey_obj(312653807) %>%
-  surveymonkey::parse_survey()
+student_survey <- get_student_survey(update = T)
 ## Filters for Mississippi schools with str_detect ##
 ## Pulls from ALL select your teacher columns ##
 ## Replaces just one occurrence of bad formatting teacher names at the bottom since that is sufficient
 ## to check for string occurrence ##
 teachers_names_student_survey <- student_survey %>%
   dplyr::filter(str_detect(`What is the name of your school, district, or parish?`, ", MS")) %>%
-  dplyr::select(tidyselect::contains("select your teacher")) %>%
+  dplyr::select(`teacher`) %>%
   tidyr::pivot_longer(everything()) %>%
   tidyr::drop_na() %>%
   pull(value) %>%
@@ -103,13 +102,12 @@ teachers_names_student_survey <- student_survey %>%
 ########################################
 
 ### Family Survey Matching ###
-family_survey <- surveymonkey::fetch_survey_obj(318058603) %>%
-  surveymonkey::parse_survey()
+family_survey <- get_family_survey(update = T)
 ## Filters for mississippi schools withy str_detect ##
 ## Pulls from ALL select your teacher columns ##
 teachers_names_family_survey <- family_survey %>%
   dplyr::filter(str_detect(`What is the name of your child's school, district, or parish?`, ", MS")) %>%
-  dplyr::select(tidyselect::contains("select your child's teacher")) %>%
+  dplyr::select(`teacher`) %>%
   tidyr::pivot_longer(everything()) %>%
   tidyr::drop_na() %>%
   pull(value) %>%
@@ -119,8 +117,9 @@ teachers_names_family_survey <- family_survey %>%
 ########################################
 
 ### Student Work Samples Matching ###
-student_work_samples_survey <- surveymonkey::fetch_survey_obj(314125242) %>%
-  surveymonkey::parse_survey()
+course_token <- Sys.getenv("course_token")
+student_work_samples_survey <- surveymonkey::fetch_survey_obj(314125242, oauth_token = course_token) %>%
+  surveymonkey::parse_survey(oauth_token = course_token)
 ## Grabs submitted emails from gift card column ##
 student_work_emails <- student_work_samples_survey$`Please let us know what email we should send your gift card to for submitting student work from your classroom.` %>%
   unique_lower()

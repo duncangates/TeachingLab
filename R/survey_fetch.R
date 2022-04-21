@@ -6,7 +6,7 @@
 
 fetch_survey_2 <- function(id, name) {
   #### Get survey object and check for responses ####
-  survey_obj <- surveymonkey::fetch_survey_obj(id = id) 
+  survey_obj <- surveymonkey::fetch_survey_obj(id = id)
   #### If there are responses parse
   assertthat::assert_that(survey_obj$response_count > 0)
   survey <- survey_obj %>%
@@ -16,17 +16,21 @@ fetch_survey_2 <- function(id, name) {
   just_school <- "Your school"
   if (sum(stringr::str_detect(colnames(survey), column_name_with_period)) >= 1) {
     survey <- survey %>%
-      dplyr::rename_with( ~ stringr::str_replace_all(.x, 
-                                                     column_name_with_period, 
-                                                     "Please select your site (district, parish, network, or school)"))
+      dplyr::rename_with(~ stringr::str_replace_all(
+        .x,
+        column_name_with_period,
+        "Please select your site (district, parish, network, or school)"
+      ))
     print("Period removed")
   } else if (sum(stringr::str_detect(colnames(survey), just_school)) >= 1) {
     survey <- survey %>%
-      dplyr::rename_with( ~ stringr::str_replace_all(.x, 
-                                                     just_school, 
-                                                     "Please select your site (district, parish, network, or school)"))
+      dplyr::rename_with(~ stringr::str_replace_all(
+        .x,
+        just_school,
+        "Please select your site (district, parish, network, or school)"
+      ))
   }
-  
+
   #### Read through survey and standardize id column ####
   survey_parsed <- survey %>%
     {
@@ -44,8 +48,8 @@ fetch_survey_2 <- function(id, name) {
     {
       if (nrow(.) > 1) { # If there is any data create a new column with the answers from both site and district questions
         dplyr::mutate(., `Please select your site (district, parish, network, or school)` = dplyr::if_else(is.na(`Please select your site (district, parish, network, or school)`),
-                                                                                                           `Please select your site (district, parish, network, or school) - Other (please specify)`,
-                                                                                                           as.character(`Please select your site (district, parish, network, or school)`)
+          `Please select your site (district, parish, network, or school) - Other (please specify)`,
+          as.character(`Please select your site (district, parish, network, or school)`)
         ))
       }
     }
@@ -73,18 +77,18 @@ get_session_survey <- function(update = F) {
     session_survey <- df
   } else {
     options(sm_oauth_token = options(sm_oauth_token = Sys.getenv("session_token")))
-    
+
     surveymonkey_session <- surveymonkey::fetch_survey_obj(id = 308115193) %>%
       surveymonkey::parse_survey()
-    
+
     session_survey <- surveymonkey_session %>%
       dplyr::mutate(date_created = lubridate::date(date_created)) %>%
       dplyr::mutate(`Select your course.` = dplyr::coalesce(
-        `Select your course.`, 
-        `Select your course._2`, 
+        `Select your course.`,
+        `Select your course._2`,
         `Select your course._3`,
-        `Select your course._4`, 
-        `Select your course._5`, 
+        `Select your course._4`,
+        `Select your course._5`,
         `Select your course._6`
       )) %>%
       dplyr::mutate(Date = lubridate::ymd(date_created)) %>%
@@ -174,30 +178,31 @@ get_session_survey <- function(update = F) {
           )
       ) %>%
       dplyr::mutate(`Select your site (district, parish, network, or school).` = ifelse(stringr::str_detect(`Select your site (district, parish, network, or school).`, "Rochester"),
-                                                                                        "Rochester City School District",
-                                                                                        as.character(`Select your site (district, parish, network, or school).`)
+        "Rochester City School District",
+        as.character(`Select your site (district, parish, network, or school).`)
       )) %>%
-      dplyr::select(Facilitator, # Facilitator
-                    Date, # Date
-                    `Select your site (district, parish, network, or school).`, # Site
-                    `Select your role.`, # Role
-                    `Select the content area for today’s professional learning session.`, # Content area
-                    `Select your course.`, # Course
-                    ###### Quantitative feedback #####
-                    `How much do you agree with the following statements about this facilitator today? - They demonstrated  deep knowledge of the content they facilitated.`,
-                    `How much do you agree with the following statements about this facilitator today? - They facilitated the content clearly.`,
-                    `How much do you agree with the following statements about this facilitator today? - They effectively built a safe learning community.`,
-                    `How much do you agree with the following statements about this facilitator today? - They were fully prepared for the session.`,
-                    `How much do you agree with the following statements about this facilitator today? - They responded to the group’s needs.`,
-                    Facilitation_Feedback, # Qualitative feedback
-                    `What went well in today’s session?`,
-                    `What could have been better about today’s session?`
+      dplyr::select(
+        Facilitator, # Facilitator
+        Date, # Date
+        `Select your site (district, parish, network, or school).`, # Site
+        `Select your role.`, # Role
+        `Select the content area for today’s professional learning session.`, # Content area
+        `Select your course.`, # Course
+        ###### Quantitative feedback #####
+        `How much do you agree with the following statements about this facilitator today? - They demonstrated  deep knowledge of the content they facilitated.`,
+        `How much do you agree with the following statements about this facilitator today? - They facilitated the content clearly.`,
+        `How much do you agree with the following statements about this facilitator today? - They effectively built a safe learning community.`,
+        `How much do you agree with the following statements about this facilitator today? - They were fully prepared for the session.`,
+        `How much do you agree with the following statements about this facilitator today? - They responded to the group’s needs.`,
+        Facilitation_Feedback, # Qualitative feedback
+        `What went well in today’s session?`,
+        `What could have been better about today’s session?`
       )
-    
+
     session_survey %>%
       readr::write_rds(., "data/session_survey_21_22data.rds")
   }
-  
+
   return(session_survey)
 }
 
@@ -211,26 +216,31 @@ get_course_survey <- function(update = F) {
     df <- readRDS(file = "data/course_surveymonkey.rds")
     course_survey <- df
   } else {
-    
     old_df <- readr::read_rds(here::here("data/old_course_survey_reformatted.rds"))
-    
+
     options(sm_oauth_token = Sys.getenv("course_token"))
-    
+
     surveymonkey_course <- surveymonkey::fetch_survey_obj(id = 308116695) %>%
       surveymonkey::parse_survey()
-    
+
     course_survey <- surveymonkey_course %>%
       # Make data column a date type column
-      dplyr::mutate(date_created = lubridate::date(date_created),
-                    `Select the date for this session. - \n    Date / Time\n` = lubridate::date(lubridate::mdy(`Select the date for this session. - \n    Date / Time\n`))) %>%
+      dplyr::mutate(
+        date_created = lubridate::date(date_created),
+        `Select the date for this session. - \n    Date / Time\n` = lubridate::date(lubridate::mdy(`Select the date for this session. - \n    Date / Time\n`))
+      ) %>%
       # Add dataframe rows from prior to 21-22
       dplyr::bind_rows(old_df) %>%
       # Coalesce old date column with new
-      dplyr::mutate(date_created = dplyr::coalesce(date_created,
-                                                   `Select the date for this session. - \n    Date / Time\n`)) %>%
+      dplyr::mutate(date_created = dplyr::coalesce(
+        date_created,
+        `Select the date for this session. - \n    Date / Time\n`
+      )) %>%
       # Make NPS numeric and fix non-numerics
-      dplyr::mutate(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?` =
-                      readr::parse_number(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`)) %>%
+      dplyr::mutate(
+        `On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?` =
+          readr::parse_number(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`)
+      ) %>%
       # Coalesce all select your course columns
       dplyr::mutate(`Select your course.` = dplyr::coalesce(
         `Select your course.`,
@@ -252,12 +262,12 @@ get_course_survey <- function(update = F) {
       )) %>%
       # Coalesce learning from the course excited about
       dplyr::mutate(`What is the learning from this course that you are most excited about trying out?` = dplyr::coalesce(
-        `What is the learning from this course that you are most excited about trying out?`, 
+        `What is the learning from this course that you are most excited about trying out?`,
         `What is the learning from this course that you are most excited about trying out?_2`
       )) %>%
       # Coalesce best activities supporting learning
       dplyr::mutate(`Which activities best supported your learning in this course?` = dplyr::coalesce(
-        `Which activities best supported your learning in this course?`, 
+        `Which activities best supported your learning in this course?`,
         `Which activities best supported your learning in this course?_2`
       )) %>%
       # Coalesce additional comments, concerns, or questions
@@ -276,8 +286,8 @@ get_course_survey <- function(update = F) {
       )) %>%
       # Make Rochester all the same name regardless of school
       dplyr::mutate(`Select your site (district, parish, network, or school).` = ifelse(stringr::str_detect(`Select your site (district, parish, network, or school).`, "Rochester"),
-                                                                                        "Rochester City School District",
-                                                                                        as.character(`Select your site (district, parish, network, or school).`)
+        "Rochester City School District",
+        as.character(`Select your site (district, parish, network, or school).`)
       )) %>%
       # Get rid of random -999 in responses
       dplyr::mutate(`How much do you agree with the following statements about this course? - I am satisfied with how the course was facilitated.` = dplyr::na_if(`How much do you agree with the following statements about this course? - I am satisfied with how the course was facilitated.`, "-999")) %>%
@@ -307,31 +317,32 @@ get_course_survey <- function(update = F) {
         `How much do you agree with the following statements about this course? - I will apply what I have learned in this course to my practice in the next 4-6 weeks.`
       ), ~ dplyr::na_if(.x, "No Response"))) %>%
       ###### Make it select just the necessary columns to reduce data input to dashboards
-      dplyr::select(date_created, # Date
-                    `Select your site (district, parish, network, or school).`, # Site
-                    `Select your role.`, # Role
-                    `Select the content area for today's professional learning session.`, # Content area
-                    `Select your course.`, # Course
-                    `Overall, what went well in this course?`, # Qualitative feedback
-                    `Overall, what could have been better in this course?`, # Qualitative feedback
-                    `What is the learning from this course that you are most excited about trying out?`, # Qualitative feedback
-                    `Which activities best supported your learning in this course?`, # Qualitative feedback
-                    `Feel free to leave us any additional comments, concerns, or questions.`, # Qualitative feedback
-                    ###### Quantitative feedback #####
-                    `How much do you agree with the following statements about this course? - I am satisfied with the overall quality of this course.`,
-                    `How much do you agree with the following statements about this course? - I am satisfied with how the course was facilitated.`,
-                    `How much do you agree with the following statements about this course? - The independent online work activities were well-designed to help me meet the learning targets.`,
-                    `How much do you agree with the following statements about this course? - I felt a sense of community with the other participants in this course. even though we were meeting virtually.`,
-                    `How much do you agree with the following statements about this course? - The strategies I’ve learned in this course will improve my instruction.`,
-                    `How much do you agree with the following statements about this course? - The strategies I’ve learned in this course will improve my coaching or supervision of teachers.`,
-                    `How much do you agree with the following statements about this course? - The strategies I’ve learned in the course are easy to implement.`,
-                    `How much do you agree with the following statements about this course? - I will apply what I have learned in this course to my practice in the next 4-6 weeks.`,
-                    `How much do you agree with the following statements about this course? - This course has supported me in being responsive to students' backgrounds, cultures, and points of view.`,
-                    # NPS
-                    `On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`
+      dplyr::select(
+        date_created, # Date
+        `Select your site (district, parish, network, or school).`, # Site
+        `Select your role.`, # Role
+        `Select the content area for today's professional learning session.`, # Content area
+        `Select your course.`, # Course
+        `Overall, what went well in this course?`, # Qualitative feedback
+        `Overall, what could have been better in this course?`, # Qualitative feedback
+        `What is the learning from this course that you are most excited about trying out?`, # Qualitative feedback
+        `Which activities best supported your learning in this course?`, # Qualitative feedback
+        `Feel free to leave us any additional comments, concerns, or questions.`, # Qualitative feedback
+        ###### Quantitative feedback #####
+        `How much do you agree with the following statements about this course? - I am satisfied with the overall quality of this course.`,
+        `How much do you agree with the following statements about this course? - I am satisfied with how the course was facilitated.`,
+        `How much do you agree with the following statements about this course? - The independent online work activities were well-designed to help me meet the learning targets.`,
+        `How much do you agree with the following statements about this course? - I felt a sense of community with the other participants in this course. even though we were meeting virtually.`,
+        `How much do you agree with the following statements about this course? - The strategies I’ve learned in this course will improve my instruction.`,
+        `How much do you agree with the following statements about this course? - The strategies I’ve learned in this course will improve my coaching or supervision of teachers.`,
+        `How much do you agree with the following statements about this course? - The strategies I’ve learned in the course are easy to implement.`,
+        `How much do you agree with the following statements about this course? - I will apply what I have learned in this course to my practice in the next 4-6 weeks.`,
+        `How much do you agree with the following statements about this course? - This course has supported me in being responsive to students' backgrounds, cultures, and points of view.`,
+        # NPS
+        `On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`
       )
   }
-  
+
   return(course_survey)
 }
 
@@ -340,18 +351,87 @@ get_course_survey <- function(update = F) {
 #' @return Returns a tibble
 #' @export
 get_ipg_forms <- function() {
+
+  ## Authentication ##
+  googledrive::drive_auth(path = "Tokens/teachinglab-authentication-0a3006e60773.json")
+  googlesheets4::gs4_auth(token = googledrive::drive_token())
+
+  df <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1L33wVpPERyUQdG8WO3sZiyjnHzPvDL91O4yVUQTN14A/edit#gid=1455024681",
+    sheet = 1,
+    col_types = "c"
+  )
+  ## Deauthentication ##
+  googledrive::drive_deauth()
+  googlesheets4::gs4_deauth()
+
+  df <- df %>%
+    mutate(
+      Timestamp = lubridate::mdy_hms(Timestamp),
+      `Timeline of Obs` = factor(ifelse(
+        is.na(`Timeline of Obs`),
+        paste0(
+          TeachingLab::get_season(Timestamp),
+          " ",
+          lubridate::year(Timestamp)
+        ),
+        `Timeline of Obs`
+      ), levels = c("Summer 2019",
+                    "Fall 2019",
+                    "Winter 2020",
+                    "Spring 2020",
+                    "Winter 2021",
+                    "Spring 2021",
+                    "Fall 2021",
+                    "Winter 2022",
+                    "Spring 2022"))
+    )
+
+  readr::write_rds(df, here::here("data/ipg_forms.rds"))
+
+  return(df)
+}
+
+#' @title Lesson Plan Analysis Data
+#' @description Gets data from Lesson Plan Analysis forms
+#' @return Returns a tibble
+#' @export
+get_lesson_analysis <- function() {
   
   ## Authentication ##
   googledrive::drive_auth(path = "Tokens/teachinglab-authentication-0a3006e60773.json")
   googlesheets4::gs4_auth(token = googledrive::drive_token())
   
-  df <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1L33wVpPERyUQdG8WO3sZiyjnHzPvDL91O4yVUQTN14A/edit#gid=1455024681",
-                                  sheet = 1)
+  df <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1fCOHSKAkP8GU1xJQh6CjtHPJriOldmqYFyI8MnPWtIg/edit?resourcekey#gid=1002617293",
+                                  sheet = 1,
+                                  col_types = "c"
+  )
   ## Deauthentication ##
   googledrive::drive_deauth()
   googlesheets4::gs4_deauth()
   
-  readr::write_rds(df, here::here("data/ipg_forms.rds"))
+  df <- df #%>%
+    # mutate(
+    #   Timestamp = lubridate::mdy_hms(Timestamp),
+    #   `Timeline of Obs` = factor(ifelse(
+    #     is.na(`Timeline of Obs`),
+    #     paste0(
+    #       TeachingLab::get_season(Timestamp),
+    #       " ",
+    #       lubridate::year(Timestamp)
+    #     ),
+    #     `Timeline of Obs`
+    #   ), levels = c("Summer 2019",
+    #                 "Fall 2019",
+    #                 "Winter 2020",
+    #                 "Spring 2020",
+    #                 "Winter 2021",
+    #                 "Spring 2021",
+    #                 "Fall 2021",
+    #                 "Winter 2022",
+    #                 "Spring 2022"))
+    # )
+  
+  readr::write_rds(df, here::here("data/lesson_plan_analysis.rds"))
   
   return(df)
 }
@@ -362,29 +442,29 @@ get_ipg_forms <- function() {
 #' @return Returns a tibble
 #' @export
 get_student_survey <- function(update = F) {
-  
-  replacement_vector <- c("Aja Forte" = "Aja Forte",
-                          "=Latanya Wilson" = "Latanya Wilson",
-                          "aja foorte" = "Aja Forte",
-                          "Aja forte" = "Aja Forte",
-                          "Jackie Leach" = "Jacqueline Leach",
-                          "JACKIE LEACH" = "Jacqueline Leach",
-                          "Jackie Leach" = "Jacqueline Leach",
-                          "leach" = "Jacqueline Leach",
-                          "MABRY" = "Pearl Mabry",
-                          "Mrs, robertson" = "Nykol Robertson",
-                          "Ms.leach" = "Jacqueline Leach",
-                          "Principal - Mr. Mumford" = "Jeff Mumford",
-                          "Rosalyn Northwothy" = "Rosalinda Norsworthy",
-                          "Rosiland Norsworthy" = "Rosalinda Norsworthy")
-  
+  replacement_vector <- c(
+    "Aja Forte" = "Aja Forte",
+    "=Latanya Wilson" = "Latanya Wilson",
+    "aja foorte" = "Aja Forte",
+    "Aja forte" = "Aja Forte",
+    "Jackie Leach" = "Jacqueline Leach",
+    "JACKIE LEACH" = "Jacqueline Leach",
+    "Jackie Leach" = "Jacqueline Leach",
+    "leach" = "Jacqueline Leach",
+    "MABRY" = "Pearl Mabry",
+    "Mrs, robertson" = "Nykol Robertson",
+    "Ms.leach" = "Jacqueline Leach",
+    "Principal - Mr. Mumford" = "Jeff Mumford",
+    "Rosalyn Northwothy" = "Rosalinda Norsworthy",
+    "Rosiland Norsworthy" = "Rosalinda Norsworthy"
+  )
+
   if (update == T) {
-    
     options(sm_oauth_token = Sys.getenv("knowledge_token"))
-    
+
     df <- surveymonkey::fetch_survey_obj(312653807) %>%
       surveymonkey::parse_survey()
-    
+
     student_survey_coalesced <- df %>%
       dplyr::mutate(teacher = dplyr::coalesce(
         `Please select your teacher.`,
@@ -448,74 +528,75 @@ get_student_survey <- function(update = F) {
         `Please select your teacher._30`,
         `Please select your teacher. - Other (please specify)_30`
       )) %>%
-      dplyr::select(-c(`Please select your teacher.`,
-                       `Please select your teacher. - Other (please specify)`,
-                       `Please select your teacher._2`,
-                       `Please select your teacher. - Other (please specify)_2`,
-                       `Please select your teacher._3`,
-                       `Please select your teacher. - Other (please specify)_3`,
-                       `Please select your teacher._4`,
-                       `Please select your teacher. - Other (please specify)_4`,
-                       `Please select your teacher._5`,
-                       `Please select your teacher. - Other (please specify)_5`,
-                       `Please select your teacher._6`,
-                       `Please select your teacher. - Other (please specify)_6`,
-                       `Please select your teacher._7`,
-                       `Please select your teacher. - Other (please specify)_7`,
-                       `Please select your teacher._8`,
-                       `Please select your teacher. - Other (please specify)_8`,
-                       `Please select your teacher._9`,
-                       `Please select your teacher. - Other (please specify)_9`,
-                       `Please select your teacher._10`,
-                       `Please select your teacher. - Other (please specify)_10`,
-                       `Please select your teacher._11`,
-                       `Please select your teacher. - Other (please specify)_11`,
-                       `Please select your teacher._12`,
-                       `Please select your teacher. - Other (please specify)_12`,
-                       `Please select your teacher._13`,
-                       `Please select your teacher. - Other (please specify)_13`,
-                       `Please select your teacher._14`,
-                       `Please select your teacher. - Other (please specify)_14`,
-                       `Please select your teacher._15`,
-                       `Please select your teacher. - Other (please specify)_15`,
-                       `Please select your teacher._16`,
-                       `Please select your teacher. - Other (please specify)_16`,
-                       `Please select your teacher._17`,
-                       `Please select your teacher. - Other (please specify)_17`,
-                       `Please select your teacher._18`,
-                       `Please select your teacher. - Other (please specify)_18`,
-                       `Please select your teacher._19`,
-                       `Please select your teacher. - Other (please specify)_19`,
-                       `Please select your teacher._20`,
-                       `Please select your teacher. - Other (please specify)_20`,
-                       `Please select your teacher._21`,
-                       `Please select your teacher. - Other (please specify)_21`,
-                       `Please select your teacher._22`,
-                       `Please select your teacher. - Other (please specify)_22`,
-                       `Please select your teacher._23`,
-                       `Please select your teacher. - Other (please specify)_23`,
-                       `Please select your teacher._24`,
-                       `Please select your teacher. - Other (please specify)_24`,
-                       `Please select your teacher._25`,
-                       `Please select your teacher. - Other (please specify)_25`,
-                       `Please select your teacher._26`,
-                       `Please select your teacher. - Other (please specify)_26`,
-                       `Please select your teacher._27`,
-                       `Please select your teacher. - Other (please specify)_27`,
-                       `Please select your teacher._28`,
-                       `Please select your teacher. - Other (please specify)_28`,
-                       `Please select your teacher._29`,
-                       `Please select your teacher. - Other (please specify)_29`,
-                       `Please select your teacher._30`,
-                       `Please select your teacher. - Other (please specify)_30`)) %>%
+      dplyr::select(-c(
+        `Please select your teacher.`,
+        `Please select your teacher. - Other (please specify)`,
+        `Please select your teacher._2`,
+        `Please select your teacher. - Other (please specify)_2`,
+        `Please select your teacher._3`,
+        `Please select your teacher. - Other (please specify)_3`,
+        `Please select your teacher._4`,
+        `Please select your teacher. - Other (please specify)_4`,
+        `Please select your teacher._5`,
+        `Please select your teacher. - Other (please specify)_5`,
+        `Please select your teacher._6`,
+        `Please select your teacher. - Other (please specify)_6`,
+        `Please select your teacher._7`,
+        `Please select your teacher. - Other (please specify)_7`,
+        `Please select your teacher._8`,
+        `Please select your teacher. - Other (please specify)_8`,
+        `Please select your teacher._9`,
+        `Please select your teacher. - Other (please specify)_9`,
+        `Please select your teacher._10`,
+        `Please select your teacher. - Other (please specify)_10`,
+        `Please select your teacher._11`,
+        `Please select your teacher. - Other (please specify)_11`,
+        `Please select your teacher._12`,
+        `Please select your teacher. - Other (please specify)_12`,
+        `Please select your teacher._13`,
+        `Please select your teacher. - Other (please specify)_13`,
+        `Please select your teacher._14`,
+        `Please select your teacher. - Other (please specify)_14`,
+        `Please select your teacher._15`,
+        `Please select your teacher. - Other (please specify)_15`,
+        `Please select your teacher._16`,
+        `Please select your teacher. - Other (please specify)_16`,
+        `Please select your teacher._17`,
+        `Please select your teacher. - Other (please specify)_17`,
+        `Please select your teacher._18`,
+        `Please select your teacher. - Other (please specify)_18`,
+        `Please select your teacher._19`,
+        `Please select your teacher. - Other (please specify)_19`,
+        `Please select your teacher._20`,
+        `Please select your teacher. - Other (please specify)_20`,
+        `Please select your teacher._21`,
+        `Please select your teacher. - Other (please specify)_21`,
+        `Please select your teacher._22`,
+        `Please select your teacher. - Other (please specify)_22`,
+        `Please select your teacher._23`,
+        `Please select your teacher. - Other (please specify)_23`,
+        `Please select your teacher._24`,
+        `Please select your teacher. - Other (please specify)_24`,
+        `Please select your teacher._25`,
+        `Please select your teacher. - Other (please specify)_25`,
+        `Please select your teacher._26`,
+        `Please select your teacher. - Other (please specify)_26`,
+        `Please select your teacher._27`,
+        `Please select your teacher. - Other (please specify)_27`,
+        `Please select your teacher._28`,
+        `Please select your teacher. - Other (please specify)_28`,
+        `Please select your teacher._29`,
+        `Please select your teacher. - Other (please specify)_29`,
+        `Please select your teacher._30`,
+        `Please select your teacher. - Other (please specify)_30`
+      )) %>%
       dplyr::mutate(teacher = stringr::str_replace_all(teacher, replacement_vector))
-    
   } else {
     student_survey_coalesced <- readr::read_rds(here::here("data/student_survey.rds"))
   }
-  
+
   readr::write_rds(student_survey_coalesced, here::here("data/student_survey.rds"))
-  
+
   return(student_survey_coalesced)
 }
 
@@ -525,29 +606,29 @@ get_student_survey <- function(update = F) {
 #' @return Returns a tibble
 #' @export
 get_family_survey <- function(update = F) {
-  
-  replacement_vector <- c("Aja Forte" = "Aja Forte",
-                          "=Latanya Wilson" = "Latanya Wilson",
-                          "aja foorte" = "Aja Forte",
-                          "Aja forte" = "Aja Forte",
-                          "Jackie Leach" = "Jacqueline Leach",
-                          "JACKIE LEACH" = "Jacqueline Leach",
-                          "Jackie Leach" = "Jacqueline Leach",
-                          "leach" = "Jacqueline Leach",
-                          "MABRY" = "Pearl Mabry",
-                          "Mrs, robertson" = "Nykol Robertson",
-                          "Ms.leach" = "Jacqueline Leach",
-                          "Principal - Mr. Mumford" = "Jeff Mumford",
-                          "Rosalyn Northwothy" = "Rosalinda Norsworthy",
-                          "Rosiland Norsworthy" = "Rosalinda Norsworthy")
-  
+  replacement_vector <- c(
+    "Aja Forte" = "Aja Forte",
+    "=Latanya Wilson" = "Latanya Wilson",
+    "aja foorte" = "Aja Forte",
+    "Aja forte" = "Aja Forte",
+    "Jackie Leach" = "Jacqueline Leach",
+    "JACKIE LEACH" = "Jacqueline Leach",
+    "Jackie Leach" = "Jacqueline Leach",
+    "leach" = "Jacqueline Leach",
+    "MABRY" = "Pearl Mabry",
+    "Mrs, robertson" = "Nykol Robertson",
+    "Ms.leach" = "Jacqueline Leach",
+    "Principal - Mr. Mumford" = "Jeff Mumford",
+    "Rosalyn Northwothy" = "Rosalinda Norsworthy",
+    "Rosiland Norsworthy" = "Rosalinda Norsworthy"
+  )
+
   if (update == T) {
-    
     options(sm_oauth_token = Sys.getenv("knowledge_token"))
-    
+
     df <- surveymonkey::fetch_survey_obj(318058603) %>%
       surveymonkey::parse_survey()
-    
+
     family_survey_coalesced <- df %>%
       dplyr::mutate(teacher = dplyr::coalesce(
         `Please select your child's teacher.`,
@@ -612,75 +693,76 @@ get_family_survey <- function(update = F) {
         `Please select your child's teacher. - Other (please specify)_30`,
         `Please write in the name of your child's teacher.`
       )) %>%
-      dplyr::select(-c(`Please select your child's teacher.`,
-                       `Please select your child's teacher. - Other (please specify)`,
-                       `Please select your child's teacher._2`,
-                       `Please select your child's teacher. - Other (please specify)_2`,
-                       `Please select your child's teacher._3`,
-                       `Please select your child's teacher. - Other (please specify)_3`,
-                       `Please select your child's teacher._4`,
-                       `Please select your child's teacher. - Other (please specify)_4`,
-                       `Please select your child's teacher._5`,
-                       `Please select your child's teacher. - Other (please specify)_5`,
-                       `Please select your child's teacher._6`,
-                       `Please select your child's teacher. - Other (please specify)_6`,
-                       `Please select your child's teacher._7`,
-                       `Please select your child's teacher. - Other (please specify)_7`,
-                       `Please select your child's teacher._8`,
-                       `Please select your child's teacher. - Other (please specify)_8`,
-                       `Please select your child's teacher._9`,
-                       `Please select your child's teacher. - Other (please specify)_9`,
-                       `Please select your child's teacher._10`,
-                       `Please select your child's teacher. - Other (please specify)_10`,
-                       `Please select your child's teacher._11`,
-                       `Please select your child's teacher. - Other (please specify)_11`,
-                       `Please select your child's teacher._12`,
-                       `Please select your child's teacher. - Other (please specify)_12`,
-                       `Please select your child's teacher._13`,
-                       `Please select your child's teacher. - Other (please specify)_13`,
-                       `Please select your child's teacher._14`,
-                       `Please select your child's teacher. - Other (please specify)_14`,
-                       `Please select your child's teacher._15`,
-                       `Please select your child's teacher. - Other (please specify)_15`,
-                       `Please select your child's teacher._16`,
-                       `Please select your child's teacher. - Other (please specify)_16`,
-                       `Please select your child's teacher._17`,
-                       `Please select your child's teacher. - Other (please specify)_17`,
-                       `Please select your child's teacher._18`,
-                       `Please select your child's teacher. - Other (please specify)_18`,
-                       `Please select your child's teacher._19`,
-                       `Please select your child's teacher. - Other (please specify)_19`,
-                       `Please select your child's teacher._20`,
-                       `Please select your child's teacher. - Other (please specify)_20`,
-                       `Please select your child's teacher._21`,
-                       `Please select your child's teacher. - Other (please specify)_21`,
-                       `Please select your child's teacher._22`,
-                       `Please select your child's teacher. - Other (please specify)_22`,
-                       `Please select your child's teacher._23`,
-                       `Please select your child's teacher. - Other (please specify)_23`,
-                       `Please select your child's teacher._24`,
-                       `Please select your child's teacher. - Other (please specify)_24`,
-                       `Please select your child's teacher._25`,
-                       `Please select your child's teacher. - Other (please specify)_25`,
-                       `Please select your child's teacher._26`,
-                       `Please select your child's teacher. - Other (please specify)_26`,
-                       `Please select your child's teacher._27`,
-                       `Please select your child's teacher. - Other (please specify)_27`,
-                       `Please select your child's teacher._28`,
-                       `Please select your child's teacher. - Other (please specify)_28`,
-                       `Please select your child's teacher._29`,
-                       `Please select your child's teacher. - Other (please specify)_29`,
-                       `Please select your child's teacher._30`,
-                       `Please select your child's teacher. - Other (please specify)_30`,
-                       `Please write in the name of your child's teacher.`)) %>%
+      dplyr::select(-c(
+        `Please select your child's teacher.`,
+        `Please select your child's teacher. - Other (please specify)`,
+        `Please select your child's teacher._2`,
+        `Please select your child's teacher. - Other (please specify)_2`,
+        `Please select your child's teacher._3`,
+        `Please select your child's teacher. - Other (please specify)_3`,
+        `Please select your child's teacher._4`,
+        `Please select your child's teacher. - Other (please specify)_4`,
+        `Please select your child's teacher._5`,
+        `Please select your child's teacher. - Other (please specify)_5`,
+        `Please select your child's teacher._6`,
+        `Please select your child's teacher. - Other (please specify)_6`,
+        `Please select your child's teacher._7`,
+        `Please select your child's teacher. - Other (please specify)_7`,
+        `Please select your child's teacher._8`,
+        `Please select your child's teacher. - Other (please specify)_8`,
+        `Please select your child's teacher._9`,
+        `Please select your child's teacher. - Other (please specify)_9`,
+        `Please select your child's teacher._10`,
+        `Please select your child's teacher. - Other (please specify)_10`,
+        `Please select your child's teacher._11`,
+        `Please select your child's teacher. - Other (please specify)_11`,
+        `Please select your child's teacher._12`,
+        `Please select your child's teacher. - Other (please specify)_12`,
+        `Please select your child's teacher._13`,
+        `Please select your child's teacher. - Other (please specify)_13`,
+        `Please select your child's teacher._14`,
+        `Please select your child's teacher. - Other (please specify)_14`,
+        `Please select your child's teacher._15`,
+        `Please select your child's teacher. - Other (please specify)_15`,
+        `Please select your child's teacher._16`,
+        `Please select your child's teacher. - Other (please specify)_16`,
+        `Please select your child's teacher._17`,
+        `Please select your child's teacher. - Other (please specify)_17`,
+        `Please select your child's teacher._18`,
+        `Please select your child's teacher. - Other (please specify)_18`,
+        `Please select your child's teacher._19`,
+        `Please select your child's teacher. - Other (please specify)_19`,
+        `Please select your child's teacher._20`,
+        `Please select your child's teacher. - Other (please specify)_20`,
+        `Please select your child's teacher._21`,
+        `Please select your child's teacher. - Other (please specify)_21`,
+        `Please select your child's teacher._22`,
+        `Please select your child's teacher. - Other (please specify)_22`,
+        `Please select your child's teacher._23`,
+        `Please select your child's teacher. - Other (please specify)_23`,
+        `Please select your child's teacher._24`,
+        `Please select your child's teacher. - Other (please specify)_24`,
+        `Please select your child's teacher._25`,
+        `Please select your child's teacher. - Other (please specify)_25`,
+        `Please select your child's teacher._26`,
+        `Please select your child's teacher. - Other (please specify)_26`,
+        `Please select your child's teacher._27`,
+        `Please select your child's teacher. - Other (please specify)_27`,
+        `Please select your child's teacher._28`,
+        `Please select your child's teacher. - Other (please specify)_28`,
+        `Please select your child's teacher._29`,
+        `Please select your child's teacher. - Other (please specify)_29`,
+        `Please select your child's teacher._30`,
+        `Please select your child's teacher. - Other (please specify)_30`,
+        `Please write in the name of your child's teacher.`
+      )) %>%
       dplyr::mutate(teacher = stringr::str_replace_all(teacher, replacement_vector))
-    
+
     readr::write_rds(family_survey_coalesced, here::here("data/family_survey.rds"))
-    
   } else {
     family_survey_coalesced <- readr::read_rds(here::here("data/family_survey.rds"))
   }
-  
+
   return(family_survey_coalesced)
 }
 
@@ -690,20 +772,19 @@ get_family_survey <- function(update = F) {
 #' @return A tibble
 #' @export
 get_student_scores_mississippi <- function(update = F) {
-  
   if (update == T) {
     df <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1yrqXouJ84glL-4uH7Nw-47HqhzQP1jINDgRy8nCUaxs/edit#gid=777182936",
-                                    sheet = "SCORED") %>%
+      sheet = "SCORED"
+    ) %>%
       janitor::clean_names() %>%
       dplyr::select(-9)
-    
+
     readr::write_rds(df, here::here("data/student_scores_mississippi.rds"))
   } else {
     df <- readr::read_rds(here::here("data/student_scores_mississippi.rds"))
   }
-  
+
   return(df)
-  
 }
 
 #' @title Diagnostic Survey Update
@@ -712,7 +793,6 @@ get_student_scores_mississippi <- function(update = F) {
 #' @return A tibble
 #' @export
 get_diagnostic_survey <- function(update = F) {
-  
   if (update == T) {
     ### Set OAuth for SurveyMonkey ###
     options(sm_oauth_token = "nTxsBf-VruLlFgxHpCRlmMJMRqC060bQZGd6VzrfDm5oX4Il5u-IhH2CxD4lwCiblicg3896pqYH0HzhmOr1b0SWMF9bTaX8-B9PmQVS2zFkNmfs5xRVNU1PMZoVfeBG")
@@ -734,18 +814,22 @@ get_diagnostic_survey <- function(update = F) {
     state_diagnostic_surveymonkey <- surveymonkey::fetch_survey_obj(310477252) %>%
       surveymonkey::parse_survey() %>%
       janitor::clean_names()
-    
+
     ## Make id column with all lower, add an underscore between initials and birthday ###
     diagnostic_final <- diagnostic_surveymonkey %>%
-      rename(your_site_district_parish_network_or_school_br_br = your_site_district_parish_network_or_school,
-             your_site_district_parish_network_or_school_br_br_other_please_specify = your_site_district_parish_network_or_school_other_please_specify) %>%
+      rename(
+        your_site_district_parish_network_or_school_br_br = your_site_district_parish_network_or_school,
+        your_site_district_parish_network_or_school_br_br_other_please_specify = your_site_district_parish_network_or_school_other_please_specify
+      ) %>%
       ### Join in EIC Diagnostic ###
       dplyr::full_join(eic_diagnostic) %>%
       ### Join in State-Level Diagnostic ###
       dplyr::full_join(state_diagnostic_surveymonkey) %>%
       ### Coalesce site name columns ###
-      dplyr::mutate(your_site_district_parish_network_or_school_br_br = dplyr::coalesce(your_site_district_parish_network_or_school_br_br,
-                                                                                        your_site_district_parish_network_or_school_br_br_other_please_specify)) %>%
+      dplyr::mutate(your_site_district_parish_network_or_school_br_br = dplyr::coalesce(
+        your_site_district_parish_network_or_school_br_br,
+        your_site_district_parish_network_or_school_br_br_other_please_specify
+      )) %>%
       #### Make IDs ###
       dplyr::mutate(id = TeachingLab::id_maker(
         initials = please_write_in_your_3_initials_if_you_do_not_have_a_middle_initial_please_write_x_br_this_is_used_to_link_the_diagnostic_and_follow_up_surveys_but_is_kept_confidential_br_br,
@@ -799,7 +883,7 @@ get_diagnostic_survey <- function(update = F) {
           "Wisconsin Department of Education, WI"
         )
       )
-    
+
     ## Write to data folder, dashboard for completion, and dashboard for analysis ##
     readr::write_rds(diagnostic_final, here::here("Dashboards/DiagnosticSurvey/data/diagnostic.rds"))
     readr::write_rds(diagnostic_final, here::here("Dashboards/DiagnosticComplete/data/diagnostic.rds"))
@@ -807,9 +891,8 @@ get_diagnostic_survey <- function(update = F) {
   } else {
     diagnostic_final <- readr::read_rds(here::here("data/diagnostic.rds"))
   }
-  
+
   return(diagnostic_final)
-  
 }
 
 #' @title Knowledge Assessments Update
@@ -818,10 +901,9 @@ get_diagnostic_survey <- function(update = F) {
 #' @return A tibble
 #' @export
 get_knowledge_assessments <- function(update = F) {
-  
   if (update == T) {
     options(sm_oauth_token = "wD.rd9HKenA2QV2Z2zV.kJwL7533YR3TcbP0Ii7--tHadLRlID-hv5Kz8oAVvHsKXUSn9KRnzz31DcKqb8vcLMqjuHjYz7r3vW7kQj3TZ3oboSG5mvxi5ZijlFhL8ylm")
-    
+
     ids_surveys <- tibble::tribble(
       ~title, ~id,
       "School Leaders: ELA", 312485414L,
@@ -859,9 +941,9 @@ get_knowledge_assessments <- function(update = F) {
       dplyr::filter(responses > 0) %>%
       dplyr::filter(title != "Math: Cycle of Inquiry II - Making Math Visible") %>% # For now remove (Making Math Visible), duplicate row issue - see Github issue
       dplyr::mutate(count = dplyr::row_number())
-    
+
     ################## Secondary Data Grab from Diagnostic for Misssissippi #################################
-    
+
     special_diagnostic_survey_fetch <- surveymonkey::fetch_survey_obj(id = 306944493) %>%
       surveymonkey::parse_survey() %>%
       dplyr::mutate(
@@ -911,7 +993,7 @@ get_knowledge_assessments <- function(update = F) {
           "Wisconsin Department of Education, WI"
         )
       )
-    
+
     mississippi_knowledge_assessments <- special_diagnostic_survey_fetch %>%
       dplyr::rename(
         `Please write in your 3 initials. If you do not have a middle initial, please write X.<br>(This is used to link the pre/post assessments, but is kept confidential.)` = `Please write in your 3 initials. If you do not have a middle initial, please write X.<br>(This is used to link the diagnostic and follow-up surveys, but is kept confidential.)<br><br>`,
@@ -970,15 +1052,15 @@ get_knowledge_assessments <- function(update = F) {
         "Which of the following is the most effective at addressing unfinished learning?"
       ))) %>%
       dplyr::select(-tidyselect::contains("not sure"))
-    
+
     ############################################# SAVE ALL SURVEYS #############################################
-    
+
     purrr::map2(
       .x = ids_surveys$id, .y = ids_surveys$count,
       ~ purrr::safely(TeachingLab::fetch_survey_2(id = .x, name = .y))
     )
     ########################################################################################################################
-    
+
     survey19 <- survey19 %>%
       bind_rows(mississippi_knowledge_assessments %>% select(1:10, 24:33) %>% mutate(
         score = NA,
@@ -994,7 +1076,7 @@ get_knowledge_assessments <- function(update = F) {
         id = NA
       ))
     ########################################################################################################################
-    
+
     ### School Leaders: ELA ###
     ela_school_leaders_correct <- tibble::tibble(
       question = c(
@@ -1041,12 +1123,12 @@ get_knowledge_assessments <- function(update = F) {
         "I’m not sure."
       )
     )
-    
+
     readr::write_rds(
       ela_school_leaders_correct,
       here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_school_leaders.rds")
     )
-    
+
     TeachingLab::save_processed_data2(
       data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/SchoolLeadersELA.rds"),
       q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_school_leaders.rds"),
@@ -1062,8 +1144,8 @@ get_knowledge_assessments <- function(update = F) {
       ),
       save_name = "ela_school_leaders"
     )
-    
-    
+
+
     ### ELA General: Cycle of Inquiry - Complex Text ###
     ela_cycle_inquiry_complex_text_correct <- tibble::tibble(
       question = c(
@@ -1096,12 +1178,12 @@ get_knowledge_assessments <- function(update = F) {
         "Emphasis on strategies for making inferences"
       )
     )
-    
+
     readr::write_rds(
       ela_cycle_inquiry_complex_text_correct,
       here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_cycle_inquiry_complex_text.rds")
     )
-    
+
     TeachingLab::save_processed_data2(
       data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELAGeneralCycleofInquiry-ComplexText.rds"),
       q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_cycle_inquiry_complex_text.rds"),
@@ -1115,7 +1197,7 @@ get_knowledge_assessments <- function(update = F) {
       ),
       save_name = "ela_cycle_inquiry_complex_text"
     )
-    
+
     ### ELA General: Cycle of Inquiry - Speaking & Listening ###
     ela_cycle_inquiry_speaking_listening_correct <- tibble::tibble(
       question = c(
@@ -1142,12 +1224,12 @@ get_knowledge_assessments <- function(update = F) {
         "The teacher begins by summarizing the text that students just read."
       )
     )
-    
+
     readr::write_rds(
       ela_cycle_inquiry_speaking_listening_correct,
       here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_cycle_inquiry_speaking_listening_correct.rds")
     )
-    
+
     TeachingLab::save_processed_data2(
       data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELAGeneralCycleofInquiry-Speaking&Listening.rds"),
       q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_cycle_inquiry_speaking_listening_correct.rds"),
@@ -1160,7 +1242,7 @@ get_knowledge_assessments <- function(update = F) {
       ),
       save_name = "ela_cycle_inquiry_speaking_listening"
     )
-    
+
     ### ELA Foundational Skills: Bootcamp (K-2) ###
     ela_foundational_skills_correct <- tibble::tibble(
       question = c(
@@ -1189,12 +1271,12 @@ get_knowledge_assessments <- function(update = F) {
         "Adhere to a same structure of number of groups and members of groups for the entirety of the year"
       )
     )
-    
+
     readr::write_rds(
       ela_foundational_skills_correct,
       here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_foundational_skills.rds")
     )
-    
+
     TeachingLab::save_processed_data2(
       data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELABootcamp-FoundationalSkillsBootcampSkills(K-2).rds"),
       q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_foundational_skills.rds"),
@@ -1208,7 +1290,7 @@ get_knowledge_assessments <- function(update = F) {
       ),
       save_name = "ela_foundational_skills"
     )
-    
+
     ### ELA: Bootcamp - General ###
     ela_general_bootcamp_correct <- tibble::tibble(
       question = c(
@@ -1249,7 +1331,7 @@ get_knowledge_assessments <- function(update = F) {
       ela_general_bootcamp_correct,
       here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_general_bootcamp.rds")
     )
-    
+
     TeachingLab::save_processed_data2(
       data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELABootcamp-General.rds"),
       q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_general_bootcamp.rds"),
@@ -1265,9 +1347,9 @@ get_knowledge_assessments <- function(update = F) {
       ),
       save_name = "ela_general_bootcamp"
     )
-    
+
     ### ELA: CRSE PLC ### (This gets skipped because it is not actually a knowledge assessment)
-    
+
     ### ELA: Cycle of Inquiry - Curriculum Flex Foundational Skills ###
     ela_cycle_inquiry_curriculum_flex_correct <- tibble::tibble(
       question = c(
@@ -1310,7 +1392,7 @@ get_knowledge_assessments <- function(update = F) {
       ela_cycle_inquiry_curriculum_flex_correct,
       here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_cycle_inquiry_curriculum_flex.rds")
     )
-    
+
     TeachingLab::save_processed_data2(
       data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELACycleofInquiry-CurriculumFlexFoundationalSkills.rds"),
       q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_cycle_inquiry_curriculum_flex.rds"),
@@ -1325,7 +1407,7 @@ get_knowledge_assessments <- function(update = F) {
       ),
       save_name = "ela_cycle_inquiry_curriculum_flex"
     )
-    
+
     ### ELA Foundational Skills: Cycle of Inquiry 2: Using Data to Inform Foundational Skills Instruction ###
     ela_foundational_skills_cycle_2_correct <- tibble::tibble(
       question = c(
@@ -1354,7 +1436,7 @@ get_knowledge_assessments <- function(update = F) {
       ela_foundational_skills_cycle_2_correct,
       here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_foundational_skills_cycle_2.rds")
     )
-    
+
     TeachingLab::save_processed_data2(
       data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELAFoundationalSkillsCycleofInquiry2UsingDatatoInformFoundationalSkillsInstruction.rds"),
       q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_foundational_skills_cycle_2.rds"),
@@ -1367,7 +1449,7 @@ get_knowledge_assessments <- function(update = F) {
       ),
       save_name = "ela_foundational_skills_cycle_2"
     )
-    
+
     ### ELA EL: Bootcamp - ALL Block (3-5) ###
     ela_bootcamp_all_block_3_5_correct <- tibble::tibble(
       question = c(
@@ -1396,7 +1478,7 @@ get_knowledge_assessments <- function(update = F) {
       ela_bootcamp_all_block_3_5_correct,
       here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_bootcamp_all_block_3_5.rds")
     )
-    
+
     TeachingLab::save_processed_data2(
       data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELAELBootcamp-ALLBlock(3-5).rds"),
       q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_bootcamp_all_block_3_5.rds"),
@@ -1409,9 +1491,9 @@ get_knowledge_assessments <- function(update = F) {
       ),
       save_name = "ela_bootcamp_all_block_3_5"
     )
-    
+
     ### ELA: Guidebooks Cycle of Inquiry 1 ###
-    
+
     ela_guidebooks_cycle_inquiry_1_correct <- tibble::tibble(
       question = c(
         "Which of the following statements are true about reading the same complex text multiple times? Select all that apply. - Each read of the text should have a different focus or lens.",
@@ -1443,7 +1525,7 @@ get_knowledge_assessments <- function(update = F) {
       ela_guidebooks_cycle_inquiry_1_correct,
       here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_cycle_inquiry_1.rds")
     )
-    
+
     TeachingLab::save_processed_data2(
       data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELAGuidebooksCycleofInquiry1.rds"),
       q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_cycle_inquiry_1.rds"),
@@ -1457,9 +1539,9 @@ get_knowledge_assessments <- function(update = F) {
       ),
       save_name = "ela_guidebooks_cycle_inquiry_1"
     )
-    
+
     ### ELA: Guidebooks Cycle of Inquiry 2 ### (Not completed yet)
-    
+
     ### ELA Guidebooks Diverse Learners: Bootcamp - Leader ###
     ela_guidebooks_diverse_learners_leader_correct <- tibble::tibble(
       question = c(
@@ -1478,12 +1560,12 @@ get_knowledge_assessments <- function(update = F) {
         "Plan with the interventionist, Mr. Liu, to have the students work with him to analyze some exemplar written responses for key elements a few days before the writing task is assigned."
       )
     )
-    
+
     readr::write_rds(
       ela_guidebooks_diverse_learners_leader_correct,
       here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_diverse_learners.rds")
     )
-    
+
     TeachingLab::save_processed_data2(
       data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELAGuidebooksDiverseLearnersBootcamp-Leader.rds"),
       q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_diverse_learners.rds"),
@@ -1494,7 +1576,7 @@ get_knowledge_assessments <- function(update = F) {
       ),
       save_name = "ela_guidebooks_diverse_learners_bootcamp_leader"
     )
-    
+
     ### ELA Guidebooks Diverse Learners: Bootcamp - Teacher ###
     ela_guidebooks_diverse_learners_teacher_correct <- tibble::tibble(
       question = c(
@@ -1523,12 +1605,12 @@ get_knowledge_assessments <- function(update = F) {
         "To help teachers plan to use the supports and allow for students to preview the skills that diverse learners might need to engage with grade-level texts and tasks ahead of whole-class instruction."
       )
     )
-    
+
     readr::write_rds(
       ela_guidebooks_diverse_learners_teacher_correct,
       here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_diverse_learners_bootcamp_teacher.rds")
     )
-    
+
     TeachingLab::save_processed_data2(
       data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELAGuidebooksDiverseLearnersBootcamp-Teacher.rds"),
       q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_diverse_learners_bootcamp_teacher.rds"),
@@ -1542,7 +1624,7 @@ get_knowledge_assessments <- function(update = F) {
       ),
       save_name = "ela_guidebooks_diverse_learners_bootcamp_teacher"
     )
-    
+
     ### ELA Guidebooks Diverse Learners: Bootcamp - Writing ###
     ela_guidebooks_diverse_learners_writing_correct <- tibble::tibble(
       question = c(
@@ -1563,12 +1645,12 @@ get_knowledge_assessments <- function(update = F) {
         "Identify incorrect uses of punctuation and correct them."
       )
     )
-    
+
     readr::write_rds(
       ela_guidebooks_diverse_learners_writing_correct,
       here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_diverse_learners_bootcamp_writing.rds")
     )
-    
+
     TeachingLab::save_processed_data2(
       data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELAGuidebooksDiverseLearnersBootcampWriting.rds"),
       q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_diverse_learners_bootcamp_writing.rds"),
@@ -1579,7 +1661,7 @@ get_knowledge_assessments <- function(update = F) {
       ),
       save_name = "ela_guidebooks_diverse_learners_bootcamp_writing"
     )
-    
+
     ### ELA: Guidebooks Diverse Learners Cycle of Inquiry - Fluency ###
     ela_guidebooks_diverse_learners_fluency_correct <- tibble::tibble(
       question = c(
@@ -1608,12 +1690,12 @@ get_knowledge_assessments <- function(update = F) {
         "Provide intervention support to build the student’s skill in accuracy and decoding during a dedicated time outside of core instruction."
       )
     )
-    
+
     readr::write_rds(
       ela_guidebooks_diverse_learners_fluency_correct,
       here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_diverse_learners_fluency.rds")
     )
-    
+
     TeachingLab::save_processed_data2(
       data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELAGuidebooksDiverseLearnersCycleofInquiry-Fluency.rds"),
       q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_diverse_learners_fluency.rds"),
@@ -1627,7 +1709,7 @@ get_knowledge_assessments <- function(update = F) {
       ),
       save_name = "ela_guidebooks_diverse_learners_bootcamp_fluency"
     )
-    
+
     ### ELA: Guidebooks Diverse Learners Cycle of Inquiry - Vocabulary ###
     ela_guidebooks_diverse_learners_vocabulary_correct <- tibble::tibble(
       question = c(
@@ -1656,12 +1738,12 @@ get_knowledge_assessments <- function(update = F) {
         "Frayer Model: having students create definitions, examples, nonexamples, characteristics, and a visual representation of a new vocabulary word connecting new learning about that word to what they already know."
       )
     )
-    
+
     readr::write_rds(
       ela_guidebooks_diverse_learners_vocabulary_correct,
       here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_diverse_learners_vocabulary.rds")
     )
-    
+
     TeachingLab::save_processed_data2(
       data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELAGuidebooksDiverseLearnersCycleofInquiry-Vocabulary.rds"),
       q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_diverse_learners_vocabulary.rds"),
@@ -1675,7 +1757,7 @@ get_knowledge_assessments <- function(update = F) {
       ),
       save_name = "ela_guidebooks_diverse_learners_vocabulary"
     )
-    
+
     ### ELA EL: HQIM & Enrichment ###
     ela_hqim_enrichment_correct <- tibble::tibble(
       question = c(
@@ -1696,12 +1778,12 @@ get_knowledge_assessments <- function(update = F) {
         "Includes universal screening of all students, multiple tiers of instruction and support services, and integrated data collection and assessment systems to inform decisions at each tier of instruction"
       )
     )
-    
+
     readr::write_rds(
       ela_hqim_enrichment_correct,
       here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/el_ela_hqim_enrichment.rds")
     )
-    
+
     TeachingLab::save_processed_data2(
       data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELAHQIM&Enrichment.rds"),
       q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/el_ela_hqim_enrichment.rds"),
@@ -1713,9 +1795,9 @@ get_knowledge_assessments <- function(update = F) {
       ),
       save_name = "el_ela_hqim_enrichment"
     ) #### No sites here???
-    
+
     ### ELA: School Leader Coaching Series ### (Not a knowledge assessment)
-    
+
     ### Math: Accelerating Learning ###
     math_accelerating_learning_correct <- tibble::tibble(
       question = c(
@@ -1746,12 +1828,12 @@ get_knowledge_assessments <- function(update = F) {
         "Stick to grade-level content and instructional rigor"
       )
     )
-    
+
     readr::write_rds(
       math_accelerating_learning_correct,
       here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_accelerating_learning.rds")
     )
-    
+
     TeachingLab::save_processed_data2(
       data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/MathAcceleratingLearning.rds"),
       q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_accelerating_learning.rds"),
@@ -1765,7 +1847,7 @@ get_knowledge_assessments <- function(update = F) {
       ),
       save_name = "math_accelerating_learning"
     )
-    
+
     TeachingLab::save_processed_data2(
       data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/MathAcceleratingLearning-EIC.rds"),
       q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_accelerating_learning.rds"),
@@ -1779,7 +1861,7 @@ get_knowledge_assessments <- function(update = F) {
       ),
       save_name = "math_accelerating_learning_eic"
     )
-    
+
     ### Math: Bootcamp & Math: Bootcamp EIC ###
     math_bootcamp_correct <- tibble::tibble(
       question = c(
@@ -1814,12 +1896,12 @@ get_knowledge_assessments <- function(update = F) {
         "To demonstrate their mathematical knowledge, students must be able to use formal definitions and vocabulary accurately."
       )
     )
-    
+
     readr::write_rds(
       math_bootcamp_correct,
       here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_bootcamp.rds")
     )
-    
+
     TeachingLab::save_processed_data2(
       data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/MathBootcamp-EIC.rds"),
       q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_bootcamp.rds"),
@@ -1834,7 +1916,7 @@ get_knowledge_assessments <- function(update = F) {
       ),
       save_name = "math_bootcamp_eic"
     )
-    
+
     TeachingLab::save_processed_data2(
       data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/MathBootcamp.rds"),
       q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_bootcamp.rds"),
@@ -1849,9 +1931,9 @@ get_knowledge_assessments <- function(update = F) {
       ),
       save_name = "math_bootcamp"
     )
-    
+
     ### Math: Bootcamp - Curriculum Flexible ### (Not Completed Yet)
-    
+
     ### Math Cycle of Inquiry I - Eliciting Student Thinking ###
     math_cycle_inquiry_1_elicit_student_thinking_correct <- tibble::tibble(
       question = c(
@@ -1915,12 +1997,12 @@ get_knowledge_assessments <- function(update = F) {
         "Sharing frustrations"
       )
     )
-    
+
     readr::write_rds(
       math_cycle_inquiry_1_elicit_student_thinking_correct,
       here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_cycle_inquiry_1_elicit_student_thinking.rds")
     )
-    
+
     TeachingLab::save_processed_data2(
       data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/MathCycleofInquiryI-ElicitingStudentThinking.rds"),
       q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_cycle_inquiry_1_elicit_student_thinking.rds"),
@@ -1937,13 +2019,13 @@ get_knowledge_assessments <- function(update = F) {
       ),
       save_name = "math_cycle_of_inquiry_1"
     )
-    
+
     ### Math: Cycle of Inquiry I - Eliciting Student Thinking - Curriculum Flexible ###
     ######### (Must be a DUPLICATE) #########
-    
-    
+
+
     ### Math: Cycle of Inquiry II - Making Math Visible ###
-    
+
     ### Math: Cycle of Inquiry III - Facilitating Student Discourse ###
     math_cycle_inquiry_3_facilitating_student_discourse_correct <- tibble::tibble(
       question = c(
@@ -1966,12 +2048,12 @@ get_knowledge_assessments <- function(update = F) {
         "Students share answers in a small group or with the whole class."
       )
     )
-    
+
     readr::write_rds(
       math_cycle_inquiry_3_facilitating_student_discourse_correct,
       here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_cycle_inquiry_3_facilitating_student_discourse.rds")
     )
-    
+
     TeachingLab::save_processed_data2(
       data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/MathCycleofInquiryIII-FacilitatingStudentDiscourse.rds"),
       q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_cycle_inquiry_3_facilitating_student_discourse.rds"),
@@ -1983,7 +2065,7 @@ get_knowledge_assessments <- function(update = F) {
       ),
       save_name = "math_cycle_of_inquiry_3"
     )
-    
+
     ### Math: Cycle of Inquiry V- Sequencing and Connecting Representations ###
     math_cycle_inquiry_5_scr_correct <- tibble::tibble(
       question = c(
@@ -2020,12 +2102,12 @@ get_knowledge_assessments <- function(update = F) {
         "How do I identify and support mathematical contributions from students with different strengths and levels of confidence?"
       )
     )
-    
+
     readr::write_rds(
       math_cycle_inquiry_5_scr_correct,
       here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_cycle_inquiry_5.rds")
     )
-    
+
     TeachingLab::save_processed_data2(
       data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/MathCycleofInquiryV-SequencingandConnectingRepresentations.rds"),
       q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_cycle_inquiry_5.rds"),
@@ -2041,9 +2123,9 @@ get_knowledge_assessments <- function(update = F) {
       ),
       save_name = "math_cycle_inquiry_5"
     )
-    
+
     ### Cycle of Inquiry VI- Summarizing the Mathematics ### (No responses yet)
-    
+
     ### Math: Supporting Math Intervention ###
     math_supporting_math_intervention_correct <- tibble::tibble(
       question = c(
@@ -2074,12 +2156,12 @@ get_knowledge_assessments <- function(update = F) {
         "Do all the math in a lesson."
       )
     )
-    
+
     readr::write_rds(
       math_supporting_math_intervention_correct,
       here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_supporting_math_intervention.rds")
     )
-    
+
     TeachingLab::save_processed_data2(
       data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/MathSupportingMathIntervention.rds"),
       q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_supporting_math_intervention.rds"),
@@ -2092,10 +2174,10 @@ get_knowledge_assessments <- function(update = F) {
       ),
       save_name = "math_supporting_math_intervention"
     )
-    
+
     ################################################################################################################################
-    
-    
+
+
     ela_school_leaders <- readr::read_rds(here::here("data/knowledge_assessments/ela_school_leaders.rds")) %>%
       mutate(know_assess = "ela_school_leaders")
     ela_cycle_inquiry_complex_text <- readr::read_rds(here::here("data/knowledge_assessments/ela_cycle_inquiry_complex_text.rds")) %>%
@@ -2126,7 +2208,7 @@ get_knowledge_assessments <- function(update = F) {
       mutate(know_assess = "ela_guidebooks_diverse_learners_vocabulary")
     el_ela_hqim_enrichment <- readr::read_rds(here::here("data/knowledge_assessments/el_ela_hqim_enrichment.rds")) %>%
       mutate(know_assess = "el_ela_hqim_enrichment")
-    
+
     math_accelerating_learning <- readr::read_rds(here::here("data/knowledge_assessments/math_accelerating_learning.rds")) %>%
       mutate(know_assess = "math_accelerating_learning")
     math_accelerating_learning_eic <- readr::read_rds(here::here("data/knowledge_assessments/math_accelerating_learning_eic.rds")) %>%
@@ -2143,7 +2225,7 @@ get_knowledge_assessments <- function(update = F) {
       mutate(know_assess = "math_cycle_inquiry_5")
     supporting_math_intervention <- readr::read_rds(here::here("data/knowledge_assessments/math_supporting_math_intervention.rds")) %>%
       mutate(know_assess = "math_supporting_math_intervention")
-    
+
     all_knowledge_assessments <- ela_school_leaders %>%
       dplyr::full_join(ela_cycle_inquiry_complex_text) %>%
       dplyr::full_join(ela_cycle_inquiry_speaking_listening) %>%
@@ -2252,17 +2334,17 @@ get_knowledge_assessments <- function(update = F) {
       ) %>%
       dplyr::mutate(site = dplyr::na_if(site, "Teaching Lab test")) %>%
       dplyr::mutate(question = stringr::str_remove_all(question, "_\\d"))
-    
+
     readr::write_rds(
       all_knowledge_assessments,
       here::here("data/mid_year_reports/knowledge_assessments.rds")
     )
-    
+
     readr::write_rds(
       all_knowledge_assessments,
       here::here("data/knowledge_assessments.rds")
     )
-    
+
     readr::write_rds(
       all_knowledge_assessments,
       here::here("Dashboards/SiteCollectionProgress/data/knowledge_assessments.rds")
@@ -2270,17 +2352,29 @@ get_knowledge_assessments <- function(update = F) {
   } else {
     all_knowledge_assessments <- readr::read_rds("data/knowledge_assessments.rds")
   }
-  
+
   return(all_knowledge_assessments)
-  
 }
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+
+
+
+
+#' @title Coaching Participant Feedback Data
+#' @description Gets data from Coaching Participant Feedback
+#' @param update FALSE, whether or not to pull the updated version
+#' @return Returns a tibble
+#' @export
+get_coaching_feedback <- function(update = F) {
+  if (update == T) {
+    options(sm_oauth_token = Sys.getenv("knowledge_token"))
+
+    df <- surveymonkey::fetch_survey_obj(317830125) %>%
+      surveymonkey::parse_survey()
+
+    readr::write_rds(df, here::here("data/coaching_participant_feedback.rds"))
+  } else {
+    df <- readr::read_rds(here::here("data/coaching_participant_feedback.rds"))
+  }
+
+  return(df)
+}

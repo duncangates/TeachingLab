@@ -369,6 +369,8 @@ gt_theme_tl <- function(data, all_caps = F, align = "center", base_font = 16, he
       column_labels.border.lr.color = "black",
       column_labels.border.lr.width = gt::px(3),
       column_labels.font.weight = "bold",
+      row_group.border.bottom.color = "black",
+      row_group.font.weight = "bold",
       table_body.border.bottom.color = "black",
       table_body.border.bottom.width = gt::px(3),
       grand_summary_row.border.color = "black",
