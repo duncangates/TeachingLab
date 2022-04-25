@@ -6,9 +6,11 @@ library(thematic)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
+library(forcats)
 library(tlShiny)
 library(ggtext)
 library(showtext)
+library(shinycssloaders)
 ### Graphics ###
 options(shiny.useragg = T)
 ### Fonts ###

@@ -11,21 +11,20 @@ page_navbar(
   # Theme settings
   theme = bslib::bs_theme(base_font = c("Calibri", "sans-serif"), primary = "#04abeb") %>%
     bslib::bs_add_rules(css_def),
-  nav("% Correct",
+  nav("Quantitative Feedback",
     icon = icon("check-circle"),
     boot_side_layout(
       boot_sidebar(
-        selectInput("site",
+        shiny::selectInput("site",
           label = h5("Select a Site"),
-          choices = c(sort(unique(coaching_participant_feedback$Site))),
-          selected = NULL
+          choices = c(sort(unique(coaching_participant_feedback$Site)))
         ),
         uiOutput("site_ui")
       ),
       boot_main(
-        fluidRow(column(12, h1("Quantitative Feedback"))),
         fluidRow(
-          column(12, plotOutput(outputId = "agree_plot", height = "900px"))
+          column(12, plotOutput(outputId = "agree_plot", height = "900px") |>
+                   withSpinner(type = 3, color.background = "white"))
         ) # ,
         # fluidRow(column(12, h1("Unmatched Sample"))),
         # fluidRow(

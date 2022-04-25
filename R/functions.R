@@ -96,8 +96,8 @@ calc_nps <- function(x) {
 #' @return Returns elements not in vector
 #' @export
 
-'%!in%' <- function (x, y) {
-  !('%in%'(x, y))
+"%!in%" <- function(x, y) {
+  !("%in%"(x, y))
 }
 
 
@@ -130,13 +130,13 @@ colorize <- function(x, color) {
 #' @param n the number of digits to round
 #' @return the vector provided rounded
 
-round2 = function(x, n) {
-  posneg = sign(x)
-  z = abs(x)*10^n
-  z = z + 0.5 + sqrt(.Machine$double.eps)
-  z = trunc(z)
-  z = z/10^n
-  z*posneg
+round2 <- function(x, n) {
+  posneg <- sign(x)
+  z <- abs(x) * 10^n
+  z <- z + 0.5 + sqrt(.Machine$double.eps)
+  z <- trunc(z)
+  z <- z / 10^n
+  z * posneg
 }
 
 
@@ -145,15 +145,16 @@ round2 = function(x, n) {
 #' @param string the string
 #' @param n the width of the string before a <br> tag
 #' @return the same string with <br> inserted at the requested interval
-#' 
+#'
 #' @examples
 #' html_wrap("a random string that has about 40 characters in it")
 #' @export
 
 html_wrap <- function(string, n = 40) {
   stringr::str_replace_all(
-    stringr::str_wrap(string = string, width = n), 
-    "\n", "<br>")
+    stringr::str_wrap(string = string, width = n),
+    "\n", "<br>"
+  )
 }
 
 
@@ -162,17 +163,17 @@ html_wrap <- function(string, n = 40) {
 #' @description Takes a date and finds the season
 #' @param date the date
 #' @return the season
-#' 
+#'
 #' @examples
 #' get_season(as.POSIXct("2016-01-01 12:00:00"))
 #' @export
 
-get_season <- function(date){
-  numeric.date <- 100*lubridate::month(date)+lubridate::day(date)
+get_season <- function(date) {
+  numeric.date <- 100 * lubridate::month(date) + lubridate::day(date)
   ## input Seasons upper limits in the form MMDD in the "break =" option:
-  cuts <- base::cut(numeric.date, breaks = c(0,319,0620,0921,1220,1231)) 
+  cuts <- base::cut(numeric.date, breaks = c(0, 319, 0620, 0921, 1220, 1231))
   # rename the resulting groups (could've been done within cut(...levels=) if "Winter" wasn't double
-  levels(cuts) <- c("Winter","Spring","Summer","Fall","Winter")
+  levels(cuts) <- c("Winter", "Spring", "Summer", "Fall", "Winter")
   return(cuts)
 }
 
@@ -180,16 +181,16 @@ get_season <- function(date){
 #' @description Takes a whole number and "rounds" it to the nearest even number.
 #' @param x the number to round
 #' @return an integer
-#' 
+#'
 #' @examples
 #' round_even(17)
 #' @export
 
 round_even <- function(x) {
-  2 * ceiling(x/2)
+  2 * ceiling(x / 2)
 }
 
-#' @title File path 
+#' @title File path
 #' @description Gives the file path without double slash bug
 #' @param ... The file path
 #' @param fsep the file separation
@@ -208,7 +209,7 @@ file.path2 <- function(..., fsep = .Platform$file.sep) {
 #' @export
 
 percent_agree <- function(agree_col) {
-  100*sum(agree_col %in% c("4", "5", "Strongly agree", "Agree", "(5) Strongly agree", "(4) Agree"))/
+  100 * sum(agree_col %in% c("4", "5", "Strongly agree", "Agree", "(5) Strongly agree", "(4) Agree")) /
     sum(!is.na(agree_col))
 }
 
@@ -216,13 +217,15 @@ percent_agree <- function(agree_col) {
 #' @description Takes all columns and splices them into dots for combination
 #' @param df the dataframe
 #' @return the dataframe coalesced
-#' @examples 
-#' df <- data.frame(a = c(1, 2, 3),
-#'                  b = c(NA, NA, NA),
-#'                  id = c("xxx", "xxx", "xxx"))
+#' @examples
+#' df <- data.frame(
+#'   a = c(1, 2, 3),
+#'   b = c(NA, NA, NA),
+#'   id = c("xxx", "xxx", "xxx")
+#' )
 #' df %>%
-#'    dplyr::group_by(id) %>%
-#'    dplyr::summarise_all(TeachingLab::coalesce_by_column)
+#'   dplyr::group_by(id) %>%
+#'   dplyr::summarise_all(TeachingLab::coalesce_by_column)
 #' @export
 
 coalesce_by_column <- function(df) {
@@ -249,19 +252,19 @@ strip_html <- function(string) {
 #' @return html wrapper
 #' @export
 drop1 <- function(before = T, options, envir, name) {
-  
   if (before) {
     paste(
-      '<p>',
+      "<p>",
       glue::glue('<button class="btn btn-primary collapsed" data-toggle="collapse" data-target="{name}">'),
-      '</button>',
-      '</p>',
+      "</button>",
+      "</p>",
       glue::glue('<div class="collapse" id="{name}">'),
-      '<div class="card card-body">',  sep = "\n")
+      '<div class="card card-body">',
+      sep = "\n"
+    )
   } else {
     paste("</div>", "</div>", sep = "\n")
   }
-  
 }
 
 #' @title Temporary Image Save and Return
@@ -270,17 +273,17 @@ drop1 <- function(before = T, options, envir, name) {
 #' @return a png image
 #' @export
 temp_save <- function(img) {
-  
   file_loc <- paste0(tempfile(), ".png")
-  
+
   if ("gt_tbl" %in% class(img)) {
-    
     print("saving...")
-    
-    img_return <- gt::gtsave(data = final_gt,
-                             path = here::here("images/report_images"),
-                             filename = tempfile(fileext = ".png"))
-    
+
+    img_return <- gt::gtsave(
+      data = final_gt,
+      path = here::here("images/report_images"),
+      filename = tempfile(fileext = ".png")
+    )
+
     return(img_return)
   }
 }
@@ -299,16 +302,18 @@ password_generator <- function(length = 8) {
 #' @title Conditionally Perform Function
 #' @description Wraps a function and conditionally performs it given certain arguments
 #' @param fun the function to wrap
-#' @examples 
+#' @examples
 #' library(dplyr)
 #' cond_filter <- conditionally(filter)
 #' cond_select <- conditionally(select)
-#' 
 #' @export
-conditionally <- function(fun){
-  function(first_arg, ..., execute){
-    if(execute) return(fun(first_arg, ...))
-    else return(first_arg)
+conditionally <- function(fun) {
+  function(first_arg, ..., execute) {
+    if (execute) {
+      return(fun(first_arg, ...))
+    } else {
+      return(first_arg)
+    }
   }
 }
 
@@ -316,7 +321,7 @@ conditionally <- function(fun){
 #' @description takes initials and id column and makes an ID
 #' @param initials the initials
 #' @param birthday the birthday
-#' 
+#'
 #' @export
 id_maker <- function(initials, birthday) {
   paste0(tolower(initials), "_", birthday)
@@ -346,21 +351,23 @@ first_up <- function(x) {
 #' @param M number to sum to
 #' @param sd Standard Deviation
 #' @param pos.only T
-#' 
+#'
 #' @export
 rand_vect <- function(N, M, sd = 1, pos.only = TRUE) {
-  vec <- stats::rnorm(N, M/N, sd)
+  vec <- stats::rnorm(N, M / N, sd)
   if (abs(sum(vec)) < 0.01) vec <- vec + 1
   vec <- round(vec / sum(vec) * M)
   deviation <- M - sum(vec)
   for (. in seq_len(abs(deviation))) {
     vec[i] <- vec[i <- sample(N, 1)] + sign(deviation)
   }
-  if (pos.only) while (any(vec < 0)) {
-    negs <- vec < 0
-    pos  <- vec > 0
-    vec[negs][i] <- vec[negs][i <- sample(sum(negs), 1)] + 1
-    vec[pos][i]  <- vec[pos ][i <- sample(sum(pos ), 1)] - 1
+  if (pos.only) {
+    while (any(vec < 0)) {
+      negs <- vec < 0
+      pos <- vec > 0
+      vec[negs][i] <- vec[negs][i <- sample(sum(negs), 1)] + 1
+      vec[pos][i] <- vec[pos][i <- sample(sum(pos), 1)] - 1
+    }
   }
   vec
 }
@@ -374,17 +381,97 @@ rand_vect <- function(N, M, sd = 1, pos.only = TRUE) {
 #' @return a string
 #' @export
 string_replace <- function(string, string_detect, string_replace) {
-  
-  new_string <- ifelse(stringr::str_detect(string, string_detect),
-                       string_replace,
-                       as.character(string))
-  
-  new_string
-  
+  assertthat::are_equal(length(string_detect), length(string_replace))
+
+  new_string <-
+    reduce2(string_detect, string_replace, ~ dplyr::if_else(
+      stringr::str_detect(
+        string = ..1,
+        pattern = ..2
+      ),
+      ..3,
+      as.character(..1)
+    ),
+    .init = string
+    )
+
+  print(new_string)
 }
 
+#' @title Site Replacement
+#' @description Replaces individual sites with greater groupings
+#' @param data the data to perform replacement on
+#' @return a string
+#' @export
 
+site_condense <- function(data) {
+  if (tibble::is_tibble(data) == TRUE) {
+    data <- data[[1]]
+  }
 
+  replacement_df <-
+    tibble::tibble(
+      sites_to_replace = c(
+        "District 11",
+        "District 9",
+        "EMST",
+        "Coupee",
+        "Rochester",
+        "West Contra",
+        "Wisconsin Department"
+      ),
+      sites_new_names = c(
+        "NYC District 11 - District-wide, NY",
+        "NYC District 9 - District-wide, NY",
+        "NYC District 12 - EMST-IS 190, NY",
+        "Pointe Coupee Parish, LA",
+        "Rochester City School District - District-wide",
+        "West Contra Costa USD, CA",
+        "Wisconsin Department of Education, WI"
+      )
+    )
 
+  replaced_sites <- TeachingLab::string_replace(
+    string = data,
+    string_detect = replacement_df$sites_to_replace,
+    string_replace = replacement_df$sites_new_names
+  ) |>
+    unique() |>
+    sort() |>
+    suppressWarnings() |>
+    print()
 
+  return(replaced_sites)
+}
 
+#' @title Agree/Strongly agree
+#' @description Gets the percent that agree and strongly agree
+#' @param data the data
+#' @param question a string - the question to get the percentage for
+#' @return a string
+#' @export
+agree_strongly_agree <- function(data, question) {
+  data |>
+    dplyr::filter(Question == question & Response %in% c("(4) Agree", "(5) Strongly agree")) |>
+    dplyr::summarise(Percent = sum(Percent)) |>
+    dplyr::pull(Percent) |>
+    round() |>
+    paste0("%")
+}
+
+#' @title Conditionally slice
+#' @description Conditionally reduces the data
+#' @param data the data
+#' @param question a max length to slice the data for
+#' @return a string
+#' @export
+conditional_slice_sample <- function(data, max) {
+  
+  df <- if (nrow(data) < max) {
+    data
+  } else {
+    dplyr::slice_sample(.data = data, n = max)
+  }
+  
+  df
+}

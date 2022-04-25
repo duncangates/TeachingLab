@@ -16,5 +16,4 @@ Wraps a function and conditionally performs it given certain arguments
 library(dplyr)
 cond_filter <- conditionally(filter)
 cond_select <- conditionally(select)
-
 }

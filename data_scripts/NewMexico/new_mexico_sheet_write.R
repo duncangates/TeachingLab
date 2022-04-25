@@ -83,6 +83,7 @@ select_role_devices_end <- which(df_name_select == "#29 Access to personal devic
 selection_role_devices_end <- letters[select_role_devices_end] %>%
   str_to_upper()
 
+googlesheets4::gs4_auth()
 #### Join tracker google sheet emails to new mexico survey then select completion columns and write to sheet ####
 names_and_emails %>%
   select(Email) %>%

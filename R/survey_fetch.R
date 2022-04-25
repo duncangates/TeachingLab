@@ -71,9 +71,9 @@ fetch_survey_2 <- function(id, name) {
 #' @param update FALSE, whether or not to update
 #' @return Returns a tibble
 #' @export
-get_session_survey <- function(update = F) {
-  if (update == F) {
-    df <- readRDS(file = "data/session_survey_21_22data.rds")
+get_session_survey <- function(update = FALSE) {
+  if (update == FALSE) {
+    df <- readr::read_rds(here::here("data/session_survey_21_22data.rds"))
     session_survey <- df
   } else {
     options(sm_oauth_token = options(sm_oauth_token = Sys.getenv("session_token")))
@@ -211,9 +211,9 @@ get_session_survey <- function(update = F) {
 #' @param update F, optional to update end of course data or not
 #' @return Returns a tibble
 #' @export
-get_course_survey <- function(update = F) {
-  if (update == F) {
-    df <- readRDS(file = "data/course_surveymonkey.rds")
+get_course_survey <- function(update = FALSE) {
+  if (update == FALSE) {
+    df <- readr::read_rds(file = here::here("data/course_surveymonkey.rds"))
     course_survey <- df
   } else {
     old_df <- readr::read_rds(here::here("data/old_course_survey_reformatted.rds"))
@@ -375,15 +375,17 @@ get_ipg_forms <- function() {
           lubridate::year(Timestamp)
         ),
         `Timeline of Obs`
-      ), levels = c("Summer 2019",
-                    "Fall 2019",
-                    "Winter 2020",
-                    "Spring 2020",
-                    "Winter 2021",
-                    "Spring 2021",
-                    "Fall 2021",
-                    "Winter 2022",
-                    "Spring 2022"))
+      ), levels = c(
+        "Summer 2019",
+        "Fall 2019",
+        "Winter 2020",
+        "Spring 2020",
+        "Winter 2021",
+        "Spring 2021",
+        "Fall 2021",
+        "Winter 2022",
+        "Spring 2022"
+      ))
     )
 
   readr::write_rds(df, here::here("data/ipg_forms.rds"))
@@ -396,43 +398,43 @@ get_ipg_forms <- function() {
 #' @return Returns a tibble
 #' @export
 get_lesson_analysis <- function() {
-  
+
   ## Authentication ##
   googledrive::drive_auth(path = "Tokens/teachinglab-authentication-0a3006e60773.json")
   googlesheets4::gs4_auth(token = googledrive::drive_token())
-  
+
   df <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1fCOHSKAkP8GU1xJQh6CjtHPJriOldmqYFyI8MnPWtIg/edit?resourcekey#gid=1002617293",
-                                  sheet = 1,
-                                  col_types = "c"
+    sheet = 1,
+    col_types = "c"
   )
   ## Deauthentication ##
   googledrive::drive_deauth()
   googlesheets4::gs4_deauth()
-  
-  df <- df #%>%
-    # mutate(
-    #   Timestamp = lubridate::mdy_hms(Timestamp),
-    #   `Timeline of Obs` = factor(ifelse(
-    #     is.na(`Timeline of Obs`),
-    #     paste0(
-    #       TeachingLab::get_season(Timestamp),
-    #       " ",
-    #       lubridate::year(Timestamp)
-    #     ),
-    #     `Timeline of Obs`
-    #   ), levels = c("Summer 2019",
-    #                 "Fall 2019",
-    #                 "Winter 2020",
-    #                 "Spring 2020",
-    #                 "Winter 2021",
-    #                 "Spring 2021",
-    #                 "Fall 2021",
-    #                 "Winter 2022",
-    #                 "Spring 2022"))
-    # )
-  
+
+  df <- df # %>%
+  # mutate(
+  #   Timestamp = lubridate::mdy_hms(Timestamp),
+  #   `Timeline of Obs` = factor(ifelse(
+  #     is.na(`Timeline of Obs`),
+  #     paste0(
+  #       TeachingLab::get_season(Timestamp),
+  #       " ",
+  #       lubridate::year(Timestamp)
+  #     ),
+  #     `Timeline of Obs`
+  #   ), levels = c("Summer 2019",
+  #                 "Fall 2019",
+  #                 "Winter 2020",
+  #                 "Spring 2020",
+  #                 "Winter 2021",
+  #                 "Spring 2021",
+  #                 "Fall 2021",
+  #                 "Winter 2022",
+  #                 "Spring 2022"))
+  # )
+
   readr::write_rds(df, here::here("data/lesson_plan_analysis.rds"))
-  
+
   return(df)
 }
 
@@ -792,8 +794,8 @@ get_student_scores_mississippi <- function(update = F) {
 #' @param update FALSE, optional updating
 #' @return A tibble
 #' @export
-get_diagnostic_survey <- function(update = F) {
-  if (update == T) {
+get_diagnostic_survey <- function(update = FALSE) {
+  if (update == TRUE) {
     ### Set OAuth for SurveyMonkey ###
     options(sm_oauth_token = "nTxsBf-VruLlFgxHpCRlmMJMRqC060bQZGd6VzrfDm5oX4Il5u-IhH2CxD4lwCiblicg3896pqYH0HzhmOr1b0SWMF9bTaX8-B9PmQVS2zFkNmfs5xRVNU1PMZoVfeBG")
     ## Get Diagnostic ##
@@ -2350,7 +2352,7 @@ get_knowledge_assessments <- function(update = F) {
       here::here("Dashboards/SiteCollectionProgress/data/knowledge_assessments.rds")
     )
   } else {
-    all_knowledge_assessments <- readr::read_rds("data/knowledge_assessments.rds")
+    all_knowledge_assessments <- readr::read_rds(here::here("data/knowledge_assessments.rds"))
   }
 
   return(all_knowledge_assessments)
@@ -2364,17 +2366,76 @@ get_knowledge_assessments <- function(update = F) {
 #' @param update FALSE, whether or not to pull the updated version
 #' @return Returns a tibble
 #' @export
-get_coaching_feedback <- function(update = F) {
-  if (update == T) {
+get_coaching_feedback <- function(update = FALSE) {
+  if (update == TRUE) {
     options(sm_oauth_token = Sys.getenv("knowledge_token"))
 
-    df <- surveymonkey::fetch_survey_obj(317830125) %>%
+    coaching_feedback <- surveymonkey::fetch_survey_obj(317830125) |>
       surveymonkey::parse_survey()
 
-    readr::write_rds(df, here::here("data/coaching_participant_feedback.rds"))
+    coaching_feedback_clean <- coaching_feedback |>
+      #### Coalescing other columns into main columns ####
+      dplyr::mutate(
+        Site = dplyr::coalesce(
+          `Select your site (district, parish, network, or school).`,
+          `Select your site (district, parish, network, or school). - Other (please specify)`
+        ),
+        Role = dplyr::coalesce(
+          `Select your role.`,
+          `Select your role. - Other (please specify)`
+        ),
+        Grade = stringr::str_remove_all(paste0(
+          `What grade(s) do you teach, support, and/or lead? You can select more than one. - K`,
+          `What grade(s) do you teach, support, and/or lead? You can select more than one. - 1`,
+          `What grade(s) do you teach, support, and/or lead? You can select more than one. - 2`,
+          `What grade(s) do you teach, support, and/or lead? You can select more than one. - 3`,
+          `What grade(s) do you teach, support, and/or lead? You can select more than one. - 4`,
+          `What grade(s) do you teach, support, and/or lead? You can select more than one. - 5`,
+          `What grade(s) do you teach, support, and/or lead? You can select more than one. - 6`,
+          `What grade(s) do you teach, support, and/or lead? You can select more than one. - 7`,
+          `What grade(s) do you teach, support, and/or lead? You can select more than one. - 8`,
+          `What grade(s) do you teach, support, and/or lead? You can select more than one. - 9`,
+          `What grade(s) do you teach, support, and/or lead? You can select more than one. - 10`,
+          `What grade(s) do you teach, support, and/or lead? You can select more than one. - 11`,
+          `What grade(s) do you teach, support, and/or lead? You can select more than one. - 12`,
+          `What grade(s) do you teach, support, and/or lead? You can select more than one. - Other (please specify)`
+        ), "NA"),
+        Not_teacher_or_coach = `What grade(s) do you teach, support, and/or lead? You can select more than one. - I am not a teacher or instructional coach.`,
+        Coaching_series = `Select the coaching series in which you participated.`,
+        Coach = dplyr::coalesce(
+          `Select the name of your coach.`,
+          `Select the name of your coach. - Other (please specify)`
+        ),
+        id = paste0(
+          tolower(`Please write in your 3 initials. If you do not have a middle initial, please write X.`),
+          `Please write in your four-digit birthday (MMDD)`
+        )
+      ) |>
+      ### Selecting useful columns, some renaming ###
+      dplyr::select(
+        Date = date_created,
+        Site,
+        Role,
+        Grade,
+        Not_teacher_or_coach,
+        Coach,
+        Coaching_series,
+        `They demonstrated deep knowledge of the content they coach.` = `How much do you agree with the following statements about your coach? - They demonstrated deep knowledge of the content they coach.`,
+        `Their coaching is clear.` = `How much do you agree with the following statements about your coach? - Their coaching is clear.`,
+        `They seem fully prepared for the coaching sessions.` = `How much do you agree with the following statements about your coach? - They seem fully prepared for the coaching sessions.`,
+        `They effectively build a safe learning environment.` = `How much do you agree with the following statements about your coach? - They effectively build a safe learning environment.`,
+        `They make necessary adjustments based on my needs.` = `How much do you agree with the following statements about your coach? - They make necessary adjustments based on my needs.`,
+        Additional_feedback = `What additional feedback do you have about their coaching skills, if any?`,
+        Gone_well = `What has gone well in your coaching sessions? `,
+        Could_be_better = `What could be better about your coaching sessions?`,
+        id
+      )
+
+    readr::write_rds(coaching_feedback_clean, "data/coaching_participant_feedback.rds")
+    readr::write_rds(coaching_feedback_clean, "Dashboards/CoachingParticipantFeedback/data/coaching_participant_feedback.rds")
   } else {
-    df <- readr::read_rds(here::here("data/coaching_participant_feedback.rds"))
+    coaching_feedback_clean <- readr::read_rds(here::here("data/coaching_participant_feedback.rds"))
   }
 
-  return(df)
+  return(coaching_feedback_clean)
 }

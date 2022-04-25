@@ -6,16 +6,14 @@
 #' @param correct a vector of correct answers
 #' @return a dataframe of format question1, question2, question3, with percents as answers
 score_knowledge_question <- function(data, question, correct) {
-  
   data %>%
     dplyr::group_by(prepost, id, question_group) %>%
     dplyr::summarise(
       percent = 100 * (sum(.data[[question]] %in% correct, na.rm = T) /
-                         length(which(!.data[[question]] == na_type))),
+        length(which(!.data[[question]] == na_type))),
       site = site,
       question = question
     )
-  
 }
 
 #' Calculate percentage of a question (column) in data (data) that is in the right answer (coding)
@@ -507,4 +505,31 @@ tl_score <- function(data, answer) {
     n_correct = data_counted,
     n_selected = data_length
   )
+}
+
+#' @title IPG Scoring Numeric
+#' @param x the numbers to apply to
+#' @description function for grading in general
+#' @return a rounded average
+#' @export
+tl_score_numeric <- function(x) {
+  x2 <- x |>
+    readr::parse_number() |>
+    mean(na.rm = T)
+  x3 <- round(100 * (x2 / 5), 2)
+  x3
+}
+
+#' @title Summarise a selection
+#' @param data the data
+#' @param select the data to select
+#' @description finds the average sum of all selected columns
+#' @return a tibble of the selected data's percent correct
+#' @export
+selection_sum <- function(data, select) {
+  data |>
+    dplyr::select(tidyselect::all_of(select)) |>
+    janitor::remove_empty("rows") |>
+    dplyr::summarise(dplyr::across(tidyselect::everything(), ~ TeachingLab::tl_score_numeric(as.character(.x)))) |>
+    tidyr::pivot_longer(everything())
 }
