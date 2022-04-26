@@ -153,11 +153,12 @@ know_assess_summary <- function(data, know_assess, summary_path = "report_summar
 #' @param dpi the dpi to save with
 #' @param numeric if it is numeric reorder the factors
 #' @param split if it is sequenced by commas split it
+#' @param save FALSE
 #' @param factor_level option for factor levels
 #' @return a ggplot
 #' @export
 ipg_plot <- function(data, name, save_name, height = 5, width = 8.5, wrap = 60, sizing = 1, dpi = 300,
-                     split = F, numeric = F, factor_level = NULL) {
+                     split = F, numeric = F, factor_level = NULL, save = FALSE) {
   
   n <- data %>%
     dplyr::filter(name == {{ name }}) %>%
@@ -185,8 +186,7 @@ ipg_plot <- function(data, name, save_name, height = 5, width = 8.5, wrap = 60, 
     { if (numeric == F) dplyr::mutate(., value = factor(value),
                                       value = forcats::fct_reorder(value, percent)) else . } %>%
     dplyr::ungroup() %>%
-    dplyr::mutate(color = ifelse(percent < mean(percent, na.rm = T), "white", "black")) %>%
-    print() 
+    dplyr::mutate(color = ifelse(percent < mean(percent, na.rm = T), "white", "black"))
   
   if (missing(factor_level)) {
     plot_data
@@ -214,7 +214,34 @@ ipg_plot <- function(data, name, save_name, height = 5, width = 8.5, wrap = 60, 
                                                            "2- Teacher provides some opportunities, and some students take them.",
                                                            "3- Teacher provides many opportunities, and some students take them; or teacher provides some opportunities and most students take them.",
                                                            "4- Teacher provides many opportunities, and most students take them."), 30))
-  } 
+  }  else if (factor_level == "td") {
+    plot_data <- plot_data |>
+      mutate(value = str_replace_all(value, c("2- Often" = "3- Often",
+                                              "3- Sometimes" = "2- Sometimes")))
+    plot_data$value <- factor(plot_data$value, 
+                              levels = c("1- Rarely/Never",
+                                         "2- Sometimes",
+                                         "3- Often",
+                                         "4- Always"))
+  } else if (factor_level == "sp") {
+    plot_data$value <- factor(plot_data$value, 
+                              levels = c("1- Few/No",
+                                         "2- Some",
+                                         "3- Most",
+                                         "4- All"))
+  } else if (factor_level == "ca1a") {
+    plot_data$value <- factor(plot_data$value, 
+                              levels = c("No- The enacted lesson focuses on mathematics outside the grade-level/ course-level standards.",
+                                         "Yes- The enacted lesson focuses only on mathematics within the grade-level/ course-level standards."))
+  } else if (factor_level == "ca1b") {
+    plot_data$value <- factor(plot_data$value, 
+                              levels = c("No- The enacted lesson does not connect or has weak connections to students’ prior skills and understandings.",
+                                         "Yes- The enacted lesson builds on students’ prior skills and understandings."))
+  } else if (factor_level == "ca1c") {
+    plot_data$value <- factor(plot_data$value, 
+                              levels = c("No- The enacted lesson targets aspects of Rigor that are not appropriate for the standard(s) being addressed.",
+                                         "Yes- The enacted lesson explicitly targets the aspect(s) of Rigor called for by the standard(s) being addressed."))
+  }
   
   p <- plot_data %>%
     ggplot2::ggplot(ggplot2::aes(x = value, 
@@ -223,7 +250,8 @@ ipg_plot <- function(data, name, save_name, height = 5, width = 8.5, wrap = 60, 
     ggplot2::geom_col() +
     ggplot2::geom_text(ggplot2::aes(label = paste0(percent, "%"), color = color), hjust = 1.25, size = 5*sizing) +
     ggplot2::coord_flip() +
-    ggplot2::scale_y_continuous(labels = scales::percent_format(scale = 1), expand = c(0.1, 0)) +
+    ggplot2::scale_y_continuous(labels = scales::percent_format(scale = 1), expand = c(0.1, 0),
+                                limits = c(0, 100), breaks = scales::breaks_pretty(n = 4)) +
     ggplot2::scale_x_discrete(drop = F, limits = levels(plot_data$value)) +
     ggplot2::labs(y = "", x = "", title = stringr::str_wrap(name, wrap), caption = paste0("n = ", n)) +
     ggplot2::scale_color_manual(values = c("black", "white")) +
@@ -233,8 +261,11 @@ ipg_plot <- function(data, name, save_name, height = 5, width = 8.5, wrap = 60, 
                    axis.text.y = ggplot2::element_text(size = 15*sizing),
                    plot.title = ggplot2::element_text(hjust = 0, face = "bold", size = 18*sizing))
   
+  if (save == T) {
+    ggplot2::ggsave(here::here(glue::glue("images/ipg_forms/{save_name}.png")), width = width, height = height, bg = "white", dpi = dpi)
+  }
   
-  ggplot2::ggsave(here::here(glue::glue("images/ipg_forms/{save_name}.png")), width = width, height = height, bg = "white", dpi = dpi)
+  return(p)
 }
 
 #' @title IPG Forms Grapher

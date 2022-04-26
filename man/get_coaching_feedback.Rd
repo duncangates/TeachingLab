@@ -4,7 +4,7 @@
 \alias{get_coaching_feedback}
 \title{Coaching Participant Feedback Data}
 \usage{
-get_coaching_feedback(update = F)
+get_coaching_feedback(update = FALSE)
 }
 \arguments{
 \item{update}{FALSE, whether or not to pull the updated version}
