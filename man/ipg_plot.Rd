@@ -15,7 +15,8 @@ ipg_plot(
   dpi = 300,
   split = F,
   numeric = F,
-  factor_level = NULL
+  factor_level = NULL,
+  save = FALSE
 )
 }
 \arguments{
@@ -40,6 +41,8 @@ ipg_plot(
 \item{numeric}{if it is numeric reorder the factors}
 
 \item{factor_level}{option for factor levels}
+
+\item{save}{FALSE}
 }
 \value{
 a ggplot

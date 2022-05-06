@@ -384,7 +384,7 @@ string_replace <- function(string, string_detect, string_replace) {
   assertthat::are_equal(length(string_detect), length(string_replace))
 
   new_string <-
-    reduce2(string_detect, string_replace, ~ dplyr::if_else(
+    purrr::reduce2(string_detect, string_replace, ~ dplyr::if_else(
       stringr::str_detect(
         string = ..1,
         pattern = ..2
@@ -475,3 +475,18 @@ conditional_slice_sample <- function(data, max) {
   
   df
 }
+
+#' @title Conditionally mutate
+#' @description Conditionally changes the data
+#' @param .data the data
+#' @param condition a specific condition to test for
+#' @param ... additional arguments for mutate
+#' @param envir parent.frame()
+#' @return a string
+#' @export
+mutate_cond <- function(.data, condition, ..., envir = parent.frame()) {
+  condition <- eval(substitute(condition), .data, envir)
+  .data[condition, ] <- .data[condition, ] %>% mutate(...)
+  .data
+}
+

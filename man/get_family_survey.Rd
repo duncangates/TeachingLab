@@ -4,7 +4,7 @@
 \alias{get_family_survey}
 \title{Family Survey Data}
 \usage{
-get_family_survey(update = F)
+get_family_survey(update = FALSE)
 }
 \arguments{
 \item{update}{FALSE, whether or not to pull the updated version}

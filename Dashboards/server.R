@@ -3,46 +3,25 @@
 shinyServer(function(input, output) {
   function(...) { }
 
-  output$grades_summary <- renderPlot({
-    grades_plot_data <- coaching_participant_feedback |>
-      select(Grade) |>
-      mutate(Grade = strsplit(as.character(as.numeric(Grade)), "(?=.)", perl = T)) |>
-      unnest(Grade) |>
-      group_by(Grade) |>
-      count(sort = T) |>
-      drop_na(Grade) |>
-      ungroup() |>
-      mutate(Grade = str_replace_all(Grade, c(
-        "1" = "1st",
-        "2" = "2nd",
-        "3" = "3rd",
-        "4" = "4th",
-        "5" = "5th",
-        "6" = "6th",
-        "7" = "7th",
-        "8" = "8th"
-      ))) %>%
-      suppressWarnings()
+  output$qualitative_feedback <- render_gt({
+    qualitative_data <- coaching_participant_feedback |>
+      select(Additional_feedback, Gone_well, Could_be_better) |>
+      drop_na() |>
+      rename(`What additional feedback do you have about their coaching skills, if any?` =
+               `Additional_feedback`,
+             `What has gone well in your coaching sessions?` = Gone_well,
+             `What could be better about your coaching sessions?` = Could_be_better)
+      
 
-    grades_plot_data |>
-      ggplot(aes(Grade, n, fill = n)) +
-      geom_col() +
-      geom_text(aes(label = n), family = "Calibri Bold", size = 10, hjust = -0.1) +
-      coord_flip() +
-      # scale_fill_manual(values = tlShiny::tl_palette(
-      #   color = "blue",
-      #   n = length(unique(grades_plot_data$Grade))
-      # )) +
-      labs(x = "", title = "Grade Counts in Coaching Participant Feedback") +
-      tlShiny::theme_tl() +
-      theme(
-        axis.text.x = element_text(size = 20),
-        axis.text.y = element_text(size = 20),
-        axis.title.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        plot.title = element_text(family = "Calibri Bold", size = 23)
-      )
-  })
+    qualitative_data |>
+      tlShiny::quote_viz(text_col = c("What additional feedback do you have about their coaching skills, if any?",
+                                          "What has gone well in your coaching sessions?",
+                                          "What could be better about your coaching sessions?"),
+                         print = F,
+                         width = 100,
+                         align = "left")
+  },
+  width = px(1000))
 
 
 
@@ -54,17 +33,13 @@ shinyServer(function(input, output) {
     selectizeInput("coach",
       label = "Select Coaches to Include",
       choices = coaching_participant_feedback |>
-        filter(Site == input$site) |>
-        pull(Coach) |>
-        unique() |>
-        sort(),
-      multiple = T,
-      selected = coaching_participant_feedback |>
-        filter(Site == input$site) |>
+        neg_cond_filter("All Sites", input$site, Site) |>
         pull(Coach) |>
         unique() |>
         sort() |>
-        first(),
+        prepend("All Coaches"),
+      multiple = T,
+      selected = "All Coaches",
       options = list(plugins = list("remove_button"))
     )
   })
@@ -79,7 +54,8 @@ shinyServer(function(input, output) {
 
     ### Make data by extracting percentages in strongly agree-strongly disagree ###
     agree_data <- coaching_participant_feedback |>
-      filter(Site == input$site & Coach %in% input$coach) |>
+      neg_cond_filter("All Sites", input$site, Site) |>
+      neg_cond_filter("All Coaches", input$coach, Coach) |>
       select(
         `They demonstrated deep knowledge of the content they coach.`,
         `Their coaching is clear.`,
@@ -88,6 +64,7 @@ shinyServer(function(input, output) {
         `They make necessary adjustments based on my needs.`
       ) |>
       pivot_longer(everything(), names_to = "question", values_to = "answer") |>
+      drop_na(answer) |>
       group_by(question, answer) |>
       count(sort = T) |>
       ungroup() |>
@@ -105,7 +82,6 @@ shinyServer(function(input, output) {
       ) |>
       ungroup()
 
-    # print(agree_data)
     ### Return the data ###
     agree_data
   })
@@ -117,10 +93,12 @@ shinyServer(function(input, output) {
                                            color = answer,
                                            fill = answer)) +
           geom_col(color = NA) +
-          geom_text(aes(label = paste0(round(percent), "%")), 
+          geom_text(aes(label = ifelse(percent >= 5,
+                                       paste0(round(percent), "%\n(n = ", n, ")"),
+                                       "")), 
                     position = position_stack(vjust = 0.5),
                     family = "Calibri Bold",
-                    size = 12) +
+                    size = 4.5) +
           labs(
             x = "", y = "",
             title = "% Answering Each Item in Coaching Participant Feedback",
@@ -134,7 +112,7 @@ shinyServer(function(input, output) {
             "(5) Strongly agree" = "#00ACF0"
           )) +
           scale_color_manual(values = c("(1) Strongly disagree" = "white",
-                                        "(2) Disagree" = "black",
+                                        "(2) Disagree" = "white",
                                         "(3) Neither agree nor disagree" = "black", 
                                         "(4) Agree" = "black", 
                                         "(5) Strongly agree" = "black")) +
@@ -143,21 +121,21 @@ shinyServer(function(input, output) {
                  color = "none") +
           scale_y_continuous(labels = scales::label_percent(scale = 1), 
                              expand = c(0.14, 0),
-                             limits = c(0, 100),
+                             limits = c(0, 100.01),
                              breaks = scales::pretty_breaks(n = 5)) +
           scale_x_discrete(expand = c(-0.5, 0)) +
           coord_flip() +
           theme(
             strip.text.x = element_markdown(size = 20),
-            axis.text.y = element_markdown(size = 22),
-            axis.text.x = element_markdown(size = 22),
+            axis.text.y = element_markdown(size = 14),
+            axis.text.x = element_markdown(size = 14),
             strip.text = element_markdown(hjust = 0.5, family = "Calibri Bold"),
             plot.title = element_markdown(family = "Calibri Bold", size = 20),
             legend.position = "bottom",
             legend.direction = "horizontal",
-            legend.key.size = unit(2, "cm"),
-            legend.text = element_text(size = 16, family = "Calibri"),
-            legend.key.width = unit(4, "cm")
+            legend.key.size = unit(1, "cm"),
+            legend.text = element_text(size = 10, family = "Calibri"),
+            legend.key.width = unit(2, "cm")
           )
   })
 })

@@ -6,7 +6,7 @@ coaching_feedback <- surveymonkey::fetch_survey_obj(317830125) %>%
   surveymonkey::parse_survey()
 
 
-coaching_feedback_clean <- coaching_feedback %>%
+coaching_feedback_clean <- coaching_feedback |>
   #### Coalescing other columns into main columns ####
   dplyr::mutate(
     Site = dplyr::coalesce(
@@ -43,7 +43,7 @@ coaching_feedback_clean <- coaching_feedback %>%
       tolower(`Please write in your 3 initials. If you do not have a middle initial, please write X.`),
       `Please write in your four-digit birthday (MMDD)`
     )
-  ) %>%
+  ) |>
   ### Selecting useful columns, some renaming ###
   dplyr::select(
     Date = date_created,
@@ -59,7 +59,7 @@ coaching_feedback_clean <- coaching_feedback %>%
     `They effectively build a safe learning environment.` = `How much do you agree with the following statements about your coach? - They effectively build a safe learning environment.`,
     `They make necessary adjustments based on my needs.` = `How much do you agree with the following statements about your coach? - They make necessary adjustments based on my needs.`,
     Additional_feedback = `What additional feedback do you have about their coaching skills, if any?`,
-    Gone_well = `What has gone well in your coaching sessions? `,
+    Gone_well = `What has gone well in your coaching sessions?`,
     Could_be_better = `What could be better about your coaching sessions?`,
     id
   )

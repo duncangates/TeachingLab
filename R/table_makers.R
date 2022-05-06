@@ -432,10 +432,10 @@ highlight_fun <- function(data, highlight = TeachingLab::find_highlight(data)) {
     })
   )
   # Add plurals, capitalization to list and ensure uniqueness
-  highlight <- append(highlight, 
-                      c(plural_highlights, 
-                        not_plural_highlights, 
-                        capital_highlights, 
+  highlight <- append(highlight,
+                      c(plural_highlights,
+                        not_plural_highlights,
+                        capital_highlights,
                         not_capital_highlights)) %>%
     unique()
 
@@ -449,7 +449,7 @@ highlight_fun <- function(data, highlight = TeachingLab::find_highlight(data)) {
     highlight
   )
 
-  # Use replace_all on the original string with the replacement vector created above
+  # Use replace_all on the original `string with the replacement vector created above
   highlighted_string <- stringr::str_replace_all(
     data,
     replacement_vector
@@ -568,8 +568,10 @@ quote_viz <- function(data,
       {
         if (!is.null(title)) gt::tab_header(data = ., title = gt::html(title)) else .
       } %>%
-      gt::fmt_markdown(columns = gt::everything()) %>%
-      gt::cols_align(align = align) %>%
+      gt::fmt_markdown(columns = gt::everything()) |>
+      gt::fmt_missing(columns = everything(),
+                      missing_text = " ") |>
+      gt::cols_align(align = align) |>
       gt::tab_style(
         style = list(
           gt::cell_text(
@@ -580,8 +582,8 @@ quote_viz <- function(data,
           columns = gt::everything(),
           rows = gt::everything()
         )
-      ) %>%
-      gt::opt_row_striping(row_striping = TRUE) %>%
+      ) |>
+      gt::opt_row_striping(row_striping = TRUE) |>
       TeachingLab::gt_theme_tl(align = align, ...)
   }
 }
@@ -894,33 +896,44 @@ tl_summary_table <- function(data,
         reverse = c(T, T, T, F)
       )
       
-      ## Only reversed columns for later calculations
-      reversed <- c(equitable_questions %>% filter(reverse == T) %>% pull(question),
-                    high_expectations_questions %>% filter(reverse == T) %>% pull(question))
+      crse_questions <- c("please_rate_your_confidence_on_the_following_items_br_i_am_able_to_adapt_instruction_to_meet_the_needs_of_my_students",
+                          "please_rate_your_confidence_on_the_following_items_br_i_am_able_to_identify_ways_that_the_school_culture_e_g_values_norms_and_practices_is_different_from_my_students_home_culture",
+                          "please_rate_your_confidence_on_the_following_items_br_i_am_able_to_use_my_students_prior_knowledge_to_help_them_make_sense_of_new_information",
+                          "please_rate_your_confidence_on_the_following_items_br_i_am_able_to_revise_instructional_material_to_include_a_better_representation_of_cultural_groups",
+                          "please_rate_your_confidence_on_the_following_items_br_i_am_able_to_teach_the_curriculum_to_students_with_unfinished_learning",
+                          "please_rate_your_confidence_on_the_following_items_br_i_am_able_to_teach_the_curriculum_to_students_who_are_from_historically_marginalized_groups")
       
-      selected <- c(equitable_questions %>% pull(question),
-                    high_expectations_questions %>% pull(question))
+      ## Only reversed columns for later calculations
+      reversed <- c(equitable_questions %>% filter(reverse == T) |> pull(question),
+                    high_expectations_questions %>% filter(reverse == T) |> pull(question))
+      
+      selected <- c(equitable_questions |> pull(question),
+                    high_expectations_questions |> pull(question),
+                    crse_questions)
       
       ## Reformatted column names for later
       equitable_reformat <- purrr::map_chr(equitable_questions$question, reformat_cols)
       high_expectations_reformat <- purrr::map_chr(high_expectations_questions$question, reformat_cols)
+      crse_reformat <- purrr::map_chr(crse_questions, reformat_cols)
       
-      data_sums <- data %>%
+      data_sums <- data |>
         ## Select just relevant columns
-        dplyr::select(dplyr::all_of(selected)) %>%
+        dplyr::select(dplyr::all_of(selected)) |>
         ## Only grab numbers for averaging
-        dplyr::mutate(dplyr::across(dplyr::everything(), ~ readr::parse_number(as.character(.x)))) %>%
+        dplyr::mutate(dplyr::across(dplyr::everything(), ~ readr::parse_number(as.character(.x)))) |>
         ## If reversed subtract from 5 
-        dplyr::mutate(dplyr::across(reversed, ~ 6 - .x)) %>%
+        dplyr::mutate(dplyr::across(reversed, ~ 6 - .x)) |>
         ## Summarise everything with scoring
-        dplyr::summarise(dplyr::across(dplyr::everything(), ~ diagnostic_score(x = .x))) %>%
+        dplyr::summarise(dplyr::across(c(equitable_questions$question, high_expectations_questions$question), ~ diagnostic_score(x = .x)),
+                         dplyr::across(crse_questions, ~ round(10 * mean(.x, na.rm = T), 2))) |>
         ## Rename with reformatting function
-        dplyr::rename_with( ~ reformat_cols(.x)) %>%
+        dplyr::rename_with( ~ reformat_cols(.x)) |>
         ## Make long format
-        tidyr::pivot_longer(tidyr::everything(), names_to = "Question", values_to = "Percent") %>%
+        tidyr::pivot_longer(tidyr::everything(), names_to = "Question", values_to = "Percent") |>
         ## Add groups and red coloring for negative items
-        dplyr::mutate(groups = dplyr::case_when(Question %in% equitable_reformat ~ "Recognizing Race & Culture",
-                                                Question %in% high_expectations_reformat ~ "High Expectations"),
+        dplyr::mutate(groups = dplyr::case_when(Question %in% equitable_reformat ~ "Recognition of Race & Culture",
+                                                Question %in% high_expectations_reformat ~ "High Expectations & Beliefs",
+                                                Question %in% crse_reformat ~ "Self-efficacy in CRSE Practices"),
                       Question = ifelse(Question %in% c(equitable_reformat[1:2], high_expectations_reformat[1:3]),
                                         paste0("<span style = 'color:#cc3336;'>", Question, "</span>"),
                                         Question))
@@ -959,10 +972,17 @@ tl_summary_table <- function(data,
       
       ## Conditionals for creating tables
       if (grouping == "summarise") {
-        final_gt <- data_sums_final %>%
-          dplyr::rename(` ` = groups) %>%
-          gt::gt() %>%
-          gt::fmt_markdown(columns = c(` `)) %>%
+        final_gt <- data_sums_final |>
+          dplyr::rename(` ` = groups) |>
+          mutate(` ` = factor(` `, levels = c("<b>Overall Score</b>",
+                                              "Recognition of Race & Culture",
+                                              "High Expectations & Beliefs",
+                                              "Self-efficacy in CRSE Practices"))) |>
+          arrange(` `) |>
+          mutate(` ` = as.character(` `)) |>
+          gt::gt() |>
+          gt::tab_header(title = "Mindsets and Beliefs") |>
+          gt::fmt_markdown(columns = c(` `)) |>
           # gtExtras::gt_color_box(
           #   columns = Percent,
           #   domain = 0:100,
@@ -970,14 +990,17 @@ tl_summary_table <- function(data,
           # ) %>%
           gt::fmt_percent(columns = "Percent",
                           decimals = 0,
-                          scale_values = F) %>%
-          gt::data_color(columns = "Percent",
-                         colors = scales::col_bin(
-                           palette = paletteer::paletteer_d(
-                             palette = "ggsci::blue_material"
-                           ) %>% as.character(),
-                           domain = NULL
-                         )) %>%
+                          scale_values = F) |>
+          gt::data_color(
+            columns = Percent,
+            colors = scales::col_bin(
+              palette = c(
+                TeachingLab::tl_palette(n = 8, color = "blue") |> magrittr::extract(c(4, 6, 8))
+              ),
+              domain = c(0, 100),
+              bins = c(0, 39, 79, 100)
+            )
+          ) %>%
           {
             if (!is.null(n_size)) gt::tab_source_note(data = ., source_note = paste0("n ranges from ", n_size[1], " to ", n_size[2])) else .
           } %>%
@@ -1015,13 +1038,16 @@ tl_summary_table <- function(data,
           gt::fmt_percent(columns = "Percent",
                           decimals = 0,
                           scale_values = F) %>%
-          gt::data_color(columns = "Percent",
-                         colors = scales::col_bin(
-                           palette = paletteer::paletteer_d(
-                             palette = "ggsci::blue_material"
-                           ) %>% as.character(),
-                           domain = NULL
-                         )) %>%
+          gt::data_color(
+            columns = Percent,
+            colors = scales::col_bin(
+              palette = c(
+                TeachingLab::tl_palette(n = 8, color = "blue") |> magrittr::extract(c(4, 6, 8))
+              ),
+              domain = c(0, 100),
+              bins = c(0, 39, 79, 100)
+            )
+          ) |>
           gt::cols_align(align = "left",
                          columns = "Question") %>%
           gt::tab_footnote(footnote = "For the items in red, responses that align to equitable mindsets are strongly disagree/disagree. They have been reverse coded for these analyses, so that for all items, higher percentages correspond to holding equitable mindsets.",
@@ -1058,7 +1084,8 @@ tl_summary_table <- function(data,
       ## Conditionals for summarisation of table
       if (summarise == T) {
         data_sums_final <- data_sums %>%
-          dplyr::mutate(Percent = Percent * 10)
+          dplyr::mutate(Percent = Percent * 10,
+                        Question = str_replace_all(Question, "e g ", "e\\.g\\. "))
         
         data_sums_final <- tibble::tibble(Question = "<b>Overall Score</b>", 
                                           Percent = round(mean(data_sums_final$Percent))) %>%
@@ -1078,18 +1105,21 @@ tl_summary_table <- function(data,
                                                                                           Percent == 100 & Question != "<b>Overall Score</b>" ~ "10",
                                                                                           Question == "<b>Overall Score</b>" ~ " ")) else .
           } %>%
-          gt::gt() %>%
+          gt::gt() |>
           gt::fmt_percent(columns = "Percent",
                           decimals = 0,
-                          scale_values = F) %>%
-          gt::data_color(columns = c(Percent),
-                         colors = scales::col_bin(
-                           palette = paletteer::paletteer_d(
-                             palette = "ggsci::blue_material"
-                           ) %>% as.character(),
-                           domain = NULL
-                         )) %>%
-          gt::fmt_markdown(columns = "Question") %>%
+                          scale_values = F) |>
+          gt::data_color(
+            columns = Percent,
+            colors = scales::col_bin(
+              palette = c(
+                TeachingLab::tl_palette(n = 8, color = "blue") |> magrittr::extract(c(4, 6, 8))
+              ),
+              domain = c(0, 100),
+              bins = c(0, 39, 79, 100)
+            )
+          ) |>
+          gt::fmt_markdown(columns = "Question") |>
           gt::cols_align(align = "left",
                          columns = c(Question, Percent)) %>%
           {
@@ -1104,7 +1134,8 @@ tl_summary_table <- function(data,
           }
         
       } else if (grouping == "crse") {
-        data_sums_final <- data_sums
+        data_sums_final <- data_sums |>
+          mutate(Question = str_replace_all(Question, "e g ", "e\\.g\\. "))
         
         data_sums_final <- tibble::tibble(groups = "<b>Overall Score</b>", 
                                           Question = "", 

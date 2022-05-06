@@ -1,24 +1,41 @@
 
 ### Libraries Load ###
-library(shiny)
-library(bslib)
-library(thematic)
 library(dplyr)
-library(tidyr)
 library(ggplot2)
-library(forcats)
-library(tlShiny)
 library(ggtext)
+library(googleAuthR)
+library(gt)
+library(forcats)
+library(purrr)
 library(showtext)
+library(shiny)
 library(shinycssloaders)
+library(shinyjs)
+library(shiny.semantic)
+library(shiny.router)
+library(tidyr)
+library(tlShiny)
+
 ### Graphics ###
-options(shiny.useragg = T)
+# options(shiny.useragg = T)
 ### Fonts ###
-thematic::thematic_shiny(font = font_spec(families = c("Calibri", "Roboto")),
-                         inherit = T)
-font_add("Calibri", "www/Calibri.ttf")
-font_add("Calibri Bold", "www/Calibri Bold.ttf")
-theme_set(theme_tl(markdown = F)) # Have to set markdown as T in individual aesthetics for some reason
-showtext_auto()
+###### CSV is From Here: https://groups.google.com/a/teachinglab.org/g/employees/members ######
+## Get list of current employees from CSV ##
+# approved_emails_list <- readr::read_csv("Dashboards/SessionSurvey/data/employees.csv", skip = 1) %>%
+#   dplyr::select(1) %>%
+#   purrr::as_vector() %>%
+#   # Add extra people as requested
+#   append(c("dgreenberg@education-first.com",
+#            "sbriggs@education-first.com",
+#            "duncan.gates123@gmail.com",
+#            "kristen.taylor@teachinglab.org",
+#            "ryan.stewart@gmail.com"))
+## Write approved list to dashboard data folder ##
+# readr::write_rds(approved_emails_list, "Dashboards/SessionSurvey/data/employees.rds")
+
+######## THIS WORKS BY RUNNING THE ABOVE CODE LOCALLY #######
+approved_emails_list <- readr::read_rds("data/employees.rds")
+
+################################################################################################
 
 coaching_participant_feedback <- readr::read_rds("data/coaching_participant_feedback.rds")

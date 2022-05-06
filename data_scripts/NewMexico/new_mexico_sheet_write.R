@@ -22,6 +22,7 @@ selection_diagnostic <- letters[select_diagnostic] %>%
   str_to_upper()
 
 ##### Retrieve New Mexico Educator Survey #####
+options(sm_oauth_token = Sys.getenv("knowledge_token"))
 nm_survey <- surveymonkey::fetch_survey_obj(315553653) %>%
   surveymonkey::parse_survey()
 
@@ -53,17 +54,17 @@ joined_emails %>%
   )
 
 ##### Section for columns D-G from Educator Survey #####
-nm_survey_selected <- nm_survey %>%
+nm_survey_selected <- nm_survey |>
   select(
     `Work email`,
     `Which of the following best describes your primary role? <br><br>`,
-    `In your role this school year, do you provide instruction to students? This instruction could be as students’ primary teacher, support or co-teacher, a push-in or pull-out specialist, etc.`,
-    `Do students have student identification numbers at your school?`,
-    `Do students have access to personal devices in the classroom on which they could take a survey (e.g., 1:1 laptop, tablet, smartphone)? `
-  ) %>%
-  mutate(email_address = str_to_lower(`Work email`)) %>%
-  select(-`Work email`) %>%
-  janitor::remove_empty("rows") %>%
+    `In your role this school year, do you provide instruction to students? This instruction could be as students’ primary teacher, support or co-teacher, a push-in or pull-out specialist, etc.`#,
+    # `Do students have student identification numbers at your school?`,
+    # `Do students have access to personal devices in the classroom on which they could take a survey (e.g., 1:1 laptop, tablet, smartphone)? `
+  ) |>
+  mutate(email_address = str_to_lower(`Work email`)) |>
+  select(-`Work email`) |>
+  janitor::remove_empty("rows") |>
   drop_na(email_address)
 
 #### Check if there are any mismatched emails from the google sheet tracker to the surveymonkey survey
@@ -76,30 +77,30 @@ if (length(check_emails) > 0) {
 }
 
 #### Find column letter for new mexico survey completion in sheet ####
-select_role_devices <- which(df_name_select == "#10 (role)")
-selection_role_devices <- letters[select_role_devices] %>%
-  str_to_upper()
-select_role_devices_end <- which(df_name_select == "#29 Access to personal devices")
-selection_role_devices_end <- letters[select_role_devices_end] %>%
-  str_to_upper()
-
-googlesheets4::gs4_auth()
+# select_role_devices <- which(df_name_select == "#10 (role)")
+# selection_role_devices <- letters[select_role_devices] %>%
+#   str_to_upper()
+# select_role_devices_end <- which(df_name_select == "#29 Access to personal devices")
+# selection_role_devices_end <- letters[select_role_devices_end] %>%
+#   str_to_upper()
+# 
+# googlesheets4::gs4_auth()
 #### Join tracker google sheet emails to new mexico survey then select completion columns and write to sheet ####
-names_and_emails %>%
-  select(Email) %>%
-  mutate(lower_email = stringr::str_to_lower(Email)) %>%
-  left_join(nm_survey_selected, by = c("lower_email" = "email_address")) %>%
-  select(-lower_email) %>%
-  mutate(across(everything(), ~ replace_na(as.character(.x), "No response"))) %>%
-  select(-Email) %>%
-  purrr::set_names(., nm = c("D", "E", "F", "G")) %>%
-  range_write(
-    ss = "https://docs.google.com/spreadsheets/d/17SNPMYkV_Gx-g-3TpKTs-YAi6guUw-WKCI18_x4Q1qU/edit#gid=0",
-    sheet = 1,
-    range = glue::glue("{selection_role_devices}2:{selection_role_devices_end}{length(names_and_emails$Email) + 1}"),
-    col_names = F,
-    reformat = F
-  )
+# names_and_emails %>%
+#   select(Email) %>%
+#   mutate(lower_email = stringr::str_to_lower(Email)) %>%
+#   left_join(nm_survey_selected, by = c("lower_email" = "email_address")) %>%
+#   select(-lower_email) %>%
+#   mutate(across(everything(), ~ replace_na(as.character(.x), "No response"))) %>%
+#   select(-Email) %>%
+#   purrr::set_names(., nm = c("D", "E", "F", "G")) %>%
+#   range_write(
+#     ss = "https://docs.google.com/spreadsheets/d/17SNPMYkV_Gx-g-3TpKTs-YAi6guUw-WKCI18_x4Q1qU/edit#gid=0",
+#     sheet = 1,
+#     range = glue::glue("{selection_role_devices}2:{selection_role_devices_end}{length(names_and_emails$Email) + 1}"),
+#     col_names = F,
+#     reformat = F
+#   )
 
 ##### Section for if student survey has been administered #####
 #### Subsequent one for count of student data submissions ####
@@ -392,6 +393,38 @@ join_student_work_completed %>%
     ss = "https://docs.google.com/spreadsheets/d/17SNPMYkV_Gx-g-3TpKTs-YAi6guUw-WKCI18_x4Q1qU/edit#gid=0",
     sheet = 1,
     range = glue::glue("{selection_student_work_1}2:{selection_student_work_1}{length(join_student_work_completed$completed) + 1}"),
+    col_names = F,
+    reformat = F
+  )
+
+#### Find column letter for second classroom video observation in sheet ####
+select_diagnostic_post <- which(df_name_select == "Completed TL New Mexico Educators Survey SY21-22 (post) (Y/N) - SM")
+selection_diagnostic_post <- letters[select_diagnostic_post] %>%
+  str_to_upper()
+
+#### Get emails from survey, make lowercase ####
+emails_session_2 <- nm_survey |>
+  filter(lubridate::date(date_created) >= as.Date("2022-03-01")) |>
+  select(`Work email`) |>
+  drop_na() |>
+  mutate(email_address = str_to_lower(`Work email`)) |>
+  select(2)
+
+#### Join emails to educator survey completion ####
+joined_emails_post <- read_sheet("https://docs.google.com/spreadsheets/d/17SNPMYkV_Gx-g-3TpKTs-YAi6guUw-WKCI18_x4Q1qU/edit#gid=0", sheet = 1) %>%
+  select(1, 2) %>%
+  mutate(
+    Email = str_to_lower(Email),
+    completed = ifelse(Email %in% emails_session_2$email_address, "Complete", "Not Complete")
+  )
+
+#### Select just completion column and write to tracker google sheet ####
+joined_emails_post %>%
+  select(completed) %>%
+  range_write(
+    ss = "https://docs.google.com/spreadsheets/d/17SNPMYkV_Gx-g-3TpKTs-YAi6guUw-WKCI18_x4Q1qU/edit#gid=0",
+    sheet = 1,
+    range = glue::glue("{selection_diagnostic_post}2:{selection_diagnostic_post}{length(joined_emails_post$completed) + 1}"),
     col_names = F,
     reformat = F
   )

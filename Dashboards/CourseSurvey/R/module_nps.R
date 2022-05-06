@@ -10,14 +10,14 @@ uiNPS <- function(id, label = "Counter") {
           shiny::selectizeInput(
             inputId = ns("site"),
             label = h3("Select a site", style = "font-weight: bold;"),
-            choices = course_survey$`Select your site (district, parish, network, or school).` %>%
-              unique() %>%
-              as.character() %>%
-              sort() %>%
+            choices = course_survey$`Select your site (district, parish, network, or school).` |>
+              unique() |>
+              as.character() |>
+              sort() |>
               purrr::prepend("All Sites"),
             multiple = T,
             selected = "All Sites",
-            options = list(plugins= list('remove_button'))
+            options = list(plugins = list("remove_button"))
           ),
           icon = shiny.semantic::icon("location arrow")
         ),
@@ -27,14 +27,14 @@ uiNPS <- function(id, label = "Counter") {
           shiny::selectizeInput(
             inputId = ns("role"),
             label = h3("Select a role", style = "font-weight: bold;"),
-            choices = course_survey$`Select your role.` %>%
-              unique() %>%
-              as.character() %>%
-              sort() %>%
+            choices = course_survey$`Select your role.` |>
+              unique() |>
+              as.character() |>
+              sort() |>
               purrr::prepend("All Roles"),
             multiple = T,
             selected = "All Roles",
-            options = list(plugins= list('remove_button'))
+            options = list(plugins = list("remove_button"))
           ),
           icon = shiny.semantic::icon("user")
         ),
@@ -44,14 +44,14 @@ uiNPS <- function(id, label = "Counter") {
           shiny::selectizeInput(
             inputId = ns("content"),
             label = h3("Select a content area", style = "font-weight: bold;"),
-            choices = course_survey$`Select the content area for today's professional learning session.` %>%
-              unique() %>%
-              as.character() %>%
-              sort() %>%
+            choices = course_survey$`Select the content area for today's professional learning session.` |>
+              unique() |>
+              as.character() |>
+              sort() |>
               purrr::prepend("All Content Areas"),
             multiple = T,
             selected = "All Content Areas",
-            options = list(plugins= list('remove_button'))
+            options = list(plugins = list("remove_button"))
           ),
           icon = shiny.semantic::icon("edit")
         ),
@@ -61,14 +61,14 @@ uiNPS <- function(id, label = "Counter") {
           shiny::selectizeInput(
             inputId = ns("course"),
             label = h3("Select a course", style = "font-weight: bold;"),
-            choices = course_survey$`Select your course.` %>%
-              unique() %>%
-              as.character() %>%
-              sort() %>%
+            choices = course_survey$`Select your course.` |>
+              unique() |>
+              as.character() |>
+              sort() |>
               purrr::prepend("All Courses"),
             multiple = T,
             selected = "All Courses",
-            options = list(plugins= list('remove_button'))
+            options = list(plugins = list("remove_button"))
           ),
           icon = shiny.semantic::icon("clone")
         ),
@@ -118,7 +118,7 @@ uiNPS <- function(id, label = "Counter") {
           class = "ui two column stackable grid container",
           div(
             class = "sixteen wide column",
-            plotOutput(ns("nps_plot"), height = "800px") %>%
+            plotOutput(ns("nps_plot"), height = "800px") |>
               withSpinner(type = 3, color.background = "white")
           ),
           div(
@@ -127,7 +127,7 @@ uiNPS <- function(id, label = "Counter") {
           ),
           div(
             class = "sixteen wide column",
-            plotOutput(ns("nps_plot2"), height = "800px") %>%
+            plotOutput(ns("nps_plot2"), height = "800px") |>
               withSpinner(type = 3, color.background = "white")
           )
         )
@@ -139,8 +139,8 @@ uiNPS <- function(id, label = "Counter") {
 npsServer <- function(id, in_site) {
   ns <- NS(id)
   moduleServer(id, function(input, output, session) {
-
-
+    
+    
     # NPS Plot Data
     data_plot_nps <- reactive({
       validate(
@@ -149,30 +149,34 @@ npsServer <- function(id, in_site) {
         need(!is.null(input$content), "Please select at least one content area"),
         need(!is.null(input$course), "Please select at least one course")
       )
-      reactive_nps <- course_survey %>%
-        dplyr::filter(between(date_created, input$date_min, input$date_max)) %>%
-        tlShiny::neg_cond_filter(.,
-                                     if_not_this = "All Sites",
-                                     filter_this = input$site,
-                                     dat_filter = `Select your site (district, parish, network, or school).`) %>%
-        tlShiny::neg_cond_filter(.,
-                                     if_not_this = "All Roles",
-                                     filter_this = input$role,
-                                     dat_filter = `Select your role.`) %>%
-        tlShiny::neg_cond_filter(.,
-                                     if_not_this = "All Content Areas",
-                                     filter_this = input$content,
-                                     dat_filter = `Select the content area for today's professional learning session.`) %>%
-        tlShiny::neg_cond_filter(.,
-                                     if_not_this = "All Courses",
-                                     filter_this = input$course,
-                                     dat_filter = `Select your course.`) %>%
-        select(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`) %>%
-        # mutate(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?` = readr::parse_number(as.character(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`))) %>%
-        drop_na() %>%
-        group_by(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`) %>%
-        count(sort = T) %>%
-        ungroup() %>%
+      
+      reactive_nps <- course_survey |>
+        dplyr::filter(between(date_created, input$date_min, input$date_max)) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Sites",
+          filter_this = input$site,
+          dat_filter = `Select your site (district, parish, network, or school).`
+        ) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Roles",
+          filter_this = input$role,
+          dat_filter = `Select your role.`
+        ) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Content Areas",
+          filter_this = input$content,
+          dat_filter = `Select the content area for today's professional learning session.`
+        ) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Courses",
+          filter_this = input$course,
+          dat_filter = `Select your course.`
+        ) |>
+        select(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`) |>
+        drop_na() |>
+        group_by(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`) |>
+        count(sort = T) |>
+        ungroup() |>
         mutate(Percent = round(100 * n / sum(n)))
       
       #### Validate that there is data ####
@@ -183,7 +187,7 @@ npsServer <- function(id, in_site) {
       #### Return the data ####
       reactive_nps
     })
-
+    
     # Ggplot for nps plot
     output$nps_plot <- renderPlot({
       ggplot(data = data_plot_nps(), aes(
@@ -194,10 +198,14 @@ npsServer <- function(id, in_site) {
       )) +
         geom_text(aes(label = if_else(Percent != 4, paste0(Percent, "%"), "")), vjust = -0.5) +
         geom_col() +
-        scale_fill_manual(values = c("0" = "#040404", "1" = "#040404", "2" = "#03161E", "3" = "#032938", "4" = "#023C52", "5" = "#024E6C", "6" = "#016187", 
-                                     "7" = "#0174A1", "8" = "#0086BB", "9" = "#0099D5", "10" = "#00ACF0")) +
-        scale_color_manual(values = c("0" = "#040404", "1" = "#040404", "2" = "#03161E", "3" = "#032938", "4" = "#023C52", "5" = "#024E6C", "6" = "#016187", 
-                                     "7" = "#0174A1", "8" = "#0086BB", "9" = "#0099D5", "10" = "#00ACF0")) +
+        scale_fill_manual(values = c(
+          "0" = "#040404", "1" = "#040404", "2" = "#03161E", "3" = "#032938", "4" = "#023C52", "5" = "#024E6C", "6" = "#016187",
+          "7" = "#0174A1", "8" = "#0086BB", "9" = "#0099D5", "10" = "#00ACF0"
+        )) +
+        scale_color_manual(values = c(
+          "0" = "#040404", "1" = "#040404", "2" = "#03161E", "3" = "#032938", "4" = "#023C52", "5" = "#024E6C", "6" = "#016187",
+          "7" = "#0174A1", "8" = "#0086BB", "9" = "#0099D5", "10" = "#00ACF0"
+        )) +
         labs(
           fill = "", title = "Likeliness to Recommend to a Friend or Colleague",
           x = "Rating", y = "Percent"
@@ -213,7 +221,7 @@ npsServer <- function(id, in_site) {
           plot.title = element_text(lineheight = 1.1)
         )
     })
-
+    
     # Get average NPS
     data_sum_nps <- reactive({
       validate(
@@ -222,27 +230,31 @@ npsServer <- function(id, in_site) {
         need(!is.null(input$content), "Please select at least one content area"),
         need(!is.null(input$course), "Please select at least one course")
       )
-      sum <- course_survey %>%
-        dplyr::filter(between(date_created, input$date_min, input$date_max)) %>%
-        tlShiny::neg_cond_filter(.,
-                                     if_not_this = "All Sites",
-                                     filter_this = input$site,
-                                     dat_filter = `Select your site (district, parish, network, or school).`) %>%
-        tlShiny::neg_cond_filter(.,
-                                     if_not_this = "All Roles",
-                                     filter_this = input$role,
-                                     dat_filter = `Select your role.`) %>%
-        tlShiny::neg_cond_filter(.,
-                                     if_not_this = "All Content Areas",
-                                     filter_this = input$content,
-                                     dat_filter = `Select the content area for today's professional learning session.`) %>%
-        tlShiny::neg_cond_filter(.,
-                                     if_not_this = "All Courses",
-                                     filter_this = input$course,
-                                     dat_filter = `Select your course.`) %>%
-        mutate(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?` = readr::parse_number(as.character(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`))) %>%
-        mutate(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?` = na_if(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`, "No Response")) %>%
-        summarise(nps = calc_nps(suppressWarnings(as.numeric(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`)))) %>%
+      sum <- course_survey |>
+        dplyr::filter(between(date_created, input$date_min, input$date_max)) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Sites",
+          filter_this = input$site,
+          dat_filter = `Select your site (district, parish, network, or school).`
+        ) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Roles",
+          filter_this = input$role,
+          dat_filter = `Select your role.`
+        ) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Content Areas",
+          filter_this = input$content,
+          dat_filter = `Select the content area for today's professional learning session.`
+        ) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Courses",
+          filter_this = input$course,
+          dat_filter = `Select your course.`
+        ) |>
+        mutate(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?` = readr::parse_number(as.character(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`))) |>
+        mutate(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?` = na_if(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`, "No Response")) |>
+        summarise(nps = calc_nps(suppressWarnings(as.numeric(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`)))) |>
         mutate(
           x = 0,
           y = nps
@@ -255,7 +267,7 @@ npsServer <- function(id, in_site) {
       #### Return the data ####
       sum
     })
-
+    
     output$nps_plot2 <- renderPlot({
       ggplot(data = data_sum_nps()) +
         geom_text(aes(x = 0, y = 0.5, label = "fake text"), color = "transparent") +
@@ -277,6 +289,5 @@ npsServer <- function(id, in_site) {
         coord_fixed() +
         theme_void()
     })
-    
   })
 }

@@ -17,7 +17,8 @@ page_navbar(
       boot_sidebar(
         shiny::selectInput("site",
           label = h5("Select a Site"),
-          choices = c(sort(unique(coaching_participant_feedback$Site)))
+          choices = c(sort(unique(coaching_participant_feedback$Site)) |>
+                        prepend("All Sites"))
         ),
         uiOutput("site_ui")
       ),
@@ -25,14 +26,17 @@ page_navbar(
         fluidRow(
           column(12, plotOutput(outputId = "agree_plot", height = "900px") |>
                    withSpinner(type = 3, color.background = "white"))
-        ) # ,
-        # fluidRow(column(12, h1("Unmatched Sample"))),
-        # fluidRow(
-        #     column(12, plotOutput(outputId = "plot_unmatched", height = "900px")))
+        )
       )
     )
   ),
-  nav("Summary Statistics", icon = icon("icicles"), plotOutput("grades_summary")),
+  nav("Qualitative Feedback", icon = icon("icicles"), 
+      fluidRow(
+        column(12, align = "center",
+               gt_output("qualitative_feedback") |>
+        withSpinner(type = 3, color.background = "white"))
+        )
+      ),
   nav_item(
     tags$a(icon("youtube"), "Tutorial", href = "https://youtube.com", target = "_blank")
   ),

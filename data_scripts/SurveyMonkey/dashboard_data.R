@@ -445,6 +445,6 @@ rsconnect::deployApp(
 #   logLevel = "verbose"
 # )
 
-# rstudioapi::navigateToFile(here::here("Dashboards/CourseSurvey/app.R"))
+rstudioapi::navigateToFile(here::here("Dashboards/CourseSurvey/app.R"))
 # rstudioapi::navigateToFile(here::here("Dashboards/SessionSurvey/app.R"))
 # rstudioapi::navigateToFile(here::here("Dashboards/PersonalFacilitator/app.R"))

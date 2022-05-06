@@ -4,7 +4,7 @@
 \alias{get_knowledge_assessments}
 \title{Knowledge Assessments Update}
 \usage{
-get_knowledge_assessments(update = F)
+get_knowledge_assessments(update = FALSE)
 }
 \arguments{
 \item{update}{FALSE, optional updating}

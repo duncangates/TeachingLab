@@ -78,11 +78,11 @@ get_session_survey <- function(update = FALSE) {
   } else {
     options(sm_oauth_token = options(sm_oauth_token = Sys.getenv("session_token")))
 
-    surveymonkey_session <- surveymonkey::fetch_survey_obj(id = 308115193) %>%
+    surveymonkey_session <- surveymonkey::fetch_survey_obj(id = 308115193) |>
       surveymonkey::parse_survey()
 
-    session_survey <- surveymonkey_session %>%
-      dplyr::mutate(date_created = lubridate::date(date_created)) %>%
+    session_survey <- surveymonkey_session |>
+      dplyr::mutate(date_created = lubridate::date(date_created)) |>
       dplyr::mutate(`Select your course.` = dplyr::coalesce(
         `Select your course.`,
         `Select your course._2`,
@@ -90,14 +90,14 @@ get_session_survey <- function(update = FALSE) {
         `Select your course._4`,
         `Select your course._5`,
         `Select your course._6`
-      )) %>%
-      dplyr::mutate(Date = lubridate::ymd(date_created)) %>%
+      )) |>
+      dplyr::mutate(Date = lubridate::ymd(date_created)) |>
       # Fix this cluttering of names the others result in a bunch of different formats
       dplyr::mutate(dplyr::across(c(
         "Select the name of your facilitator.", "Select the name of your facilitator. - Other (please specify)",
         "Select the name of your facilitator._2", "Select the name of your facilitator. - Other (please specify)_2",
         "Select the name of your facilitator._3", "Select the name of your facilitator. - Other (please specify)_3"
-      ), ~ dplyr::na_if(.x, "Name"))) %>%
+      ), ~ dplyr::na_if(.x, "Name"))) |>
       dplyr::mutate(
         Facilitator = dplyr::coalesce(
           `Select the name of your facilitator.`,
@@ -121,7 +121,7 @@ get_session_survey <- function(update = FALSE) {
           `What additional feedback do you have about their facilitation skills?_5`,
           `What additional feedback do you have about their facilitation skills?_6`
         )
-      ) %>%
+      ) |>
       dplyr::mutate(
         `How much do you agree with the following statements about this facilitator today? - They demonstrated  deep knowledge of the content they facilitated.` =
           dplyr::coalesce(
@@ -132,7 +132,7 @@ get_session_survey <- function(update = FALSE) {
             `How much do you agree with the following statements about this facilitator today? - They demonstrated  deep knowledge of the content they facilitated._5`,
             `How much do you agree with the following statements about this facilitator today? - They demonstrated  deep knowledge of the content they facilitated._6`
           )
-      ) %>%
+      ) |>
       dplyr::mutate(
         `How much do you agree with the following statements about this facilitator today? - They facilitated the content clearly.` =
           dplyr::coalesce(
@@ -143,7 +143,7 @@ get_session_survey <- function(update = FALSE) {
             `How much do you agree with the following statements about this facilitator today? - They facilitated the content clearly._5`,
             `How much do you agree with the following statements about this facilitator today? - They facilitated the content clearly._6`
           )
-      ) %>%
+      ) |>
       dplyr::mutate(
         `How much do you agree with the following statements about this facilitator today? - They effectively built a safe learning community.` =
           dplyr::coalesce(
@@ -154,7 +154,7 @@ get_session_survey <- function(update = FALSE) {
             `How much do you agree with the following statements about this facilitator today? - They effectively built a safe learning community._5`,
             `How much do you agree with the following statements about this facilitator today? - They effectively built a safe learning community._6`
           )
-      ) %>%
+      ) |>
       dplyr::mutate(
         `How much do you agree with the following statements about this facilitator today? - They were fully prepared for the session.` =
           dplyr::coalesce(
@@ -165,7 +165,7 @@ get_session_survey <- function(update = FALSE) {
             `How much do you agree with the following statements about this facilitator today? - They were fully prepared for the session._5`,
             `How much do you agree with the following statements about this facilitator today? - They were fully prepared for the session._6`
           )
-      ) %>%
+      ) |>
       dplyr::mutate(
         `How much do you agree with the following statements about this facilitator today? - They responded to the group’s needs.` =
           dplyr::coalesce(
@@ -176,11 +176,11 @@ get_session_survey <- function(update = FALSE) {
             `How much do you agree with the following statements about this facilitator today? - They responded to the group’s needs._5`,
             `How much do you agree with the following statements about this facilitator today? - They responded to the group’s needs._6`
           )
-      ) %>%
+      ) |>
       dplyr::mutate(`Select your site (district, parish, network, or school).` = ifelse(stringr::str_detect(`Select your site (district, parish, network, or school).`, "Rochester"),
         "Rochester City School District",
         as.character(`Select your site (district, parish, network, or school).`)
-      )) %>%
+      )) |>
       dplyr::select(
         Facilitator, # Facilitator
         Date, # Date
@@ -199,7 +199,7 @@ get_session_survey <- function(update = FALSE) {
         `What could have been better about today’s session?`
       )
 
-    session_survey %>%
+    session_survey |>
       readr::write_rds(., "data/session_survey_21_22data.rds")
   }
 
@@ -220,27 +220,27 @@ get_course_survey <- function(update = FALSE) {
 
     options(sm_oauth_token = Sys.getenv("course_token"))
 
-    surveymonkey_course <- surveymonkey::fetch_survey_obj(id = 308116695) %>%
+    surveymonkey_course <- surveymonkey::fetch_survey_obj(id = 308116695) |>
       surveymonkey::parse_survey()
 
-    course_survey <- surveymonkey_course %>%
+    course_survey <- surveymonkey_course |>
       # Make data column a date type column
       dplyr::mutate(
         date_created = lubridate::date(date_created),
         `Select the date for this session. - \n    Date / Time\n` = lubridate::date(lubridate::mdy(`Select the date for this session. - \n    Date / Time\n`))
-      ) %>%
+      ) |>
       # Add dataframe rows from prior to 21-22
-      dplyr::bind_rows(old_df) %>%
+      dplyr::bind_rows(old_df) |>
       # Coalesce old date column with new
       dplyr::mutate(date_created = dplyr::coalesce(
         date_created,
         `Select the date for this session. - \n    Date / Time\n`
-      )) %>%
+      )) |>
       # Make NPS numeric and fix non-numerics
       dplyr::mutate(
         `On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?` =
           readr::parse_number(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`)
-      ) %>%
+      ) |>
       # Coalesce all select your course columns
       dplyr::mutate(`Select your course.` = dplyr::coalesce(
         `Select your course.`,
@@ -249,48 +249,48 @@ get_course_survey <- function(update = FALSE) {
         `Select your course._4`,
         `Select your course._5`,
         `Select your course._6`
-      )) %>%
+      )) |>
       # Coalesce what went well in the course
       dplyr::mutate(`Overall, what went well in this course?` = dplyr::coalesce(
         `Overall, what went well in this course?`,
         `Overall, what went well in this course?_2`
-      )) %>%
+      )) |>
       # Coalesce what could have been better in the course
       dplyr::mutate(`Overall, what could have been better in this course?` = dplyr::coalesce(
         `Overall, what could have been better in this course?`,
         `Overall, what could have been better in this course?_2`
-      )) %>%
+      )) |>
       # Coalesce learning from the course excited about
       dplyr::mutate(`What is the learning from this course that you are most excited about trying out?` = dplyr::coalesce(
         `What is the learning from this course that you are most excited about trying out?`,
         `What is the learning from this course that you are most excited about trying out?_2`
-      )) %>%
+      )) |>
       # Coalesce best activities supporting learning
       dplyr::mutate(`Which activities best supported your learning in this course?` = dplyr::coalesce(
         `Which activities best supported your learning in this course?`,
         `Which activities best supported your learning in this course?_2`
-      )) %>%
+      )) |>
       # Coalesce additional comments, concerns, or questions
       dplyr::mutate(`Feel free to leave us any additional comments, concerns, or questions.` = dplyr::coalesce(
         `Feel free to leave us any additional comments, concerns, or questions.`,
         `Feel free to leave us any additional comments, concerns, or questions._2`
-      )) %>%
+      )) |>
       # Probably redundant, check later
-      dplyr::mutate(`date_created` = as.Date(`date_created`)) %>%
+      dplyr::mutate(`date_created` = as.Date(`date_created`)) |>
       # Fix Pointe Coupee
-      dplyr::mutate(`Select your site (district, parish, network, or school).` = stringr::str_replace_all(`Select your site (district, parish, network, or school).`, "Pt. Coupee Parish", "Pointe Coupee Parish")) %>%
+      dplyr::mutate(`Select your site (district, parish, network, or school).` = stringr::str_replace_all(`Select your site (district, parish, network, or school).`, "Pt. Coupee Parish", "Pointe Coupee Parish")) |>
       # Remove extra parts of names so they will be the same
       dplyr::mutate(`Select your site (district, parish, network, or school).` = stringr::str_remove_all(
         `Select your site (district, parish, network, or school).`,
         ", PA/DE|, LA|, PA|, CA|, SC|, VT|, IL|, NY|, NE|, MS|, RI"
-      )) %>%
+      )) |>
       # Make Rochester all the same name regardless of school
       dplyr::mutate(`Select your site (district, parish, network, or school).` = ifelse(stringr::str_detect(`Select your site (district, parish, network, or school).`, "Rochester"),
         "Rochester City School District",
         as.character(`Select your site (district, parish, network, or school).`)
-      )) %>%
+      )) |>
       # Get rid of random -999 in responses
-      dplyr::mutate(`How much do you agree with the following statements about this course? - I am satisfied with how the course was facilitated.` = dplyr::na_if(`How much do you agree with the following statements about this course? - I am satisfied with how the course was facilitated.`, "-999")) %>%
+      dplyr::mutate(`How much do you agree with the following statements about this course? - I am satisfied with how the course was facilitated.` = dplyr::na_if(`How much do you agree with the following statements about this course? - I am satisfied with how the course was facilitated.`, "-999")) |>
       # Fix agree/not agree formatting
       dplyr::mutate(dplyr::across(c(
         `How much do you agree with the following statements about this course? - I am satisfied with the overall quality of this course.`,
@@ -307,7 +307,7 @@ get_course_survey <- function(update = FALSE) {
           "(?<! )Disagree" = "(2) Disagree",
           "(?<! )Strongly disagree" = "(1) Strongly disagree"
         )
-      ))) %>%
+      ))) |>
       # Add no response to data if it is NA
       dplyr::mutate(dplyr::across(c(
         `How much do you agree with the following statements about this course? - I am satisfied with the overall quality of this course.`,
@@ -315,7 +315,7 @@ get_course_survey <- function(update = FALSE) {
         `How much do you agree with the following statements about this course? - The independent online work activities were well-designed to help me meet the learning targets.`,
         `How much do you agree with the following statements about this course? - I felt a sense of community with the other participants in this course. even though we were meeting virtually.`,
         `How much do you agree with the following statements about this course? - I will apply what I have learned in this course to my practice in the next 4-6 weeks.`
-      ), ~ dplyr::na_if(.x, "No Response"))) %>%
+      ), ~ dplyr::na_if(.x, "No Response"))) |>
       ###### Make it select just the necessary columns to reduce data input to dashboards
       dplyr::select(
         date_created, # Date
@@ -346,104 +346,12 @@ get_course_survey <- function(update = FALSE) {
   return(course_survey)
 }
 
-#' @title IPG Data
-#' @description Gets data from IPG forms
-#' @return Returns a tibble
-#' @export
-get_ipg_forms <- function() {
-
-  ## Authentication ##
-  googledrive::drive_auth(path = "Tokens/teachinglab-authentication-0a3006e60773.json")
-  googlesheets4::gs4_auth(token = googledrive::drive_token())
-
-  df <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1L33wVpPERyUQdG8WO3sZiyjnHzPvDL91O4yVUQTN14A/edit#gid=1455024681",
-    sheet = 1,
-    col_types = "c"
-  )
-  ## Deauthentication ##
-  googledrive::drive_deauth()
-  googlesheets4::gs4_deauth()
-
-  df <- df %>%
-    mutate(
-      Timestamp = lubridate::mdy_hms(Timestamp),
-      `Timeline of Obs` = factor(ifelse(
-        is.na(`Timeline of Obs`),
-        paste0(
-          TeachingLab::get_season(Timestamp),
-          " ",
-          lubridate::year(Timestamp)
-        ),
-        `Timeline of Obs`
-      ), levels = c(
-        "Summer 2019",
-        "Fall 2019",
-        "Winter 2020",
-        "Spring 2020",
-        "Winter 2021",
-        "Spring 2021",
-        "Fall 2021",
-        "Winter 2022",
-        "Spring 2022"
-      ))
-    )
-
-  readr::write_rds(df, here::here("data/ipg_forms.rds"))
-
-  return(df)
-}
-
-#' @title Lesson Plan Analysis Data
-#' @description Gets data from Lesson Plan Analysis forms
-#' @return Returns a tibble
-#' @export
-get_lesson_analysis <- function() {
-
-  ## Authentication ##
-  googledrive::drive_auth(path = "Tokens/teachinglab-authentication-0a3006e60773.json")
-  googlesheets4::gs4_auth(token = googledrive::drive_token())
-
-  df <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1fCOHSKAkP8GU1xJQh6CjtHPJriOldmqYFyI8MnPWtIg/edit?resourcekey#gid=1002617293",
-    sheet = 1,
-    col_types = "c"
-  )
-  ## Deauthentication ##
-  googledrive::drive_deauth()
-  googlesheets4::gs4_deauth()
-
-  df <- df # %>%
-  # mutate(
-  #   Timestamp = lubridate::mdy_hms(Timestamp),
-  #   `Timeline of Obs` = factor(ifelse(
-  #     is.na(`Timeline of Obs`),
-  #     paste0(
-  #       TeachingLab::get_season(Timestamp),
-  #       " ",
-  #       lubridate::year(Timestamp)
-  #     ),
-  #     `Timeline of Obs`
-  #   ), levels = c("Summer 2019",
-  #                 "Fall 2019",
-  #                 "Winter 2020",
-  #                 "Spring 2020",
-  #                 "Winter 2021",
-  #                 "Spring 2021",
-  #                 "Fall 2021",
-  #                 "Winter 2022",
-  #                 "Spring 2022"))
-  # )
-
-  readr::write_rds(df, here::here("data/lesson_plan_analysis.rds"))
-
-  return(df)
-}
-
 #' @title Student Survey Data
 #' @description Gets data from Student Survey
 #' @param update FALSE whether or not to update the data
 #' @return Returns a tibble
 #' @export
-get_student_survey <- function(update = F) {
+get_student_survey <- function(update = FALSE) {
   replacement_vector <- c(
     "Aja Forte" = "Aja Forte",
     "=Latanya Wilson" = "Latanya Wilson",
@@ -461,13 +369,13 @@ get_student_survey <- function(update = F) {
     "Rosiland Norsworthy" = "Rosalinda Norsworthy"
   )
 
-  if (update == T) {
+  if (update == TRUE) {
     options(sm_oauth_token = Sys.getenv("knowledge_token"))
 
-    df <- surveymonkey::fetch_survey_obj(312653807) %>%
+    df <- surveymonkey::fetch_survey_obj(312653807) |>
       surveymonkey::parse_survey()
 
-    student_survey_coalesced <- df %>%
+    student_survey_coalesced <- df |>
       dplyr::mutate(teacher = dplyr::coalesce(
         `Please select your teacher.`,
         `Please select your teacher. - Other (please specify)`,
@@ -529,7 +437,7 @@ get_student_survey <- function(update = F) {
         `Please select your teacher. - Other (please specify)_29`,
         `Please select your teacher._30`,
         `Please select your teacher. - Other (please specify)_30`
-      )) %>%
+      )) |>
       dplyr::select(-c(
         `Please select your teacher.`,
         `Please select your teacher. - Other (please specify)`,
@@ -591,7 +499,7 @@ get_student_survey <- function(update = F) {
         `Please select your teacher. - Other (please specify)_29`,
         `Please select your teacher._30`,
         `Please select your teacher. - Other (please specify)_30`
-      )) %>%
+      )) |>
       dplyr::mutate(teacher = stringr::str_replace_all(teacher, replacement_vector))
   } else {
     student_survey_coalesced <- readr::read_rds(here::here("data/student_survey.rds"))
@@ -607,7 +515,7 @@ get_student_survey <- function(update = F) {
 #' @param update FALSE, whether or not to pull the updated version
 #' @return Returns a tibble
 #' @export
-get_family_survey <- function(update = F) {
+get_family_survey <- function(update = FALSE) {
   replacement_vector <- c(
     "Aja Forte" = "Aja Forte",
     "=Latanya Wilson" = "Latanya Wilson",
@@ -625,13 +533,13 @@ get_family_survey <- function(update = F) {
     "Rosiland Norsworthy" = "Rosalinda Norsworthy"
   )
 
-  if (update == T) {
+  if (update == TRUE) {
     options(sm_oauth_token = Sys.getenv("knowledge_token"))
 
-    df <- surveymonkey::fetch_survey_obj(318058603) %>%
+    df <- surveymonkey::fetch_survey_obj(318058603) |>
       surveymonkey::parse_survey()
 
-    family_survey_coalesced <- df %>%
+    family_survey_coalesced <- df |>
       dplyr::mutate(teacher = dplyr::coalesce(
         `Please select your child's teacher.`,
         `Please select your child's teacher. - Other (please specify)`,
@@ -694,7 +602,7 @@ get_family_survey <- function(update = F) {
         `Please select your child's teacher._30`,
         `Please select your child's teacher. - Other (please specify)_30`,
         `Please write in the name of your child's teacher.`
-      )) %>%
+      )) |>
       dplyr::select(-c(
         `Please select your child's teacher.`,
         `Please select your child's teacher. - Other (please specify)`,
@@ -757,7 +665,7 @@ get_family_survey <- function(update = F) {
         `Please select your child's teacher._30`,
         `Please select your child's teacher. - Other (please specify)_30`,
         `Please write in the name of your child's teacher.`
-      )) %>%
+      )) |>
       dplyr::mutate(teacher = stringr::str_replace_all(teacher, replacement_vector))
 
     readr::write_rds(family_survey_coalesced, here::here("data/family_survey.rds"))
@@ -768,26 +676,6 @@ get_family_survey <- function(update = F) {
   return(family_survey_coalesced)
 }
 
-#' @title Student Scores Mississippi
-#' @description Get student scores for mississippi data
-#' @param update FALSE, optional updating
-#' @return A tibble
-#' @export
-get_student_scores_mississippi <- function(update = F) {
-  if (update == T) {
-    df <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1yrqXouJ84glL-4uH7Nw-47HqhzQP1jINDgRy8nCUaxs/edit#gid=777182936",
-      sheet = "SCORED"
-    ) %>%
-      janitor::clean_names() %>%
-      dplyr::select(-9)
-
-    readr::write_rds(df, here::here("data/student_scores_mississippi.rds"))
-  } else {
-    df <- readr::read_rds(here::here("data/student_scores_mississippi.rds"))
-  }
-
-  return(df)
-}
 
 #' @title Diagnostic Survey Update
 #' @description Get the diagnostic survey
@@ -799,44 +687,44 @@ get_diagnostic_survey <- function(update = FALSE) {
     ### Set OAuth for SurveyMonkey ###
     options(sm_oauth_token = "nTxsBf-VruLlFgxHpCRlmMJMRqC060bQZGd6VzrfDm5oX4Il5u-IhH2CxD4lwCiblicg3896pqYH0HzhmOr1b0SWMF9bTaX8-B9PmQVS2zFkNmfs5xRVNU1PMZoVfeBG")
     ## Get Diagnostic ##
-    diagnostic_surveymonkey <- surveymonkey::fetch_survey_obj(306944493) %>%
-      surveymonkey::parse_survey() %>%
+    diagnostic_surveymonkey <- surveymonkey::fetch_survey_obj(306944493) |>
+      surveymonkey::parse_survey() |>
       janitor::clean_names()
     ## Get EIC Diagnostic ##
-    eic_diagnostic <- surveymonkey::fetch_survey_obj(309894856) %>%
-      surveymonkey::parse_survey() %>%
-      janitor::clean_names() %>%
-      mutate(your_school = ifelse(is.na(your_school), as.character(your_district), as.character(your_school))) %>%
-      select(-your_district) %>%
+    eic_diagnostic <- surveymonkey::fetch_survey_obj(309894856) |>
+      surveymonkey::parse_survey() |>
+      janitor::clean_names() |>
+      mutate(your_school = ifelse(is.na(your_school), as.character(your_district), as.character(your_school))) |>
+      select(-your_district) |>
       dplyr::rename(
         your_site_district_parish_network_or_school_br_br = your_school,
         your_site_district_parish_network_or_school_br_br_other_please_specify = your_school_other_please_specify
       )
     ## Get State-Level Diagnostic ##
-    state_diagnostic_surveymonkey <- surveymonkey::fetch_survey_obj(310477252) %>%
-      surveymonkey::parse_survey() %>%
+    state_diagnostic_surveymonkey <- surveymonkey::fetch_survey_obj(310477252) |>
+      surveymonkey::parse_survey() |>
       janitor::clean_names()
 
     ## Make id column with all lower, add an underscore between initials and birthday ###
-    diagnostic_final <- diagnostic_surveymonkey %>%
+    diagnostic_final <- diagnostic_surveymonkey |>
       rename(
         your_site_district_parish_network_or_school_br_br = your_site_district_parish_network_or_school,
         your_site_district_parish_network_or_school_br_br_other_please_specify = your_site_district_parish_network_or_school_other_please_specify
-      ) %>%
+      ) |>
       ### Join in EIC Diagnostic ###
-      dplyr::full_join(eic_diagnostic) %>%
+      dplyr::full_join(eic_diagnostic) |>
       ### Join in State-Level Diagnostic ###
-      dplyr::full_join(state_diagnostic_surveymonkey) %>%
+      dplyr::full_join(state_diagnostic_surveymonkey) |>
       ### Coalesce site name columns ###
       dplyr::mutate(your_site_district_parish_network_or_school_br_br = dplyr::coalesce(
         your_site_district_parish_network_or_school_br_br,
         your_site_district_parish_network_or_school_br_br_other_please_specify
-      )) %>%
+      )) |>
       #### Make IDs ###
       dplyr::mutate(id = TeachingLab::id_maker(
         initials = please_write_in_your_3_initials_if_you_do_not_have_a_middle_initial_please_write_x_br_this_is_used_to_link_the_diagnostic_and_follow_up_surveys_but_is_kept_confidential_br_br,
         birthday = please_write_in_your_four_digit_birthday_mmdd_br_this_is_used_to_link_the_diagnostic_and_follow_up_surveys_but_is_kept_confidential
-      )) %>%
+      )) |>
       ### Site Naming Conventions ###
       dplyr::mutate(
         your_site_district_parish_network_or_school_br_br = TeachingLab::string_replace(
@@ -859,6 +747,16 @@ get_diagnostic_survey <- function(update = FALSE) {
           "EMST",
           "NYC District 12 - EMST-IS 190, NY"
         ),
+        # your_site_district_parish_network_or_school_br_br = TeachingLab::string_replace(
+        #   your_site_district_parish_network_or_school_br_br,
+        #   "27",
+        #   "NYC District 27 - District-wide, NY"
+        # ),
+        # your_site_district_parish_network_or_school_br_br = TeachingLab::string_replace(
+        #   your_site_district_parish_network_or_school_br_br,
+        #   "hannel",
+        #   "NYC District 27 - District-wide, NY"
+        # ),
         your_site_district_parish_network_or_school_br_br = TeachingLab::string_replace(
           your_site_district_parish_network_or_school_br_br,
           "Coupee",
@@ -890,6 +788,7 @@ get_diagnostic_survey <- function(update = FALSE) {
     readr::write_rds(diagnostic_final, here::here("Dashboards/DiagnosticSurvey/data/diagnostic.rds"))
     readr::write_rds(diagnostic_final, here::here("Dashboards/DiagnosticComplete/data/diagnostic.rds"))
     readr::write_rds(diagnostic_final, here::here("data/diagnostic.rds"))
+    readr::write_rds(diagnostic_final, here::here("Dashboards/SiteCollectionProgress/data/diagnostic.rds"))
   } else {
     diagnostic_final <- readr::read_rds(here::here("data/diagnostic.rds"))
   }
@@ -902,8 +801,8 @@ get_diagnostic_survey <- function(update = FALSE) {
 #' @param update FALSE, optional updating
 #' @return A tibble
 #' @export
-get_knowledge_assessments <- function(update = F) {
-  if (update == T) {
+get_knowledge_assessments <- function(update = FALSE) {
+  if (update == TRUE) {
     options(sm_oauth_token = "wD.rd9HKenA2QV2Z2zV.kJwL7533YR3TcbP0Ii7--tHadLRlID-hv5Kz8oAVvHsKXUSn9KRnzz31DcKqb8vcLMqjuHjYz7r3vW7kQj3TZ3oboSG5mvxi5ZijlFhL8ylm")
 
     ids_surveys <- tibble::tribble(
@@ -946,8 +845,8 @@ get_knowledge_assessments <- function(update = F) {
 
     ################## Secondary Data Grab from Diagnostic for Misssissippi #################################
 
-    special_diagnostic_survey_fetch <- surveymonkey::fetch_survey_obj(id = 306944493) %>%
-      surveymonkey::parse_survey() %>%
+    special_diagnostic_survey_fetch <- surveymonkey::fetch_survey_obj(id = 306944493) |>
+      surveymonkey::parse_survey() |>
       dplyr::mutate(
         `Your site (district, parish, network, or school)` = TeachingLab::string_replace(
           `Your site (district, parish, network, or school)`,
@@ -996,7 +895,7 @@ get_knowledge_assessments <- function(update = F) {
         )
       )
 
-    mississippi_knowledge_assessments <- special_diagnostic_survey_fetch %>%
+    mississippi_knowledge_assessments <- special_diagnostic_survey_fetch |>
       dplyr::rename(
         `Please write in your 3 initials. If you do not have a middle initial, please write X.<br>(This is used to link the pre/post assessments, but is kept confidential.)` = `Please write in your 3 initials. If you do not have a middle initial, please write X.<br>(This is used to link the diagnostic and follow-up surveys, but is kept confidential.)<br><br>`,
         `Please write in your four-digit birthday (MMDD).<br>(This is used to link the pre/post assessments, but is kept confidential.)` = `Please write in your four-digit birthday (MMDD).<br>(This is used to link the diagnostic and follow-up surveys, but is kept confidential.)`,
@@ -1012,7 +911,7 @@ get_knowledge_assessments <- function(update = F) {
         `Which of the following statements describe math instructional shifts associated with college-and-career readiness standards? Select all that apply. - Making connections between math topics across grades.` = `Which of the following statements describe math instructional shifts associated with college-and-career readiness standards? Select all that apply. - Making connections between math topics across grades`,
         `Which of the following statements describe math instructional shifts associated with college-and-career readiness standards? Select all that apply. - Prioritizing conceptual understanding over procedural skills.` = `Which of the following statements describe math instructional shifts associated with college-and-career readiness standards? Select all that apply. - Prioritizing conceptual understanding over procedural skills`,
         `Which of the following statements describe math instructional shifts associated with college-and-career readiness standards? Select all that apply. - Creating opportunities for students to work on math skills above their grade-level.` = `Which of the following statements describe math instructional shifts associated with college-and-career readiness standards? Select all that apply. - Creating opportunities for students to work on math skills above their grade-level`
-      ) %>%
+      ) |>
       dplyr::select(dplyr::all_of(c(
         "survey_id",
         "collector_id",
@@ -1052,7 +951,7 @@ get_knowledge_assessments <- function(update = F) {
         "When supporting students with unfinished learning, which of the following are MISSTEPS when it comes to maintaining focus and coherence? Select all that apply. - Choosing content for intervention based solely on students’ weakest area",
         "When supporting students with unfinished learning, which of the following are MISSTEPS when it comes to maintaining focus and coherence? Select all that apply. - I’m not sure",
         "Which of the following is the most effective at addressing unfinished learning?"
-      ))) %>%
+      ))) |>
       dplyr::select(-tidyselect::contains("not sure"))
 
     ############################################# SAVE ALL SURVEYS #############################################
@@ -1063,15 +962,15 @@ get_knowledge_assessments <- function(update = F) {
     )
     ########################################################################################################################
 
-    survey19 <- survey19 %>%
-      bind_rows(mississippi_knowledge_assessments %>% select(1:10, 24:33) %>% mutate(
+    survey19 <- survey19 |>
+      bind_rows(mississippi_knowledge_assessments |> select(1:10, 24:33) |> mutate(
         score = NA,
         ip_address = NA,
         is_correct = NA,
         id = NA
       ))
     survey21 <- survey21 %>%
-      bind_rows(mississippi_knowledge_assessments %>% select(1:10, 11:23) %>% mutate(
+      bind_rows(mississippi_knowledge_assessments |> select(1:10, 11:23) |> mutate(
         score = NA,
         ip_address = NA,
         is_correct = NA,
@@ -2426,7 +2325,7 @@ get_coaching_feedback <- function(update = FALSE) {
         `They effectively build a safe learning environment.` = `How much do you agree with the following statements about your coach? - They effectively build a safe learning environment.`,
         `They make necessary adjustments based on my needs.` = `How much do you agree with the following statements about your coach? - They make necessary adjustments based on my needs.`,
         Additional_feedback = `What additional feedback do you have about their coaching skills, if any?`,
-        Gone_well = `What has gone well in your coaching sessions? `,
+        Gone_well = `What has gone well in your coaching sessions?`,
         Could_be_better = `What could be better about your coaching sessions?`,
         id
       )

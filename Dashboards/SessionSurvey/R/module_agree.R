@@ -10,10 +10,10 @@ uiAgree <- function(id, label = "Counter") {
           shiny::selectizeInput(
             inputId = ns("facilitator"),
             label = h3("Select a facilitator"),
-            choices = session_survey$Facilitator %>%
-              unique() %>%
-              as.character() %>%
-              sort() %>%
+            choices = session_survey$Facilitator |>
+              unique() |>
+              as.character() |>
+              sort() |>
               purrr::prepend("All Facilitators"),
             multiple = T,
             selected = "All Facilitators",
@@ -27,10 +27,10 @@ uiAgree <- function(id, label = "Counter") {
           shiny::selectizeInput(
             inputId = ns("content"),
             label = h3("Select a content area"),
-            choices = session_survey$`Select the content area for today’s professional learning session.` %>%
-              unique() %>%
-              as.character() %>%
-              sort() %>%
+            choices = session_survey$`Select the content area for today’s professional learning session.` |>
+              unique() |>
+              as.character() |>
+              sort() |>
               purrr::prepend("All Content Areas"),
             multiple = T,
             selected = "All Content Areas",
@@ -44,10 +44,10 @@ uiAgree <- function(id, label = "Counter") {
           shiny::selectizeInput(
             inputId = ns("course"),
             label = h3("Select a course"),
-            choices = session_survey$`Select your course.` %>%
-              unique() %>%
-              as.character() %>%
-              sort() %>%
+            choices = session_survey$`Select your course.` |>
+              unique() |>
+              as.character() |>
+              sort() |>
               purrr::prepend("All Courses"),
             multiple = T,
             selected = "All Courses",
@@ -61,10 +61,10 @@ uiAgree <- function(id, label = "Counter") {
           shiny::selectizeInput(
             inputId = ns("site"),
             label = h3("Select a site"),
-            choices = session_survey$`Select your site (district, parish, network, or school).` %>%
-              unique() %>%
-              as.character() %>%
-              sort() %>%
+            choices = session_survey$`Select your site (district, parish, network, or school).` |>
+              unique() |>
+              as.character() |>
+              sort() |>
               purrr::prepend("All Sites"),
             multiple = T,
             selected = "All Sites",
@@ -78,10 +78,10 @@ uiAgree <- function(id, label = "Counter") {
           shiny::selectizeInput(
             inputId = ns("role"),
             label = h3("Select a role"),
-            choices = session_survey$`Select your role.` %>%
-              unique() %>%
-              as.character() %>%
-              sort() %>%
+            choices = session_survey$`Select your role.` |>
+              unique() |>
+              as.character() |>
+              sort() |>
               purrr::prepend("All Roles"),
             multiple = T,
             selected = "All Roles",
@@ -187,12 +187,12 @@ uiAgree <- function(id, label = "Counter") {
           class = "ui two column stackable grid container",
           div(
             class = "sixteen wide column",
-            plotOutput(ns("percent_agree_plot"), height = "800px") %>%
+            plotOutput(ns("percent_agree_plot"), height = "800px") |>
               withSpinner(type = 3, color.background = "white")
           ),
           div(
             class = "sixteen wide column",
-            plotOutput(ns("agree_plot_ts"), height = "800px") %>%
+            plotOutput(ns("agree_plot_ts"), height = "800px") |>
               withSpinner(type = 3, color.background = "white")
           )
         )
@@ -219,45 +219,53 @@ agreeServer <- function(id) {
       )
       
       ## Data filters, then summarises ##
-      agree_plot_ts <- session_survey %>%
-        dplyr::filter(between(Date, input$date_min, input$date_max)) %>%
-        {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-        } %>%
-        {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-        } %>%
-        {
-          if (input$facilitator != "All Facilitators") dplyr::filter(., Facilitator %in% input$facilitator) else .
-        } %>%
-        {
-          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today’s professional learning session.` %in% input$content) else .
-        } %>%
-        {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-        } %>%
+      agree_plot_ts <- session_survey |>
+        dplyr::filter(between(Date, input$date_min, input$date_max)) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Sites",
+          filter_this = input$site,
+          dat_filter = `Select your site (district, parish, network, or school).`
+        ) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Roles",
+          filter_this = input$role,
+          dat_filter = `Select your role.`
+        ) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Facilitators",
+          filter_this = input$facilitator,
+          dat_filter = Facilitator
+        ) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Content Areas",
+          filter_this = input$content,
+          dat_filter = `Select the content area for today's professional learning session.`
+        ) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Courses",
+          filter_this = input$course,
+          dat_filter = `Select your course.`
+        ) |>
         select(
           Date,
-          c(
-            "How much do you agree with the following statements about this facilitator today? - They demonstrated  deep knowledge of the content they facilitated.",
-            "How much do you agree with the following statements about this facilitator today? - They facilitated the content clearly.",
-            "How much do you agree with the following statements about this facilitator today? - They effectively built a safe learning community.",
-            "How much do you agree with the following statements about this facilitator today? - They were fully prepared for the session.",
-            "How much do you agree with the following statements about this facilitator today? - They responded to the group’s needs."
-          )
-        ) %>%
-        pivot_longer(!`Date`, names_to = "question", values_to = "answer") %>%
+            `How much do you agree with the following statements about this facilitator today? - They demonstrated  deep knowledge of the content they facilitated.`,
+            `How much do you agree with the following statements about this facilitator today? - They facilitated the content clearly.`,
+            `How much do you agree with the following statements about this facilitator today? - They effectively built a safe learning community.`,
+            `How much do you agree with the following statements about this facilitator today? - They were fully prepared for the session.`,
+            `How much do you agree with the following statements about this facilitator today? - They responded to the group’s needs.`
+        ) |>
+        pivot_longer(!`Date`, names_to = "question", values_to = "answer") |>
         dplyr::mutate(question = str_remove_all(
           question,
           "How much do you agree with the following statements about this course\\? - "
-        )) %>%
+        )) |>
         # Rename with line breaks every 27 characters
-        mutate(question = gsub("(.{28,}?)\\s", "\\1\n", question)) %>%
-        drop_na(answer) %>%
-        dplyr::group_by(question, Date) %>%
+        mutate(question = gsub("(.{28,}?)\\s", "\\1\n", question)) |>
+        drop_na(answer) |>
+        dplyr::group_by(question, Date) |>
         # Group by input variable
-        mutate(`Number Agree/Disagree` = n()) %>%
-        mutate(answer = str_remove_all(answer, "\\([:digit:]\\) ")) %>%
+        mutate(`Number Agree/Disagree` = n()) |>
+        mutate(answer = str_remove_all(answer, "\\([:digit:]\\) ")) |>
         mutate(
           Rating = case_when(
             answer %in% c("Agree", "Strongly agree") ~ "Agree/Strongly Agree",
@@ -268,16 +276,16 @@ agreeServer <- function(id) {
             input$scale_adjust == "1 week" ~ paste0(year(Date), lubridate::week(Date)),
             input$scale_adjust == "1 day" ~ paste0(lubridate::day(Date))
           )
-        ) %>%
-        ungroup() %>%
+        ) |>
+        ungroup() |>
         dplyr::mutate(question = str_remove_all(
           question,
           "How much do you agree with the\nfollowing statements about this\nfacilitator today\\? - "
-        )) %>%
-        group_by(date_group, question) %>%
-        mutate(Percent = `Number Agree/Disagree` / sum(`Number Agree/Disagree`) * 100) %>%
-        filter(Rating == "Agree/Strongly Agree") %>%
-        group_by(date_group, Rating, question) %>%
+        )) |>
+        group_by(date_group, question) |>
+        mutate(Percent = `Number Agree/Disagree` / sum(`Number Agree/Disagree`) * 100) |>
+        filter(Rating == "Agree/Strongly Agree") |>
+        group_by(date_group, Rating, question) |>
         summarise(
           Percent = round(sum(Percent), 2),
           Date = Date
@@ -289,7 +297,7 @@ agreeServer <- function(id) {
     # Ggplot for time series plot
     output$agree_plot_ts <- renderPlot({
       
-      data_plot_ts() %>%
+      data_plot_ts() |>
         ggplot(aes(
           x = ymd(Date),
           y = Percent
@@ -341,25 +349,36 @@ agreeServer <- function(id) {
     ## Agree plot n size ##
     agree_plot_n <- reactive({
       
-      data_n <- session_survey %>%
-        dplyr::filter(between(Date, input$date_min, input$date_max)) %>%
-        {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-        } %>%
-        {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-        } %>%
-        {
-          if (input$facilitator != "All Facilitators") dplyr::filter(., Facilitator %in% input$facilitator) else .
-        } %>%
-        {
-          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today’s professional learning session.` %in% input$content) else .
-        } %>%
-        {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-        }
+      data_n <- session_survey |>
+        dplyr::filter(between(Date, input$date_min, input$date_max)) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Sites",
+          filter_this = input$site,
+          dat_filter = `Select your site (district, parish, network, or school).`
+        ) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Roles",
+          filter_this = input$role,
+          dat_filter = `Select your role.`
+        ) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Facilitators",
+          filter_this = input$facilitator,
+          dat_filter = Facilitator
+        ) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Content Areas",
+          filter_this = input$content,
+          dat_filter = `Select the content area for today's professional learning session.`
+        ) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Courses",
+          filter_this = input$course,
+          dat_filter = `Select your course.`
+        )
       
       nrow(data_n)
+      
     })
 
     # Agree Percent Plot
@@ -375,41 +394,50 @@ agreeServer <- function(id) {
         need(input$date_min <= input$date_max, "Please select a minimum date that is less than the maximum.")
       )
 
-      agree_plot <- session_survey %>%
-        dplyr::filter(between(Date, input$date_min, input$date_max)) %>%
-        {
-          if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
-        } %>%
-        {
-          if (input$role != "All Roles") dplyr::filter(., `Select your role.` %in% input$role) else .
-        } %>%
-        {
-          if (input$facilitator != "All Facilitators") dplyr::filter(., Facilitator %in% input$facilitator) else .
-        } %>%
-        {
-          if (input$content != "All Content Areas") dplyr::filter(., `Select the content area for today’s professional learning session.` %in% input$content) else .
-        } %>%
-        {
-          if (input$course != "All Courses") dplyr::filter(., `Select your course.` %in% input$course) else .
-        } %>%
-        select(c(
-          "How much do you agree with the following statements about this facilitator today? - They demonstrated  deep knowledge of the content they facilitated.",
-          "How much do you agree with the following statements about this facilitator today? - They facilitated the content clearly.",
-          "How much do you agree with the following statements about this facilitator today? - They effectively built a safe learning community.",
-          "How much do you agree with the following statements about this facilitator today? - They were fully prepared for the session.",
-          "How much do you agree with the following statements about this facilitator today? - They responded to the group’s needs."
-        )) %>%
-        pivot_longer(everything(), names_to = "Question", values_to = "Response") %>%
-        drop_na() %>%
+      agree_plot <- session_survey |>
+        dplyr::filter(between(Date, input$date_min, input$date_max)) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Sites",
+          filter_this = input$site,
+          dat_filter = `Select your site (district, parish, network, or school).`
+        ) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Roles",
+          filter_this = input$role,
+          dat_filter = `Select your role.`
+        ) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Facilitators",
+          filter_this = input$facilitator,
+          dat_filter = Facilitator
+        ) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Content Areas",
+          filter_this = input$content,
+          dat_filter = `Select the content area for today's professional learning session.`
+        ) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Courses",
+          filter_this = input$course,
+          dat_filter = `Select your course.`
+        ) |>
+        select(
+          `How much do you agree with the following statements about this facilitator today? - They demonstrated  deep knowledge of the content they facilitated.`,
+          `How much do you agree with the following statements about this facilitator today? - They facilitated the content clearly.`,
+          `How much do you agree with the following statements about this facilitator today? - They effectively built a safe learning community.`,
+          `How much do you agree with the following statements about this facilitator today? - They were fully prepared for the session.`,
+          `How much do you agree with the following statements about this facilitator today? - They responded to the group’s needs.`) |>
+        pivot_longer(everything(), names_to = "Question", values_to = "Response") |>
+        drop_na() |>
         dplyr::mutate(Question = str_remove_all(
           Question,
           "How much do you agree with the following statements about this facilitator today\\? - "
-        )) %>%
-        group_by(Question, Response) %>%
-        count() %>%
-        ungroup() %>%
-        group_by(Question) %>%
-        mutate(Question = str_wrap(Question, width = 30)) %>%
+        )) |>
+        group_by(Question, Response) |>
+        count() |>
+        ungroup() |>
+        group_by(Question) |>
+        mutate(Question = str_wrap(Question, width = 30)) |>
         summarise(
           n = n,
           Response = Response,
@@ -422,9 +450,14 @@ agreeServer <- function(id) {
 
     # Ggplot for agree percent plot
     output$percent_agree_plot <- renderPlot({
-      ggplot(data = data_plot_agree(), aes(x = Question, y = Percent, fill = factor(Response))) +
+      ggplot(data = data_plot_agree(), aes(x = Question, y = 
+                                             Percent, 
+                                           fill = factor(Response))) +
         geom_col() +
-        geom_text(aes(label = if_else(Percent >= 3, paste0(round(Percent), "%"), "")), position = position_stack(vjust = 0.5)) +
+        geom_text(aes(label = if_else(Percent >= 3, paste0(round(Percent), "%"), "")), 
+                  position = position_stack(vjust = 0.5),
+                  family = "Calibri Bold",
+                  fontface = "bold") +
         scale_fill_manual(values = c(
           "(1) Strongly disagree" = "#040404", "(2) Disagree" = "#032E3F",
           "(3) Neither agree nor disagree" = "#02587A", "(4) Agree" = "#0182B4", "(5) Strongly agree" = "#00ACF0"
@@ -445,7 +478,7 @@ agreeServer <- function(id) {
           plot.title = element_text(lineheight = 1.1, size = 20, face = "bold"),
           plot.subtitle = element_text(size = 14, face = "bold"),
           legend.key.size = unit(1.25, "cm"),
-          legend.text = element_text(size = 9)
+          legend.text = element_text(size = 10)
         )
     })
 
