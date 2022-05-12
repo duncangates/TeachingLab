@@ -1,3 +1,4 @@
+#### Coaching Participant Feedback Dashboard ####
 
 ### Libraries Load ###
 library(dplyr)
@@ -31,7 +32,7 @@ library(tlShiny)
 #            "kristen.taylor@teachinglab.org",
 #            "ryan.stewart@gmail.com"))
 ## Write approved list to dashboard data folder ##
-# readr::write_rds(approved_emails_list, "Dashboards/SessionSurvey/data/employees.rds")
+# readr::write_rds(approved_emails_list, "Dashboards/CoachingParticipantFeedback/data/employees.rds")
 
 ######## THIS WORKS BY RUNNING THE ABOVE CODE LOCALLY #######
 approved_emails_list <- readr::read_rds("data/employees.rds")

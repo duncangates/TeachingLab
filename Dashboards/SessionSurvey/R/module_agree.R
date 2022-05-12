@@ -188,6 +188,8 @@ uiAgree <- function(id, label = "Counter") {
           div(
             class = "sixteen wide column",
             plotOutput(ns("percent_agree_plot"), height = "800px") |>
+              withSpinner(type = 3, color.background = "white"),
+            verbatimTextOutput(ns("agree_strongly_agree_text")) |>
               withSpinner(type = 3, color.background = "white")
           ),
           div(
@@ -444,14 +446,108 @@ agreeServer <- function(id) {
           Percent = n / sum(n) * 100
         )
 
+      # print(unique(agree_plot$Question))
       agree_plot
+    })
+    
+    agree_text <- reactive({
+      
+      ## List of validators ##
+      validate(
+        need(!is.null(input$facilitator), "Please select at least one facilitator"),
+        need(!is.null(input$role), "Please select at least one role"),
+        need(!is.null(input$site), "Please select at least one site"),
+        need(!is.null(input$content), "Please select at least one content area"),
+        need(!is.null(input$course), "Please select at least one course"),
+        need(input$date_min <= input$date_max, "Please select a minimum date that is less than the maximum.")
+      )
+      
+      plot_agree <- session_survey |>
+        dplyr::filter(between(Date, input$date_min, input$date_max)) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Sites",
+          filter_this = input$site,
+          dat_filter = `Select your site (district, parish, network, or school).`
+        ) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Roles",
+          filter_this = input$role,
+          dat_filter = `Select your role.`
+        ) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Facilitators",
+          filter_this = input$facilitator,
+          dat_filter = Facilitator
+        ) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Content Areas",
+          filter_this = input$content,
+          dat_filter = `Select the content area for today's professional learning session.`
+        ) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Courses",
+          filter_this = input$course,
+          dat_filter = `Select your course.`
+        ) |>
+        select(
+          `How much do you agree with the following statements about this facilitator today? - They demonstrated  deep knowledge of the content they facilitated.`,
+          `How much do you agree with the following statements about this facilitator today? - They facilitated the content clearly.`,
+          `How much do you agree with the following statements about this facilitator today? - They effectively built a safe learning community.`,
+          `How much do you agree with the following statements about this facilitator today? - They were fully prepared for the session.`,
+          `How much do you agree with the following statements about this facilitator today? - They responded to the group’s needs.`) |>
+        pivot_longer(everything(), names_to = "Question", values_to = "Response") |>
+        drop_na() |>
+        dplyr::mutate(Question = str_remove_all(
+          Question,
+          "How much do you agree with the following statements about this facilitator today\\? - "
+        )) |>
+        group_by(Question, Response) |>
+        count() |>
+        ungroup() |>
+        group_by(Question) |>
+        mutate(Question = str_wrap(Question, width = 30)) |>
+        summarise(
+          n = n,
+          Response = Response,
+          Percent = n / sum(n) * 100
+        )
+      
+      prepared_agree <- plot_agree |>
+        tlShiny::agree_strongly_agree(question = "They were fully prepared for\nthe session.")
+      
+      responded_agree <- plot_agree |>
+        tlShiny::agree_strongly_agree(question = "They responded to the group’s\nneeds.")
+      
+      facilitated_agree <- plot_agree |>
+        tlShiny::agree_strongly_agree(question = "They facilitated the content\nclearly.")
+      
+      effectively_agree <- plot_agree |>
+        tlShiny::agree_strongly_agree(question = "They effectively built a safe\nlearning community.")
+      
+      demonstrated_agree <- plot_agree |>
+        tlShiny::agree_strongly_agree(question = "They demonstrated deep\nknowledge of the content they\nfacilitated.")
+      
+      # print(plot_agree)
+      
+      new_data <- c(paste0("• ", prepared_agree, " agreed they were fully prepared for the session.", "\n",
+                           "• ", responded_agree, " agreed they responded to the group’s needs.", "\n",
+                           "• ", facilitated_agree, " agreed they facilitated the content clearly.", "\n",
+                           "• ", effectively_agree, " agreed they effectively built a safe learning community.", "\n",
+                           "• ", demonstrated_agree, " agreed they demonstrated deep knowledge of the content they facilitated."))
+      
+      print(new_data)
+      new_data
+    })
+    
+    output$agree_strongly_agree_text <- renderText({
+      agree_text()
     })
 
 
     # Ggplot for agree percent plot
     output$percent_agree_plot <- renderPlot({
-      ggplot(data = data_plot_agree(), aes(x = Question, y = 
-                                             Percent, 
+      ggplot(data = data_plot_agree(), aes(x = Question, 
+                                           y = Percent, 
                                            fill = factor(Response))) +
         geom_col() +
         geom_text(aes(label = if_else(Percent >= 3, paste0(round(Percent), "%"), "")), 
@@ -478,7 +574,7 @@ agreeServer <- function(id) {
           plot.title = element_text(lineheight = 1.1, size = 20, face = "bold"),
           plot.subtitle = element_text(size = 14, face = "bold"),
           legend.key.size = unit(1.25, "cm"),
-          legend.text = element_text(size = 10)
+          legend.text = element_text(size = 12)
         )
     })
 

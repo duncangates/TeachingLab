@@ -20,4 +20,21 @@ options(spinner.color = "#04ABEB")
 
 ### info page --------------------------------------------------- ###
 
-info_page <- div()
+info_page <- div(
+  id = "check",
+  fluidRow(
+    column(12,
+           align = "center",
+           offset = 2,
+           p("test")
+           # conditionalPanel(
+           #   condition = "input.g.id === null",
+           #   
+           # ),
+           # conditionalPanel(
+           #   condition = "input.g.id !== null",
+           #   div(id = "main-ui")
+           # )
+    )
+  )
+)

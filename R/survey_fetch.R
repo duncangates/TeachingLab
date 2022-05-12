@@ -56,12 +56,14 @@ fetch_survey_2 <- function(id, name) {
   #### Assign to environment with format "surveynumber" ####
   assign(value = survey_parsed, x = paste0("survey", name), envir = .GlobalEnv)
   #### Compile dataframe of all the surveys new names and add ####
-  name_df <- tibble::tibble(names = paste0("survey", name)) %>%
-    dplyr::mutate(count = name) %>%
-    dplyr::left_join(ids_surveys, by = "count") %>%
-    dplyr::mutate(title = stringr::str_replace_all(title, " ", "")) %>%
+  name_df <- tibble::tibble(names = paste0("survey", name)) |>
+    dplyr::mutate(count = name) |>
+    dplyr::left_join(ids_surveys, by = "count") |>
+    dplyr::mutate(title = stringr::str_replace_all(title, " ", "")) |>
     dplyr::mutate(title = stringr::str_replace_all(title, ":", ""))
+  
   print(name_df)
+  
   #### Write to data folder with original name####
   purrr::map2(.x = name_df$names, .y = name_df$title, ~ readr::write_rds(x = get(.x), file = paste0(here::here("Dashboards/KnowledgeAssessments/data/unprocessed/"), .y, ".rds")))
 }
@@ -838,10 +840,12 @@ get_knowledge_assessments <- function(update = FALSE) {
       "Cycle of Inquiry VI- Summarizing the Mathematics", 318624296L,
       "Math: Supporting Math Intervention", 318426699L,
     ) %>%
-      dplyr::mutate(responses = purrr::map(id, ~ as.numeric(surveymonkey::fetch_survey_obj(id = .x)$`response_count`))) %>%
-      dplyr::filter(responses > 0) %>%
-      dplyr::filter(title != "Math: Cycle of Inquiry II - Making Math Visible") %>% # For now remove (Making Math Visible), duplicate row issue - see Github issue
+      dplyr::mutate(responses = purrr::map(id, ~ as.numeric(surveymonkey::fetch_survey_obj(id = .x)$`response_count`))) |>
+      dplyr::filter(responses > 0) |>
+      dplyr::filter(title != "Math: Cycle of Inquiry II - Making Math Visible") |> # For now remove (Making Math Visible), duplicate row issue - see Github issue
       dplyr::mutate(count = dplyr::row_number())
+    
+    assign(value = ids_surveys, x = "ids_surveys", envir = .GlobalEnv)
 
     ################## Secondary Data Grab from Diagnostic for Misssissippi #################################
 
@@ -960,6 +964,7 @@ get_knowledge_assessments <- function(update = FALSE) {
       .x = ids_surveys$id, .y = ids_surveys$count,
       ~ purrr::safely(TeachingLab::fetch_survey_2(id = .x, name = .y))
     )
+    
     ########################################################################################################################
 
     survey19 <- survey19 |>
@@ -969,7 +974,7 @@ get_knowledge_assessments <- function(update = FALSE) {
         is_correct = NA,
         id = NA
       ))
-    survey21 <- survey21 %>%
+    survey21 <- survey21 |>
       bind_rows(mississippi_knowledge_assessments |> select(1:10, 11:23) |> mutate(
         score = NA,
         ip_address = NA,
@@ -2079,77 +2084,77 @@ get_knowledge_assessments <- function(update = FALSE) {
     ################################################################################################################################
 
 
-    ela_school_leaders <- readr::read_rds(here::here("data/knowledge_assessments/ela_school_leaders.rds")) %>%
+    ela_school_leaders <- readr::read_rds(here::here("data/knowledge_assessments/ela_school_leaders.rds")) |>
       mutate(know_assess = "ela_school_leaders")
-    ela_cycle_inquiry_complex_text <- readr::read_rds(here::here("data/knowledge_assessments/ela_cycle_inquiry_complex_text.rds")) %>%
+    ela_cycle_inquiry_complex_text <- readr::read_rds(here::here("data/knowledge_assessments/ela_cycle_inquiry_complex_text.rds")) |>
       mutate(know_assess = "ela_cycle_inquiry_complex_text")
-    ela_cycle_inquiry_speaking_listening <- readr::read_rds(here::here("data/knowledge_assessments/ela_cycle_inquiry_speaking_listening.rds")) %>%
+    ela_cycle_inquiry_speaking_listening <- readr::read_rds(here::here("data/knowledge_assessments/ela_cycle_inquiry_speaking_listening.rds")) |>
       mutate(know_assess = "ela_cycle_inquiry_speaking_listening")
-    ela_foundational_skills <- readr::read_rds(here::here("data/knowledge_assessments/ela_foundational_skills.rds")) %>%
+    ela_foundational_skills <- readr::read_rds(here::here("data/knowledge_assessments/ela_foundational_skills.rds")) |>
       mutate(know_assess = "ela_foundational_skills")
-    ela_general_bootcamp <- readr::read_rds(here::here("data/knowledge_assessments/ela_general_bootcamp.rds")) %>%
+    ela_general_bootcamp <- readr::read_rds(here::here("data/knowledge_assessments/ela_general_bootcamp.rds")) |>
       mutate(know_assess = "ela_general_bootcamp")
-    ela_cycle_inquiry_curriculum_flex <- readr::read_rds(here::here("data/knowledge_assessments/ela_cycle_inquiry_curriculum_flex.rds")) %>%
+    ela_cycle_inquiry_curriculum_flex <- readr::read_rds(here::here("data/knowledge_assessments/ela_cycle_inquiry_curriculum_flex.rds")) |>
       mutate(know_assess = "ela_cycle_inquiry_curriculum_flex")
-    ela_foundational_skills_bootcamp_skills_k2 <- readr::read_rds(here::here("data/knowledge_assessments/ela_foundational_skills_cycle_2.rds")) %>%
+    ela_foundational_skills_bootcamp_skills_k2 <- readr::read_rds(here::here("data/knowledge_assessments/ela_foundational_skills_cycle_2.rds")) |>
       mutate(know_assess = "ela_foundational_skills_cycle_2")
-    ela_el_bootcamp_all_block_3_5 <- readr::read_rds(here::here("data/knowledge_assessments/ela_bootcamp_all_block_3_5.rds")) %>%
+    ela_el_bootcamp_all_block_3_5 <- readr::read_rds(here::here("data/knowledge_assessments/ela_bootcamp_all_block_3_5.rds")) |>
       mutate(know_assess = "ela_bootcamp_all_block_3_5")
-    ela_guidebooks_cycle_1 <- readr::read_rds(here::here("data/knowledge_assessments/ela_guidebooks_cycle_inquiry_1.rds")) %>%
+    ela_guidebooks_cycle_1 <- readr::read_rds(here::here("data/knowledge_assessments/ela_guidebooks_cycle_inquiry_1.rds")) |>
       mutate(know_assess = "ela_guidebooks_cycle_inquiry_1")
-    ela_guidebooks_diverse_learners_bootcamp_leader <- readr::read_rds(here::here("data/knowledge_assessments/ela_guidebooks_diverse_learners_bootcamp_leader.rds")) %>%
+    ela_guidebooks_diverse_learners_bootcamp_leader <- readr::read_rds(here::here("data/knowledge_assessments/ela_guidebooks_diverse_learners_bootcamp_leader.rds")) |>
       mutate(know_assess = "ela_guidebooks_diverse_learners_bootcamp_leader")
-    ela_guidebooks_diverse_learners_bootcamp_teacher <- readr::read_rds(here::here("data/knowledge_assessments/ela_guidebooks_diverse_learners_bootcamp_teacher.rds")) %>%
+    ela_guidebooks_diverse_learners_bootcamp_teacher <- readr::read_rds(here::here("data/knowledge_assessments/ela_guidebooks_diverse_learners_bootcamp_teacher.rds")) |>
       mutate(know_assess = "ela_guidebooks_diverse_learners_bootcamp_teacher")
-    ela_guidebooks_diverse_learners_bootcamp_writing <- readr::read_rds(here::here("data/knowledge_assessments/ela_guidebooks_diverse_learners_bootcamp_writing.rds")) %>%
+    ela_guidebooks_diverse_learners_bootcamp_writing <- readr::read_rds(here::here("data/knowledge_assessments/ela_guidebooks_diverse_learners_bootcamp_writing.rds")) |>
       mutate(know_assess = "ela_guidebooks_diverse_learners_bootcamp_writing")
-    ela_guidebooks_diverse_learners_bootcamp_fluency <- readr::read_rds(here::here("data/knowledge_assessments/ela_guidebooks_diverse_learners_bootcamp_fluency.rds")) %>%
+    ela_guidebooks_diverse_learners_bootcamp_fluency <- readr::read_rds(here::here("data/knowledge_assessments/ela_guidebooks_diverse_learners_bootcamp_fluency.rds")) |>
       mutate(know_assess = "ela_guidebooks_diverse_learners_bootcamp_fluency")
-    ela_guidebooks_diverse_learners_bootcamp_vocabulary <- readr::read_rds(here::here("data/knowledge_assessments/ela_guidebooks_diverse_learners_vocabulary.rds")) %>%
+    ela_guidebooks_diverse_learners_bootcamp_vocabulary <- readr::read_rds(here::here("data/knowledge_assessments/ela_guidebooks_diverse_learners_vocabulary.rds")) |>
       mutate(know_assess = "ela_guidebooks_diverse_learners_vocabulary")
-    el_ela_hqim_enrichment <- readr::read_rds(here::here("data/knowledge_assessments/el_ela_hqim_enrichment.rds")) %>%
+    el_ela_hqim_enrichment <- readr::read_rds(here::here("data/knowledge_assessments/el_ela_hqim_enrichment.rds")) |>
       mutate(know_assess = "el_ela_hqim_enrichment")
 
-    math_accelerating_learning <- readr::read_rds(here::here("data/knowledge_assessments/math_accelerating_learning.rds")) %>%
+    math_accelerating_learning <- readr::read_rds(here::here("data/knowledge_assessments/math_accelerating_learning.rds")) |>
       mutate(know_assess = "math_accelerating_learning")
-    math_accelerating_learning_eic <- readr::read_rds(here::here("data/knowledge_assessments/math_accelerating_learning_eic.rds")) %>%
+    math_accelerating_learning_eic <- readr::read_rds(here::here("data/knowledge_assessments/math_accelerating_learning_eic.rds")) |>
       mutate(know_assess = "math_accelerating_learning_eic")
-    math_bootcamp <- readr::read_rds(here::here("data/knowledge_assessments/math_bootcamp.rds")) %>%
+    math_bootcamp <- readr::read_rds(here::here("data/knowledge_assessments/math_bootcamp.rds")) |>
       mutate(know_assess = "math_bootcamp")
-    math_bootcamp_eic <- readr::read_rds(here::here("data/knowledge_assessments/math_bootcamp_eic.rds")) %>%
+    math_bootcamp_eic <- readr::read_rds(here::here("data/knowledge_assessments/math_bootcamp_eic.rds")) |>
       mutate(know_assess = "math_bootcamp_eic")
-    math_cycle_of_inquiry_1 <- readr::read_rds(here::here("data/knowledge_assessments/math_cycle_of_inquiry_1.rds")) %>%
+    math_cycle_of_inquiry_1 <- readr::read_rds(here::here("data/knowledge_assessments/math_cycle_of_inquiry_1.rds")) |>
       mutate(know_assess = "math_cycle_of_inquiry_1")
-    math_cycle_of_inquiry_3 <- readr::read_rds(here::here("data/knowledge_assessments/math_cycle_of_inquiry_3.rds")) %>%
+    math_cycle_of_inquiry_3 <- readr::read_rds(here::here("data/knowledge_assessments/math_cycle_of_inquiry_3.rds")) |>
       mutate(know_assess = "math_cycle_of_inquiry_3")
-    math_cycle_inquiry_5 <- readr::read_rds(here::here("data/knowledge_assessments/math_cycle_inquiry_5.rds")) %>%
+    math_cycle_inquiry_5 <- readr::read_rds(here::here("data/knowledge_assessments/math_cycle_inquiry_5.rds")) |>
       mutate(know_assess = "math_cycle_inquiry_5")
-    supporting_math_intervention <- readr::read_rds(here::here("data/knowledge_assessments/math_supporting_math_intervention.rds")) %>%
+    supporting_math_intervention <- readr::read_rds(here::here("data/knowledge_assessments/math_supporting_math_intervention.rds")) |>
       mutate(know_assess = "math_supporting_math_intervention")
 
-    all_knowledge_assessments <- ela_school_leaders %>%
-      dplyr::full_join(ela_cycle_inquiry_complex_text) %>%
-      dplyr::full_join(ela_cycle_inquiry_speaking_listening) %>%
-      dplyr::full_join(ela_foundational_skills) %>%
-      dplyr::full_join(ela_general_bootcamp) %>%
-      dplyr::full_join(ela_cycle_inquiry_curriculum_flex) %>%
-      dplyr::full_join(ela_foundational_skills_bootcamp_skills_k2) %>%
-      dplyr::full_join(ela_el_bootcamp_all_block_3_5) %>%
-      dplyr::full_join(ela_guidebooks_cycle_1) %>%
-      dplyr::full_join(ela_guidebooks_diverse_learners_bootcamp_leader) %>%
-      dplyr::full_join(ela_guidebooks_diverse_learners_bootcamp_teacher) %>%
-      dplyr::full_join(ela_guidebooks_diverse_learners_bootcamp_writing) %>%
-      dplyr::full_join(ela_guidebooks_diverse_learners_bootcamp_fluency) %>%
-      dplyr::full_join(ela_guidebooks_diverse_learners_bootcamp_vocabulary) %>%
-      dplyr::full_join(el_ela_hqim_enrichment) %>%
-      dplyr::full_join(math_accelerating_learning) %>%
-      dplyr::full_join(math_accelerating_learning_eic) %>%
-      dplyr::full_join(math_bootcamp) %>%
-      dplyr::full_join(math_bootcamp_eic) %>%
-      dplyr::full_join(math_cycle_of_inquiry_1) %>%
-      dplyr::full_join(math_cycle_of_inquiry_3) %>%
-      dplyr::full_join(math_cycle_inquiry_5) %>%
-      dplyr::full_join(supporting_math_intervention) %>%
+    all_knowledge_assessments <- ela_school_leaders |>
+      dplyr::full_join(ela_cycle_inquiry_complex_text) |>
+      dplyr::full_join(ela_cycle_inquiry_speaking_listening) |>
+      dplyr::full_join(ela_foundational_skills) |>
+      dplyr::full_join(ela_general_bootcamp) |>
+      dplyr::full_join(ela_cycle_inquiry_curriculum_flex) |>
+      dplyr::full_join(ela_foundational_skills_bootcamp_skills_k2) |>
+      dplyr::full_join(ela_el_bootcamp_all_block_3_5) |>
+      dplyr::full_join(ela_guidebooks_cycle_1) |>
+      dplyr::full_join(ela_guidebooks_diverse_learners_bootcamp_leader) |>
+      dplyr::full_join(ela_guidebooks_diverse_learners_bootcamp_teacher) |>
+      dplyr::full_join(ela_guidebooks_diverse_learners_bootcamp_writing) |>
+      dplyr::full_join(ela_guidebooks_diverse_learners_bootcamp_fluency) |>
+      dplyr::full_join(ela_guidebooks_diverse_learners_bootcamp_vocabulary) |>
+      dplyr::full_join(el_ela_hqim_enrichment) |>
+      dplyr::full_join(math_accelerating_learning) |>
+      dplyr::full_join(math_accelerating_learning_eic) |>
+      dplyr::full_join(math_bootcamp) |>
+      dplyr::full_join(math_bootcamp_eic) |>
+      dplyr::full_join(math_cycle_of_inquiry_1) |>
+      dplyr::full_join(math_cycle_of_inquiry_3) |>
+      dplyr::full_join(math_cycle_inquiry_5) |>
+      dplyr::full_join(supporting_math_intervention) |>
       dplyr::mutate(
         site = stringr::str_replace_all(site, c(
           "09X323" = "NYC District 9 - PS/IS 323, NY",
@@ -2232,8 +2237,8 @@ get_knowledge_assessments <- function(update = FALSE) {
           "Wisconsin Department",
           "Wisconsin Department of Education, WI"
         )
-      ) %>%
-      dplyr::mutate(site = dplyr::na_if(site, "Teaching Lab test")) %>%
+      ) |>
+      dplyr::mutate(site = dplyr::na_if(site, "Teaching Lab test")) |>
       dplyr::mutate(question = stringr::str_remove_all(question, "_\\d"))
 
     readr::write_rds(

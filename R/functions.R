@@ -378,9 +378,10 @@ rand_vect <- function(N, M, sd = 1, pos.only = TRUE) {
 #' @param string the string to look within
 #' @param string_detect the string to detect
 #' @param string_replace the string to replace detected string with
+#' @param print FALSE whether or not to print the string
 #' @return a string
 #' @export
-string_replace <- function(string, string_detect, string_replace) {
+string_replace <- function(string, string_detect, string_replace, print = FALSE) {
   assertthat::are_equal(length(string_detect), length(string_replace))
 
   new_string <-
@@ -395,7 +396,12 @@ string_replace <- function(string, string_detect, string_replace) {
     .init = string
     )
 
-  print(new_string)
+  if (print == TRUE) {
+    print(new_string)
+  }
+  
+  new_string
+  
 }
 
 #' @title Site Replacement
@@ -438,8 +444,7 @@ site_condense <- function(data) {
   ) |>
     unique() |>
     sort() |>
-    suppressWarnings() |>
-    print()
+    suppressWarnings()
 
   return(replaced_sites)
 }

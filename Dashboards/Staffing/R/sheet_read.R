@@ -31,7 +31,8 @@ Sites <- readr::read_rds("data/Site.rds") %>%
 #   rename(PMs = 1,
 #          Email = 3) %>%
 #   select(-2) %>%
-#   bind_rows(tibble::tibble(PMs = c("Diana Bowles"), Email = "diana.bowles@teachinglab.org"))
+#   bind_rows(tibble::tibble(PMs = c("Diana Bowles", "Alicia Faust"), 
+#                            Email = c("diana.bowles@teachinglab.org", "alicia.faust@teachinglab.org")))
 ## Get Sites ##
 # sites_list <- read_sheet("https://docs.google.com/spreadsheets/d/1nqtFK9_HBMBU6XQwCmmPYkhwBXZUj8wmevF2WGYUlaM/edit#gid=1070048971",
 #                          sheet = "Sites") %>%

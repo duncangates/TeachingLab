@@ -4,7 +4,7 @@
 \alias{string_replace}
 \title{String Replace}
 \usage{
-string_replace(string, string_detect, string_replace)
+string_replace(string, string_detect, string_replace, print = FALSE)
 }
 \arguments{
 \item{string}{the string to look within}
@@ -12,6 +12,8 @@ string_replace(string, string_detect, string_replace)
 \item{string_detect}{the string to detect}
 
 \item{string_replace}{the string to replace detected string with}
+
+\item{print}{FALSE whether or not to print the string}
 }
 \value{
 a string

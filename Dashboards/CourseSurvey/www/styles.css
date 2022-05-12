@@ -33,3 +33,7 @@
 .h3 {
   line-height: 1.1;
 }
+
+pre.shiny-text-output {
+  font-family: Calibri;
+}

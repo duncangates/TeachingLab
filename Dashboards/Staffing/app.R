@@ -10,7 +10,8 @@ bs4DashTheme <- create_theme(
     sidebar_width = "0px"
   ), # main background
   bs4dash_color(
-    gray_900 = "#00e9e5", white = "#272c30",
+    gray_900 = "#00e9e5", 
+    white = "#272c30",
     green = "#68AF8F",
     lime = "#93C6AF"
   )
@@ -18,24 +19,24 @@ bs4DashTheme <- create_theme(
 
 ui <- dashboardPage(
   title = "Teaching Lab Staffing Site",
-  dashboardHeader(
-    # title = h2("PM Facing Staffing Requests",
-    #   style = "font-weight:bold; color:#E6E9EB;margin-bottom: 1rem;margin-top: 1rem;text-align: center;margin-left: auto;",
-    #   align = "center"
-    # ),
+  header = dashboardHeader(
+    title = h2("PM Staffing Requests Page",
+      style = "font-weight:bold; color:#E6E9EB;margin-bottom: 1rem;margin-top: 1rem;text-align: center;margin-left: auto;",
+      align = "center"
+    ),
     skin = "light",
-    status = "olive"
+    status = "lightblue"
   ),
   sidebar = dashboardSidebar(
     disable = T
   ),
   footer = dashboardFooter(
-    tags$head(tags$style(HTML("a {color: #3D9970}"))),
+    tags$head(tags$style(HTML("a {color: #04ABEB}"))),
     left = a(
       href = "https://www.surveymonkey.com/r/StaffingFeedback1",
       target = "_blank", "Feedback Survey"
     ),
-    right = "© Teaching Lab, 2021"
+    right = "© Teaching Lab, 2022"
   ),
   body = dashboardBody(
     HTML('<input type="text" id="client_time" name="client_time" style="display: none;"> '),
@@ -47,6 +48,7 @@ ui <- dashboardPage(
       $("input#client_time_zone_offset").val(time_now.getTimezoneOffset())
     });
   '),
+    tags$link(rel = "shortcut icon", href = "favicon.ico"),
     shinyjs::useShinyjs(),
     # fresh::use_theme(bs4DashTheme),
     # tabItems(
@@ -60,7 +62,7 @@ ui <- dashboardPage(
           closable = F,
           width = 12,
           solidHeader = TRUE,
-          status = "olive",
+          status = "lightblue",
           collapsible = F,
           # Make selection in line
           tags$head(
@@ -109,12 +111,12 @@ ui <- dashboardPage(
           width = 12,
           # height = 414,
           solidHeader = TRUE,
-          status = "olive",
+          status = "lightblue",
           collapsible = F,
           # Adjust height, width and font size of input text
           tags$head(tags$style(HTML(".input-group {height: 35px; width: 700px; font-size: 15px;}"))),
           # Adjust input of
-          tags$head(tags$style(HTML(".airdatepicker--day-name {color: #3D9970;}"))),
+          tags$head(tags$style(HTML(".airdatepicker--day-name {color: #04ABEB;}"))),
           uiOutput("call_times_gen")
         )
       ),
@@ -128,7 +130,7 @@ ui <- dashboardPage(
           closable = F,
           width = 12,
           solidHeader = TRUE,
-          status = "olive",
+          status = "lightblue",
           collapsible = F,
           tags$div(
             class = "inline",
@@ -152,8 +154,8 @@ ui <- dashboardPage(
           # Create submit effect
           tags$head(tags$style(HTML(".btn:focus {color: white !important;}"))),
           use_hover(),
-          hover_action_button("submit", "Submit", icon("paper-plane"),
-            style = "color: #fff; background-color: #3d9970; border-color: #2e6da4",
+          hover_action_button("submit", "Submit", shiny::icon("paper-plane"),
+            style = "color: #fff; background-color: #04ABEB; border-color: #2e6da4",
             button_animation = "rotate",
             icon_animation = "spin"
           )
