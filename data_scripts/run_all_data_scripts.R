@@ -9,7 +9,7 @@ r_scripts <- unlist(purrr::map(files, ~ list.files(.x, full.names = T)))
                                   # c("/Users/dunk/Teaching Lab/Coding/TeachingLab/data_scripts/SurveyMonkey/knowledge_assessments_data.R"))
 
 ##### For NOW only running SurveyMonkey scripts #####
-r_scripts_final <- purrr::keep(r_scripts, ~ stringr::str_detect(.x, "SurveyMonkey"))
+r_scripts_final <- purrr::keep(r_scripts, ~ stringr::str_detect(.x, "SurveyMonkey|Monday"))
 
 ## Run all scripts based on location ##
 purrr::walk(r_scripts_final, source)

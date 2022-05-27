@@ -96,10 +96,10 @@ server <- function(input, output, session) {
 
   ## Server pages ##
   router$server(input, output, session)
-  agreeServer("p1", in_site)
-  npsServer("p2", in_site)
-  textServer("p3", in_site)
-  reportServer("p4", in_site)
+  agreeServer("p1")
+  npsServer("p2")
+  textServer("p3")
+  reportServer("p4")
 }
 
 shinyApp(ui = ui, server = server)

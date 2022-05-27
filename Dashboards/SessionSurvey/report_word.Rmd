@@ -128,7 +128,7 @@ Finally responses to the following questions are presented below:
 ## Quotes from "What could have been better about today's session?"
 
 ```{r fig.width = 8, fig.show = "hide"}
-img1_loc <- file.path2(tempdir(), "img1.png")
+img1_loc <- tlShiny::file.path2(tempdir(), "img1.png")
 if (nrow(as_tibble(params$quote1)) >= 1) { 
   img1 <- quote_viz(
           data = params$quote3, text_col = "Response", viz_type = "gt",
@@ -154,7 +154,7 @@ knitr::include_graphics(img1_loc)
 ## Quotes from "What went well in today's session?"
 
 ```{r fig.width = 8, fig.show = "hide"}
-img2_loc <- file.path2(tempdir(), "img2.png")
+img2_loc <- tlShiny::file.path2(tempdir(), "img2.png")
 if (nrow(as_tibble(params$quote2)) >= 1) { 
   img2 <- quote_viz(
           data = params$quote2, text_col = "Response", viz_type = "gt",
@@ -179,7 +179,7 @@ knitr::include_graphics(img2_loc)
 ## Quotes from "What additional feedback do you have about their facilitation skills?"
 
 ```{r fig.width = 8, fig.show = "hide"}
-img3_loc <- file.path2(tempdir(), "img3.png")
+img3_loc <- tlShiny::file.path2(tempdir(), "img3.png")
 if (nrow(as_tibble(params$quote3)) >= 1) { 
   img3 <- quote_viz(
           data = params$quote1, text_col = "Response", viz_type = "gt",

@@ -595,6 +595,7 @@ reportServer <- function(id, in_site) {
     #### QUOTES 5 ####
 
     quote_viz_data5 <- reactive({
+      
       validate(
         need(!is.null(input$site), "Please select at least one site"),
         need(!is.null(input$role), "Please select at least one role"),
@@ -635,6 +636,50 @@ reportServer <- function(id, in_site) {
 
       quote_reactive5
     })
+    
+    data_plot_nps <- reactive({
+      
+      validate(
+        need(!is.null(input$site), "Please select at least one site"),
+        need(!is.null(input$role), "Please select at least one role"),
+        need(!is.null(input$content), "Please select at least one content area"),
+        need(!is.null(input$course), "Please select at least one course")
+      )
+      
+      reactive_nps <- course_survey |>
+        dplyr::filter(between(date_created, input$date_min, input$date_max)) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Sites",
+          filter_this = input$site,
+          dat_filter = `Select your site (district, parish, network, or school).`
+        ) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Roles",
+          filter_this = input$role,
+          dat_filter = `Select your role.`
+        ) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Content Areas",
+          filter_this = input$content,
+          dat_filter = `Select the content area for today's professional learning session.`
+        ) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Courses",
+          filter_this = input$course,
+          dat_filter = `Select your course.`
+        ) |>
+        mutate(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?` = readr::parse_number(as.character(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`))) |>
+        mutate(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?` = na_if(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`, "No Response")) |>
+        summarise(nps = calc_nps(suppressWarnings(as.numeric(`On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`)))) |>
+        mutate(
+          x = 0,
+          y = nps
+        )
+      
+      #### Return the data ####
+      reactive_nps
+      
+    })
 
     #### Error handling for either of the reports, or the csv
     # observeEvent(c(input$site, input$role, input$content, input$course, input$date_created), {
@@ -648,6 +693,8 @@ reportServer <- function(id, in_site) {
     #     shinyjs::show("download_csv")
     #   }
     # })
+  
+  
 
     ### Generate csv download data ###
     download_reactive <- reactive({
@@ -690,34 +737,34 @@ reportServer <- function(id, in_site) {
         )
       }
     )
-    ### Create a download name for the file to be used later ###
-    download_name <- reactive({
-      if (!is.null(input$recent_sessions)) {
-        download_reactive() |>
-          select(`Select your course.`, `Select your site (district, parish, network, or school).`) |>
-          transmute(course_site = paste0(`Select your course.`, " ", `Select your site (district, parish, network, or school).`)) |>
-          distinct(course_site) |>
-          as_vector() |>
-          str_replace_all(c(
-            " " = "_",
-            "," = "_"
-          )) |>
-          paste(collapse = "_")
-      } else {
-        str_replace_all(unique(input$site), c(
-          " " = "_",
-          "," = "_"
-        )) |>
-          paste(collapse = "_")
-      }
-    })
 
     #### GENERATE THE PDF REPORT ####
 
     output$download_report1 <- downloadHandler(
 
       # For HTML output, change this to "report.html"
-      filename = paste0("report_", download_name(), ".pdf"),
+      filename = function() {
+        if (!is.null(input$recent_sessions)) {
+          download_reactive() |>
+            select(`Select your course.`, `Select your site (district, parish, network, or school).`) |>
+            transmute(course_site = paste0(`Select your course.`, " ", `Select your site (district, parish, network, or school).`)) |>
+            distinct(course_site) |>
+            as_vector() |>
+            str_replace_all(c(
+              " " = "_",
+              "," = "_"
+            )) |>
+            paste0(".pdf", collapse = "_")
+        } else {
+          paste0(unique(input$site), "_", Sys.Date()) |>
+            str_replace_all(c(
+              " " = "_",
+              "," = "_",
+              "-" = "_"
+            )) |>
+            paste0(".pdf")
+        }
+      },
       content = function(file) {
         shiny.semantic::with_progress(
           message = "Downloading, please wait! This process generally takes 10-20 seconds.",
@@ -739,6 +786,7 @@ reportServer <- function(id, in_site) {
               plot_ts = data_plot_ts(),
               plot_agree = data_plot_agree(),
               agree_plot_n = agree_plot_n(),
+              plot_nps = data_plot_nps(),
               quote1 = quote_viz_data1(),
               quote2 = quote_viz_data2(),
               quote3 = quote_viz_data3(),
@@ -791,6 +839,7 @@ reportServer <- function(id, in_site) {
               plot_ts = data_plot_ts(),
               plot_agree = data_plot_agree(),
               agree_plot_n = agree_plot_n(),
+              plot_nps = data_plot_nps(),
               quote1 = quote_viz_data1(),
               quote2 = quote_viz_data2(),
               quote3 = quote_viz_data3(),

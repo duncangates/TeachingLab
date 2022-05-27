@@ -47,7 +47,7 @@ ui <- semanticPage(
         ),
         logo = "imgs/teachinglab_logo.png"
       ),
-      info_page
+      router$ui
     ),
     conditionalPanel(
       condition = "output.loginButton == 'NO'",

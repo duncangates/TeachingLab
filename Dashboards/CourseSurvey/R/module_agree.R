@@ -186,7 +186,7 @@ uiAgree <- function(id, label = "Counter") {
   )
 }
 
-agreeServer <- function(id, in_site) {
+agreeServer <- function(id) {
   ns <- NS(id)
   moduleServer(id, function(input, output, session) {
 
@@ -519,7 +519,6 @@ agreeServer <- function(id, in_site) {
                            "• ", improve_instruction_agree, " agreed that the strategies I’ve learned in this course will improve my instruction.", "\n",
                            "• ", supported_agree, " agreed that the course has supported me in being responsive to students' backgrounds, cultures, and points of view.", "\n"))
       
-      print(new_data)
       new_data
     })
     
@@ -549,7 +548,8 @@ agreeServer <- function(id, in_site) {
         ) +
         coord_flip() +
         guides(fill = guide_legend(reverse = T)) +
-        scale_y_continuous(labels = scales::percent_format(scale = 1)) +
+        scale_y_continuous(labels = scales::percent_format(scale = 1),
+                           expand = c(0, 100.01)) +
         theme_tl(legend = T) +
         theme(
           axis.text.y = element_text(lineheight = 1.1, size = 12),

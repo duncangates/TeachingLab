@@ -4,12 +4,14 @@
 \alias{selection_sum}
 \title{Summarise a selection}
 \usage{
-selection_sum(data, select)
+selection_sum(data, select, group = NULL)
 }
 \arguments{
 \item{data}{the data}
 
 \item{select}{the data to select}
+
+\item{group}{the data to group by}
 }
 \value{
 a tibble of the selected data's percent correct

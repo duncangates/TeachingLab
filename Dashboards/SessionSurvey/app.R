@@ -98,14 +98,3 @@ server <- function(input, output, session) {
 }
 
 shinyApp(ui, server)
-
-{"query":"{boards(ids:board_id){id, name, state}}"}
-
-{"query" : "{boards (ids: 2548765319) {items { name }  } }"}
-
-
-{"query" : "{boards (ids: 2548765319) {items { id, name, column_values { text } }  } }"}
-
-{"query" : "{boards (ids: 2548765319) {items { column_values { text } }  } }"}
-
-{"query" : "{ boards (ids: 2548765319) { owners { id } columns { title  } } }"}

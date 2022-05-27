@@ -113,7 +113,11 @@ teacher_last_names <- read_sheet("https://docs.google.com/spreadsheets/d/17SNPMY
 
 ####### Running list of corrections to standardize teacher names from student input to survey #######
 teacher_name_replace <- c("Thomasbarkdale" = "Barksdale",
-                          "Barkesdail" = "Barksdale")
+                          "Barkesdail" = "Barksdale",
+                          "Cineros" = "Cisneros",
+                          "Lyn" = "Pineda",
+                          "Agino" = "Aquino",
+                          "Alasaisis" = "Alisasis")
 ### Teacher last names from surveymonkey student survey ###
 teacher_names <- nm_student_survey %>%
   distinct(name = `What is the name of your teacher? (Your teacher will write their name on the board so that you can use that spelling.`) %>%
@@ -123,24 +127,23 @@ teacher_names <- nm_student_survey %>%
   # expand(name, name1 = name) %>%
   # mutate(lev = stringdist::stringdist(name, name1)) %>%
   # filter(lev == 2)
-  identity() %>%
-  mutate(name = str_to_title(str_remove_all(name, ".* |.*\\."))) %>%
+  mutate(name = str_to_title(str_remove_all(name, ".* |.*\\.|\\)|.*,"))) %>%
   mutate(name = str_replace_all(name, teacher_name_replace)) %>% ##### NAME REPLACE OCCURS HERE
   distinct(name) %>%
   filter(name != "")
 
 ### Get teacher names based on last name ###
-teacher_names_final <- teacher_names %>%
-  left_join(teacher_last_names, by = c("name" = "name2")) %>%
-  select(`Participant Name`) %>%
-  drop_na() %>%
+teacher_names_final <- teacher_names |>
+  left_join(teacher_last_names, by = c("name" = "name2")) |>
+  select(`Participant Name`) |>
+  drop_na() |>
   arrange(`Participant Name`)
 
 ### Print teacher names ###
 print(teacher_names_final, n = nrow(teacher_names_final))
 
 ### Decide if code can proceed ###
-proceed <- readline(prompt = "Do any changes need to be made? (y/n)")
+proceed <- readline(prompt = "Do any changes need to be made? (y/n) ")
 
 ### Conditional to decide proceeding ###
 if (proceed == "y") {
@@ -149,12 +152,12 @@ if (proceed == "y") {
 }
 
 ### Create data frame of student data completion based on name from earlier retrieval ###
-join_names <- tibble::tibble(name = teacher_last_names$`Participant Name`) %>%
+join_names <- tibble::tibble(name = teacher_last_names$`Participant Name`) |>
   mutate(completed = ifelse(name %in% teacher_names_final$`Participant Name`, "Yes", "No"))
 
 #### Quick manual name checking for student input ####
 unadjusted_teacher_names <- stringr::str_to_lower(sort(unique(nm_student_survey$`What is the name of your teacher? (Your teacher will write their name on the board so that you can use that spelling.`))) %>%
-  purrr::keep( ~ !str_detect(.x, "bark|badd|ong|antos|tiff|cisn|lop|vig|cote|tiz|bandl|aqui|trej|marj|marij|alis|alasaisis"))
+  purrr::keep( ~ !str_detect(.x, "bark|badd|ong|antos|tiff|cisn|cin|lop|vig|cote|tiz|bandl|aqui|trej|marj|marij|alis|alasaisis|norr|tommy"))
 print(unadjusted_teacher_names)
 if (setequal(unadjusted_teacher_names, c("1", "daniel aguilar", "mrs. agino")) == FALSE) {
   print("Check the above names to see which need to be standardized")
@@ -167,10 +170,10 @@ if (setequal(unadjusted_teacher_names, c("1", "daniel aguilar", "mrs. agino")) =
 ###### REMINDER TO IGNORE daniel aguilar ########
 
 ### Rename all the nm student survey teachers based on minimal strings to get a grouped count ###
-nm_student_survey_n <- nm_student_survey %>%
+nm_student_survey_n <- nm_student_survey |>
   mutate(teacher_real_name = case_when(
     str_detect(str_to_lower(`What is the name of your teacher? (Your teacher will write their name on the board so that you can use that spelling.`), 
-               "bark") == T ~ "Tommy Barksdale",
+               "bark|ommy") == T ~ "Tommy Barksdale",
     str_detect(str_to_lower(`What is the name of your teacher? (Your teacher will write their name on the board so that you can use that spelling.`), 
                "badd") == T ~ "Rajasekhar Badditi",
     str_detect(str_to_lower(`What is the name of your teacher? (Your teacher will write their name on the board so that you can use that spelling.`), 
@@ -178,9 +181,9 @@ nm_student_survey_n <- nm_student_survey %>%
     str_detect(str_to_lower(`What is the name of your teacher? (Your teacher will write their name on the board so that you can use that spelling.`), 
                "antos") == T ~ "Maria Santos",
     str_detect(str_to_lower(`What is the name of your teacher? (Your teacher will write their name on the board so that you can use that spelling.`), 
-               "tiff") == T ~ "Tiffany Portiz",
+               "tiff|barr|ortiz") == T ~ "Tiffany Barrion",
     str_detect(str_to_lower(`What is the name of your teacher? (Your teacher will write their name on the board so that you can use that spelling.`), 
-               "cisn") == T ~ "Maria Dolores Cisneros",
+               "neros") == T ~ "Maria Dolores Cisneros",
     str_detect(str_to_lower(`What is the name of your teacher? (Your teacher will write their name on the board so that you can use that spelling.`), 
                "lop") == T ~ "Jamie Lopez",
     str_detect(str_to_lower(`What is the name of your teacher? (Your teacher will write their name on the board so that you can use that spelling.`), 
@@ -200,10 +203,11 @@ nm_student_survey_n <- nm_student_survey %>%
     str_detect(str_to_lower(`What is the name of your teacher? (Your teacher will write their name on the board so that you can use that spelling.`), 
                "alis|alasaisis") == T ~ "Josiah Alisasis",
     TRUE ~ as.character(`What is the name of your teacher? (Your teacher will write their name on the board so that you can use that spelling.`)
-  )) %>%
-  dplyr::filter(teacher_real_name != "1") %>%
-  group_by(teacher_real_name) %>%
-  count(sort = T) %>%
+  )) |>
+  dplyr::filter(teacher_real_name %!in% c("1", "Mrs. Agino", "Ms,Norris")) |>
+  dplyr::mutate(prepost = ifelse(date_created >= as.Date("2022-05-01"), "post", "pre")) |>
+  group_by(teacher_real_name, prepost) |>
+  count(sort = T) |>
   drop_na(teacher_real_name)
 
 #### Find column letter for student survey completion in sheet ####
@@ -213,15 +217,37 @@ selection_student_survey <- letters[select_student_survey] %>%
 selection_student_survey_end <- letters[select_student_survey + 1] %>%
   str_to_upper()
 
-#### Join names to student survey then select completed while replacing NA with "No Responses" to google sheet ####
+#### Join names to pre student survey then select completed while replacing NA with "No Responses" to google sheet ####
 join_names %>%
-  left_join(nm_student_survey_n, by = c("name" = "teacher_real_name")) %>%
+  left_join(nm_student_survey_n %>% filter(prepost == "pre") %>% ungroup() %>% select(teacher_real_name, n), 
+            by = c("name" = "teacher_real_name")) %>%
   select(completed, n) %>%
   mutate(n = replace_na(as.character(n), "No responses")) %>%
   range_write(
     ss = "https://docs.google.com/spreadsheets/d/17SNPMYkV_Gx-g-3TpKTs-YAi6guUw-WKCI18_x4Q1qU/edit#gid=0",
     sheet = 1,
     range = glue::glue("{selection_student_survey}2:{selection_student_survey_end}{length(join_names$name) + 1}"),
+    col_names = F,
+    reformat = F
+  )
+
+select_student_survey2 <- which(df_name_select == "Administered Teaching Lab New Mexico Student Survey SY21-22 (post) (Y/N) - SM")
+selection_student_survey2 <- letters[select_student_survey2] %>%
+  str_to_upper()
+selection_student_survey_end2 <- "AA"
+
+#### Join names to post student survey then select completed while replacing NA with "No Responses" to google sheet ####
+join_names %>%
+  left_join(nm_student_survey_n %>% filter(prepost == "post") %>% ungroup() %>% select(teacher_real_name, n),
+            by = c("name" = "teacher_real_name")) %>%
+  mutate(n = ifelse(str_detect(name, "Bandla"), 7, n)) %>%
+  select(completed, n) %>%
+  mutate(n = replace_na(as.character(n), "No responses"),
+         completed = ifelse(n == "No responses", "No", "Yes")) %>%
+  range_write(
+    ss = "https://docs.google.com/spreadsheets/d/17SNPMYkV_Gx-g-3TpKTs-YAi6guUw-WKCI18_x4Q1qU/edit#gid=0",
+    sheet = 1,
+    range = glue::glue("{selection_student_survey2}2:{selection_student_survey_end2}{length(join_names$name) + 1}"),
     col_names = F,
     reformat = F
   )
@@ -266,7 +292,9 @@ completed_data_collection <- course_gradebook %>%
 proceed2 <- setdiff(names_and_emails$`Participant Name`, completed_data_collection$user.name)
 
 ### Conditional to decide proceeding ###
-if (length(proceed2) != 2) {
+### Only Lorenzo Gonzales and Lorenzo Gonzales should be here ###
+### Not sure what's up with Anthony Romero ###
+if (length(proceed2) != 3) {
   print("Make a change in the student responses to avoid duplicates!")
   print(proceed2)
   break
@@ -283,8 +311,9 @@ selection_data_agreement <- letters[select_data_agreement] %>%
   str_to_upper()
 
 ### Write just canvas data agreement completion column to google sheet ###
-join_completed_data_collection %>%
-  select(completed) %>%
+join_completed_data_collection |>
+  select(completed) |>
+  mutate(completed = replace_na(completed, "No Response")) |>
   range_write(
     ss = "https://docs.google.com/spreadsheets/d/17SNPMYkV_Gx-g-3TpKTs-YAi6guUw-WKCI18_x4Q1qU/edit#gid=0",
     sheet = 1,
@@ -331,7 +360,7 @@ join_classroom_video_completed %>%
 
 ### Uploaded Classroom Observation Video Recording 2 (Y/N) - Canvas ###
 completed_classroom_video2 <- course_gradebook %>%
-  filter(assignment_name == "POST Classroom Observation Video Recording") %>%
+  filter(assignment_name == "MLR Video Submission") %>%
   mutate(
     completed = ifelse(!is.na(submitted_at), "Yes", "No"),
     user.name = str_to_title(user.name)
@@ -359,6 +388,40 @@ join_classroom_video_completed2 %>%
     ss = "https://docs.google.com/spreadsheets/d/17SNPMYkV_Gx-g-3TpKTs-YAi6guUw-WKCI18_x4Q1qU/edit#gid=0",
     sheet = 1,
     range = glue::glue("{selection_classroom_obs_2}2:{selection_classroom_obs_2}{length(join_classroom_video_completed2$completed) + 1}"),
+    col_names = F,
+    reformat = F
+  )
+
+### Uploaded Classroom Observation Video Recording 3 (Y/N) - Canvas ###
+completed_classroom_video3 <- course_gradebook %>%
+  filter(assignment_name == "POST Classroom Observation Video Recording") %>%
+  mutate(
+    completed = ifelse(!is.na(submitted_at), "Yes", "No"),
+    user.name = str_to_title(user.name)
+  ) %>%
+  select(user.name, completed) %>%
+  distinct(user.name, .keep_all = TRUE) %>%
+  mutate(user.name = str_replace_all(user.name, name_replace_canvas)) %>%
+  left_join(names_and_emails, by = c("user.name" = "Participant Name"))
+
+### Join names to completed and change completed to admin if they are an admin ###
+join_classroom_video_completed3 <- names_and_emails %>%
+  select(1, 3) %>%
+  left_join(completed_classroom_video3 %>% select(1, 2), by = c("Participant Name" = "user.name")) %>%
+  mutate(completed = ifelse(Role == "Admin", "Admin", completed))
+
+#### Find column letter for second classroom video observation in sheet ####
+select_classroom_obs_3 <- which(df_name_select == "Uploaded Classroom Observation Video Recording 3 (Y/N) - Canvas")
+selection_classroom_obs_3 <- letters[select_classroom_obs_3] %>%
+  str_to_upper()
+
+### Write just canvas video completion to google sheet ###
+join_classroom_video_completed3 %>%
+  select(completed) %>%
+  range_write(
+    ss = "https://docs.google.com/spreadsheets/d/17SNPMYkV_Gx-g-3TpKTs-YAi6guUw-WKCI18_x4Q1qU/edit#gid=0",
+    sheet = 1,
+    range = glue::glue("{selection_classroom_obs_3}2:{selection_classroom_obs_3}{length(join_classroom_video_completed3$completed) + 1}"),
     col_names = F,
     reformat = F
   )

@@ -535,7 +535,6 @@ agreeServer <- function(id) {
                            "• ", effectively_agree, " agreed they effectively built a safe learning community.", "\n",
                            "• ", demonstrated_agree, " agreed they demonstrated deep knowledge of the content they facilitated."))
       
-      print(new_data)
       new_data
     })
     

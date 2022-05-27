@@ -2343,3 +2343,73 @@ get_coaching_feedback <- function(update = FALSE) {
 
   return(coaching_feedback_clean)
 }
+
+#' @title Follow Up Educator Survey Data
+#' @description Gets data from the Follow Up Educator Survey
+#' @param update FALSE, whether or not to pull the updated version
+#' @return Returns a tibble
+#' @export
+get_followup_educator <- function(update = FALSE) {
+  if (update == TRUE) {
+    options(sm_oauth_token = Sys.getenv("knowledge_token"))
+    
+    follow_up_educator_survey <- surveymonkey::fetch_survey_obj(400267837) |>
+      surveymonkey::parse_survey()
+    
+    followup_educator_clean <- follow_up_educator_survey |>
+      dplyr::group_by(respondent_id) |>
+      dplyr::summarise_all(TeachingLab::coalesce_by_column) |>
+      #### Coalescing other columns into main columns ####
+      dplyr::mutate(
+        Site = dplyr::coalesce(
+          `Your site (district, parish, network, or school)`,
+          `Your site (district, parish, network, or school) - Other (please specify)`
+        ),
+        id = paste0(
+          tolower(`Please write in your 3 initials. If you do not have a middle initial, please write X.<br>(This is used to link the diagnostic and follow-up surveys, but is kept confidential.)<br><br>`),
+          `Please write in your four-digit birthday (MMDD).<br>(This is used to link the diagnostic and follow-up surveys, but is kept confidential.)`
+        )
+      )
+    
+    readr::write_rds(followup_educator_clean, "data/followup_educator_survey.rds")
+    readr::write_rds(followup_educator_clean, "Dashboards/CoachingParticipantFeedback/data/followup_educator_survey.rds")
+  } else {
+    followup_educator_clean <- readr::read_rds(here::here("data/followup_educator_survey.rds"))
+  }
+  
+  return(followup_educator_clean)
+}
+
+#' @title Ongoing Coaching Feedback Survey Data
+#' @description Gets data from the Ongoing Coaching Feedback Survey
+#' @param update FALSE, whether or not to pull the updated version
+#' @return Returns a tibble
+#' @export
+get_ongoing_coaching <- function(update = FALSE) {
+  if (update == TRUE) {
+    options(sm_oauth_token = Sys.getenv("knowledge_token"))
+    
+    ongoing_coaching_survey <- surveymonkey::fetch_survey_obj(316751980) |>
+      surveymonkey::parse_survey()
+    
+    ongoing_coaching_survey_clean <- ongoing_coaching_survey |>
+      #### Coalescing other columns into main columns ####
+      dplyr::mutate(
+        Site = dplyr::coalesce(
+          `Select your site (district, parish, network, or school).`,
+          `Select your site (district, parish, network, or school). - Other (please specify)`
+        ),
+        id = paste0(
+          tolower(`Please write in your 3 initials. If you do not have a middle initial, please write X.`),
+          `Please write in your four-digit birthday (MMDD)`
+        )
+      )
+    
+    readr::write_rds(ongoing_coaching_survey_clean, "data/ongoing_coaching_feedback.rds")
+    readr::write_rds(ongoing_coaching_survey_clean, "Dashboards/CoachingParticipantFeedback/data/ongoing_coaching_feedback.rds")
+  } else {
+    ongoing_coaching_survey_clean <- readr::read_rds(here::here("data/ongoing_coaching_feedback.rds"))
+  }
+  
+  return(ongoing_coaching_survey_clean)
+}

@@ -4,7 +4,8 @@ params:
   plot_ts: NA
   plot_agree: NA
   agree_plot_n: NA
-  quote1: NA
+  data_plot_nps: NA
+  plot_nps: NA
   quote2: NA
   quote3: NA
   quote4: NA
@@ -17,12 +18,17 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = F, warning = F, message = F)
-library(tidyverse)
+library(ggforce)
+library(ggfx)
+library(ggplot2)
+library(tibble)
 library(tlShiny)
-library(tidytext)
-library(bookdown)
 library(webshot)
 webshot::install_phantomjs()
+
+no_data_plot <- ggplot2::ggplot(tibble(text = "There was no data\nfor this site here.", x = 0, y = 0)) +
+  geom_text(aes(label = text, x, y), fontface = "bold", family = "Calibri Bold", size = 10) +
+  theme_void()
 ```
 
 <!-- \fontspec{Calibri} -->
@@ -32,31 +38,35 @@ webshot::install_phantomjs()
 ## Overall
 
 ```{r fig.width = 10, fig.height = 10}
-ggplot(data = params$plot_agree, aes(x = Question, y = Percent, fill = factor(Response))) +
-        geom_col() +
-        geom_text(aes(label = if_else(Percent >= 3, paste0(round(Percent), "%"), "")), position = position_stack(vjust = 0.5)) +
-        scale_fill_manual(values = c(
-          "(1) Strongly disagree" = "#040404", "(2) Disagree" = "#032E3F",
-          "(3) Neither agree nor disagree" = "#02587A", "(4) Agree" = "#0182B4", "(5) Strongly agree" = "#00ACF0"
-        )) +
-        labs(
-          fill = "", title = "Participant Perceptions of Course - Likert Scale Questions",
-          x = "", y = "",
-          subtitle = glue::glue("Given the filters applied there are {params$agree_plot_n} responses")
-        ) +
-        coord_flip() +
-        guides(fill = guide_legend(reverse = T)) +
-        scale_y_continuous(labels = scales::percent_format(scale = 1)) +
-        theme_tl(legend = T) +
-        theme(
-          axis.text.x = element_blank(),
-          axis.text.y = element_text(lineheight = 1.1, size = 12),
-          legend.position = "bottom",
-          plot.title = element_text(lineheight = 1.1, size = 16, face = "bold"),
-          plot.subtitle = element_text(size = 14, face = "bold"),
-          legend.key.size = unit(0.75, "cm"),
-          legend.text = element_text(size = 9)
-        )
+if (nrow(params$plot_agree) >= 1) {
+  ggplot(data = params$plot_agree, aes(x = Question, y = Percent, fill = factor(Response))) +
+          geom_col() +
+          geom_text(aes(label = if_else(Percent >= 3, paste0(round(Percent), "%"), "")), position = position_stack(vjust = 0.5)) +
+          scale_fill_manual(values = c(
+            "(1) Strongly disagree" = "#040404", "(2) Disagree" = "#032E3F",
+            "(3) Neither agree nor disagree" = "#02587A", "(4) Agree" = "#0182B4", "(5) Strongly agree" = "#00ACF0"
+          )) +
+          labs(
+            fill = "", title = "Participant Perceptions of Course - Likert Scale Questions",
+            x = "", y = "",
+            subtitle = glue::glue("Given the filters applied there are {params$agree_plot_n} responses")
+          ) +
+          coord_flip() +
+          guides(fill = guide_legend(reverse = T)) +
+          scale_y_continuous(labels = scales::percent_format(scale = 1)) +
+          theme_tl(legend = T) +
+          theme(
+            axis.text.x = element_blank(),
+            axis.text.y = element_text(lineheight = 1.1, size = 12),
+            legend.position = "bottom",
+            plot.title = element_text(lineheight = 1.1, size = 16, face = "bold"),
+            plot.subtitle = element_text(size = 14, face = "bold"),
+            legend.key.size = unit(0.75, "cm"),
+            legend.text = element_text(size = 9)
+          )
+} else {
+  no_data_plot
+}
 ```
 
 \newpage
@@ -78,6 +88,7 @@ In summary, we see the following % agree or strongly agree with the above statem
 Here by visualizing ratings of strongly agree/agree in blue areas, and all other ratings in black areas we visualize feedback over time (If there is just one point of feedback this appears as a dot).
 
 ```{r fig.width = 10, fig.height = 10}
+if (nrow(params$plot_ts) >= 1) {
 params$plot_ts %>%
         ggplot(aes(x = ymd(date_created),
                    y = Percent)) +
@@ -121,6 +132,37 @@ params$plot_ts %>%
           plot.title = element_text(hjust = 0.5, family = "Calibri", size = 16, face = "bold"),
           axis.line = element_line(size = 1.5)
         )
+} else {
+  no_data_plot
+}
+```
+
+## NPS
+
+```{r}
+if (nrow(params$plot_nps)) {
+  ggplot(data = params$plot_nps) +
+        geom_text(aes(x = 0, y = 0.5, label = "fake text"), color = "transparent") +
+        geom_text(aes(x = -0.5, y = 0.5, label = "fake text"), color = "transparent") +
+        with_outer_glow(
+          geom_text(aes(x = 0, y = 0, label = nps), size = 30),
+          colour = "#04abeb",
+          sigma = 5,
+          expand = 5
+        ) +
+        geom_text(aes(x = 0, y = -0.5, label = "fake text"), color = "transparent") +
+        geom_text(aes(x = 0.5, y = -0.5, label = "fake text"), color = "transparent") +
+        with_outer_glow(
+          geom_circle(aes(x0 = 0, y0 = 0, r = 1), size = 5),
+          colour = "#04abeb",
+          sigma = 5,
+          expand = 5
+        ) +
+        coord_fixed() +
+        theme_void()
+} else {
+  no_data_plot
+}
 ```
 
 # Qualitative Data
@@ -140,7 +182,7 @@ Finally responses to the following questions are presented below:
 ## Quotes from "Overall, what went well in the course?"
 
 ```{r fig.width = 8, fig.show = "hide"}
-img1_loc <- file.path2(tempdir(), "img1.png")
+img1_loc <- tlShiny::file.path2(tempdir(), "img1.png")
 if (nrow(as_tibble(params$quote1)) >= 1) { 
   img1 <- quote_viz(
           data = as_tibble(params$quote1), text_col = "Response", viz_type = "gt",
@@ -166,7 +208,7 @@ knitr::include_graphics(img1_loc)
 ## Quotes from "Overall, what could have been better in this course?"
 
 ```{r fig.width = 8, fig.show = "hide"}
-img2_loc <- file.path2(tempdir(), "img2.png")
+img2_loc <- tlShiny::file.path2(tempdir(), "img2.png")
 if (nrow(as_tibble(params$quote2)) >= 1) { 
   img2 <- quote_viz(
         data = as_tibble(params$quote2), text_col = "Response", viz_type = "gt",
@@ -191,7 +233,7 @@ knitr::include_graphics(img2_loc)
 ## Quotes from "What is the learning from this course that you are most excited about trying out?"
 
 ```{r fig.width = 8, fig.show = "hide"}
-img3_loc <- file.path2(tempdir(), "img3.png")
+img3_loc <- tlShiny::file.path2(tempdir(), "img3.png")
 if (nrow(as_tibble(params$quote3)) >= 1) { 
   img3 <- quote_viz(
         data = as_tibble(params$quote3), text_col = "Response", viz_type = "gt",
@@ -216,7 +258,7 @@ knitr::include_graphics(img3_loc)
 ## Quotes from "Which activities best supported your learning in this course?"
 
 ```{r fig.width = 8, fig.show = "hide"}
-img4_loc <- file.path2(tempdir(), "img4.png")
+img4_loc <- tlShiny::file.path2(tempdir(), "img4.png")
 if (nrow(as_tibble(params$quote4)) >= 1) { 
   img4 <- quote_viz(
         data = as_tibble(params$quote4), text_col = "Response", viz_type = "gt",
@@ -241,7 +283,7 @@ knitr::include_graphics(img4_loc)
 ## Quotes from "Feel free to leave us any additional comments, concerns, or questions."
 
 ```{r fig.width = 8, fig.show = "hide"}
-img5_loc <- file.path2(tempdir(), "img5.png")
+img5_loc <- tlShiny::file.path2(tempdir(), "img5.png")
 if (nrow(as_tibble(params$quote5)) >= 1) { 
   img5 <- quote_viz(
         data = as_tibble(params$quote5), text_col = "Response", viz_type = "gt",

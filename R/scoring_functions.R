@@ -513,13 +513,17 @@ tl_score_numeric <- function(x) {
 #' @title Summarise a selection
 #' @param data the data
 #' @param select the data to select
+#' @param group the data to group by
 #' @description finds the average sum of all selected columns
 #' @return a tibble of the selected data's percent correct
 #' @export
-selection_sum <- function(data, select) {
+selection_sum <- function(data, select, group = NULL) {
+  
   data |>
-    dplyr::select(tidyselect::all_of(select)) |>
+    dplyr::select(tidyselect::all_of(select), {{ group }}) |>
     janitor::remove_empty("rows") |>
+    dplyr::group_by({{ group }}) |>
     dplyr::summarise(dplyr::across(tidyselect::everything(), ~ TeachingLab::tl_score_numeric(as.character(.x)))) |>
-    tidyr::pivot_longer(everything())
+    dplyr::ungroup() |>
+    pivot_longer(! {{ group }})
 }

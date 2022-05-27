@@ -186,7 +186,8 @@ ipg_plot <- function(data, name, save_name, height = 5, width = 8.5, wrap = 60, 
     { if (numeric == F) dplyr::mutate(., value = factor(value),
                                       value = forcats::fct_reorder(value, percent)) else . } %>%
     dplyr::ungroup() %>%
-    dplyr::mutate(color = ifelse(percent < mean(percent, na.rm = T), "white", "black"))
+    dplyr::mutate(color = ifelse(percent < mean(percent, na.rm = T), "white", "black"),
+                  color = ifelse(percent < 10, "black", color))
   
   if (missing(factor_level)) {
     plot_data
@@ -216,13 +217,22 @@ ipg_plot <- function(data, name, save_name, height = 5, width = 8.5, wrap = 60, 
                                                            "4- Teacher provides many opportunities, and most students take them."), 30))
   }  else if (factor_level == "td") {
     plot_data <- plot_data |>
-      mutate(value = str_replace_all(value, c("2- Often" = "3- Often",
-                                              "3- Sometimes" = "2- Sometimes")))
+      dplyr::mutate(value = stringr::str_replace_all(value, c("2- Often" = "3- Often",
+                                                              "3- Sometimes" = "2- Sometimes")))
+    
     plot_data$value <- factor(plot_data$value, 
                               levels = c("1- Rarely/Never",
                                          "2- Sometimes",
                                          "3- Often",
                                          "4- Always"))
+    
+    plot_data <- plot_data |>
+      dplyr::group_by(value) |>
+      dplyr::summarise(n = sum(n),
+                       percent = sum(percent)) |>
+      dplyr::mutate(name = plot_data$name[1],
+                    color = ifelse(percent < mean(percent, na.rm = T), "white", "black"))
+    
   } else if (factor_level == "sp") {
     plot_data$value <- factor(plot_data$value, 
                               levels = c("1- Few/No",
@@ -243,12 +253,14 @@ ipg_plot <- function(data, name, save_name, height = 5, width = 8.5, wrap = 60, 
                                          "Yes- The enacted lesson explicitly targets the aspect(s) of Rigor called for by the standard(s) being addressed."))
   }
   
-  p <- plot_data %>%
+  p <- plot_data |>
     ggplot2::ggplot(ggplot2::aes(x = value, 
                                  y = percent, 
                                  fill = percent)) +
     ggplot2::geom_col() +
-    ggplot2::geom_text(ggplot2::aes(label = paste0(percent, "%"), color = color), hjust = 1.25, size = 5*sizing) +
+    ggplot2::geom_text(ggplot2::aes(label = paste0(percent, "%"), color = color), 
+                       hjust = ifelse(plot_data$percent > 5, 1.25, -0.4), size = 5*sizing,
+                       fontface = "bold") +
     ggplot2::coord_flip() +
     ggplot2::scale_y_continuous(labels = scales::percent_format(scale = 1), expand = c(0.1, 0),
                                 limits = c(0, 100), breaks = scales::breaks_pretty(n = 4)) +
@@ -339,12 +351,14 @@ dashboard_ipg_plot <- function(data, name, wrap = 60, sizing = 1,
                                                            "4- Teacher provides many opportunities, and most students take them."), 30))
   } 
   
-  p <- plot_data %>%
+  p <- plot_data |>
     ggplot2::ggplot(ggplot2::aes(x = value, 
                                  y = percent, 
                                  fill = percent)) +
     ggplot2::geom_col() +
-    ggplot2::geom_text(ggplot2::aes(label = paste0(percent, "%"), color = color), hjust = 1.25, size = 5*sizing) +
+    ggplot2::geom_text(ggplot2::aes(label = paste0(percent, "%"), color = color), 
+                       hjust = 1.25, size = 5*sizing,
+                       fontface = "bold") +
     ggplot2::coord_flip() +
     ggplot2::scale_y_continuous(labels = scales::percent_format(scale = 1), expand = c(0.1, 0)) +
     ggplot2::scale_x_discrete(drop = F, limits = levels(plot_data$value)) +

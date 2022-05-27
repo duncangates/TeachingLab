@@ -143,6 +143,7 @@ npsServer <- function(id, in_site) {
     
     # NPS Plot Data
     data_plot_nps <- reactive({
+      
       validate(
         need(!is.null(input$site), "Please select at least one site"),
         need(!is.null(input$role), "Please select at least one role"),

@@ -845,6 +845,8 @@ course_quotes <- function(data = TeachingLab::get_course_survey(),
 #' @param n_size_single NULL an optional single value for n_size
 #' @param explain add explanation for different percentage levels to the table
 #' @param save F by default, a save path inside current working directory
+#' @param prepost F by default for making a prepost dataframe
+#' @param rename F by default for making prepost dataframe
 #' @return Returns a gt table, unless save in which case it will return a saved file with gtsave
 #' @export
 tl_summary_table <- function(data, 
@@ -853,7 +855,11 @@ tl_summary_table <- function(data,
                              grouping = NULL,
                              n_size = NULL,
                              n_size_single = NULL,
-                             explain = F) {
+                             explain = F,
+                             prepost = T,
+                             rename = F) {
+  
+  
   ## Function to nicely format for table presenting
   reformat_cols <- function(x) {
     stringr::str_replace_all(
@@ -861,7 +867,7 @@ tl_summary_table <- function(data,
         TeachingLab::first_up(
           stringr::str_replace_all(
             stringr::str_remove_all(x, 
-                                    "to_what_extent_do_you_agree_or_disagree_with_the_following_statements_|please_rate_your_confidence_on_the_following_items_br_i_am_able_to_"), 
+                                    "to_what_extent_do_you_agree_or_disagree_with_the_following_statements_|please_rate_your_confidence_on_the_following_items_br_i_am_able_to_|Please rate your confidence on the following items. \\<br\\>I am able to\\.\\.\\. - "), 
             "_", 
             " ")
           )
@@ -879,42 +885,94 @@ tl_summary_table <- function(data,
   
   ## Conditional for item
   if (!is.null(grouping)) {
-    if (grouping %in% c("equitable", "high_expectations", "summarise")) {
+    if (grouping %in% c("equitable", "high_expectations", "summarise", "crse")) {
       
-      equitable_questions <- tibble::tibble(
-        question = c("to_what_extent_do_you_agree_or_disagree_with_the_following_statements_i_am_color_blind_when_it_comes_to_my_teaching_i_don_t_think_of_my_students_in_terms_of_their_race_or_ethnicity",
-                     "to_what_extent_do_you_agree_or_disagree_with_the_following_statements_the_gap_in_the_achievement_among_students_of_different_races_is_about_poverty_not_race",
-                     "to_what_extent_do_you_agree_or_disagree_with_the_following_statements_i_think_about_my_own_background_and_experiences_and_how_those_affect_my_instruction"),
-        reverse = c(T, T, F)
-      )
+      if (prepost == T & rename == T) {
+        equitable_questions <- tibble::tibble(
+          question = c("To what extent do you agree or disagree with the following statements? - I am color blind when it comes to my teaching - I don’t think of my students in terms of their race or ethnicity.",
+                       "To what extent do you agree or disagree with the following statements? - The gap in the achievement among students of different races is about poverty, not race.",
+                       "To what extent do you agree or disagree with the following statements? - I think about my own background and experiences and how those affect my instruction."),
+          reverse = c(T, T, F)
+        )
+        
+        high_expectations_questions <- tibble::tibble(
+          question = c("To what extent do you agree or disagree with the following statements? - I try to keep in mind the limits of my students’ ability and give them assignments that I know they can do so that they do not become discouraged.",
+                       "To what extent do you agree or disagree with the following statements? - Before students are asked to engage in complex learning tasks, they need to have a solid grasp of basic skills.",
+                       "To what extent do you agree or disagree with the following statements? - It is not fair to ask students who are struggling with English to take on challenging academic assignments.",
+                       "To what extent do you agree or disagree with the following statements? - Teachers should provide all students the opportunity to work with grade-level texts and tasks."),
+          reverse = c(T, T, T, F)
+        )
+        
+        crse_questions <- c("Please rate your confidence on the following items. <br>I am able to... - Adapt instruction to meet the needs of my students",
+                            "Please rate your confidence on the following items. <br>I am able to... - Identify ways that the school culture (e.g., values, norms, and practices) is different from my students’ home culture",
+                            "Please rate your confidence on the following items. <br>I am able to... - Use my students’ prior knowledge to help them make sense of new information",
+                            "Please rate your confidence on the following items. <br>I am able to... - Revise instructional material to include a better representation of cultural groups",
+                            "Please rate your confidence on the following items. <br>I am able to... - Teach the curriculum to students with unfinished learning",
+                            "Please rate your confidence on the following items. <br>I am able to... - Teach the curriculum to students who are from historically marginalized groups")
+        
+        
+        if (grouping != "crse") {
+          selected <- c(equitable_questions |> pull(question),
+                        high_expectations_questions |> pull(question),
+                        crse_questions)
+          ## Only reversed columns for later calculations
+          reversed <- c(equitable_questions %>% filter(reverse == T) |> pull(question),
+                        high_expectations_questions %>% filter(reverse == T) |> pull(question))
+        } else {
+          selected <- crse_questions
+          reversed <- NULL
+          equitable_questions$question <- NULL 
+          high_expectations_questions$question <- NULL
+        }
+        
+        
+        ## Reformatted column names for later
+        equitable_reformat <- purrr::map_chr(equitable_questions$question, reformat_cols)
+        high_expectations_reformat <- purrr::map_chr(high_expectations_questions$question, reformat_cols)
+        crse_reformat <- purrr::map_chr(crse_questions, reformat_cols)
+      } else {
+        equitable_questions <- tibble::tibble(
+          question = c("to_what_extent_do_you_agree_or_disagree_with_the_following_statements_i_am_color_blind_when_it_comes_to_my_teaching_i_don_t_think_of_my_students_in_terms_of_their_race_or_ethnicity",
+                       "to_what_extent_do_you_agree_or_disagree_with_the_following_statements_the_gap_in_the_achievement_among_students_of_different_races_is_about_poverty_not_race",
+                       "to_what_extent_do_you_agree_or_disagree_with_the_following_statements_i_think_about_my_own_background_and_experiences_and_how_those_affect_my_instruction"),
+          reverse = c(T, T, F)
+        )
+        
+        high_expectations_questions <- tibble::tibble(
+          question = c("to_what_extent_do_you_agree_or_disagree_with_the_following_statements_i_try_to_keep_in_mind_the_limits_of_my_students_ability_and_give_them_assignments_that_i_know_they_can_do_so_that_they_do_not_become_discouraged",
+                       "to_what_extent_do_you_agree_or_disagree_with_the_following_statements_before_students_are_asked_to_engage_in_complex_learning_tasks_they_need_to_have_a_solid_grasp_of_basic_skills",
+                       "to_what_extent_do_you_agree_or_disagree_with_the_following_statements_it_is_not_fair_to_ask_students_who_are_struggling_with_english_to_take_on_challenging_academic_assignments",
+                       "to_what_extent_do_you_agree_or_disagree_with_the_following_statements_teachers_should_provide_all_students_the_opportunity_to_work_with_grade_level_texts_and_tasks"),
+          reverse = c(T, T, T, F)
+        )
+        
+        crse_questions <- c("please_rate_your_confidence_on_the_following_items_br_i_am_able_to_adapt_instruction_to_meet_the_needs_of_my_students",
+                            "please_rate_your_confidence_on_the_following_items_br_i_am_able_to_identify_ways_that_the_school_culture_e_g_values_norms_and_practices_is_different_from_my_students_home_culture",
+                            "please_rate_your_confidence_on_the_following_items_br_i_am_able_to_use_my_students_prior_knowledge_to_help_them_make_sense_of_new_information",
+                            "please_rate_your_confidence_on_the_following_items_br_i_am_able_to_revise_instructional_material_to_include_a_better_representation_of_cultural_groups",
+                            "please_rate_your_confidence_on_the_following_items_br_i_am_able_to_teach_the_curriculum_to_students_with_unfinished_learning",
+                            "please_rate_your_confidence_on_the_following_items_br_i_am_able_to_teach_the_curriculum_to_students_who_are_from_historically_marginalized_groups")
+        
+        ## Only reversed columns for later calculations
+        reversed <- c(equitable_questions %>% filter(reverse == T) |> pull(question),
+                      high_expectations_questions %>% filter(reverse == T) |> pull(question))
+        
+        selected <- c(equitable_questions |> pull(question),
+                      high_expectations_questions |> pull(question),
+                      crse_questions)
+        
+        ## Reformatted column names for later
+        equitable_reformat <- purrr::map_chr(equitable_questions$question, reformat_cols)
+        high_expectations_reformat <- purrr::map_chr(high_expectations_questions$question, reformat_cols)
+        crse_reformat <- purrr::map_chr(crse_questions, reformat_cols)
+      }
       
-      high_expectations_questions <- tibble::tibble(
-        question = c("to_what_extent_do_you_agree_or_disagree_with_the_following_statements_i_try_to_keep_in_mind_the_limits_of_my_students_ability_and_give_them_assignments_that_i_know_they_can_do_so_that_they_do_not_become_discouraged",
-                     "to_what_extent_do_you_agree_or_disagree_with_the_following_statements_before_students_are_asked_to_engage_in_complex_learning_tasks_they_need_to_have_a_solid_grasp_of_basic_skills",
-                     "to_what_extent_do_you_agree_or_disagree_with_the_following_statements_it_is_not_fair_to_ask_students_who_are_struggling_with_english_to_take_on_challenging_academic_assignments",
-                     "to_what_extent_do_you_agree_or_disagree_with_the_following_statements_teachers_should_provide_all_students_the_opportunity_to_work_with_grade_level_texts_and_tasks"),
-        reverse = c(T, T, T, F)
-      )
-      
-      crse_questions <- c("please_rate_your_confidence_on_the_following_items_br_i_am_able_to_adapt_instruction_to_meet_the_needs_of_my_students",
-                          "please_rate_your_confidence_on_the_following_items_br_i_am_able_to_identify_ways_that_the_school_culture_e_g_values_norms_and_practices_is_different_from_my_students_home_culture",
-                          "please_rate_your_confidence_on_the_following_items_br_i_am_able_to_use_my_students_prior_knowledge_to_help_them_make_sense_of_new_information",
-                          "please_rate_your_confidence_on_the_following_items_br_i_am_able_to_revise_instructional_material_to_include_a_better_representation_of_cultural_groups",
-                          "please_rate_your_confidence_on_the_following_items_br_i_am_able_to_teach_the_curriculum_to_students_with_unfinished_learning",
-                          "please_rate_your_confidence_on_the_following_items_br_i_am_able_to_teach_the_curriculum_to_students_who_are_from_historically_marginalized_groups")
-      
-      ## Only reversed columns for later calculations
-      reversed <- c(equitable_questions %>% filter(reverse == T) |> pull(question),
-                    high_expectations_questions %>% filter(reverse == T) |> pull(question))
-      
-      selected <- c(equitable_questions |> pull(question),
-                    high_expectations_questions |> pull(question),
-                    crse_questions)
-      
-      ## Reformatted column names for later
-      equitable_reformat <- purrr::map_chr(equitable_questions$question, reformat_cols)
-      high_expectations_reformat <- purrr::map_chr(high_expectations_questions$question, reformat_cols)
-      crse_reformat <- purrr::map_chr(crse_questions, reformat_cols)
+      if (grouping == "crse") {
+        selected <- crse_questions
+        reversed <- NULL
+        equitable_questions$question <- NULL 
+        high_expectations_questions$question <- NULL
+      }
       
       data_sums <- data |>
         ## Select just relevant columns
@@ -939,7 +997,7 @@ tl_summary_table <- function(data,
                                         Question))
       
       ## Conditionals for summarisation of table
-      if (summarise == T) {
+      if (summarise == T & grouping != "crse") {
         data_sums_final <- data_sums %>%
           dplyr::select(-Question) %>%
           dplyr::group_by(groups) %>%
@@ -951,8 +1009,11 @@ tl_summary_table <- function(data,
           dplyr::relocate(groups, .before = 1)
         
       } else if (summarise == F & grouping == "equitable") {
-        data_sums_final <- data_sums %>%
-          dplyr::filter(stringr::str_detect(Question, paste(equitable_reformat, collapse = "|")))
+        
+        data_sums_final <- data_sums |>
+          mutate(Question = stringr::str_remove_all(Question, "To what extent do you agree or disagree\\<br\\>with the following statements\\? - |\\."),
+                 Question = stringr::str_replace_all(Question, "\\<br\\>", " ")) |>
+          slice(1:3)
         
         data_sums_final <- tibble::tibble(groups = "<b>Overall Score</b>", 
                                           Question = "", 
@@ -960,8 +1021,10 @@ tl_summary_table <- function(data,
           dplyr::bind_rows(data_sums_final) %>%
           dplyr::relocate(groups, .before = 1)
       } else if (summarise == F & grouping == "high_expectations") {
-        data_sums_final <- data_sums %>%
-          dplyr::filter(stringr::str_detect(Question, paste(high_expectations_reformat, collapse = "|")))
+        data_sums_final <- data_sums |>
+          mutate(Question = stringr::str_remove_all(Question, "To what extent do you agree or disagree\\<br\\>with the following statements\\? - |\\."),
+                 Question = stringr::str_replace_all(Question, "\\<br\\>", " ")) |>
+          slice(4:7)
         
         data_sums_final <- tibble::tibble(groups = "<b>Overall Score</b>", 
                                           Question = "", 
@@ -979,36 +1042,50 @@ tl_summary_table <- function(data,
                                               "High Expectations & Beliefs",
                                               "Self-efficacy in CRSE Practices"))) |>
           arrange(` `) |>
-          mutate(` ` = as.character(` `)) |>
-          gt::gt() |>
-          gt::tab_header(title = "Mindsets and Beliefs") |>
-          gt::fmt_markdown(columns = c(` `)) |>
-          # gtExtras::gt_color_box(
-          #   columns = Percent,
-          #   domain = 0:100,
-          #   palette = "ggsci::blue_material"
-          # ) %>%
-          gt::fmt_percent(columns = "Percent",
-                          decimals = 0,
-                          scale_values = F) |>
-          gt::data_color(
-            columns = Percent,
-            colors = scales::col_bin(
-              palette = c(
-                TeachingLab::tl_palette(n = 8, color = "blue") |> magrittr::extract(c(4, 6, 8))
-              ),
-              domain = c(0, 100),
-              bins = c(0, 39, 79, 100)
-            )
-          ) %>%
-          {
-            if (!is.null(n_size)) gt::tab_source_note(data = ., source_note = paste0("n ranges from ", n_size[1], " to ", n_size[2])) else .
-          } %>%
-          {
-            if (!is.null(n_size_single)) gt::tab_source_note(data = ., source_note = paste0("n = ", n_size_single[1])) else .
-          } %>%
-          TeachingLab::gt_theme_tl(align = "left")
+          mutate(` ` = as.character(` `)) 
+        
+        if (prepost == T) {
+          final_gt
+        } else {
+          final_gt |>
+            gt::gt() |>
+            gt::tab_header(title = "Mindsets and Beliefs") |>
+            gt::fmt_markdown(columns = c(` `)) |>
+            # gtExtras::gt_color_box(
+            #   columns = Percent,
+            #   domain = 0:100,
+            #   palette = "ggsci::blue_material"
+            # ) %>%
+            gt::fmt_percent(columns = "Percent",
+                            decimals = 0,
+                            scale_values = F) |>
+            gt::data_color(
+              columns = Percent,
+              colors = scales::col_bin(
+                palette = c(
+                  TeachingLab::tl_palette(n = 8, color = "blue") |> magrittr::extract(c(4, 6, 8))
+                ),
+                domain = c(0, 100),
+                bins = c(0, 39, 79, 100)
+              )
+            ) %>%
+            {
+              if (!is.null(n_size)) gt::tab_source_note(data = ., source_note = paste0("n ranges from ", n_size[1], " to ", n_size[2])) else .
+            } %>%
+            {
+              if (!is.null(n_size_single)) gt::tab_source_note(data = ., source_note = paste0("n = ", n_size_single[1])) else .
+            } %>%
+            TeachingLab::gt_theme_tl(align = "left")
+        }
+        
       } else {
+        
+        data_sums_final <- tibble::tibble(groups = "<b>Overall Score</b>", 
+                                          Question = "", 
+                                          Percent = round(mean(data_sums$Percent))) %>%
+          dplyr::bind_rows(data_sums) %>%
+          dplyr::relocate(groups, .before = 1)
+        
         final_gt <- data_sums_final %>%
           dplyr::mutate(groups = stringr::str_replace_all(
             as.character(stringr::str_extract_all(groups, "<b>Overall Score</b>")), "character\\(0\\)", " ")
@@ -1016,58 +1093,74 @@ tl_summary_table <- function(data,
           dplyr::rename(` ` = `groups`) %>%
           {
             if (explain == T) dplyr::mutate(., `Response (answer)` = dplyr::case_when(Percent == 20 & !stringr::str_detect(Question, "span") ~ "Strongly disagree",
-                                                                                 Percent == 40 & !stringr::str_detect(Question, "span") ~ "Disagree",
-                                                                                 Percent == 60 & !stringr::str_detect(Question, "span") ~ "Neither agree nor disagree",
-                                                                                 Percent == 80 & !stringr::str_detect(Question, "span") ~ "Agree",
-                                                                                 Percent == 100 & !stringr::str_detect(Question, "span") ~ "Strongly agree",
-                                                                                 Percent == 20 & stringr::str_detect(Question, "span") ~ "Strongly agree",
-                                                                                 Percent == 40 & stringr::str_detect(Question, "span") ~ "Agree",
-                                                                                 Percent == 60 & stringr::str_detect(Question, "span") ~ "Neither agree nor disagree",
-                                                                                 Percent == 80 & stringr::str_detect(Question, "span") ~ "Disagree",
-                                                                                 Percent == 100 & stringr::str_detect(Question, "span") ~ "Strongly disagree",
-                                                                                 ` ` == "<b>Overall Score</b>" ~ " ")) else .
-          } %>%
-          gt::gt() %>%
-          gt::tab_header(title = md(paste0("**", data_sums_final$groups[2], "**"))) %>%
-          gt::fmt_markdown(columns = c("Question", " ")) %>%
-          # gtExtras::gt_color_box(
-          #   columns = Percent,
-          #   domain = 0:100,
-          #   palette = "ggsci::blue_material"
-          # ) %>%
-          gt::fmt_percent(columns = "Percent",
-                          decimals = 0,
-                          scale_values = F) %>%
-          gt::data_color(
-            columns = Percent,
-            colors = scales::col_bin(
-              palette = c(
-                TeachingLab::tl_palette(n = 8, color = "blue") |> magrittr::extract(c(4, 6, 8))
-              ),
-              domain = c(0, 100),
-              bins = c(0, 39, 79, 100)
-            )
-          ) |>
-          gt::cols_align(align = "left",
-                         columns = "Question") %>%
-          gt::tab_footnote(footnote = "For the items in red, responses that align to equitable mindsets are strongly disagree/disagree. They have been reverse coded for these analyses, so that for all items, higher percentages correspond to holding equitable mindsets.",
-                           locations = cells_column_labels("Question")) %>%
-          {
-            if (!is.null(n_size)) gt::tab_source_note(data = ., source_note = paste0("n ranges from ", n_size[1], " to ", n_size[2])) else .
-          } %>%
-          {
-            if (!is.null(n_size_single)) gt::tab_source_note(data = ., source_note = paste0("n = ", n_size_single[1])) else .
-          } %>%
-          TeachingLab::gt_theme_tl(align = "left")
-      }
+                                                                                      Percent == 40 & !stringr::str_detect(Question, "span") ~ "Disagree",
+                                                                                      Percent == 60 & !stringr::str_detect(Question, "span") ~ "Neither agree nor disagree",
+                                                                                      Percent == 80 & !stringr::str_detect(Question, "span") ~ "Agree",
+                                                                                      Percent == 100 & !stringr::str_detect(Question, "span") ~ "Strongly agree",
+                                                                                      Percent == 20 & stringr::str_detect(Question, "span") ~ "Strongly agree",
+                                                                                      Percent == 40 & stringr::str_detect(Question, "span") ~ "Agree",
+                                                                                      Percent == 60 & stringr::str_detect(Question, "span") ~ "Neither agree nor disagree",
+                                                                                      Percent == 80 & stringr::str_detect(Question, "span") ~ "Disagree",
+                                                                                      Percent == 100 & stringr::str_detect(Question, "span") ~ "Strongly disagree",
+                                                                                      ` ` == "<b>Overall Score</b>" ~ " ")) else .
+          }
+        
+        if (prepost == T) {
+          final_gt
+        } else {
+          final_gt |>
+            gt::gt() |>
+            gt::tab_header(title = md(paste0("**", data_sums_final$groups[2], "**"))) %>%
+            gt::fmt_markdown(columns = c("Question", " ")) %>%
+            # gtExtras::gt_color_box(
+            #   columns = Percent,
+            #   domain = 0:100,
+            #   palette = "ggsci::blue_material"
+            # ) %>%
+            gt::fmt_percent(columns = "Percent",
+                            decimals = 0,
+                            scale_values = F) %>%
+            gt::data_color(
+              columns = Percent,
+              colors = scales::col_bin(
+                palette = c(
+                  TeachingLab::tl_palette(n = 8, color = "blue") |> magrittr::extract(c(4, 6, 8))
+                ),
+                domain = c(0, 100),
+                bins = c(0, 39, 79, 100)
+              )
+            ) |>
+            gt::cols_align(align = "left",
+                           columns = "Question") %>%
+            gt::tab_footnote(footnote = "For the items in red, responses that align to equitable mindsets are strongly disagree/disagree. They have been reverse coded for these analyses, so that for all items, higher percentages correspond to holding equitable mindsets.",
+                             locations = cells_column_labels("Question")) %>%
+            {
+              if (!is.null(n_size)) gt::tab_source_note(data = ., source_note = paste0("n ranges from ", n_size[1], " to ", n_size[2])) else .
+            } %>%
+            {
+              if (!is.null(n_size_single)) gt::tab_source_note(data = ., source_note = paste0("n = ", n_size_single[1])) else .
+            } %>%
+            TeachingLab::gt_theme_tl(align = "left")
+        }
+        }
+        
     } else if (grouping %in% c("crse")) {
       
-      selected <- c("please_rate_your_confidence_on_the_following_items_br_i_am_able_to_adapt_instruction_to_meet_the_needs_of_my_students",
-                    "please_rate_your_confidence_on_the_following_items_br_i_am_able_to_identify_ways_that_the_school_culture_e_g_values_norms_and_practices_is_different_from_my_students_home_culture",
-                    "please_rate_your_confidence_on_the_following_items_br_i_am_able_to_use_my_students_prior_knowledge_to_help_them_make_sense_of_new_information",
-                    "please_rate_your_confidence_on_the_following_items_br_i_am_able_to_revise_instructional_material_to_include_a_better_representation_of_cultural_groups",
-                    "please_rate_your_confidence_on_the_following_items_br_i_am_able_to_teach_the_curriculum_to_students_with_unfinished_learning",
-                    "please_rate_your_confidence_on_the_following_items_br_i_am_able_to_teach_the_curriculum_to_students_who_are_from_historically_marginalized_groups")
+      if (rename == F) {
+        selected <- c("please_rate_your_confidence_on_the_following_items_br_i_am_able_to_adapt_instruction_to_meet_the_needs_of_my_students",
+                      "please_rate_your_confidence_on_the_following_items_br_i_am_able_to_identify_ways_that_the_school_culture_e_g_values_norms_and_practices_is_different_from_my_students_home_culture",
+                      "please_rate_your_confidence_on_the_following_items_br_i_am_able_to_use_my_students_prior_knowledge_to_help_them_make_sense_of_new_information",
+                      "please_rate_your_confidence_on_the_following_items_br_i_am_able_to_revise_instructional_material_to_include_a_better_representation_of_cultural_groups",
+                      "please_rate_your_confidence_on_the_following_items_br_i_am_able_to_teach_the_curriculum_to_students_with_unfinished_learning",
+                      "please_rate_your_confidence_on_the_following_items_br_i_am_able_to_teach_the_curriculum_to_students_who_are_from_historically_marginalized_groups")
+      } else {
+        selected <- c("Please rate your confidence on the following items. <br>I am able to... - Adapt instruction to meet the needs of my students",
+                      "Please rate your confidence on the following items. <br>I am able to... - Identify ways that the school culture (e.g., values, norms, and practices) is different from my students’ home culture",
+                      "Please rate your confidence on the following items. <br>I am able to... - Use my students’ prior knowledge to help them make sense of new information",
+                      "Please rate your confidence on the following items. <br>I am able to... - Revise instructional material to include a better representation of cultural groups",
+                      "Please rate your confidence on the following items. <br>I am able to... - Teach the curriculum to students with unfinished learning",
+                      "Please rate your confidence on the following items. <br>I am able to... - Teach the curriculum to students who are from historically marginalized groups")
+      }
       
       data_sums <- data %>%
         ## Select just relevant columns
@@ -1076,10 +1169,11 @@ tl_summary_table <- function(data,
         dplyr::mutate(dplyr::across(dplyr::everything(), ~ readr::parse_number(as.character(.x)))) %>%
         ## Summarise everything with scoring
         dplyr::summarise(dplyr::across(dplyr::everything(), ~ round(mean(.x, na.rm = T), 2))) %>%
+        dplyr::ungroup() %>%
         ## Rename with reformatting function
         dplyr::rename_with( ~ reformat_cols(.x)) %>%
         ## Make long format
-        tidyr::pivot_longer(tidyr::everything(), names_to = "Question", values_to = "Percent")
+        tidyr::pivot_longer(dplyr::everything(), names_to = "Question", values_to = "Percent")
       
       ## Conditionals for summarisation of table
       if (summarise == T) {
@@ -1104,34 +1198,40 @@ tl_summary_table <- function(data,
                                                                                           Percent == 90 & Question != "<b>Overall Score</b>" ~ "9",
                                                                                           Percent == 100 & Question != "<b>Overall Score</b>" ~ "10",
                                                                                           Question == "<b>Overall Score</b>" ~ " ")) else .
-          } %>%
-          gt::gt() |>
-          gt::fmt_percent(columns = "Percent",
-                          decimals = 0,
-                          scale_values = F) |>
-          gt::data_color(
-            columns = Percent,
-            colors = scales::col_bin(
-              palette = c(
-                TeachingLab::tl_palette(n = 8, color = "blue") |> magrittr::extract(c(4, 6, 8))
-              ),
-              domain = c(0, 100),
-              bins = c(0, 39, 79, 100)
-            )
-          ) |>
-          gt::fmt_markdown(columns = "Question") |>
-          gt::cols_align(align = "left",
-                         columns = c(Question, Percent)) %>%
-          {
-            if (!is.null(n_size)) gt::tab_source_note(data = ., source_note = paste0("n ranges from ", n_size[1], " to ", n_size[2])) else .
-          } %>%
-          {
-            if (!is.null(n_size_single)) gt::tab_source_note(data = ., source_note = paste0("n = ", n_size_single[1])) else .
-          } %>%
-          TeachingLab::gt_theme_tl(align = NULL) %>%
-          {
-            if (explain == T) gt::cols_align(., align = "center", columns = c(`Response (1-10 scale)`)) else .
           }
+        
+        if (prepost == T) {
+          final_gt
+        } else {
+          final_gt %>%
+            gt::gt() |>
+            gt::fmt_percent(columns = "Percent",
+                            decimals = 0,
+                            scale_values = F) |>
+            gt::data_color(
+              columns = Percent,
+              colors = scales::col_bin(
+                palette = c(
+                  TeachingLab::tl_palette(n = 8, color = "blue") |> magrittr::extract(c(4, 6, 8))
+                ),
+                domain = c(0, 100),
+                bins = c(0, 39, 79, 100)
+              )
+            ) |>
+            gt::fmt_markdown(columns = "Question") |>
+            gt::cols_align(align = "left",
+                           columns = c(Question, Percent)) %>%
+            {
+              if (!is.null(n_size)) gt::tab_source_note(data = ., source_note = paste0("n ranges from ", n_size[1], " to ", n_size[2])) else .
+            } %>%
+            {
+              if (!is.null(n_size_single)) gt::tab_source_note(data = ., source_note = paste0("n = ", n_size_single[1])) else .
+            } %>%
+            TeachingLab::gt_theme_tl(align = NULL) %>%
+            {
+              if (explain == T) gt::cols_align(., align = "center", columns = c(`Response (1-10 scale)`)) else .
+            }
+        }
         
       } else if (grouping == "crse") {
         data_sums_final <- data_sums |>
@@ -1158,19 +1258,25 @@ tl_summary_table <- function(data,
                                                                                           Percent == 90 ~ "9",
                                                                                           Percent == 100 ~ "10",
                                                                                           ` ` == "<b>Overall Score</b>" ~ " ")) else .
-          } %>%
-          gt::gt(rowname_col = "groups") %>%
-          # gt::fmt_integer(columns = "Average") %>%
-          gt::fmt_markdown(columns = "Question") %>%
-          gt::cols_align(align = "left",
-                         columns = "Question") %>%
-          {
-            if (!is.null(n_size)) gt::tab_source_note(data = ., source_note = paste0("n ranges from ", n_size[1], " to ", n_size[2])) else .
-          } %>%
-          {
-            if (!is.null(n_size_single)) gt::tab_source_note(data = ., source_note = paste0("n = ", n_size_single[1])) else .
-          } %>%
-          TeachingLab::gt_theme_tl(align = "left")
+          }
+        
+        if (prepost == T) {
+          final_gt
+        } else {
+          final_gt %>%
+            gt::gt(rowname_col = "groups") %>%
+            # gt::fmt_integer(columns = "Average") %>%
+            gt::fmt_markdown(columns = "Question") %>%
+            gt::cols_align(align = "left",
+                           columns = "Question") %>%
+            {
+              if (!is.null(n_size)) gt::tab_source_note(data = ., source_note = paste0("n ranges from ", n_size[1], " to ", n_size[2])) else .
+            } %>%
+            {
+              if (!is.null(n_size_single)) gt::tab_source_note(data = ., source_note = paste0("n = ", n_size_single[1])) else .
+            } %>%
+            TeachingLab::gt_theme_tl(align = "left")
+        }
       }
   }
     } else if (is.null(grouping) & summarise == T) {

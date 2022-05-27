@@ -22,4 +22,4 @@ knowledge_assessments_mississippi <- readr::read_rds(here::here("data/diagnostic
     code = dplyr::na_if(code, "NANA")
   )
 
-readr::write_rds(knowledge_assessments_mississippi, here::here("data/mississippi_reports/knowledge_assessments"))
+readr::write_rds(knowledge_assessments_mississippi, here::here("data/mississippi_reports/knowledge_assessments.rds"))

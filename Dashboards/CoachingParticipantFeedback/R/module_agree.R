@@ -39,6 +39,10 @@ uiAgree <- function(id, label = "Counter") {
 agreeServer <- function(id) {
   ns <- NS(id)
   moduleServer(id, function(input, output, session) {
+    
+    observe({
+      print(sign_ins()$name)
+    })
 
     #### Site Filter Conditional On Knowledge Assessments ####
     output$site_ui <- renderUI({

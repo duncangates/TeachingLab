@@ -4,6 +4,7 @@ params:
   plot_ts: NA
   plot_agree: NA
   agree_plot_n: NA
+  plot_nps: NA
   quote1: NA
   quote2: NA
   quote3: NA
@@ -19,12 +20,17 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = F, warning = F, message = F)
-library(tidyverse)
+library(ggforce)
+library(ggfx)
+library(ggplot2)
+library(tibble)
 library(tlShiny)
-library(tidytext)
-library(bookdown)
 library(webshot)
 webshot::install_phantomjs()
+
+no_data_plot <- ggplot2::ggplot(tibble(text = "There was no data\nfor this site here.", x = 0, y = 0)) +
+  geom_text(aes(label = text, x, y), fontface = "bold", family = "Calibri Bold", size = 10) +
+  theme_void()
 ```
 
 <!-- \fontspec{calibri} -->
@@ -34,7 +40,8 @@ webshot::install_phantomjs()
 ## Overall
 
 ```{r overall-plot, fig.width = 11, fig.height = 10}
-ggplot(data = params$plot_agree, aes(x = Question, y = Percent, fill = factor(Response))) +
+if (nrow(params$plot_agree) >= 1) {
+  ggplot(data = params$plot_agree, aes(x = Question, y = Percent, fill = factor(Response))) +
         geom_col() +
         geom_text(aes(label = if_else(Percent >= 3, paste0(round(Percent), "%"), "")), position = position_stack(vjust = 0.5)) +
         scale_fill_manual(values = c(
@@ -49,7 +56,7 @@ ggplot(data = params$plot_agree, aes(x = Question, y = Percent, fill = factor(Re
         coord_flip() +
         guides(fill = guide_legend(reverse = T)) +
         scale_y_continuous(labels = scales::percent_format(scale = 1)) +
-        theme_bw() +
+        tlShiny::theme_tl() +
         theme(
           legend.position = "bottom",
           legend.title = element_blank(),
@@ -63,6 +70,9 @@ ggplot(data = params$plot_agree, aes(x = Question, y = Percent, fill = factor(Re
           axis.title.y = element_blank(),
           plot.title = element_text(hjust = 0.5, family = "Calibri", size = 16, face = "bold")
         )
+} else {
+  no_data_plot
+}
 ```
 
 \newpage
@@ -129,13 +139,38 @@ if (nrow(params$plot_ts) >= 1) {
           plot.title = element_text(hjust = 0.5, family = "Calibri", size = 16, face = "bold")
         )
 } else {
-  tibble("There was no data to show here.") %>% 
-    quote_viz(title = "Nothing", 
-              width = 40,
-              print = F) %>% 
-    gtsave("nothing_image.png", path = tempdir())
+  no_data_plot
 }
 ```
+
+## NPS
+
+```{r}
+if (nrow(params$plot_nps)) {
+  ggplot(data = params$plot_nps) +
+        geom_text(aes(x = 0, y = 0.5, label = "fake text"), color = "transparent") +
+        geom_text(aes(x = -0.5, y = 0.5, label = "fake text"), color = "transparent") +
+        with_outer_glow(
+          geom_text(aes(x = 0, y = 0, label = nps), size = 30),
+          colour = "#04abeb",
+          sigma = 5,
+          expand = 5
+        ) +
+        geom_text(aes(x = 0, y = -0.5, label = "fake text"), color = "transparent") +
+        geom_text(aes(x = 0.5, y = -0.5, label = "fake text"), color = "transparent") +
+        with_outer_glow(
+          geom_circle(aes(x0 = 0, y0 = 0, r = 1), size = 5),
+          colour = "#04abeb",
+          sigma = 5,
+          expand = 5
+        ) +
+        coord_fixed() +
+        theme_void()
+} else {
+  no_data_plot
+}
+```
+
 
 # Qualitative Data
 
@@ -163,11 +198,7 @@ if (nrow(as_tibble(params$quote1)) >= 1) {
       ) %>%
   gtsave("img1.png", path = tempdir())
 } else {
-  tibble("There were no comments to display here.") %>% 
-    quote_viz(title = "Nothing", 
-              width = 40,
-              print = F) %>% 
-    gtsave("nothing_image.png", path = tempdir())
+  no_data_plot
 }
 ```
 
@@ -183,11 +214,7 @@ if (nrow(as_tibble(params$quote2)) >= 1) {
       ) %>%
   gtsave("img2.png", path = tempdir())
 } else {
-  tibble("There were no comments to display here.") %>% 
-    quote_viz(title = "Nothing", 
-              width = 40,
-              print = F) %>% 
-    gtsave("nothing_image.png", path = tempdir())
+  no_data_plot
 }
 ```
 
@@ -203,11 +230,7 @@ if (nrow(as_tibble(params$quote3)) >= 1) {
       ) %>%
   gtsave("img3.png", path = tempdir())
 } else {
-  tibble("There were no comments to display here.") %>% 
-    quote_viz(title = "Nothing", 
-              width = 40,
-              print = F) %>% 
-    gtsave("nothing_image.png", path = tempdir())
+  no_data_plot
 }
 ```
 
@@ -223,11 +246,7 @@ if (nrow(as_tibble(params$quote4)) >= 1) {
       ) %>%
   gtsave("img4.png", path = tempdir())
 } else {
-  tibble("There were no comments to display here.") %>% 
-    quote_viz(title = "Nothing", 
-              width = 40,
-              print = F) %>% 
-    gtsave("nothing_image.png", path = tempdir())
+  no_data_plot
 }
 ```
 
@@ -244,11 +263,7 @@ if (nrow(as_tibble(params$quote5)) >= 1) {
       ) %>%
   gtsave("img5.png", path = tempdir())
 } else {
-  tibble("There were no comments to display here.") %>% 
-    quote_viz(title = "Nothing", 
-              width = 40,
-              print = F) %>% 
-    gtsave("nothing_image.png", path = tempdir())
+  no_data_plot
 }
 ```
 
