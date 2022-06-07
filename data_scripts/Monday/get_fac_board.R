@@ -1,6 +1,7 @@
 library(MondayR)
 library(tidyverse)
 library(googlesheets4)
+# library(reticulate)
 monday_auth()
 
 # get_all_fac_board_values <- function(board_id) {

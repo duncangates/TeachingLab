@@ -130,7 +130,7 @@ get_lesson_analysis <- function(update = FALSE) {
 get_student_scores_mississippi <- function(update = FALSE) {
   if (update == TRUE) {
     df <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1yrqXouJ84glL-4uH7Nw-47HqhzQP1jINDgRy8nCUaxs/edit#gid=777182936",
-                                    sheet = "SCORED"
+                                    sheet = "SCORED_pre"
     ) |>
       janitor::clean_names() |>
       dplyr::select(-9)
@@ -138,6 +138,27 @@ get_student_scores_mississippi <- function(update = FALSE) {
     readr::write_rds(df, here::here("data/student_scores_mississippi.rds"))
   } else {
     df <- readr::read_rds(here::here("data/student_scores_mississippi.rds"))
+  }
+  
+  return(df)
+}
+
+#' @title Student Scores Mississippi Round 2
+#' @description Get student scores for follow up mississippi data
+#' @param update FALSE, optional updating
+#' @return A tibble
+#' @export
+get_student_scores_mississippi2 <- function(update = FALSE) {
+  if (update == TRUE) {
+    df <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1yrqXouJ84glL-4uH7Nw-47HqhzQP1jINDgRy8nCUaxs/edit#gid=777182936",
+                                    sheet = "SCORED_post"
+    ) |>
+      janitor::clean_names() |>
+      dplyr::select(-c(9:16))
+    
+    readr::write_rds(df, here::here("data/student_scores_mississippi2.rds"))
+  } else {
+    df <- readr::read_rds(here::here("data/student_scores_mississippi2.rds"))
   }
   
   return(df)

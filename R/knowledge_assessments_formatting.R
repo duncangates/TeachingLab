@@ -65,31 +65,31 @@ save_processed_data2 <- function(data, q_and_a, correct, save_name, question_htm
   #### Check which knowledge assessment it is for later adaptation purposes due to data entry mistakes ####
   know_assess <- stringr::str_remove(q_and_a, ".*questions_and_answers/")
   #### Input Survey ####
-  data_with_id <- readr::read_rds(data) %>%
-    dplyr::group_by(respondent_id) %>% # By respondent id reduce to one row per respondent
-    dplyr::summarise_all(TeachingLab::coalesce_by_column) %>% # Same as above
-    dplyr::rename_at(dplyr::vars(tidyselect::matches("3 initials")), ~ paste0("initials")) %>% # rename initials 
-    dplyr::rename_at(dplyr::vars(tidyselect::matches("birthday")), ~ paste0("birthday")) %>% # rename birthday for next mutate
-    dplyr::rename_at(dplyr::vars(tidyselect::matches("school\\)\\.$|school\\)$|school$")), ~ paste0("site")) %>% # rename site, but not site (other)
-    dplyr::rename_at(dplyr::vars(tidyselect::matches("Other -|- Other")), ~ paste0("other_site")) %>%
+  data_with_id <- readr::read_rds(data) |>
+    dplyr::group_by(respondent_id) |> # By respondent id reduce to one row per respondent
+    dplyr::summarise_all(TeachingLab::coalesce_by_column) |> # Same as above
+    dplyr::rename_at(dplyr::vars(tidyselect::matches("3 initials|3_initials")), ~ paste0("initials")) |> # rename initials 
+    dplyr::rename_at(dplyr::vars(tidyselect::matches("birthday")), ~ paste0("birthday")) |> # rename birthday for next mutate
+    dplyr::rename_at(dplyr::vars(tidyselect::matches("school\\)\\.$|school\\)$|school$|school_br_br$")), ~ paste0("site")) |> # rename site, but not site (other)
+    dplyr::rename_at(dplyr::vars(tidyselect::matches("Other -|- Other|other_please")), ~ paste0("other_site")) |>
     dplyr::mutate(other_site = stringr::str_replace_all(other_site, c("North Bronx School of Empowerment" = "North Bronx School of Empowerment, NY",
                                                                       "BRONX GREEN MIDDLE SCHOOL" = "North Bronx School of Empowerment, NY",
                                                                       "Math Director" = "North Bronx School of Empowerment, NY",
                                                                       "BCO" = "North Bronx School of Empowerment, NY",
                                                                       "BAYCHESTER MIDDLE SCHOOL" = "North Bronx School of Empowerment, NY",
                                                                       "San Diego Unified" = "San Diego Unified School District, CA")),
-                  other_site = ifelse(stringr::str_detect(other_site, "11"), "District 11", other_site)) %>%
-    dplyr::mutate(site = dplyr::coalesce(site, other_site)) %>%
-    dplyr::mutate(id = paste0(tolower(initials), birthday)) %>% # Create id by concatenating lowercase initials and bday
-    dplyr::group_by(id) %>%
+                  other_site = ifelse(stringr::str_detect(other_site, "11"), "District 11", other_site)) |>
+    dplyr::mutate(site = dplyr::coalesce(site, other_site)) |>
+    dplyr::mutate(id = paste0(tolower(initials), birthday)) |> # Create id by concatenating lowercase initials and bday
+    dplyr::group_by(id) |>
     dplyr::mutate(n_response = dplyr::n(), # Get number of responses by person, sometimes there are more than 2 :/
-                  maxdate = max(date_created)) %>% # Get max date of creation for most recent response
-    dplyr::ungroup() %>%
+                  maxdate = max(date_created)) |> # Get max date of creation for most recent response
+    dplyr::ungroup() |>
     ### Group by site for date checking - if greater than mean per site is checked as opposed to overall ###
-    dplyr::group_by(site) %>%
+    dplyr::group_by(site) |>
     dplyr::mutate(prepost = ifelse((date_created > mean(date_created)) | (n_response > 1 & maxdate == date_created), 
                                    "post", 
-                                   "pre")) %>% # Define as post for matched if more than 1 response and date is max of date_created
+                                   "pre")) |> # Define as post for matched if more than 1 response and date is max of date_created
     dplyr::ungroup()
   
   
@@ -113,7 +113,7 @@ save_processed_data2 <- function(data, q_and_a, correct, save_name, question_htm
   }
   
   ### Make pre/post determination a factor ###
-  data_with_id <- data_with_id %>%
+  data_with_id <- data_with_id |>
     dplyr::mutate(prepost = factor(prepost, levels = c("pre", "post")))
   
   ### Read in q_and_a dataframe ###
@@ -122,39 +122,39 @@ save_processed_data2 <- function(data, q_and_a, correct, save_name, question_htm
   names_select <- data_for_grading$question
   
   ### Reduce data (columns) and pivot ###
-  data_with_id_final <- data_with_id %>%
-    dplyr::ungroup() %>%
-    dplyr::select(site, names_select, prepost, id) %>%
-    tidyr::pivot_longer(!c(site, id, prepost), names_to = "question", values_to = "answer") %>%
-    dplyr::left_join(data_for_grading %>% dplyr::select(-answer), by = "question")
+  data_with_id_final <- data_with_id |>
+    dplyr::ungroup() |>
+    dplyr::select(site, names_select, prepost, id) |>
+    tidyr::pivot_longer(!c(site, id, prepost), names_to = "question", values_to = "answer") |>
+    dplyr::left_join(data_for_grading |> dplyr::select(-answer), by = "question")
   
 
   ### Calculate percent saying each with score_question ###
-  data_percents <- data_with_id_final %>%
+  data_percents <- data_with_id_final |>
     ## Make question consist of just the question being posed ##
     dplyr::mutate(question = stringr::str_remove_all(question, " Select all.*"),
                   question = stringr::str_remove_all(question, "\\. - "),
-                  answer = as.character(answer)) %>%
-    dplyr::ungroup() %>%
+                  answer = as.character(answer)) |>
+    dplyr::ungroup() |>
     ## Calculate incorrect score which ISSUE: currently just subtracts 0.5 each incorrect answer given in the group ##
     dplyr::mutate(incorrect = ifelse((!is.na(answer) & answer %!in% correct & group_correct > 1), 0.5, 0),
                   ## Calculate correct score which is just 1 if correct or 0 if not ##
-                  correct = ifelse(answer %in% correct, 1, 0)) %>%
-    dplyr::group_by(question, id, prepost, site) %>%
+                  correct = ifelse(answer %in% correct, 1, 0)) |>
+    dplyr::group_by(question, id, prepost, site) |>
     ## Calculate percentage correct per question, id, pre or post, and site by dividing by question group length ##
     dplyr::summarise(
       percent = 100 * (sum(correct) - sum(incorrect)) / group_correct
-    ) %>%
+    ) |>
     ## Same as above but repeated for some reason ##
-    dplyr::group_by(question, id, prepost, site) %>%
-    dplyr::summarise(percent = mean(percent)) %>%
-    dplyr::ungroup() %>%
+    dplyr::group_by(question, id, prepost, site) |>
+    dplyr::summarise(percent = mean(percent)) |>
+    dplyr::ungroup() |>
     ## If negative percent from being too incorrect just replace with 0 ##
-    dplyr::mutate(percent = ifelse(percent < 0 , 0, percent)) %>%
+    dplyr::mutate(percent = ifelse(percent < 0, 0, percent)) |>
     dplyr::arrange(id)
 
   ## Remove extra parts of questions, highlight answers that are correct, add <br> for plotting
-  data_final <- data_percents %>%
+  data_final <- data_percents |>
     dplyr::relocate(id, .before = 1) #%>%
     # dplyr::mutate(answer = TeachingLab::html_wrap(answer, n = 30),
     #               answer = dplyr::if_else(stringr::str_replace_all(answer, "<br>", " ") %in% correct,

@@ -1,11 +1,12 @@
 ##### Get Diagnostic Educator Survey from Survey Monkey #####
 ##### Writes to both diagnostic survey dashboard as well as data folder #####
-library(magrittr)
+options(sm_oauth_token = Sys.getenv("diagnostic_token"))
 
 diagnostic_survey <- TeachingLab::get_diagnostic_survey(update = TRUE)
 
 ## Write Misssissippi Data to reports folder ##
 knowledge_assessments_mississippi <- readr::read_rds(here::here("data/diagnostic.rds")) |>
+  dplyr::filter(stringr::str_detect(your_site_district_parish_network_or_school_br_br, ", MS")) |>
   dplyr::mutate(
     code = toupper(paste0(
       substr(

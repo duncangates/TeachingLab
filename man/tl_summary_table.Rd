@@ -11,7 +11,9 @@ tl_summary_table(
   grouping = NULL,
   n_size = NULL,
   n_size_single = NULL,
-  explain = F
+  explain = F,
+  prepost = T,
+  rename = F
 )
 }
 \arguments{
@@ -28,6 +30,10 @@ tl_summary_table(
 \item{n_size_single}{NULL an optional single value for n_size}
 
 \item{explain}{add explanation for different percentage levels to the table}
+
+\item{prepost}{F by default for making a prepost dataframe}
+
+\item{rename}{F by default for making prepost dataframe}
 }
 \value{
 Returns a gt table, unless save in which case it will return a saved file with gtsave

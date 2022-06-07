@@ -21,6 +21,10 @@ library(tidyverse)
 library(tlShiny)
 library(webshot)
 webshot::install_phantomjs()
+
+no_data_plot <- ggplot2::ggplot(tibble(text = "There was no data\nfor this site here.", x = 0, y = 0)) +
+  geom_text(aes(label = text, x, y), fontface = "bold", family = "Calibri Bold", size = 10) +
+  theme_void()
 ```
 
 <!-- \fontspec{calibri} -->
@@ -79,7 +83,8 @@ In summary, we see the following % agree or strongly agree with the above statem
 Here by visualizing ratings of strongly agree/agree in blue areas, and all other ratings in black areas we visualize feedback over time (If there is just one point of feedback this appears as a dot).
 
 ```{r}
-params$plot_ts %>%
+if (nrow(params$plot_ts) >= 1) {
+  params$plot_ts %>%
         ggplot(aes(x = ymd(Date),
                    y = Percent)) +
         geom_area(color = "gray50", aes(fill = Rating), alpha = 0.6, position = position_identity()) + # position_identity is absolutely necessary here, not sure why
@@ -121,6 +126,9 @@ params$plot_ts %>%
           axis.title.y = element_blank(),
           plot.title = element_text(hjust = 0.5, family = "Calibri", size = 16, face = "bold")
         )
+} else {
+  no_data_plot
+}
 ```
 
 # Qualitative Data

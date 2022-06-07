@@ -202,7 +202,9 @@ get_session_survey <- function(update = FALSE) {
       )
 
     session_survey |>
-      readr::write_rds(., "data/session_survey_21_22data.rds")
+      readr::write_rds("data/session_survey_21_22data.rds")
+    session_survey |>
+      readr::write_rds("Dashboards/SessionSurvey/data/session_survey_21_22data.rds")
   }
 
   return(session_survey)
@@ -343,6 +345,18 @@ get_course_survey <- function(update = FALSE) {
         # NPS
         `On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`
       )
+    
+    course_survey |>
+      dplyr::filter(date_created >= as.Date("2021-07-01") & date_created <= as.Date("2022-06-30")) |>
+      readr::write_rds(., here::here("data/course_survey_21_22.rds"))
+    
+    course_survey |>
+      dplyr::filter(date_created >= as.Date("2021-07-01") & date_created <= as.Date("2022-06-30")) |>
+      readr::write_rds(., here::here("Dashboards/SiteCollectionProgress/data/course_survey_21_22.rds"))
+    
+    readr::write_rds(course_survey, here::here("data/course_surveymonkey.rds"))
+    readr::write_rds(course_survey, here::here("Dashboards/CourseSurvey/data/course_surveymonkey.rds"))
+    
   }
 
   return(course_survey)

@@ -498,6 +498,7 @@ quote_viz <- function(data,
                       title = NULL,
                       suppress_warnings = T,
                       align = "center",
+                      save = T,
                       ...) {
   selecting_cols <- text_col
   text_col <- rlang::enquo(text_col)
@@ -562,29 +563,34 @@ quote_viz <- function(data,
       .x[!stringr::str_detect(.x, "<span")]
     ))
 
-    # Make gt table with all HTML Formatting
-    data_final %>%
-      gt::gt() %>%
-      {
-        if (!is.null(title)) gt::tab_header(data = ., title = gt::html(title)) else .
-      } %>%
-      gt::fmt_markdown(columns = gt::everything()) |>
-      gt::fmt_missing(columns = everything(),
-                      missing_text = " ") |>
-      gt::cols_align(align = align) |>
-      gt::tab_style(
-        style = list(
-          gt::cell_text(
-            size = "medium"
+    if (save == F) {
+      data_final
+    } else {
+      # Make gt table with all HTML Formatting
+      data_final |>
+        gt::gt() %>%
+        {
+          if (!is.null(title)) gt::tab_header(data = ., title = gt::html(title)) else .
+        } %>%
+        gt::fmt_markdown(columns = gt::everything()) |>
+        gt::fmt_missing(columns = everything(),
+                        missing_text = " ") |>
+        gt::cols_align(align = align) |>
+        gt::tab_style(
+          style = list(
+            gt::cell_text(
+              size = "medium"
+            )
+          ),
+          locations = gt::cells_body(
+            columns = gt::everything(),
+            rows = gt::everything()
           )
-        ),
-        locations = gt::cells_body(
-          columns = gt::everything(),
-          rows = gt::everything()
-        )
-      ) |>
-      gt::opt_row_striping(row_striping = TRUE) |>
-      TeachingLab::gt_theme_tl(align = align, ...)
+        ) |>
+        gt::opt_row_striping(row_striping = TRUE) |>
+        TeachingLab::gt_theme_tl(align = align, ...)
+    }
+    
   }
 }
 
@@ -1013,12 +1019,12 @@ tl_summary_table <- function(data,
         data_sums_final <- data_sums |>
           mutate(Question = stringr::str_remove_all(Question, "To what extent do you agree or disagree\\<br\\>with the following statements\\? - |\\."),
                  Question = stringr::str_replace_all(Question, "\\<br\\>", " ")) |>
-          slice(1:3)
+          slice(c(1:3))
         
         data_sums_final <- tibble::tibble(groups = "<b>Overall Score</b>", 
                                           Question = "", 
                                           Percent = round(mean(data_sums_final$Percent))) %>%
-          dplyr::bind_rows(data_sums_final) %>%
+          dplyr::bind_rows(data_sums_final) |>
           dplyr::relocate(groups, .before = 1)
       } else if (summarise == F & grouping == "high_expectations") {
         data_sums_final <- data_sums |>
@@ -1080,11 +1086,13 @@ tl_summary_table <- function(data,
         
       } else {
         
-        data_sums_final <- tibble::tibble(groups = "<b>Overall Score</b>", 
-                                          Question = "", 
-                                          Percent = round(mean(data_sums$Percent))) %>%
-          dplyr::bind_rows(data_sums) %>%
-          dplyr::relocate(groups, .before = 1)
+        if (grouping %!in% c("equitable", "high_expectations")) {
+          data_sums_final <- tibble::tibble(groups = "<b>Overall Score</b>", 
+                                            Question = "", 
+                                            Percent = round(mean(data_sums$Percent))) %>%
+            dplyr::bind_rows(data_sums) %>%
+            dplyr::relocate(groups, .before = 1)
+        }
         
         final_gt <- data_sums_final %>%
           dplyr::mutate(groups = stringr::str_replace_all(

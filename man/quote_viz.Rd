@@ -15,6 +15,7 @@ quote_viz(
   title = NULL,
   suppress_warnings = T,
   align = "center",
+  save = T,
   ...
 )
 }
