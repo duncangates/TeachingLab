@@ -125,16 +125,16 @@ uiText <- function(id, label = "Counter") {
               label = h3("Select minimum date"),
               value = min(as.Date(session_survey$Date), na.rm = T),
               minDate = min(as.Date(session_survey$Date), na.rm = T),
-              maxDate = max(as.Date(session_survey$Date), na.rm = T),
+              maxDate = max(as.Date(session_survey$Date), na.rm = T) + 1,
               dateFormat = "mm-dd-yyyy",
               width = "100px"
             ),
             shinyWidgets::airDatepickerInput(
               inputId = ns("date_max"),
               label = h3("Select maximum date"),
-              value = Sys.Date(),
+              value = Sys.Date() + 1,
               minDate = min(as.Date(session_survey$Date), na.rm = T),
-              maxDate = Sys.Date(),
+              maxDate = Sys.Date() + 1,
               dateFormat = "mm-dd-yyyy",
               width = "100px"
             )

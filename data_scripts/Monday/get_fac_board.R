@@ -1,8 +1,8 @@
-library(MondayR)
+# library(MondayR)
 library(tidyverse)
 library(googlesheets4)
 # library(reticulate)
-monday_auth()
+# monday_auth()
 
 # get_all_fac_board_values <- function(board_id) {
 ### Get all columns of data ###
@@ -111,6 +111,37 @@ fac_board <- final_df %>%
                                         "@teachinglab.org"),
                                       Emails)) %>%
   dplyr::relocate(Emails, .after = Facilitators)
+
+get_monday_board <- function(board_id) {
+  ### Set up python environment ###
+  path_to_python <- paste0(here::here(), "/Automations/Monday/env")
+  use_virtualenv(path_to_python)
+  import("requests")
+  ### Run python script to get monday json ###
+  reticulate::source_python(here::here("Automations/Monday/fy23_pipeline.py"))
+  
+  ### Read in Monday JSON ###
+  initial_df <- jsonlite::fromJSON(here::here("data/Monday/fy23_pipeline.json"))
+  
+  ### Get as a data.frame ###
+  second_df <- initial_df$data$boards$items[[1]]$column_values %>%
+    as.data.frame()
+  
+  ### Get first column separately ###
+  first_column <- initial_df$data$boards$items |>
+    as.data.frame() |>
+    select(name) |>
+    rename(`Open/Active` = name)
+  
+  ### Compose data.frame ###
+  final_df <- second_df |>
+    select(title, contains("text")) |>
+    pivot_longer(!title) |>
+    pivot_wider(names_from = "title", values_from = "value") |>
+    select(-name) |>
+    bind_cols(first_column) |>
+    relocate(`Open/Active`, .before = 1)
+}
 
 readr::write_rds(fac_board, "data/facilitators_role.rds")
 readr::write_rds(fac_board, "Dashboards/Staffing/data/facilitators_role.rds")

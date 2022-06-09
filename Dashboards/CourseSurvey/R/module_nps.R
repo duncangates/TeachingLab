@@ -84,7 +84,7 @@ uiNPS <- function(id, label = "Counter") {
               label = h3("Select minimum date"),
               as.Date("2021-07-30"),
               minDate = min(as.Date(course_survey$date_created), na.rm = T),
-              maxDate = max(as.Date(course_survey$date_created), na.rm = T),
+              maxDate = max(as.Date(course_survey$date_created), na.rm = T) + 1,
               dateFormat = "mm-dd-yyyy",
               width = "100px"
             ),
@@ -93,7 +93,7 @@ uiNPS <- function(id, label = "Counter") {
               label = h3("Select maximum date"),
               value = max(as.Date(course_survey$date_created), na.rm = T),
               minDate = min(as.Date(course_survey$date_created), na.rm = T),
-              maxDate = max(as.Date(course_survey$date_created), na.rm = T),
+              maxDate = max(as.Date(course_survey$date_created), na.rm = T) + 1,
               dateFormat = "mm-dd-yyyy",
               width = "100px"
             )
@@ -139,6 +139,34 @@ uiNPS <- function(id, label = "Counter") {
 npsServer <- function(id, in_site) {
   ns <- NS(id)
   moduleServer(id, function(input, output, session) {
+    
+    data_plot_n <- reactive({
+      
+      n_size <- course_survey |>
+        dplyr::filter(between(date_created, input$date_min, input$date_max)) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Sites",
+          filter_this = input$site,
+          dat_filter = `Select your site (district, parish, network, or school).`
+        ) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Roles",
+          filter_this = input$role,
+          dat_filter = `Select your role.`
+        ) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Content Areas",
+          filter_this = input$content,
+          dat_filter = `Select the content area for today's professional learning session.`
+        ) |>
+        tlShiny::neg_cond_filter(
+          if_not_this = "All Courses",
+          filter_this = input$course,
+          dat_filter = `Select your course.`
+        ) |>
+        nrow()
+      
+    })
     
     
     # NPS Plot Data
@@ -209,9 +237,10 @@ npsServer <- function(id, in_site) {
         )) +
         labs(
           fill = "", title = "Likeliness to Recommend to a Friend or Colleague",
+          subtitle = paste0("n = ", format(data_plot_n(), big.mark = ",")),
           x = "Rating", y = "Percent"
         ) +
-        scale_x_continuous(limits = c(1, 10.5), breaks = c(0:10)) +
+        scale_x_continuous(limits = c(-0.01, 10.5), breaks = c(0:10)) +
         scale_y_continuous(labels = scales::percent_format(scale = 1), limits = c(0, max(data_plot_nps()$Percent, na.rm = T) + 10)) +
         theme_tl(legend = F) +
         theme(
@@ -219,7 +248,8 @@ npsServer <- function(id, in_site) {
           axis.text.x = element_text(size = 16),
           axis.title.x = element_text(size = 18),
           axis.title.y = element_text(size = 18),
-          plot.title = element_text(lineheight = 1.1)
+          plot.title = element_text(lineheight = 1.1),
+          plot.subtitle = element_text(family = "Calibri")
         )
     })
     
@@ -231,6 +261,7 @@ npsServer <- function(id, in_site) {
         need(!is.null(input$content), "Please select at least one content area"),
         need(!is.null(input$course), "Please select at least one course")
       )
+      
       sum <- course_survey |>
         dplyr::filter(between(date_created, input$date_min, input$date_max)) |>
         tlShiny::neg_cond_filter(

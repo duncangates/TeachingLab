@@ -118,16 +118,16 @@ uiReport <- function(id, label = "Counter") {
               label = h3("Select minimum date"),
               value = min(as.Date(session_survey$Date), na.rm = T),
               minDate = min(as.Date(session_survey$Date), na.rm = T),
-              maxDate = max(as.Date(session_survey$Date), na.rm = T),
+              maxDate = max(as.Date(session_survey$Date), na.rm = T) + 1,
               dateFormat = "mm-dd-yyyy",
               width = "100px"
             ),
             shinyWidgets::airDatepickerInput(
               inputId = ns("date_max"),
               label = h3("Select maximum date"),
-              value = Sys.Date(),
+              value = Sys.Date() + 1,
               minDate = min(as.Date(session_survey$Date), na.rm = T),
-              maxDate = Sys.Date(),
+              maxDate = Sys.Date() + 1,
               dateFormat = "mm-dd-yyyy",
               width = "100px"
             )
@@ -568,6 +568,7 @@ reportServer <- function(id) {
     #### QUOTES 3 ####
 
     quote_viz_data3 <- reactive({
+      
       validate(
         need(!is.null(input$facilitator), "Please select at least one facilitator"),
         need(!is.null(input$role), "Please select at least one role"),

@@ -112,7 +112,7 @@ uiText <- function(id, label = "Counter") {
               label = h3("Select minimum date"),
               as.Date("2021-07-30"),
               minDate = min(as.Date(course_survey$date_created), na.rm = T),
-              maxDate = max(as.Date(course_survey$date_created), na.rm = T),
+              maxDate = max(as.Date(course_survey$date_created), na.rm = T) + 1,
               dateFormat = "mm-dd-yyyy",
               width = "100px"
             ),
@@ -121,7 +121,7 @@ uiText <- function(id, label = "Counter") {
               label = h3("Select maximum date"),
               value = Sys.Date(),
               minDate = min(as.Date(course_survey$date_created), na.rm = T),
-              maxDate = Sys.Date(),
+              maxDate = Sys.Date() + 1,
               dateFormat = "mm-dd-yyyy",
               width = "100px"
             )

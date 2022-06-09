@@ -102,7 +102,7 @@ uiReport <- function(id, label = "Counter") {
               label = h3("Select minimum date"),
               value = as.Date("2021-06-30"),
               minDate = min(as.Date(course_survey$date_created), na.rm = T),
-              maxDate = max(as.Date(course_survey$date_created), na.rm = T),
+              maxDate = max(as.Date(course_survey$date_created), na.rm = T) + 1,
               dateFormat = "mm-dd-yyyy",
               width = "100px"
             ),

@@ -1,7 +1,5 @@
-####### This script gets all data for the end of course survey, end of session survey, and
-####### writes them to the relevant dashboards, as well as the personalized facilitator dashboard.
-library(magrittr)
-library(dplyr)
+####### This script gets all data for the end of course survey, end of session survey, and #######
+####### writes them to the relevant dashboards, as well as the personalized facilitator dashboard. #######
 
 ##### Course Survey #####
 
@@ -46,7 +44,7 @@ library(dplyr)
 
 # readr::write_rds(old_df, here::here("data/old_course_survey_reformatted.rds"))
 
-course_survey <- TeachingLab::get_course_survey(update = T)
+course_survey <- TeachingLab::get_course_survey(update = TRUE)
 
 ################################################################################################################################################################
 
@@ -113,23 +111,23 @@ rsconnect::deployApp(
 )
 # 
 # ### Deploy Personal Facilitator Survey ###
-# rsconnect::deployApp(
-#   appDir = here::here("Dashboards/PersonalFacilitator"),
-#   account = "teachinglabhq",
-#   server = "shinyapps.io",
-#   appName = "PersonalFacilitator",
-#   appId = 4489188,
-#   launch.browser = function(url) {
-#     message("Deployment completed: ", url)
-#   },
-#   lint = FALSE,
-#   metadata = list(
-#     asMultiple = FALSE,
-#     asStatic = FALSE,
-#     ignoredFiles = "data/.DS_Store"
-#   ),
-#   logLevel = "verbose"
-# )
+rsconnect::deployApp(
+  appDir = here::here("Dashboards/PersonalFacilitator"),
+  account = "teachinglabhq",
+  server = "shinyapps.io",
+  appName = "PersonalFacilitator",
+  appId = 4489188,
+  launch.browser = function(url) {
+    message("Deployment completed: ", url)
+  },
+  lint = FALSE,
+  metadata = list(
+    asMultiple = FALSE,
+    asStatic = FALSE,
+    ignoredFiles = "data/.DS_Store"
+  ),
+  logLevel = "verbose"
+)
 
 # rstudioapi::navigateToFile(here::here("Dashboards/CourseSurvey/app.R"))
 # rstudioapi::navigateToFile(here::here("Dashboards/SessionSurvey/app.R"))

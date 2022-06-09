@@ -160,11 +160,11 @@ know_assess_summary <- function(data, know_assess, summary_path = "report_summar
 ipg_plot <- function(data, name, save_name, height = 5, width = 8.5, wrap = 60, sizing = 1, dpi = 300,
                      split = F, numeric = F, factor_level = NULL, save = FALSE) {
   
-  n <- data %>%
-    dplyr::filter(name == {{ name }}) %>%
-    dplyr::ungroup() %>%
-    dplyr::summarise(n = sum(n)) %>%
-    dplyr::select(n) %>%
+  n <- data |>
+    dplyr::filter(name == {{ name }}) |>
+    dplyr::ungroup() |>
+    dplyr::summarise(n = sum(n)) |>
+    dplyr::select(n) |>
     as.vector()
   
   plot_data <- data %>%
@@ -259,7 +259,7 @@ ipg_plot <- function(data, name, save_name, height = 5, width = 8.5, wrap = 60, 
                                  fill = percent)) +
     ggplot2::geom_col() +
     ggplot2::geom_text(ggplot2::aes(label = paste0(percent, "%"), color = color), 
-                       hjust = ifelse(plot_data$percent > 5, 1.25, -0.4), size = 5*sizing,
+                       hjust = ifelse(plot_data$percent > 5, 1.25, -0.2), size = 5*sizing,
                        fontface = "bold") +
     ggplot2::coord_flip() +
     ggplot2::scale_y_continuous(labels = scales::percent_format(scale = 1), expand = c(0.1, 0),
