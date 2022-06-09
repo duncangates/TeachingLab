@@ -1048,12 +1048,12 @@ tl_summary_table <- function(data,
                                               "High Expectations & Beliefs",
                                               "Self-efficacy in CRSE Practices"))) |>
           arrange(` `) |>
-          mutate(` ` = as.character(` `)) 
+          mutate(` ` = as.character(` `))
         
         if (prepost == T) {
           final_gt
         } else {
-          final_gt |>
+          final_gt <- final_gt |>
             gt::gt() |>
             gt::tab_header(title = "Mindsets and Beliefs") |>
             gt::fmt_markdown(columns = c(` `)) |>
@@ -1094,10 +1094,10 @@ tl_summary_table <- function(data,
             dplyr::relocate(groups, .before = 1)
         }
         
-        final_gt <- data_sums_final %>%
+        final_gt <- data_sums_final |>
           dplyr::mutate(groups = stringr::str_replace_all(
             as.character(stringr::str_extract_all(groups, "<b>Overall Score</b>")), "character\\(0\\)", " ")
-          ) %>%
+          ) |>
           dplyr::rename(` ` = `groups`) %>%
           {
             if (explain == T) dplyr::mutate(., `Response (answer)` = dplyr::case_when(Percent == 20 & !stringr::str_detect(Question, "span") ~ "Strongly disagree",
@@ -1116,7 +1116,7 @@ tl_summary_table <- function(data,
         if (prepost == T) {
           final_gt
         } else {
-          final_gt |>
+          final_gt <- final_gt |>
             gt::gt() |>
             gt::tab_header(title = md(paste0("**", data_sums_final$groups[2], "**"))) %>%
             gt::fmt_markdown(columns = c("Question", " ")) %>%
