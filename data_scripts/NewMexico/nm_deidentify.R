@@ -312,13 +312,15 @@ deidentified_videos <- tuber::list_channel_videos(
 
 first_videos <- deidentified_videos |>
   select(video_1 = link, title = snippet.title) |>
-  filter(str_detect(title, "1"))
+  filter(str_count(title, "_") == 1)
 second_videos <- deidentified_videos |>
   select(video_2 = link, title = snippet.title) |>
-  filter(str_detect(title, "2"))
+  filter(str_detect(title, "_2$")) |>
+  mutate(title = str_remove_all(title, "_[[:digit:]]$"))
 third_videos <- deidentified_videos |>
   select(video_3 = link, title = snippet.title) |>
-  filter(str_detect(title, "3"))
+  filter(str_detect(title, "_3$") & title != "teacher_3") |>
+  mutate(title = str_remove_all(title, "_[[:digit:]]$"))
 
 # videos_1 <- tibble::tibble(
 #   video = list.files(here::here("videos/Pre Classroom Videos"), full.names = T),

@@ -2,8 +2,10 @@
 # source(here::here("data_scripts/Monday/get_fac_board.R"))
 
 
-PMs_Emails <- readr::read_rds("data/PMs.rds")
-Courses <- readr::read_rds("data/Courses.rds") %>%
+PMs_Emails <- readr::read_rds("data/PMs.rds") |>
+  bind_rows(tibble::tibble(PMs = c("Michele Morenz"),
+                           Email = "michele.morenz@teachinglab.org"))
+Courses <- readr::read_rds("data/Courses.rds") |>
   dplyr::bind_rows(tibble::tibble(Courses = c("K-2 Supported Planning", 
                                               "Adaptive Curriculum Foundational Skills Bootcamp")))
 Facilitators_Emails <- readr::read_rds("data/Facilitators.rds")

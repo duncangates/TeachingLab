@@ -64,26 +64,26 @@ get_ipg_forms <- function(update = FALSE) {
     
     df <- df %>%
       mutate(
-        Timestamp = lubridate::mdy_hms(Timestamp),
-        `Timeline of Obs` = factor(ifelse(
-          is.na(`Timeline of Obs`),
-          paste0(
-            TeachingLab::get_season(Timestamp),
-            " ",
-            lubridate::year(Timestamp)
-          ),
-          `Timeline of Obs`
-        ), levels = c(
-          "Summer 2019",
-          "Fall 2019",
-          "Winter 2020",
-          "Spring 2020",
-          "Winter 2021",
-          "Spring 2021",
-          "Fall 2021",
-          "Winter 2022",
-          "Spring 2022"
-        ))
+        Timestamp = lubridate::mdy_hms(Timestamp)#,
+        # `Timeline of Obs` = factor(ifelse(
+        #   is.na(`Timeline of Obs`),
+        #   paste0(
+        #     TeachingLab::get_season(Timestamp),
+        #     " ",
+        #     lubridate::year(Timestamp)
+        #   ),
+        #   `Timeline of Obs`
+        # ), levels = c(
+        #   "Summer 2019",
+        #   "Fall 2019",
+        #   "Winter 2020",
+        #   "Spring 2020",
+        #   "Winter 2021",
+        #   "Spring 2021",
+        #   "Fall 2021",
+        #   "Winter 2022",
+        #   "Spring 2022"
+        # ))
       )
     
     readr::write_rds(df, here::here("data/ipg_forms.rds"))

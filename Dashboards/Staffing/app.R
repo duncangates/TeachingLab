@@ -80,7 +80,7 @@ ui <- dashboardPage(
             ),
             shiny::selectInput("curriculum",
               label = h5(labelMandatory("Curriculum"), style = "font-weight:bold;font-size: 20px;"),
-              choices = c("", "EL", "Guidebooks", "Engage", "K-2", "CKLA", "IM", "Zearn") %>% sort(),
+              choices = c("", "Adaptive", "EL", "Guidebooks", "Engage", "K-2", "CKLA", "IM", "Zearn") %>% sort(),
               selected = "",
             ),
             shiny::selectInput("site",
