@@ -448,16 +448,27 @@ nm_student_deidentified <- nm_student_survey |>
       TRUE ~ as.character(teacher)
     )
   ) |>
+  ### Dealing with duplicate ids 1:20 from Teachers Rajasekhar Badditi and Jamie Hephner ###
+  mutate(`What is your student identification number as provided by your school or teacher?` = ifelse(teacher == "Rajasekhar Badditi",
+                                                                                                      as.character(as.numeric(`What is your student identification number as provided by your school or teacher?`) * 100),
+                                                                                                      `What is your student identification number as provided by your school or teacher?`),
+         `What is your student identification number as provided by your school or teacher?` = ifelse(teacher == "Jamie Hephner",
+                                                                                                      as.character(as.numeric(`What is your student identification number as provided by your school or teacher?`) * 101),
+                                                                                                      `What is your student identification number as provided by your school or teacher?`)) |>
   filter(teacher %!in% c("1", "Mrs. Agino", "Daniel Aguilar") & 
-           response_status == "completed") |>
-  drop_na(teacher) |>
-  drop_na(`What is your student identification number as provided by your school or teacher?`) |>
-  mutate(student_id = paste0("student_", sequence(n()))) |> ### ISSUE: STUCK HERE ###
-  select(student_id, teacher, `What is your student identification number as provided by your school or teacher?`) |>
+           response_status == "completed" &
+           !is.na(as.numeric(`What is your student identification number as provided by your school or teacher?`))) |>
+  drop_na(teacher, `What is your student identification number as provided by your school or teacher?`) |>
+  group_by(`What is your student identification number as provided by your school or teacher?`) |>
+  mutate(student_id = paste0("student_", dplyr::cur_group_id()),
+         prepost = ifelse(date_created <= as.Date("2022-04-01"), "pre", "post")) |>
   mutate(teacher_id = ifelse(teacher %in% names(teacher_replace_vector),
                      paste0("teacher_", str_replace_all(teacher, teacher_replace_vector)),
-                     ""),
-         prepost = ifelse(date_created <= as.Date("2022-04-01"), "pre", "post")) |>
+                     "")) |>
+  write_csv(here::here("data/new_mexico_data/identified_student_new_mexico_21_22.csv")) |>
+  # select(student_id, teacher_id, prepost, teacher,
+  #        `What is your student identification number as provided by your school or teacher?`) |>
+  # view() ### FOR INSPECTING IDS ###
   select(
     -c(survey_id, collector_id, respondent_id, date_created, date_modified, response_status, ip_address,
        teacher, 
@@ -466,12 +477,13 @@ nm_student_deidentified <- nm_student_survey |>
   ) |>
   relocate(student_id, .before = 1) |>
   relocate(teacher_id, .after = student_id) |>
-  relocate(prepost, .after = teacher_id) |>
-  view()
+  relocate(prepost, .after = teacher_id)
 
 ## Store deidentified data as a csv
 nm_student_deidentified |>
   write_csv(here::here("data/new_mexico_data/student_new_mexico_21_22_deidentified.csv"))
+
+
 
 ## Upload to dropbox
 drop_upload(

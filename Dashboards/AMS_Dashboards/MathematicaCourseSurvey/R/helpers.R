@@ -1,3 +1,4 @@
+#### Mathematica End of Course Survey Dashboard ####
 suppressPackageStartupMessages(library(shiny))
 suppressPackageStartupMessages(library(shiny.router))
 suppressPackageStartupMessages(library(tidyverse))

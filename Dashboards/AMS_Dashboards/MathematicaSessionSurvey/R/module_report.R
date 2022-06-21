@@ -522,7 +522,7 @@ reportServer <- function(id) {
     
     download_reactive <- reactive({
       df <- session_survey_recent() %>%
-        dplyr::filter(between(date_created, input$date_slider[1], input$date_slider[2])) %>%
+        dplyr::filter(between(Date, input$date_slider[1], input$date_slider[2])) %>%
         {
           if (input$site != "All Sites") dplyr::filter(., `Select your site (district, parish, network, or school).` %in% input$site) else .
         } %>%

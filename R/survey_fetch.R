@@ -9,7 +9,7 @@ fetch_survey_2 <- function(id, name) {
   survey_obj <- surveymonkey::fetch_survey_obj(id = id)
   #### If there are responses parse
   assertthat::assert_that(survey_obj$response_count > 0)
-  survey <- survey_obj %>%
+  survey <- survey_obj |>
     surveymonkey::parse_survey()
   ### Standardize Site Column names ###
   column_name_with_period <- c("Please select your site \\(district, parish, network, or school\\)\\.")
@@ -61,9 +61,9 @@ fetch_survey_2 <- function(id, name) {
     dplyr::left_join(ids_surveys, by = "count") |>
     dplyr::mutate(title = stringr::str_replace_all(title, " ", "")) |>
     dplyr::mutate(title = stringr::str_replace_all(title, ":", ""))
-  
+
   print(name_df)
-  
+
   #### Write to data folder with original name####
   purrr::map2(.x = name_df$names, .y = name_df$title, ~ readr::write_rds(x = get(.x), file = paste0(here::here("Dashboards/KnowledgeAssessments/data/unprocessed/"), .y, ".rds")))
 }
@@ -199,6 +199,198 @@ get_session_survey <- function(update = FALSE) {
         Facilitation_Feedback, # Qualitative feedback
         `What went well in today’s session?`,
         `What could have been better about today’s session?`
+      ) |>
+      dplyr::mutate(
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Allen",
+          "Building 21"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Philadelphia",
+          "Building 21"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Amistad",
+          "Amistad Dual Language, NY"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Ascension",
+          "Ascension Parish, LA"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Brownington",
+          "Brownington Central School, VT"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Calcasieu",
+          "Calcasieu Parish, LA"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "CityYear",
+          "CityYear, NY"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Cleveland",
+          "Cleveland Metropolitan School District, OH"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Connecticut",
+          "Connecticut Partnership (with UnboundEd)"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Delaware",
+          "Delaware Department of Education, DE"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "EMST",
+          "NYC District 12 - ESMT-IS 190, NY"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Freire",
+          "Freire Charter Schools, PA/DE"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          ", MS",
+          "Mississippi Schools"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Mississippi",
+          "Mississippi Department of Education, MS"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Horizon",
+          "Horizon Charter Schools, CA"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Jefferson Davis",
+          "Jefferson Davis Parish, LA"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Kankakee",
+          "Kankakee School District, IL"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Lafayette",
+          "Lafayette Parish, LA"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Louisiana",
+          "Louisiana Department of Education, LA"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Louisville",
+          "Louisville School District - Jacob Elementary, KY"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Massachusetts",
+          "Massachusetts Dept of Elementary & Secondary Education"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "McNairy",
+          "McNairy County, TN"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Methuen",
+          "Methuen Public Schools, MA"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Andover",
+          "North Andover Public Schools, MA"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Bronx",
+          "North Bronx School of Empowerment"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "New Mexico",
+          "New Mexico Public Education Department, NM"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "District 11",
+          "NYC District 11 - District-wide, NY"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "District 27",
+          "NYC District 27 - District-wide, NY"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "District 9",
+          "NYC District 9 - District-wide, NY"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Fannie",
+          "NYC District 12 - MS 286 Fannie Lou Hamer"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Open",
+          "Open Enrollment, National"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Orleans",
+          "Orleans Central Supervisory Union, VT"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Pointe",
+          "Pointe Coupee Parish, LA"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          ", NM",
+          "New Mexico Public Education Department, NM"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Rochester",
+          "Rochester City School District - District-wide"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "San Diego",
+          "San Diego Unified School District, CA"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "West Contra",
+          "West Contra Costa USD, CA"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Wisconsin",
+          "Wisconsin Department of Education, WI"
+        )
       )
 
     session_survey |>
@@ -344,19 +536,248 @@ get_course_survey <- function(update = FALSE) {
         `How much do you agree with the following statements about this course? - This course has supported me in being responsive to students' backgrounds, cultures, and points of view.`,
         # NPS
         `On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`
+      ) |>
+      dplyr::mutate(
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Allen",
+          "Building 21"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Philadelphia",
+          "Building 21"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Amistad",
+          "Amistad Dual Language, NY"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Ascension",
+          "Ascension Parish, LA"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Brownington",
+          "Brownington Central School, VT"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Calcasieu",
+          "Calcasieu Parish, LA"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "CityYear",
+          "CityYear, NY"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Cleveland",
+          "Cleveland Metropolitan School District, OH"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Connecticut",
+          "Connecticut Partnership (with UnboundEd)"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Delaware",
+          "Delaware Department of Education, DE"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "EMST",
+          "NYC District 12 - ESMT-IS 190, NY"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Freire",
+          "Freire Charter Schools, PA/DE"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          ", MS",
+          "Mississippi Department of Education, MS"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Mississippi",
+          "Mississippi Department of Education, MS"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Horizon",
+          "Horizon Charter Schools, CA"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Jefferson Davis",
+          "Jefferson Davis Parish, LA"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Kankakee",
+          "Kankakee School District, IL"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Lafayette",
+          "Lafayette Parish, LA"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Louisiana",
+          "Louisiana Department of Education, LA"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Louisville",
+          "Louisville School District - Jacob Elementary, KY"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Massachusetts",
+          "Massachusetts Dept of Elementary & Secondary Education"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "McNairy",
+          "McNairy County, TN"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Methuen",
+          "Methuen Public Schools, MA"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Andover",
+          "North Andover Public Schools, MA"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Bronx",
+          "North Bronx School of Empowerment"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "New Mexico",
+          "New Mexico Public Education Department, NM"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "District 11",
+          "NYC District 11 - District-wide, NY"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "District 27",
+          "NYC District 27 - District-wide, NY"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "District 9",
+          "NYC District 9 - District-wide, NY"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Fannie",
+          "NYC District 12 - MS 286 Fannie Lou Hamer"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "MS 286",
+          "NYC District 12 - MS 286 Fannie Lou Hamer"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Open",
+          "Open Enrollment, National"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Orleans",
+          "Orleans Central Supervisory Union, VT"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Pointe",
+          "Pointe Coupee Parish, LA"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          ", NM",
+          "New Mexico Public Education Department, NM"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Rochester",
+          "Rochester City School District - District-wide"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "San Diego",
+          "San Diego Unified School District, CA"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "West Contra",
+          "West Contra Costa USD, CA"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Wisconsin",
+          "Wisconsin Department of Education, WI"
+        )
+      ) |>
+      ### MISSISSIPPI SCHOOL REPLACEMENT ###
+      dplyr::mutate(
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Holmes",
+          "Mississippi Department of Education, MS"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Meridian",
+          "Mississippi Department of Education, MS"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Natchez",
+          "Mississippi Department of Education, MS"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Noxubee",
+          "Mississippi Department of Education, MS"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Vicksburg",
+          "Mississippi Department of Education, MS"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
+          "Mississippi",
+          "Mississippi Department of Education, MS"
+        )
       )
-    
+
     course_survey |>
       dplyr::filter(date_created >= as.Date("2021-07-01") & date_created <= as.Date("2022-06-30")) |>
       readr::write_rds(here::here("data/course_survey_21_22.rds"))
-    
+
     course_survey |>
       dplyr::filter(date_created >= as.Date("2021-07-01") & date_created <= as.Date("2022-06-30")) |>
       readr::write_rds(here::here("Dashboards/SiteCollectionProgress/data/course_survey_21_22.rds"))
-    
+
     readr::write_rds(course_survey, here::here("data/course_surveymonkey.rds"))
     readr::write_rds(course_survey, here::here("Dashboards/CourseSurvey/data/course_surveymonkey.rds"))
-    
   }
 
   return(course_survey)
@@ -373,23 +794,85 @@ get_student_survey <- function(update = FALSE) {
     "=Latanya Wilson" = "Latanya Wilson",
     "aja foorte" = "Aja Forte",
     "Aja forte" = "Aja Forte",
+    "cheere irving" = "Cheree Irving",
+    "Dr. Davenport" = "Dr. Shawnay Davenport",
+    "Dr. Shawnnay Davenport" = "Shawnay Davenport",
+    "Dr Brown" = "Dr. Brown",
+    "IRVING " = "Cheree Irving",
     "Jackie Leach" = "Jacqueline Leach",
     "JACKIE LEACH" = "Jacqueline Leach",
     "Jackie Leach" = "Jacqueline Leach",
     "leach" = "Jacqueline Leach",
+    "Mrs.Leach" = "Jacqueline Leach",
+    "lacey mckee" = "Lacey McKee",
     "MABRY" = "Pearl Mabry",
+    "miari franklin" = "Miari Franklin",
+    "Mr.Y" = "Vivekanand Yamagowni",
+    "miss:Evrret" = "Ms. Everett",
+    "mrs. clark" = "Tammy Clark",
+    "mrs.everet" = "Ms. Everett",
     "Mrs, robertson" = "Nykol Robertson",
+    "Mrs. Valerie Harris" = "Valerie Harris",
     "Ms.leach" = "Jacqueline Leach",
+    "Ms Love" = "Ms. Love",
+    "Ms Rice" = "Ms. Rice",
+    "Ms Wallace" = "Ms. Wallace",
+    "ms.devenport" = "Shawnay Davenport",
+    "Ms.Hill" = "Ms. Hill",
+    "Mrs.Willson " = "Latanya Wilson",
+    "Ms.Jacqueline Leach" = "Jacqueline Leach",
+    "Mrs.S.Smith" = "Ms. Smith",
+    "Ms.Smith" = "Ms. Smith",
+    "porsha gordon" = "Porsha Gordon",
     "Principal - Mr. Mumford" = "Jeff Mumford",
     "Rosalyn Northwothy" = "Rosalinda Norsworthy",
-    "Rosiland Norsworthy" = "Rosalinda Norsworthy"
+    "Rosiland Norsworthy" = "Rosalinda Norsworthy",
+    "TammyClark" = "Tammy Clark"
   )
 
   if (update == TRUE) {
     options(sm_oauth_token = Sys.getenv("knowledge_token"))
 
+    print("Getting General Student Survey...\n")
     df <- surveymonkey::fetch_survey_obj(312653807) |>
       surveymonkey::parse_survey()
+
+    print("Getting New Mexico Student Survey...\n")
+    nm_df <- surveymonkey::fetch_survey_obj(315708746) |>
+      surveymonkey::parse_survey()
+
+    nm_student_survey_coalesced <- nm_df |>
+      dplyr::rename(
+        teacher = `What is the name of your teacher? (Your teacher will write their name on the board so that you can use that spelling.`,
+        `What is the name of your school, district, or parish?` = `What is the name of your school district or parish?`,
+        `Please ask your teacher for their teacher code.` = `What is your student identification number as provided by your school or teacher?`,
+        `Are you Hispanic / Latino/a?` = `Are you Hispanic/Latino/a?`,
+        `What is your race? Select all that apply. - American Indian or Alaska Native` = `What is your race? - American Indian or Alaska Native`,
+        `What is your race? Select all that apply. - Native Hawaiian or other Pacific Islander` = `What is your race? - Native Hawaiian or other Pacific Islander`,
+        `What is your race? Select all that apply. - Black or African American` = `What is your race? - Black or African American`,
+        `What is your race? Select all that apply. - Asian` = `What is your race? - Asian`,
+        `What is your race? Select all that apply. - White` = `What is your race? - White`,
+        `What is your race? Select all that apply. - More than one race` = `What is your race? - More than one race`,
+        `What is your race? Select all that apply. - Other (please specify)` = `What is your race? - Other (please specify)`,
+        `What grade level are you currently enrolled in?` = `What grade level of math are you currently enrolled in?`,
+        `How often does your teacher do these things? - My teacher explains what we are learning in different ways to help students learn.` = `How often does your teacher do these things? - My teacher explains what we are learning in different ways.`,
+        `To what extent do you agree or disagree with the following statements? - This class is a happy place for me to be.` = `To what extent do you agree or disagree with the following statements? - This math class is a happy place for me to be.`,
+        `To what extent do you agree or disagree with the following statements? - Being in this class makes me feel sad or angry.` = `To what extent do you agree or disagree with the following statements? - Being in this math class makes me feel sad or angry.`,
+        `To what extent do you agree or disagree with the following statements? - The things we have done in class this year are interesting.` = `To what extent do you agree or disagree with the following statements? - The things we have done in math this year are interesting.`,
+        `To what extent do you agree or disagree with the following statements? - Because of this teacher, I am learning to love this subject.` = `To what extent do you agree or disagree with the following statements? - Because of this teacher, I am learning to love math.`,
+        `To what extent do you agree or disagree with the following statements? - I enjoy this subject this year.` = `To what extent do you agree or disagree with the following statements? - I enjoy math class this year.`,
+        `To what extent do you agree or disagree with the following statements? - My teacher seems to know if something is bothering me.` = `To what extent do you agree or disagree with the following statements? - My teacher makes me feel that he/she really cares about me.`,
+        `To what extent do you agree or disagree with the following statements? - I can do almost all the work in this class if I don’t give up.` = `To what extent do you agree or disagree with the following statements? - I can do almost all the math in this class if I don't give up.`,
+        `To what extent do you agree or disagree with the following statements? - Even when work is hard, I know I can learn it.` = `To what extent do you agree or disagree with the following statements? - Even when math is hard, I know I can learn it.`,
+        `To what extent do you agree or disagree with the following statements? - I'm certain I can master the skills taught in this class.` = `To what extent do you agree or disagree with the following statements? - I'm certain I can master the math skills taught in this class.`,
+        `To what extent do you agree or disagree with the following statements? - When doing work for this class, I focus on learning, not the time work takes.` = `To what extent do you agree or disagree with the following statements? - When doing work for this math class, I focus on learning not time work takes.`,
+        `To what extent do you agree or disagree with the following statements? - I have been able to figure out the most difficult work in this class.` = `To what extent do you agree or disagree with the following statements? - I have been able to figure out the most difficult work in this math class.`
+      ) |>
+      dplyr::mutate(across(everything(), ~ str_replace_all(.x, "3- Neither untrue nor true", "3- Neither true nor untrue")),
+        survey_id = as.double(survey_id),
+        date_created = as.Date(date_created),
+        date_modified = as.Date(date_modified)
+      )
 
     student_survey_coalesced <- df |>
       dplyr::mutate(teacher = dplyr::coalesce(
@@ -516,7 +999,203 @@ get_student_survey <- function(update = FALSE) {
         `Please select your teacher._30`,
         `Please select your teacher. - Other (please specify)_30`
       )) |>
-      dplyr::mutate(teacher = stringr::str_replace_all(teacher, replacement_vector))
+      dplyr::mutate(
+        teacher = stringr::str_trim(stringr::str_replace_all(teacher, replacement_vector), side = "both"),
+        teacher = TeachingLab::string_replace(teacher, "chi", "Mrs. Chimma"),
+        teacher = TeachingLab::string_replace(teacher, "ving", "Cheree Irving"),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "Allen",
+          "Building 21"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "Philadelphia",
+          "Building 21"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "Amistad",
+          "Amistad Dual Language, NY"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "Ascension",
+          "Ascension Parish, LA"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "Brownington",
+          "Brownington Central School, VT"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "Calcasieu",
+          "Calcasieu Parish, LA"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "CityYear",
+          "CityYear, NY"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "Cleveland",
+          "Cleveland Metropolitan School District, OH"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "Connecticut",
+          "Connecticut Partnership (with UnboundEd)"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "Delaware",
+          "Delaware Department of Education, DE"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "EMST",
+          "NYC District 12 - ESMT-IS 190, NY"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "Freire",
+          "Freire Charter Schools, PA/DE"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          ", MS",
+          "Mississippi Department of Education, MS"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "Horizon",
+          "Horizon Charter Schools, CA"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "Jefferson Davis",
+          "Jefferson Davis Parish, LA"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "Kankakee",
+          "Kankakee School District, IL"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "Lafayette",
+          "Lafayette Parish, LA"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "Louisiana",
+          "Louisiana Department of Education, LA"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "Louisville",
+          "Louisville School District - Jacob Elementary, KY"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "Massachusetts",
+          "Massachusetts Dept of Elementary & Secondary Education"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "McNairy",
+          "McNairy County, TN"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "Methuen",
+          "Methuen Public Schools, MA"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "Andover",
+          "North Andover Public Schools, MA"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "Bronx",
+          "North Bronx School of Empowerment"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "New Mexico",
+          "New Mexico Public Education Department, NM"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "District 11",
+          "NYC District 11 - District-wide, NY"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "District 27",
+          "NYC District 27 - District-wide, NY"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "District 9",
+          "NYC District 9 - District-wide, NY"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "Fannie",
+          "NYC District 12 - MS 286 Fannie Lou Hamer"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "MS 286",
+          "NYC District 12 - MS 286 Fannie Lou Hamer"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "Open",
+          "Open Enrollment, National"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "Orleans",
+          "Orleans Central Supervisory Union, VT"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "Pointe",
+          "Pointe Coupee Parish, LA"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          ", NM",
+          "New Mexico Public Education Department, NM"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "Rochester",
+          "Rochester City School District - District-wide"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "San Diego",
+          "San Diego Unified School District, CA"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "West Contra",
+          "West Contra Costa USD, CA"
+        ),
+        `What is the name of your school, district, or parish?` = TeachingLab::string_replace(
+          `What is the name of your school, district, or parish?`,
+          "Wisconsin",
+          "Wisconsin Department of Education, WI"
+        )
+      ) |>
+      dplyr::full_join(nm_student_survey_coalesced |>
+                         dplyr::mutate(`What is the name of your school, district, or parish?` = "New Mexico Public Education Department, NM"))
   } else {
     student_survey_coalesced <- readr::read_rds(here::here("data/student_survey.rds"))
   }
@@ -721,6 +1400,12 @@ get_diagnostic_survey <- function(update = FALSE) {
       surveymonkey::parse_survey() |>
       janitor::clean_names()
 
+    nm_diagnostic_survey <- surveymonkey::fetch_survey_obj(315553653) |>
+      surveymonkey::parse_survey() |>
+      janitor::clean_names() |>
+      dplyr::filter(date_created <= as.Date("2022-04-01")) |>
+      dplyr::mutate(your_site_district_parish_network_or_school_br_br = "New Mexico Public Education Department, NM")
+
     ## Make id column with all lower, add an underscore between initials and birthday ###
     diagnostic_final <- diagnostic_surveymonkey |>
       rename(
@@ -750,6 +1435,11 @@ get_diagnostic_survey <- function(update = FALSE) {
         ),
         your_site_district_parish_network_or_school_br_br = TeachingLab::string_replace(
           your_site_district_parish_network_or_school_br_br,
+          "MS 286",
+          "NYC District 12 - MS 286 Fannie Lou Hamer"
+        ),
+        your_site_district_parish_network_or_school_br_br = TeachingLab::string_replace(
+          your_site_district_parish_network_or_school_br_br,
           "District 11",
           "NYC District 11 - District-wide, NY"
         ),
@@ -761,7 +1451,7 @@ get_diagnostic_survey <- function(update = FALSE) {
         your_site_district_parish_network_or_school_br_br = TeachingLab::string_replace(
           your_site_district_parish_network_or_school_br_br,
           "EMST",
-          "NYC District 12 - EMST-IS 190, NY"
+          "NYC District 12 - ESMT-IS 190, NY"
         ),
         # your_site_district_parish_network_or_school_br_br = TeachingLab::string_replace(
         #   your_site_district_parish_network_or_school_br_br,
@@ -797,6 +1487,26 @@ get_diagnostic_survey <- function(update = FALSE) {
           your_site_district_parish_network_or_school_br_br,
           "Wisconsin Department",
           "Wisconsin Department of Education, WI"
+        ),
+        your_site_district_parish_network_or_school_br_br = TeachingLab::string_replace(
+          your_site_district_parish_network_or_school_br_br,
+          "Channel View",
+          "NYC District 27 - District-wide, NY"
+        ),
+        your_site_district_parish_network_or_school_br_br = TeachingLab::string_replace(
+          your_site_district_parish_network_or_school_br_br,
+          "District 27",
+          "NYC District 27 - District-wide, NY"
+        ),
+        your_site_district_parish_network_or_school_br_br = TeachingLab::string_replace(
+          your_site_district_parish_network_or_school_br_br,
+          ", MS",
+          "Mississippi Department of Education, MS"
+        ),
+        your_site_district_parish_network_or_school_br_br = TeachingLab::string_replace(
+          your_site_district_parish_network_or_school_br_br,
+          "Mississippi",
+          "Mississippi Department of Education, MS"
         )
       )
 
@@ -858,60 +1568,13 @@ get_knowledge_assessments <- function(update = FALSE) {
       dplyr::filter(responses > 0) |>
       dplyr::filter(title != "Math: Cycle of Inquiry II - Making Math Visible") |> # For now remove (Making Math Visible), duplicate row issue - see Github issue
       dplyr::mutate(count = dplyr::row_number())
-    
+
     assign(value = ids_surveys, x = "ids_surveys", envir = .GlobalEnv)
 
     ################## Secondary Data Grab from Diagnostic for Misssissippi #################################
 
     special_diagnostic_survey_fetch <- surveymonkey::fetch_survey_obj(id = 306944493) |>
-      surveymonkey::parse_survey() |>
-      dplyr::mutate(
-        `Your site (district, parish, network, or school)` = TeachingLab::string_replace(
-          `Your site (district, parish, network, or school)`,
-          "th and|Andover",
-          "North Andover Public Schools, MA"
-        ),
-        `Your site (district, parish, network, or school)` = TeachingLab::string_replace(
-          `Your site (district, parish, network, or school)`,
-          "District 11",
-          "NYC District 11 - District-wide, NY"
-        ),
-        `Your site (district, parish, network, or school)` = TeachingLab::string_replace(
-          `Your site (district, parish, network, or school)`,
-          "District 9",
-          "NYC District 9 - District-wide, NY"
-        ),
-        `Your site (district, parish, network, or school)` = TeachingLab::string_replace(
-          `Your site (district, parish, network, or school)`,
-          "EMST",
-          "NYC District 12 - EMST-IS 190, NY"
-        ),
-        `Your site (district, parish, network, or school)` = TeachingLab::string_replace(
-          `Your site (district, parish, network, or school)`,
-          "Coupee",
-          "Pointe Coupee Parish, LA"
-        ),
-        `Your site (district, parish, network, or school)` = TeachingLab::string_replace(
-          `Your site (district, parish, network, or school)`,
-          "Rochester",
-          "Rochester City School District - District-wide"
-        ),
-        `Your site (district, parish, network, or school)` = TeachingLab::string_replace(
-          `Your site (district, parish, network, or school)`,
-          "San Diego",
-          "San Diego Unified School District, CA"
-        ),
-        `Your site (district, parish, network, or school)` = TeachingLab::string_replace(
-          `Your site (district, parish, network, or school)`,
-          "West Contra",
-          "West Contra Costa USD, CA"
-        ),
-        `Your site (district, parish, network, or school)` = TeachingLab::string_replace(
-          `Your site (district, parish, network, or school)`,
-          "Wisconsin Department",
-          "Wisconsin Department of Education, WI"
-        )
-      )
+      surveymonkey::parse_survey()
 
     mississippi_knowledge_assessments <- special_diagnostic_survey_fetch |>
       dplyr::rename(
@@ -978,7 +1641,7 @@ get_knowledge_assessments <- function(update = FALSE) {
       .x = ids_surveys$id, .y = ids_surveys$count,
       ~ purrr::safely(TeachingLab::fetch_survey_2(id = .x, name = .y))
     )
-    
+
     ########################################################################################################################
 
     survey19 <- survey19 |>
@@ -2201,57 +2864,197 @@ get_knowledge_assessments <- function(update = FALSE) {
           "RCSD school 12" = "Rochester City School District - District-wide",
           " " = " "
         )),
+          site = TeachingLab::string_replace(
+            site,
+            "Allen",
+            "Building 21"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "Philadelphia",
+            "Building 21"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "Amistad",
+            "Amistad Dual Language, NY"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "Ascension",
+            "Ascension Parish, LA"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "Brownington",
+            "Brownington Central School, VT"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "Calcasieu",
+            "Calcasieu Parish, LA"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "CityYear",
+            "CityYear, NY"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "Cleveland",
+            "Cleveland Metropolitan School District, OH"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "Connecticut",
+            "Connecticut Partnership (with UnboundEd)"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "Delaware",
+            "Delaware Department of Education, DE"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "EMST",
+            "NYC District 12 - ESMT-IS 190, NY"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "Freire",
+            "Freire Charter Schools, PA/DE"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            ", MS",
+            "Mississippi Department of Education, MS"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "Horizon",
+            "Horizon Charter Schools, CA"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "Jefferson Davis",
+            "Jefferson Davis Parish, LA"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "Kankakee",
+            "Kankakee School District, IL"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "Lafayette",
+            "Lafayette Parish, LA"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "Louisiana",
+            "Louisiana Department of Education, LA"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "Louisville",
+            "Louisville School District - Jacob Elementary, KY"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "Massachusetts",
+            "Massachusetts Dept of Elementary & Secondary Education"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "McNairy",
+            "McNairy County, TN"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "Methuen",
+            "Methuen Public Schools, MA"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "Andover",
+            "North Andover Public Schools, MA"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "Bronx",
+            "North Bronx School of Empowerment"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "New Mexico",
+            "New Mexico Public Education Department, NM"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "District 11",
+            "NYC District 11 - District-wide, NY"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "District 27",
+            "NYC District 27 - District-wide, NY"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "District 9",
+            "NYC District 9 - District-wide, NY"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "Fannie",
+            "NYC District 12 - MS 286 Fannie Lou Hamer"
+          ),
         site = TeachingLab::string_replace(
           site,
-          "th and|Andover",
-          "North Andover Public Schools, MA"
+          "MS 286",
+          "NYC District 12 - MS 286 Fannie Lou Hamer"
         ),
-        site = TeachingLab::string_replace(
-          site,
-          "bronx",
-          "North Bronx School of Empowerment, NY"
-        ),
-        site = TeachingLab::string_replace(
-          site,
-          "District 11",
-          "NYC District 11 - District-wide, NY"
-        ),
-        site = TeachingLab::string_replace(
-          site,
-          "District 9",
-          "NYC District 9 - District-wide, NY"
-        ),
-        site = TeachingLab::string_replace(
-          site,
-          "EMST",
-          "NYC District 12 - EMST-IS 190, NY"
-        ),
-        site = TeachingLab::string_replace(
-          site,
-          "Coupee",
-          "Pointe Coupee Parish, LA"
-        ),
-        site = TeachingLab::string_replace(
-          site,
-          "Rochester",
-          "Rochester City School District - District-wide"
-        ),
-        site = TeachingLab::string_replace(
-          site,
-          "San Diego",
-          "San Diego Unified School District, CA"
-        ),
-        site = TeachingLab::string_replace(
-          site,
-          "West Contra",
-          "West Contra Costa USD, CA"
-        ),
-        site = TeachingLab::string_replace(
-          site,
-          "Wisconsin Department",
-          "Wisconsin Department of Education, WI"
-        )
-      ) |>
+          site = TeachingLab::string_replace(
+            site,
+            "Open",
+            "Open Enrollment, National"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "Orleans",
+            "Orleans Central Supervisory Union, VT"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "Pointe",
+            "Pointe Coupee Parish, LA"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            ", NM",
+            "New Mexico Public Education Department, NM"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "Rochester",
+            "Rochester City School District - District-wide"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "San Diego",
+            "San Diego Unified School District, CA"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "West Contra",
+            "West Contra Costa USD, CA"
+          ),
+          site = TeachingLab::string_replace(
+            site,
+            "Wisconsin",
+            "Wisconsin Department of Education, WI"
+          )
+        ) |>
       dplyr::mutate(site = dplyr::na_if(site, "Teaching Lab test")) |>
       dplyr::mutate(question = stringr::str_remove_all(question, "_\\d"))
 
@@ -2366,11 +3169,17 @@ get_coaching_feedback <- function(update = FALSE) {
 get_followup_educator <- function(update = FALSE) {
   if (update == TRUE) {
     options(sm_oauth_token = Sys.getenv("knowledge_token"))
-    
+
     follow_up_educator_survey <- surveymonkey::fetch_survey_obj(400267837) |>
       surveymonkey::parse_survey()
-    
+
+    nm_followup_survey <- surveymonkey::fetch_survey_obj(315553653) |>
+      surveymonkey::parse_survey() |>
+      dplyr::filter(date_created >= as.Date("2022-04-01")) |>
+      dplyr::mutate(`Your site (district, parish, network, or school)` = "New Mexico Public Education Department, NM")
+
     followup_educator_clean <- follow_up_educator_survey |>
+      dplyr::full_join(nm_followup_survey) |>
       dplyr::group_by(respondent_id) |>
       dplyr::summarise_all(TeachingLab::coalesce_by_column) |>
       #### Coalescing other columns into main columns ####
@@ -2382,15 +3191,25 @@ get_followup_educator <- function(update = FALSE) {
         id = paste0(
           tolower(`Please write in your 3 initials. If you do not have a middle initial, please write X.<br>(This is used to link the diagnostic and follow-up surveys, but is kept confidential.)<br><br>`),
           `Please write in your four-digit birthday (MMDD).<br>(This is used to link the diagnostic and follow-up surveys, but is kept confidential.)`
+        ),
+        `Your site (district, parish, network, or school)` = TeachingLab::string_replace(
+          `Your site (district, parish, network, or school)`,
+          ", MS",
+          "Mississippi Department of Education, MS"
+        ),
+        `Your site (district, parish, network, or school)` = TeachingLab::string_replace(
+          `Your site (district, parish, network, or school)`,
+          "Mississippi",
+          "Mississippi Department of Education, MS"
         )
       )
-    
+
     readr::write_rds(followup_educator_clean, "data/followup_educator_survey.rds")
     readr::write_rds(followup_educator_clean, "Dashboards/CoachingParticipantFeedback/data/followup_educator_survey.rds")
   } else {
     followup_educator_clean <- readr::read_rds(here::here("data/followup_educator_survey.rds"))
   }
-  
+
   return(followup_educator_clean)
 }
 
@@ -2402,10 +3221,10 @@ get_followup_educator <- function(update = FALSE) {
 get_ongoing_coaching <- function(update = FALSE) {
   if (update == TRUE) {
     options(sm_oauth_token = Sys.getenv("knowledge_token"))
-    
+
     ongoing_coaching_survey <- surveymonkey::fetch_survey_obj(316751980) |>
       surveymonkey::parse_survey()
-    
+
     ongoing_coaching_survey_clean <- ongoing_coaching_survey |>
       #### Coalescing other columns into main columns ####
       dplyr::mutate(
@@ -2418,12 +3237,12 @@ get_ongoing_coaching <- function(update = FALSE) {
           `Please write in your four-digit birthday (MMDD)`
         )
       )
-    
+
     readr::write_rds(ongoing_coaching_survey_clean, "data/ongoing_coaching_feedback.rds")
     readr::write_rds(ongoing_coaching_survey_clean, "Dashboards/CoachingParticipantFeedback/data/ongoing_coaching_feedback.rds")
   } else {
     ongoing_coaching_survey_clean <- readr::read_rds(here::here("data/ongoing_coaching_feedback.rds"))
   }
-  
+
   return(ongoing_coaching_survey_clean)
 }

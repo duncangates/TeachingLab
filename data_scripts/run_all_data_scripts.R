@@ -11,5 +11,7 @@ r_scripts <- unlist(purrr::map(files, ~ list.files(.x, full.names = T)))
 ##### For NOW only running SurveyMonkey scripts #####
 r_scripts_final <- purrr::keep(r_scripts, ~ stringr::str_detect(.x, "SurveyMonkey|Monday"))
 
+## Temporarily get rid of fac board update
+r_scripts_final <- r_scripts_final[-3]
 ## Run all scripts based on location ##
 purrr::walk(r_scripts_final, source)

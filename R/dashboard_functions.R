@@ -7,7 +7,7 @@
 
 session_agree_plot_ts <- function(data, scale = "1 month") {
   
-  df <- data %>%
+  df <- data |>
     dplyr::select(
       Date,
       c(
@@ -175,8 +175,11 @@ neg_cond_filter <- function(data, if_not_this, filter_this, dat_filter) {
   
   # Check if any of the filters are not the "All x" pattern and filter for the inputs if that is TRUE
   if (any(filter_this != if_not_this)) {
-    df <- data %>%
+    df <- data |>
       dplyr::filter(!!quo_filter %in% filter_this_no_all)
+  } else if (filter_this == "NYC District 11 - District-wide, NY") {
+    df <- data |>
+      dplyr::filter(stringr::str_detect(!!quo_filter, "District 11"))
   } else {
     df <- data
   }

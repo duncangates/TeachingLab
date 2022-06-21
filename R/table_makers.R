@@ -853,6 +853,7 @@ course_quotes <- function(data = TeachingLab::get_course_survey(),
 #' @param save F by default, a save path inside current working directory
 #' @param prepost F by default for making a prepost dataframe
 #' @param rename F by default for making prepost dataframe
+#' @param admin F by default for prepost admin dataframe
 #' @return Returns a gt table, unless save in which case it will return a saved file with gtsave
 #' @export
 tl_summary_table <- function(data, 
@@ -863,6 +864,7 @@ tl_summary_table <- function(data,
                              n_size_single = NULL,
                              explain = F,
                              prepost = T,
+                             admin = F,
                              rename = F) {
   
   
@@ -880,7 +882,7 @@ tl_summary_table <- function(data,
         ), 
         c("don t" = "don't",
           " i " = " I ",
-          " e g " = "e.g.")
+          " e g " = " e.g. ")
       )
   }
   
@@ -893,7 +895,7 @@ tl_summary_table <- function(data,
   if (!is.null(grouping)) {
     if (grouping %in% c("equitable", "high_expectations", "summarise", "crse")) {
       
-      if (prepost == T & rename == T) {
+      if (prepost == T & rename == T & admin == F) {
         equitable_questions <- tibble::tibble(
           question = c("To what extent do you agree or disagree with the following statements? - I am color blind when it comes to my teaching - I don’t think of my students in terms of their race or ethnicity.",
                        "To what extent do you agree or disagree with the following statements? - The gap in the achievement among students of different races is about poverty, not race.",
@@ -906,6 +908,84 @@ tl_summary_table <- function(data,
                        "To what extent do you agree or disagree with the following statements? - Before students are asked to engage in complex learning tasks, they need to have a solid grasp of basic skills.",
                        "To what extent do you agree or disagree with the following statements? - It is not fair to ask students who are struggling with English to take on challenging academic assignments.",
                        "To what extent do you agree or disagree with the following statements? - Teachers should provide all students the opportunity to work with grade-level texts and tasks."),
+          reverse = c(T, T, T, F)
+        )
+        
+        crse_questions <- c("Please rate your confidence on the following items. <br>I am able to... - Adapt instruction to meet the needs of my students",
+                            "Please rate your confidence on the following items. <br>I am able to... - Identify ways that the school culture (e.g., values, norms, and practices) is different from my students’ home culture",
+                            "Please rate your confidence on the following items. <br>I am able to... - Use my students’ prior knowledge to help them make sense of new information",
+                            "Please rate your confidence on the following items. <br>I am able to... - Revise instructional material to include a better representation of cultural groups",
+                            "Please rate your confidence on the following items. <br>I am able to... - Teach the curriculum to students with unfinished learning",
+                            "Please rate your confidence on the following items. <br>I am able to... - Teach the curriculum to students who are from historically marginalized groups")
+        
+        
+        if (grouping != "crse") {
+          selected <- c(equitable_questions |> pull(question),
+                        high_expectations_questions |> pull(question),
+                        crse_questions)
+          ## Only reversed columns for later calculations
+          reversed <- c(equitable_questions %>% filter(reverse == T) |> pull(question),
+                        high_expectations_questions %>% filter(reverse == T) |> pull(question))
+        } else {
+          selected <- crse_questions
+          reversed <- NULL
+          equitable_questions$question <- NULL 
+          high_expectations_questions$question <- NULL
+        }
+        
+        
+        ## Reformatted column names for later
+        equitable_reformat <- purrr::map_chr(equitable_questions$question, reformat_cols)
+        high_expectations_reformat <- purrr::map_chr(high_expectations_questions$question, reformat_cols)
+        crse_reformat <- purrr::map_chr(crse_questions, reformat_cols)
+      } else if (admin == T & prepost == T & rename == F) {
+        equitable_questions <- tibble::tibble(
+          question = c("to_what_extent_do_you_agree_or_disagree_with_the_following_statements_teachers_should_be_color_blind_when_it_comes_to_their_teaching_they_shouldnt_think_of_students_in_terms_of_their_race_or_ethnicity",
+                       "to_what_extent_do_you_agree_or_disagree_with_the_following_statements_the_gap_in_the_achievement_among_students_of_different_races_is_about_poverty_not_race_2",
+                       "to_what_extent_do_you_agree_or_disagree_with_the_following_statements_i_think_about_my_own_background_and_experiences_and_how_those_affect_my_instructional_leadership"),
+          reverse = c(T, T, F)
+        )
+        
+        high_expectations_questions <- tibble::tibble(
+          question = c("to_what_extent_do_you_agree_or_disagree_with_the_following_statements_teachers_should_try_to_keep_in_mind_the_limits_of_students_ability_and_give_them_assignments_that_they_know_they_can_do_so_that_they_do_not_become_discouraged",
+                       "to_what_extent_do_you_agree_or_disagree_with_the_following_statements_before_students_are_asked_to_engage_in_complex_learning_tasks_they_need_to_have_a_solid_grasp_of_basic_skills_2",
+                       "to_what_extent_do_you_agree_or_disagree_with_the_following_statements_it_is_not_fair_to_ask_students_who_are_struggling_with_english_to_take_on_challenging_academic_assignments_2",
+                       "to_what_extent_do_you_agree_or_disagree_with_the_following_statements_teachers_should_provide_all_students_the_opportunity_to_work_with_grade_level_texts_and_tasks_2"),
+          reverse = c(T, T, T, F)
+        )
+        
+        crse_questions <- c("please_rate_the_extent_to_which_you_believe_you_can_support_teachers_in_the_following_areas_br_i_believe_i_can_directly_or_indirectly_support_teachers_to_adapt_instruction_to_meet_the_needs_of_their_students",
+                            "please_rate_the_extent_to_which_you_believe_you_can_support_teachers_in_the_following_areas_br_i_believe_i_can_directly_or_indirectly_support_teachers_to_identify_ways_that_the_school_culture_e_g_values_norms_and_practices_is_different_from_their_students_home_culture",
+                            "please_rate_the_extent_to_which_you_believe_you_can_support_teachers_in_the_following_areas_br_i_believe_i_can_directly_or_indirectly_support_teachers_to_use_their_students_prior_knowledge_to_help_them_make_sense_of_new_information",
+                            "please_rate_the_extent_to_which_you_believe_you_can_support_teachers_in_the_following_areas_br_i_believe_i_can_directly_or_indirectly_support_teachers_to_revise_instructional_material_to_include_a_better_representation_of_cultural_groups",
+                            "please_rate_the_extent_to_which_you_believe_you_can_support_teachers_in_the_following_areas_br_i_believe_i_can_directly_or_indirectly_support_teachers_to_teach_the_curriculum_to_students_with_unfinished_learning",
+                            "please_rate_the_extent_to_which_you_believe_you_can_support_teachers_in_the_following_areas_br_i_believe_i_can_directly_or_indirectly_support_teachers_to_teach_the_curriculum_to_students_who_are_from_historically_marginalized_groups")
+        
+        ## Only reversed columns for later calculations
+        reversed <- c(equitable_questions %>% filter(reverse == T) |> pull(question),
+                      high_expectations_questions %>% filter(reverse == T) |> pull(question))
+        
+        selected <- c(equitable_questions |> pull(question),
+                      high_expectations_questions |> pull(question),
+                      crse_questions)
+        
+        ## Reformatted column names for later
+        equitable_reformat <- purrr::map_chr(equitable_questions$question, reformat_cols)
+        high_expectations_reformat <- purrr::map_chr(high_expectations_questions$question, reformat_cols)
+        crse_reformat <- purrr::map_chr(crse_questions, reformat_cols)
+      } else if (admin == T & prepost == T & rename == T) {
+        equitable_questions <- tibble::tibble(
+          question = c("To what extent do you agree or disagree with the following statements? - Teachers should be color blind when it comes to their teaching - they shouldn't think of students in terms of their race or ethnicity.",
+                       "To what extent do you agree or disagree with the following statements? - The gap in the achievement among students of different races is about poverty, not race._2",
+                       "To what extent do you agree or disagree with the following statements? - I think about my own background and experiences and how those affect my instructional leadership."),
+          reverse = c(T, T, F)
+        )
+        
+        high_expectations_questions <- tibble::tibble(
+          question = c("To what extent do you agree or disagree with the following statements? - Teachers should try to keep in mind the limits of students’ ability and give them assignments that they know they can do so that they do not become discouraged.",
+                       "To what extent do you agree or disagree with the following statements? - Before students are asked to engage in complex learning tasks, they need to have a solid grasp of basic skills._2",
+                       "To what extent do you agree or disagree with the following statements? - It is not fair to ask students who are struggling with English to take on challenging academic assignments._2",
+                       "To what extent do you agree or disagree with the following statements? - Teachers should provide all students the opportunity to work with grade-level texts and tasks._2"),
           reverse = c(T, T, T, F)
         )
         
@@ -1010,7 +1090,7 @@ tl_summary_table <- function(data,
           dplyr::summarise(Percent = round(mean(Percent)))
         
         data_sums_final <- tibble::tibble(groups = "<b>Overall Score</b>", 
-                                          Percent = round(mean(data_sums_final$Percent))) %>%
+                                          Percent = round(mean(data_sums_final$Percent, na.rm = T))) %>%
           dplyr::bind_rows(data_sums_final) %>%
           dplyr::relocate(groups, .before = 1)
         
@@ -1023,7 +1103,7 @@ tl_summary_table <- function(data,
         
         data_sums_final <- tibble::tibble(groups = "<b>Overall Score</b>", 
                                           Question = "", 
-                                          Percent = round(mean(data_sums_final$Percent))) %>%
+                                          Percent = round(mean(data_sums_final$Percent, na.rm = T))) %>%
           dplyr::bind_rows(data_sums_final) |>
           dplyr::relocate(groups, .before = 1)
       } else if (summarise == F & grouping == "high_expectations") {
@@ -1034,7 +1114,7 @@ tl_summary_table <- function(data,
         
         data_sums_final <- tibble::tibble(groups = "<b>Overall Score</b>", 
                                           Question = "", 
-                                          Percent = round(mean(data_sums_final$Percent))) %>%
+                                          Percent = round(mean(data_sums_final$Percent, na.rm = T))) %>%
           dplyr::bind_rows(data_sums_final) %>%
           dplyr::relocate(groups, .before = 1)
       }
@@ -1170,27 +1250,27 @@ tl_summary_table <- function(data,
                       "Please rate your confidence on the following items. <br>I am able to... - Teach the curriculum to students who are from historically marginalized groups")
       }
       
-      data_sums <- data %>%
+      data_sums <- data  |> 
         ## Select just relevant columns
-        dplyr::select(dplyr::all_of(selected)) %>%
+        dplyr::select(dplyr::all_of(selected)) |>
         ## Only grab numbers for averaging
-        dplyr::mutate(dplyr::across(dplyr::everything(), ~ readr::parse_number(as.character(.x)))) %>%
+        dplyr::mutate(dplyr::across(dplyr::everything(), ~ readr::parse_number(as.character(.x)))) |>
         ## Summarise everything with scoring
-        dplyr::summarise(dplyr::across(dplyr::everything(), ~ round(mean(.x, na.rm = T), 2))) %>%
-        dplyr::ungroup() %>%
+        dplyr::summarise(dplyr::across(dplyr::everything(), ~ round(mean(.x, na.rm = T), 2))) |>
+        dplyr::ungroup() |>
         ## Rename with reformatting function
-        dplyr::rename_with( ~ reformat_cols(.x)) %>%
+        dplyr::rename_with( ~ reformat_cols(.x)) |>
         ## Make long format
         tidyr::pivot_longer(dplyr::everything(), names_to = "Question", values_to = "Percent")
       
       ## Conditionals for summarisation of table
       if (summarise == T) {
-        data_sums_final <- data_sums %>%
+        data_sums_final <- data_sums |>
           dplyr::mutate(Percent = Percent * 10,
-                        Question = str_replace_all(Question, "e g ", "e\\.g\\. "))
+                        Question = str_replace_all(Question, " e g ", " e\\.g\\. "))
         
         data_sums_final <- tibble::tibble(Question = "<b>Overall Score</b>", 
-                                          Percent = round(mean(data_sums_final$Percent))) %>%
+                                          Percent = round(mean(data_sums_final$Percent, na.rm = T))) |>
           dplyr::bind_rows(data_sums_final)
         
         final_gt <- data_sums_final %>%
@@ -1242,12 +1322,12 @@ tl_summary_table <- function(data,
         }
         
       } else if (grouping == "crse") {
-        data_sums_final <- data_sums |>
-          mutate(Question = str_replace_all(Question, "e g ", "e\\.g\\. "))
+        data_sums_final <- data_sums #|>
+          # mutate(Question = str_replace_all(Question, " e g ", " e\\.g\\. "))
         
         data_sums_final <- tibble::tibble(groups = "<b>Overall Score</b>", 
                                           Question = "", 
-                                          Percent = round(mean(data_sums_final$Percent), 2)) %>%
+                                          Percent = round(mean(data_sums_final$Percent, na.rm = T), 2)) %>%
           dplyr::bind_rows(data_sums_final) %>%
           dplyr::relocate(groups, .before = 1) %>%
           dplyr::mutate(groups = tidyr::replace_na(groups, " "))

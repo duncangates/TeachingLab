@@ -62,9 +62,29 @@ get_ipg_forms <- function(update = FALSE) {
     googledrive::drive_deauth()
     googlesheets4::gs4_deauth()
     
-    df <- df %>%
+    df <- df |>
       mutate(
-        Timestamp = lubridate::mdy_hms(Timestamp)#,
+        Timestamp = lubridate::mdy_hms(Timestamp),
+        `Name of Site (Parish, District, Network)` = TeachingLab::string_replace(
+          `Name of Site (Parish, District, Network)`,
+          ", MS",
+          "Mississippi Department of Education, MS"
+        ),
+        `Name of Site (Parish, District, Network)` = TeachingLab::string_replace(
+          `Name of Site (Parish, District, Network)`,
+          "District 9",
+          "NYC District 9 - District-wide, NY"
+        ),
+        `Name of Site (Parish, District, Network)` = TeachingLab::string_replace(
+          `Name of Site (Parish, District, Network)`,
+          "District 11",
+          "NYC District 11 - District-wide, NY"
+        ),
+        `Name of Site (Parish, District, Network)` = TeachingLab::string_replace(
+          `Name of Site (Parish, District, Network)`,
+          "McNairy",
+          "McNairy County, TN"
+        )
         # `Timeline of Obs` = factor(ifelse(
         #   is.na(`Timeline of Obs`),
         #   paste0(

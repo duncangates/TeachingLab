@@ -61,7 +61,7 @@ options(sm_oauth_token = "6zpcKriMLjBWVEHno8VWb4Uvclqotpq0H53HudGcfcyLc6aW0vxfm-
 fake_fac <- readr::read_rds("data/fake_facilitator.rds")
 fake_dunc <- readr::read_rds("data/fake_duncan.rds")
 
-facilitator_session_survey <- session_survey %>%
+facilitator_session_survey <- session_survey |>
   # FOR A FAKE TEMPORARY FACILITATOR DATA BEFORE VERIFICATION
   dplyr::bind_rows(fake_fac, fake_dunc)
 

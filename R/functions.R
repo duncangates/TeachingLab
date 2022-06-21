@@ -459,12 +459,29 @@ site_condense <- function(data) {
 #' @return a string
 #' @export
 agree_strongly_agree <- function(data, question) {
+  
   data |>
     dplyr::filter(Question == question & Response %in% c("(4) Agree", "(5) Strongly agree")) |>
     dplyr::summarise(Percent = sum(Percent)) |>
     dplyr::pull(Percent) |>
     round() |>
     paste0("%")
+  
+}
+
+#' @title Agree/Strongly agree
+#' @description Gets the percent that agree and strongly agree with different variable names
+#' @param data the data
+#' @param name a string - the question to get the percentage for
+#' @return a string
+#' @export
+agree_strongly_agree2 <- function(data, name) {
+  data |>
+    dplyr::ungroup() |>
+    dplyr::filter(name == name & value %in% c("Agree", "Strongly<br>agree")) |>
+    tidyr::drop_na(subject_area) |>
+    dplyr::group_by(subject_area, prepost) |>
+    dplyr::summarise(percent = sum(percent))
 }
 
 #' @title Conditionally slice

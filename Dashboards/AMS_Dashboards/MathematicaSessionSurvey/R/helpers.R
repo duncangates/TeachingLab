@@ -1,9 +1,4 @@
-options(googleAuthR.webapp.client_id = "342318881032-ui98nm42rcujf7v5cugcv38fmns8hjvg.apps.googleusercontent.com")
-# options(googleAnalyticsR.webapp.client_secret = "gSfM4MILy7BUD17oM7XQWfxY")
-
-options("googleAuthR.redirect" = "https://teachinglabhq.shinyapps.io/SessionSurvey/")
-
-options(shiny.port = 7325)
+#### Mathematica End of Session Survey Dashboard ####
 library(shiny)
 library(shiny.router)
 library(shiny.semantic)
@@ -26,6 +21,15 @@ library(grDevices)
 library(googleAuthR)
 library(shinyjs)
 library(rmarkdown)
+library(shinymanager)
+
+credentials <- data.frame(
+  user = c("ijun", "1"),
+  password = c("supersecretpassword12", "1"),
+  # password will automatically be hashed
+  admin = c(TRUE),
+  stringsAsFactors = FALSE
+)
 
 options(spinner.color = "#04ABEB")
 
