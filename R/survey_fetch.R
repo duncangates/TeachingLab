@@ -15,7 +15,7 @@ fetch_survey_2 <- function(id, name) {
   column_name_with_period <- c("Please select your site \\(district, parish, network, or school\\)\\.")
   just_school <- "Your school"
   if (sum(stringr::str_detect(colnames(survey), column_name_with_period)) >= 1) {
-    survey <- survey %>%
+    survey <- survey |>
       dplyr::rename_with(~ stringr::str_replace_all(
         .x,
         column_name_with_period,
@@ -23,7 +23,7 @@ fetch_survey_2 <- function(id, name) {
       ))
     print("Period removed")
   } else if (sum(stringr::str_detect(colnames(survey), just_school)) >= 1) {
-    survey <- survey %>%
+    survey <- survey |>
       dplyr::rename_with(~ stringr::str_replace_all(
         .x,
         just_school,
@@ -353,6 +353,11 @@ get_session_survey <- function(update = FALSE) {
         ),
         `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
           `Select your site (district, parish, network, or school).`,
+          "MS 286",
+          "NYC District 12 - MS 286 Fannie Lou Hamer"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
           "Open",
           "Open Enrollment, National"
         ),
@@ -492,8 +497,8 @@ get_course_survey <- function(update = FALSE) {
         `How much do you agree with the following statements about this course? - I am satisfied with the overall quality of this course.`,
         `How much do you agree with the following statements about this course? - I am satisfied with how the course was facilitated.`,
         `How much do you agree with the following statements about this course? - The independent online work activities were well-designed to help me meet the learning targets.`,
-        `How much do you agree with the following statements about this course? - I felt a sense of community with the other participants in this course. even though we were meeting virtually.`,
-        `How much do you agree with the following statements about this course? - I will apply what I have learned in this course to my practice in the next 4-6 weeks.`
+        `How much do you agree with the following statements about this course? - I felt a sense of community with the other participants in this course.`,
+        `How much do you agree with the following statements about this course? - I will apply what I have learned in this course to my practice.`
       ), ~ stringr::str_replace_all(
         .x,
         c(
@@ -509,8 +514,8 @@ get_course_survey <- function(update = FALSE) {
         `How much do you agree with the following statements about this course? - I am satisfied with the overall quality of this course.`,
         `How much do you agree with the following statements about this course? - I am satisfied with how the course was facilitated.`,
         `How much do you agree with the following statements about this course? - The independent online work activities were well-designed to help me meet the learning targets.`,
-        `How much do you agree with the following statements about this course? - I felt a sense of community with the other participants in this course. even though we were meeting virtually.`,
-        `How much do you agree with the following statements about this course? - I will apply what I have learned in this course to my practice in the next 4-6 weeks.`
+        `How much do you agree with the following statements about this course? - I felt a sense of community with the other participants in this course.`,
+        `How much do you agree with the following statements about this course? - I will apply what I have learned in this course to my practice.`
       ), ~ dplyr::na_if(.x, "No Response"))) |>
       ###### Make it select just the necessary columns to reduce data input to dashboards
       dplyr::select(
@@ -528,11 +533,11 @@ get_course_survey <- function(update = FALSE) {
         `How much do you agree with the following statements about this course? - I am satisfied with the overall quality of this course.`,
         `How much do you agree with the following statements about this course? - I am satisfied with how the course was facilitated.`,
         `How much do you agree with the following statements about this course? - The independent online work activities were well-designed to help me meet the learning targets.`,
-        `How much do you agree with the following statements about this course? - I felt a sense of community with the other participants in this course. even though we were meeting virtually.`,
+        `How much do you agree with the following statements about this course? - I felt a sense of community with the other participants in this course.`,
         `How much do you agree with the following statements about this course? - The strategies I’ve learned in this course will improve my instruction.`,
         `How much do you agree with the following statements about this course? - The strategies I’ve learned in this course will improve my coaching or supervision of teachers.`,
         `How much do you agree with the following statements about this course? - The strategies I’ve learned in the course are easy to implement.`,
-        `How much do you agree with the following statements about this course? - I will apply what I have learned in this course to my practice in the next 4-6 weeks.`,
+        `How much do you agree with the following statements about this course? - I will apply what I have learned in this course to my practice.`,
         `How much do you agree with the following statements about this course? - This course has supported me in being responsive to students' backgrounds, cultures, and points of view.`,
         # NPS
         `On a scale of 0-10, how likely are you to recommend this course to a colleague or friend?`
@@ -695,6 +700,11 @@ get_course_survey <- function(update = FALSE) {
         ),
         `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
           `Select your site (district, parish, network, or school).`,
+          "MS311",
+          "NYC District 6 - MS311, NY"
+        ),
+        `Select your site (district, parish, network, or school).` = TeachingLab::string_replace(
+          `Select your site (district, parish, network, or school).`,
           "Open",
           "Open Enrollment, National"
         ),
@@ -840,6 +850,10 @@ get_student_survey <- function(update = FALSE) {
     print("Getting New Mexico Student Survey...\n")
     nm_df <- surveymonkey::fetch_survey_obj(315708746) |>
       surveymonkey::parse_survey()
+    
+    print("Getting EIC Student Survey... \n")
+    eic_df <- surveymonkey::fetch_survey_obj(312658300) |>
+      surveymonkey::parse_survey()
 
     nm_student_survey_coalesced <- nm_df |>
       dplyr::rename(
@@ -868,7 +882,7 @@ get_student_survey <- function(update = FALSE) {
         `To what extent do you agree or disagree with the following statements? - When doing work for this class, I focus on learning, not the time work takes.` = `To what extent do you agree or disagree with the following statements? - When doing work for this math class, I focus on learning not time work takes.`,
         `To what extent do you agree or disagree with the following statements? - I have been able to figure out the most difficult work in this class.` = `To what extent do you agree or disagree with the following statements? - I have been able to figure out the most difficult work in this math class.`
       ) |>
-      dplyr::mutate(across(everything(), ~ str_replace_all(.x, "3- Neither untrue nor true", "3- Neither true nor untrue")),
+      dplyr::mutate(dplyr::across(dplyr::everything(), ~ stringr::str_replace_all(.x, "3- Neither untrue nor true", "3- Neither true nor untrue")),
         survey_id = as.double(survey_id),
         date_created = as.Date(date_created),
         date_modified = as.Date(date_modified)
@@ -1384,11 +1398,15 @@ get_diagnostic_survey <- function(update = FALSE) {
     ## Get Diagnostic ##
     diagnostic_surveymonkey <- surveymonkey::fetch_survey_obj(306944493) |>
       surveymonkey::parse_survey() |>
-      janitor::clean_names()
+      janitor::clean_names() |>
+      dplyr::group_by(respondent_id) |>
+      dplyr::summarise_all(TeachingLab::coalesce_by_column)
     ## Get EIC Diagnostic ##
     eic_diagnostic <- surveymonkey::fetch_survey_obj(309894856) |>
       surveymonkey::parse_survey() |>
       janitor::clean_names() |>
+      dplyr::group_by(respondent_id) |>
+      dplyr::summarise_all(TeachingLab::coalesce_by_column) |>
       mutate(your_school = ifelse(is.na(your_school), as.character(your_district), as.character(your_school))) |>
       select(-your_district) |>
       dplyr::rename(
@@ -1398,13 +1416,17 @@ get_diagnostic_survey <- function(update = FALSE) {
     ## Get State-Level Diagnostic ##
     state_diagnostic_surveymonkey <- surveymonkey::fetch_survey_obj(310477252) |>
       surveymonkey::parse_survey() |>
-      janitor::clean_names()
+      janitor::clean_names() |>
+      dplyr::group_by(respondent_id) |>
+      dplyr::summarise_all(TeachingLab::coalesce_by_column)
 
     nm_diagnostic_survey <- surveymonkey::fetch_survey_obj(315553653) |>
       surveymonkey::parse_survey() |>
       janitor::clean_names() |>
       dplyr::filter(date_created <= as.Date("2022-04-01")) |>
-      dplyr::mutate(your_site_district_parish_network_or_school_br_br = "New Mexico Public Education Department, NM")
+      dplyr::mutate(your_site_district_parish_network_or_school_br_br = "New Mexico Public Education Department, NM") |>
+      dplyr::group_by(respondent_id) |>
+      dplyr::summarise_all(TeachingLab::coalesce_by_column)
 
     ## Make id column with all lower, add an underscore between initials and birthday ###
     diagnostic_final <- diagnostic_surveymonkey |>
@@ -1416,6 +1438,8 @@ get_diagnostic_survey <- function(update = FALSE) {
       dplyr::full_join(eic_diagnostic) |>
       ### Join in State-Level Diagnostic ###
       dplyr::full_join(state_diagnostic_surveymonkey) |>
+      ### Join in New Mexico Diagnostic ###
+      dplyr::full_join(nm_diagnostic_survey) |>
       ### Coalesce site name columns ###
       dplyr::mutate(your_site_district_parish_network_or_school_br_br = dplyr::coalesce(
         your_site_district_parish_network_or_school_br_br,
@@ -1508,7 +1532,47 @@ get_diagnostic_survey <- function(update = FALSE) {
           "Mississippi",
           "Mississippi Department of Education, MS"
         )
-      )
+      ) |>
+      dplyr::mutate(which_subject_area_do_you_teach_lead_if_you_teach_support_both_please_select_the_one_where_you_expect_to_work_with_teaching_lab_this_year_br_br = ifelse(your_site_district_parish_network_or_school_br_br %in%
+                                                                                                                                                                               c("Amistad Dual Language, NY",
+                                                                                                                                                                                 "CityYear, NY",
+                                                                                                                                                                                 "Freire Charter Schools, PA/DE",
+                                                                                                                                                                                 "Horizon Charter Schools, CA",
+                                                                                                                                                                                 "Methuen Public Schools, MA",
+                                                                                                                                                                                 "New Mexico Public Education Department, NM",
+                                                                                                                                                                                 "North Andover Public Schools, MA",
+                                                                                                                                                                                 "North Bronx School of Empowerment, NY",
+                                                                                                                                                                                 "NYC District 12 - EMST-IS 190, NY",
+                                                                                                                                                                                 "NYC District 12 - MS 286 Fannie Lou Hamer, NY",
+                                                                                                                                                                                 "NYC District 27, Channel View School for Research, NY",
+                                                                                                                                                                                 "NYC District 6 - MS311, NY",
+                                                                                                                                                                                 "Outschool.org",
+                                                                                                                                                                                 "Providence Public Schools, RI",
+                                                                                                                                                                                 "Rochester City School District - District-wide",
+                                                                                                                                                                                 "San Diego Unified School District, CA"),
+                                                                                                                                                                             "Mathematics",
+                                                                                                                                                                             as.character(which_subject_area_do_you_teach_lead_if_you_teach_support_both_please_select_the_one_where_you_expect_to_work_with_teaching_lab_this_year_br_br)),
+                    which_subject_area_do_you_teach_lead_if_you_teach_support_both_please_select_the_one_where_you_expect_to_work_with_teaching_lab_this_year_br_br = ifelse(your_site_district_parish_network_or_school_br_br %in%
+                                                                                                                                                                               c("Calcasieu Parish, LA",
+                                                                                                                                                                                 "Evangeline Parish, LA",
+                                                                                                                                                                                 "Iberia Parish, LA",
+                                                                                                                                                                                 "Jacob Elementary School, KY",
+                                                                                                                                                                                 "Jefferson Davis Parish, LA",
+                                                                                                                                                                                 "Lafayette Parish, LA",
+                                                                                                                                                                                 "Louisville School District - Jacob Elementary, KY",
+                                                                                                                                                                                 "McNairy County, TN",
+                                                                                                                                                                                 "NYC District 10 - PS 386, NY",
+                                                                                                                                                                                 "NYC District 27 - MS 210, NY",
+                                                                                                                                                                                 "NYC District 27 - PS 104, NY",
+                                                                                                                                                                                 "NYC District 27 - PS 306, NY",
+                                                                                                                                                                                 "NYC District 27 - PS/MS 183, NY",
+                                                                                                                                                                                 "Orleans Central Supervisory Union, VT",
+                                                                                                                                                                                 "St. Charles Parish, LA",
+                                                                                                                                                                                 "Tangipahoa Parish, LA",
+                                                                                                                                                                                 "Washington Parish, LA",
+                                                                                                                                                                                 "West Contra Costa USD, CA"),
+                                                                                                                                                                             "ELA/Literacy",
+                                                                                                                                                                             as.character(which_subject_area_do_you_teach_lead_if_you_teach_support_both_please_select_the_one_where_you_expect_to_work_with_teaching_lab_this_year_br_br)))
 
     ## Write to data folder, dashboard for completion, and dashboard for analysis ##
     readr::write_rds(diagnostic_final, here::here("Dashboards/DiagnosticSurvey/data/diagnostic.rds"))
@@ -1558,6 +1622,7 @@ get_knowledge_assessments <- function(update = FALSE) {
       "Math: Bootcamp - EIC", 309893890L,
       "Math: Cycle of Inquiry I - Eliciting Student Thinking", 311433379L,
       "Math: Cycle of Inquiry I - Eliciting Student Thinking - Curriculum Flexible", 315770900L,
+      "Math: Cycle of Inquiry I - Eliciting Student Thinking - EIC", 505485406L,
       "Math: Cycle of Inquiry II - Making Math Visible", 316733968L,
       "Math: Cycle of Inquiry III - Facilitating Student Discourse", 319172329L,
       "Math: Cycle of Inquiry V- Sequencing and Connecting Representations", 311404789L,
@@ -2603,8 +2668,24 @@ get_knowledge_assessments <- function(update = FALSE) {
       save_name = "math_cycle_of_inquiry_1"
     )
 
-    ### Math: Cycle of Inquiry I - Eliciting Student Thinking - Curriculum Flexible ###
-    ######### (Must be a DUPLICATE) #########
+    ### Math: Cycle of Inquiry I - Eliciting Student Thinking - EIC ###
+    
+    TeachingLab::save_processed_data2(
+      data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/MathCycleofInquiryI-ElicitingStudentThinking-EIC.rds"),
+      q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_cycle_inquiry_1_elicit_student_thinking.rds"),
+      correct = c(
+        "How do we know that y=3x+2 represents a linear relationship?",
+        "What key features of this graph tells us that the line represents a proportional relationship?",
+        "How did Tessa think about this word problem?",
+        "What connections do you see between Tessa and Fede’s strategies?",
+        "The next day, a teacher leads a discussion analyzing a few different students’ solutions to the previous day’s problem set and connecting solutions to a learning goal.",
+        "A plan for how to students should solve each step of a task",
+        "Intentionally asking focusing questions of students who may have been historically pushed out of math success in the past",
+        "Analyzing video or audio recordings of one’s own instruction regularly for bias",
+        "Sharing frustrations"
+      ),
+      save_name = "math_cycle_of_inquiry_1_eic"
+    )
 
 
     ### Math: Cycle of Inquiry II - Making Math Visible ###
@@ -2802,6 +2883,8 @@ get_knowledge_assessments <- function(update = FALSE) {
       mutate(know_assess = "math_bootcamp_eic")
     math_cycle_of_inquiry_1 <- readr::read_rds(here::here("data/knowledge_assessments/math_cycle_of_inquiry_1.rds")) |>
       mutate(know_assess = "math_cycle_of_inquiry_1")
+    math_cycle_of_inquiry_1_eic <- readr::read_rds(here::here("data/knowledge_assessments/math_cycle_of_inquiry_1_eic.rds")) |>
+      mutate(know_assess = "math_cycle_of_inquiry_1_eic")
     math_cycle_of_inquiry_3 <- readr::read_rds(here::here("data/knowledge_assessments/math_cycle_of_inquiry_3.rds")) |>
       mutate(know_assess = "math_cycle_of_inquiry_3")
     math_cycle_inquiry_5 <- readr::read_rds(here::here("data/knowledge_assessments/math_cycle_inquiry_5.rds")) |>
@@ -2829,6 +2912,7 @@ get_knowledge_assessments <- function(update = FALSE) {
       dplyr::full_join(math_bootcamp) |>
       dplyr::full_join(math_bootcamp_eic) |>
       dplyr::full_join(math_cycle_of_inquiry_1) |>
+      dplyr::full_join(math_cycle_of_inquiry_1_eic) |>
       dplyr::full_join(math_cycle_of_inquiry_3) |>
       dplyr::full_join(math_cycle_inquiry_5) |>
       dplyr::full_join(supporting_math_intervention) |>
@@ -3150,6 +3234,198 @@ get_coaching_feedback <- function(update = FALSE) {
         Gone_well = `What has gone well in your coaching sessions?`,
         Could_be_better = `What could be better about your coaching sessions?`,
         id
+      ) |>
+      dplyr::mutate(
+        Site = TeachingLab::string_replace(
+          Site,
+          "Allen",
+          "Building 21"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Philadelphia",
+          "Building 21"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Amistad",
+          "Amistad Dual Language, NY"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Ascension",
+          "Ascension Parish, LA"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Brownington",
+          "Brownington Central School, VT"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Calcasieu",
+          "Calcasieu Parish, LA"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "CityYear",
+          "CityYear, NY"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Cleveland",
+          "Cleveland Metropolitan School District, OH"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Connecticut",
+          "Connecticut Partnership (with UnboundEd)"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Delaware",
+          "Delaware Department of Education, DE"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "EMST",
+          "NYC District 12 - ESMT-IS 190, NY"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Freire",
+          "Freire Charter Schools, PA/DE"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          ", MS",
+          "Mississippi Department of Education, MS"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Horizon",
+          "Horizon Charter Schools, CA"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Jefferson Davis",
+          "Jefferson Davis Parish, LA"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Kankakee",
+          "Kankakee School District, IL"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Lafayette",
+          "Lafayette Parish, LA"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Louisiana",
+          "Louisiana Department of Education, LA"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Louisville",
+          "Louisville School District - Jacob Elementary, KY"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Massachusetts",
+          "Massachusetts Dept of Elementary & Secondary Education"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "McNairy",
+          "McNairy County, TN"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Methuen",
+          "Methuen Public Schools, MA"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Andover",
+          "North Andover Public Schools, MA"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Bronx",
+          "North Bronx School of Empowerment"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "New Mexico",
+          "New Mexico Public Education Department, NM"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "District 11",
+          "NYC District 11 - District-wide, NY"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "District 27",
+          "NYC District 27 - District-wide, NY"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "District 9",
+          "NYC District 9 - District-wide, NY"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Fannie",
+          "NYC District 12 - MS 286 Fannie Lou Hamer"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "MS 286",
+          "NYC District 12 - MS 286 Fannie Lou Hamer"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Open",
+          "Open Enrollment, National"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Orleans",
+          "Orleans Central Supervisory Union, VT"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Pointe",
+          "Pointe Coupee Parish, LA"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          ", NM",
+          "New Mexico Public Education Department, NM"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Rochester",
+          "Rochester City School District - District-wide"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "San Diego",
+          "San Diego Unified School District, CA"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "West Contra",
+          "West Contra Costa USD, CA"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Wisconsin",
+          "Wisconsin Department of Education, WI"
+        )
       )
 
     readr::write_rds(coaching_feedback_clean, "data/coaching_participant_feedback.rds")
@@ -3168,7 +3444,7 @@ get_coaching_feedback <- function(update = FALSE) {
 #' @export
 get_followup_educator <- function(update = FALSE) {
   if (update == TRUE) {
-    options(sm_oauth_token = Sys.getenv("knowledge_token"))
+    options(sm_oauth_token = Sys.getenv("session_token"))
 
     follow_up_educator_survey <- surveymonkey::fetch_survey_obj(400267837) |>
       surveymonkey::parse_survey()
@@ -3177,9 +3453,46 @@ get_followup_educator <- function(update = FALSE) {
       surveymonkey::parse_survey() |>
       dplyr::filter(date_created >= as.Date("2022-04-01")) |>
       dplyr::mutate(`Your site (district, parish, network, or school)` = "New Mexico Public Education Department, NM")
-
+    
+    eic_followup_survey <- surveymonkey::fetch_survey_obj(506074546) |>
+      surveymonkey::parse_survey() |>
+      dplyr::rename(`Your site (district, parish, network, or school)` = `Your district`)
+    eic_followup_survey_named <- eic_followup_survey |>
+      dplyr::mutate(`Your site (district, parish, network, or school)` = TeachingLab::string_replace(
+        `Your site (district, parish, network, or school)`,
+        "District 11",
+        "NYC District 11 - District-wide, NY"
+      ),
+      `Your site (district, parish, network, or school)` = TeachingLab::string_replace(
+        `Your site (district, parish, network, or school)`,
+        "Rochester",
+        "Rochester City School District - District-wide"
+      )) |>
+      dplyr::rename(`To what extent do you agree or disagree with the following statements? - I think about my own background and experiences and how those affect my instructional leadership.` = `To what extent do you agree or disagree with the following statements? - I think about my own background and experiences and how those affect my instructional leadership.`,
+                    `Please rate the extent to which you believe you can support teachers in the following areas.<br>I believe I can directly or indirectly support teachers to... - Adapt instruction to meet the needs of their students` = `Please rate the extent to which you believe you can support teachers in the following areas.<br>I believe I can directly or indirectly support teachers to... - Adapt instruction to meet the needs of their students`,
+                    `Please rate the extent to which you believe you can support teachers in the following areas.<br>I believe I can directly or indirectly support teachers to... - Identify ways that the school culture (e.g., values, norms, and practices) is different from their students’ home culture` = `Please rate the extent to which you believe you can support teachers in the following areas.<br>I believe I can directly or indirectly support teachers to... - Identify ways that the school culture (e.g., values, norms, and practices) is different from their students’ home culture`,
+                    `Please rate the extent to which you believe you can support teachers in the following areas.<br>I believe I can directly or indirectly support teachers to... - Use their students’ prior knowledge to help them make sense of new information` = `Please rate the extent to which you believe you can support teachers in the following areas.<br>I believe I can directly or indirectly support teachers to... - Use their students’ prior knowledge to help them make sense of new information`,
+                    `Please rate the extent to which you believe you can support teachers in the following areas.<br>I believe I can directly or indirectly support teachers to... - Revise instructional material to include a better representation of cultural groups` = `Please rate the extent to which you believe you can support teachers in the following areas.<br>I believe I can directly or indirectly support teachers to... - Revise instructional material to include a better representation of cultural groups`,
+                    `Please rate the extent to which you believe you can support teachers in the following areas.<br>I believe I can directly or indirectly support teachers to... - Teach the curriculum to students with unfinished learning` = `Please rate the extent to which you believe you can support teachers in the following areas.<br>I believe I can directly or indirectly support teachers to... - Teach the curriculum to students with unfinished learning`,
+                    `Please rate the extent to which you believe you can support teachers in the following areas.<br>I believe I can directly or indirectly support teachers to... - Teach the curriculum to students who are from historically marginalized groups` = `Please rate the extent to which you believe you can support teachers in the following areas.<br>I believe I can directly or indirectly support teachers to... - Teach the curriculum to students who are from historically marginalized groups`,
+                    `How often do you observe the following in classrooms of teachers who have participated in Teaching Lab professional learning and those that have not? - The lesson is focused on a high-quality text or task. - Teachers who have participated in Teaching Lab Professional Learning` = `How often do you observe the following in classrooms of teachers who have participated in Teaching Lab professional learning and those that have not? - The lesson is focused on a high-quality text or task. - Teachers who participated in Teaching Lab Professional Learning`,
+                    `How often do you observe the following in classrooms of teachers who have participated in Teaching Lab professional learning and those that have not? - The questions and tasks address the analytical thinking required by the grade-level standards. - Teachers who have participated in Teaching Lab Professional Learning` = `How often do you observe the following in classrooms of teachers who have participated in Teaching Lab professional learning and those that have not? - The questions and tasks address the analytical thinking required by the grade-level standards. - Teachers who participated in Teaching Lab Professional Learning`,
+                    `How often do you observe the following in classrooms of teachers who have participated in Teaching Lab professional learning and those that have not? - All students have opportunities to engage in the work of the lesson. - Teachers who have participated in Teaching Lab Professional Learning` = `How often do you observe the following in classrooms of teachers who have participated in Teaching Lab professional learning and those that have not? - All students have opportunities to engage in the work of the lesson. - Teachers who participated in Teaching Lab Professional Learning`,
+                    `How often do you observe the following in classrooms of teachers who have participated in Teaching Lab professional learning and those that have not? - The lesson is focused on a high-quality text or task. - Teachers who have NOT participate in Teaching Lab Professional Learning` = `How often do you observe the following in classrooms of teachers who have participated in Teaching Lab professional learning and those that have not? - The lesson is focused on a high-quality text or task. - Teachers who have NOT participated in Teaching Lab Professional Learning`,
+                    `How often do you observe the following in classrooms of teachers who have participated in Teaching Lab professional learning and those that have not? - The questions and tasks address the analytical thinking required by the grade-level standards. - Teachers who have NOT participate in Teaching Lab Professional Learning` = `How often do you observe the following in classrooms of teachers who have participated in Teaching Lab professional learning and those that have not? - The questions and tasks address the analytical thinking required by the grade-level standards. - Teachers who have NOT participated in Teaching Lab Professional Learning`,
+                    `How often do you observe the following in classrooms of teachers who have participated in Teaching Lab professional learning and those that have not? - All students have opportunities to engage in the work of the lesson. - Teachers who have NOT participate in Teaching Lab Professional Learning` = `How often do you observe the following in classrooms of teachers who have participated in Teaching Lab professional learning and those that have not? - All students have opportunities to engage in the work of the lesson. - Teachers who have NOT participated in Teaching Lab Professional Learning`,
+                    `In what activities would you want to invest your time and effort in future professional learning experiences? Please select your top two options. - Developing effective professional communities with peers` = `In what activities would you want to invest your time and effort in future professional learning experiences? Please select your<strong> top two options</strong>. - Developing effective professional communities with peers`,
+                    `In what activities would you want to invest your time and effort in future professional learning experiences? Please select your top two options. - Unpacking curriculum` = `In what activities would you want to invest your time and effort in future professional learning experiences? Please select your<strong> top two options</strong>. - Unpacking curriculum`,
+                    `In what activities would you want to invest your time and effort in future professional learning experiences? Please select your top two options. - Implementing effective, evidence-based instructional practices` = `In what activities would you want to invest your time and effort in future professional learning experiences? Please select your<strong> top two options</strong>. - Implementing effective, evidence-based instructional practices`,
+                    `In what activities would you want to invest your time and effort in future professional learning experiences? Please select your top two options. - Teaching from a culturally responsive lens` = `In what activities would you want to invest your time and effort in future professional learning experiences? Please select your<strong> top two options</strong>. - Teaching from a culturally responsive lens`,
+                    `In what activities would you want to invest your time and effort in future professional learning experiences? Please select your top two options. - Supporting diverse student learners, including: English Learners, students with disabilities, and students with unfinished learning` = `In what activities would you want to invest your time and effort in future professional learning experiences? Please select your<strong> top two options</strong>. - Supporting diverse student learners, including: English Learners, students with disabilities, and students with unfinished learning`,
+                    `In what activities would you want to invest your time and effort in future professional learning experiences? Please select your top two options. - Becoming a facilitator for peer professional learning` = `In what activities would you want to invest your time and effort in future professional learning experiences? Please select your<strong> top two options</strong>. - Becoming a facilitator for peer professional learning`,
+                    `In what activities would you want to invest your time and effort in future professional learning experiences? Please select your top two options. - Other (please specify)` = `In what activities would you want to invest your time and effort in future professional learning experiences? Please select your<strong> top two options</strong>. - Other (please specify)`,
+                    `If you have any other feedback or comments about Teaching Lab’s professional learning this year, please let us know.` = `If you any other feedback or comments about Teaching Lab’s professional learning this year, please let us know.`)
+    
     followup_educator_clean <- follow_up_educator_survey |>
       dplyr::full_join(nm_followup_survey) |>
+      dplyr::full_join(eic_followup_survey_named) |>
       dplyr::group_by(respondent_id) |>
       dplyr::summarise_all(TeachingLab::coalesce_by_column) |>
       #### Coalescing other columns into main columns ####
@@ -3201,6 +3514,16 @@ get_followup_educator <- function(update = FALSE) {
           `Your site (district, parish, network, or school)`,
           "Mississippi",
           "Mississippi Department of Education, MS"
+        ),
+        `Your site (district, parish, network, or school)` = TeachingLab::string_replace(
+          `Your site (district, parish, network, or school)`,
+          "District 11",
+          "NYC District 11 - District-wide, NY"
+        ),
+        `Your site (district, parish, network, or school)` = TeachingLab::string_replace(
+          `Your site (district, parish, network, or school)`,
+          "District 9",
+          "NYC District 9 - District-wide, NY"
         )
       )
 
@@ -3220,7 +3543,7 @@ get_followup_educator <- function(update = FALSE) {
 #' @export
 get_ongoing_coaching <- function(update = FALSE) {
   if (update == TRUE) {
-    options(sm_oauth_token = Sys.getenv("knowledge_token"))
+    options(sm_oauth_token = Sys.getenv("course_token"))
 
     ongoing_coaching_survey <- surveymonkey::fetch_survey_obj(316751980) |>
       surveymonkey::parse_survey()
@@ -3235,6 +3558,196 @@ get_ongoing_coaching <- function(update = FALSE) {
         id = paste0(
           tolower(`Please write in your 3 initials. If you do not have a middle initial, please write X.`),
           `Please write in your four-digit birthday (MMDD)`
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Allen",
+          "Building 21"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Philadelphia",
+          "Building 21"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Amistad",
+          "Amistad Dual Language, NY"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Ascension",
+          "Ascension Parish, LA"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Brownington",
+          "Brownington Central School, VT"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Calcasieu",
+          "Calcasieu Parish, LA"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "CityYear",
+          "CityYear, NY"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Cleveland",
+          "Cleveland Metropolitan School District, OH"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Connecticut",
+          "Connecticut Partnership (with UnboundEd)"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Delaware",
+          "Delaware Department of Education, DE"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "EMST",
+          "NYC District 12 - ESMT-IS 190, NY"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Freire",
+          "Freire Charter Schools, PA/DE"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          ", MS",
+          "Mississippi Department of Education, MS"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Horizon",
+          "Horizon Charter Schools, CA"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Jefferson Davis",
+          "Jefferson Davis Parish, LA"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Kankakee",
+          "Kankakee School District, IL"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Lafayette",
+          "Lafayette Parish, LA"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Louisiana",
+          "Louisiana Department of Education, LA"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Louisville",
+          "Louisville School District - Jacob Elementary, KY"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Massachusetts",
+          "Massachusetts Dept of Elementary & Secondary Education"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "McNairy",
+          "McNairy County, TN"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Methuen",
+          "Methuen Public Schools, MA"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Andover",
+          "North Andover Public Schools, MA"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Bronx",
+          "North Bronx School of Empowerment"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "New Mexico",
+          "New Mexico Public Education Department, NM"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "District 11",
+          "NYC District 11 - District-wide, NY"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "District 27",
+          "NYC District 27 - District-wide, NY"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "District 9",
+          "NYC District 9 - District-wide, NY"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Fannie",
+          "NYC District 12 - MS 286 Fannie Lou Hamer"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "MS 286",
+          "NYC District 12 - MS 286 Fannie Lou Hamer"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Open",
+          "Open Enrollment, National"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Orleans",
+          "Orleans Central Supervisory Union, VT"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Pointe",
+          "Pointe Coupee Parish, LA"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          ", NM",
+          "New Mexico Public Education Department, NM"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Rochester",
+          "Rochester City School District - District-wide"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "San Diego",
+          "San Diego Unified School District, CA"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "West Contra",
+          "West Contra Costa USD, CA"
+        ),
+        Site = TeachingLab::string_replace(
+          Site,
+          "Wisconsin",
+          "Wisconsin Department of Education, WI"
         )
       )
 

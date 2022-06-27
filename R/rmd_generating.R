@@ -1,15 +1,19 @@
 #' @title Remove Image Files Render R Markdown
 #' @param partner The partner to render a report for
+#' @param input the rmd to use to parametrically generate reports
+#' @param output_dir the output directory for the files
 #' @description file remove and render 
-partner_file_remove <- function(partner) {
+partner_file_remove <- function(partner, input, output_dir) {
   
   print("Rendering new rmd...")
   
   rmarkdown::render(
-    input = here::here("Analysis/2021-2022/Mid-Year Report/MidYearReport.Rmd"),
-    output_file = paste0("2021-2022-tl-report", "_", partner),
-    output_dir = here::here("Analysis/2021-2022/Mid-Year Report/Reports"),
-    params = list(partner = partner, matched = "unmatched")
+    input = input,
+    output_file = paste0("final_report_", str_replace_all(tolower(partner), c(" " = "_",
+                                                                         "-" = "_",
+                                                                         "," = "_"))),
+    output_dir = output_dir,
+    params = list(partner = partner)
   )
   
   do.call(file.remove, list(list.files(here::here("images/report_images"), full.names = TRUE)))

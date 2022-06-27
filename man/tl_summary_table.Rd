@@ -13,6 +13,7 @@ tl_summary_table(
   n_size_single = NULL,
   explain = F,
   prepost = T,
+  admin = F,
   rename = F
 )
 }
@@ -32,6 +33,8 @@ tl_summary_table(
 \item{explain}{add explanation for different percentage levels to the table}
 
 \item{prepost}{F by default for making a prepost dataframe}
+
+\item{admin}{F by default for prepost admin dataframe}
 
 \item{rename}{F by default for making prepost dataframe}
 }

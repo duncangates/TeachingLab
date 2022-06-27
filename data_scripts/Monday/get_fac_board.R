@@ -112,9 +112,10 @@ library(reticulate)
 get_monday_board <- function(board_id) {
   ### Set up python environment ###
   path_to_python <- paste0(here::here(), "/Automations/Monday/env")
-  reticulate::use_virtualenv(path_to_python)
+  my_env <- reticulate::use_virtualenv(path_to_python)
   reticulate::import("requests")
   reticulate::import("os")
+  my_env$boardId <- board_id
   ### ADD TO ENVIRONMENT FOR PYTHON SCRIPT HERE SOMEHOW
   reticulate::py_run_string("os.environ['boardId'] = 'board_id'")
   ### Run python script to get monday json ###

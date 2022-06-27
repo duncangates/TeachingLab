@@ -4,10 +4,14 @@
 \alias{partner_file_remove}
 \title{Remove Image Files Render R Markdown}
 \usage{
-partner_file_remove(partner)
+partner_file_remove(partner, input, output_dir)
 }
 \arguments{
 \item{partner}{The partner to render a report for}
+
+\item{input}{the rmd to use to parametrically generate reports}
+
+\item{output_dir}{the output directory for the files}
 }
 \description{
 file remove and render

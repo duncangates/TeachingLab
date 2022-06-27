@@ -66,33 +66,36 @@ score_compare_plot <- function(data, question, order, prepost, score, split_vari
 #' @return a ggplot
 #' @export
 know_assess_summary <- function(data, know_assess, summary_path = "report_summary_images") {
-  plot_data <- data %>%
-    dplyr::filter(know_assess == !!rlang::enquo(know_assess)) %>%
-    dplyr::select(-site) %>% # Get rid of site for when there is more than one
-    dplyr::group_by(prepost) %>%
-    dplyr::summarise(percent = mean(percent, na.rm = T)) %>%
-    dplyr::ungroup() %>%
+  
+  plot_data <- data |>
+    dplyr::filter(know_assess == !!rlang::enquo(know_assess)) |>
+    dplyr::select(-site) |> # Get rid of site for when there is more than one
+    dplyr::group_by(prepost) |>
+    dplyr::summarise(percent = mean(percent, na.rm = T)) |>
+    dplyr::ungroup() |>
     dplyr::mutate(name = ifelse(prepost == "pre",
                                 "Before",
                                 "After"),
                   value = percent,
-                  name = factor(name, levels = c("Before", "After"))) %>%
+                  name = factor(name, levels = c("Before", "After"))) |>
     dplyr::select(name, value)
   
-  title <- stringr::str_to_title(stringr::str_replace_all(know_assess, "_", " ")) %>%
-    stringr::str_replace_all(., "Ela", "ELA") %>%
-    stringr::str_replace_all(., "Eic", "EIC") # Correct title casing
+  plot_data$value <- ifelse(plot_data$value >= 100, 100, plot_data$value)
   
-  n1 <- data %>%
-    dplyr::filter(know_assess == !!rlang::enquo(know_assess) & prepost == "pre") %>%
-    dplyr::pull(id) %>%
-    unique() %>%
+  title <- stringr::str_to_title(stringr::str_replace_all(know_assess, "_", " ")) |>
+    stringr::str_replace_all("Ela", "ELA") |>
+    stringr::str_replace_all("Eic", "EIC") # Correct title casing
+  
+  n1 <- data |>
+    dplyr::filter(know_assess == !!rlang::enquo(know_assess) & prepost == "pre") |> 
+    dplyr::pull(id) |> 
+    unique() |> 
     length()
   
-  n2 <- data %>%
-    dplyr::filter(know_assess == !!rlang::enquo(know_assess) & prepost == "post") %>%
-    dplyr::pull(id) %>%
-    unique() %>%
+  n2 <- data |> 
+    dplyr::filter(know_assess == !!rlang::enquo(know_assess) & prepost == "post") |> 
+    dplyr::pull(id) |> 
+    unique() |> 
     length()
   
   if (length(n1) == 0) {
@@ -103,7 +106,7 @@ know_assess_summary <- function(data, know_assess, summary_path = "report_summar
     n2 <- 0
   }
   
-  p <- plot_data %>%
+  p <- plot_data |> 
     ggplot2::ggplot(ggplot2::aes(x = name, y = value, fill = name)) +
     ggplot2::geom_col() +
     ggplot2::geom_text(ggplot2::aes(label = paste0(round(value), "%")),

@@ -513,3 +513,15 @@ mutate_cond <- function(.data, condition, ..., envir = parent.frame()) {
   .data[condition, ] <- .data[condition, ] %>% mutate(...)
   .data
 }
+
+#' @title Unique, sort, view
+#' @description Gets all unique elements of a vector in a sorted view
+#' @param vector the vector to view
+#' @return a string
+#' @export
+single_sort_view <- function(vector) {
+  vector |>
+    unique() |>
+    sort() |> 
+    tibble::view()
+}

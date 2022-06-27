@@ -201,7 +201,7 @@ table_maker <- function(data, column_names, title, spanner, n1, n2, rows_positiv
       pattern = "n = {x}",
       decimals = 0
     ) %>%
-    gt::fmt_missing(
+    gt::sub_missing(
       columns = c(4),
       rows = c(bottom_row),
       missing_text = ""
@@ -573,7 +573,7 @@ quote_viz <- function(data,
           if (!is.null(title)) gt::tab_header(data = ., title = gt::html(title)) else .
         } %>%
         gt::fmt_markdown(columns = gt::everything()) |>
-        gt::fmt_missing(columns = everything(),
+        gt::sub_missing(columns = everything(),
                         missing_text = " ") |>
         gt::cols_align(align = align) |>
         gt::tab_style(
@@ -707,7 +707,7 @@ gt_know_assess <- function(data, know_assess) {
       scale_values = F,
       decimals = 0
     ) %>%
-    gt::fmt_missing(
+    gt::sub_missing(
       columns = tidyselect:::where(is.logical),
       missing_text = "no data"
     ) %>%
@@ -725,7 +725,7 @@ gt_know_assess <- function(data, know_assess) {
         gt::summary_rows(.,
           fns = list(`Average % Correct` = ~ return(pre_percent_correct)),
           columns = c(percent_pre),
-          formatter = gt::fmt_missing,
+          formatter = gt::sub_missing,
           missing_text = "no data"
         )
       }
@@ -743,7 +743,7 @@ gt_know_assess <- function(data, know_assess) {
         gt::summary_rows(.,
           fns = list(`Average % Correct` = ~ return(post_percent_correct)),
           columns = c(percent_post),
-          formatter = gt::fmt_missing
+          formatter = gt::sub_missing
         )
       }
     } %>%
@@ -989,12 +989,12 @@ tl_summary_table <- function(data,
           reverse = c(T, T, T, F)
         )
         
-        crse_questions <- c("Please rate your confidence on the following items. <br>I am able to... - Adapt instruction to meet the needs of my students",
-                            "Please rate your confidence on the following items. <br>I am able to... - Identify ways that the school culture (e.g., values, norms, and practices) is different from my students’ home culture",
-                            "Please rate your confidence on the following items. <br>I am able to... - Use my students’ prior knowledge to help them make sense of new information",
-                            "Please rate your confidence on the following items. <br>I am able to... - Revise instructional material to include a better representation of cultural groups",
-                            "Please rate your confidence on the following items. <br>I am able to... - Teach the curriculum to students with unfinished learning",
-                            "Please rate your confidence on the following items. <br>I am able to... - Teach the curriculum to students who are from historically marginalized groups")
+        crse_questions <- c("Please rate the extent to which you believe you can support teachers in the following areas.<br>I believe I can directly or indirectly support teachers to... - Adapt instruction to meet the needs of their students",
+                            "Please rate the extent to which you believe you can support teachers in the following areas.<br>I believe I can directly or indirectly support teachers to... - Identify ways that the school culture (e.g., values, norms, and practices) is different from their students’ home culture",
+                            "Please rate the extent to which you believe you can support teachers in the following areas.<br>I believe I can directly or indirectly support teachers to... - Use their students’ prior knowledge to help them make sense of new information",
+                            "Please rate the extent to which you believe you can support teachers in the following areas.<br>I believe I can directly or indirectly support teachers to... - Revise instructional material to include a better representation of cultural groups",
+                            "Please rate the extent to which you believe you can support teachers in the following areas.<br>I believe I can directly or indirectly support teachers to... - Teach the curriculum to students with unfinished learning",
+                            "Please rate the extent to which you believe you can support teachers in the following areas.<br>I believe I can directly or indirectly support teachers to... - Teach the curriculum to students who are from historically marginalized groups")
         
         
         if (grouping != "crse") {
@@ -1084,14 +1084,14 @@ tl_summary_table <- function(data,
       
       ## Conditionals for summarisation of table
       if (summarise == T & grouping != "crse") {
-        data_sums_final <- data_sums %>%
-          dplyr::select(-Question) %>%
-          dplyr::group_by(groups) %>%
-          dplyr::summarise(Percent = round(mean(Percent)))
+        data_sums_final <- data_sums |>
+          dplyr::select(-Question) |>
+          dplyr::group_by(groups) |>
+          dplyr::summarise(Percent = round(mean(Percent, na.rm = T)))
         
         data_sums_final <- tibble::tibble(groups = "<b>Overall Score</b>", 
-                                          Percent = round(mean(data_sums_final$Percent, na.rm = T))) %>%
-          dplyr::bind_rows(data_sums_final) %>%
+                                          Percent = round(mean(data_sums_final$Percent, na.rm = T))) |>
+          dplyr::bind_rows(data_sums_final) |>
           dplyr::relocate(groups, .before = 1)
         
       } else if (summarise == F & grouping == "equitable") {
@@ -1114,8 +1114,8 @@ tl_summary_table <- function(data,
         
         data_sums_final <- tibble::tibble(groups = "<b>Overall Score</b>", 
                                           Question = "", 
-                                          Percent = round(mean(data_sums_final$Percent, na.rm = T))) %>%
-          dplyr::bind_rows(data_sums_final) %>%
+                                          Percent = round(mean(data_sums_final$Percent, na.rm = T))) |>
+          dplyr::bind_rows(data_sums_final) |>
           dplyr::relocate(groups, .before = 1)
       }
       
@@ -1169,7 +1169,7 @@ tl_summary_table <- function(data,
         if (grouping %!in% c("equitable", "high_expectations")) {
           data_sums_final <- tibble::tibble(groups = "<b>Overall Score</b>", 
                                             Question = "", 
-                                            Percent = round(mean(data_sums$Percent))) %>%
+                                            Percent = round(mean(data_sums$Percent, na.rm = T))) %>%
             dplyr::bind_rows(data_sums) %>%
             dplyr::relocate(groups, .before = 1)
         }
@@ -1369,19 +1369,19 @@ tl_summary_table <- function(data,
   }
     } else if (is.null(grouping) & summarise == T) {
     
-    data_sums <- data %>%
+    data_sums <- data |>
       ## Only grab numbers for averaging
-      dplyr::mutate(dplyr::across(dplyr::everything(), ~ readr::parse_number(as.character(.x)))) %>%
+      dplyr::mutate(dplyr::across(dplyr::everything(), ~ readr::parse_number(as.character(.x)))) |> 
       ## Summarise everything with scoring
-      dplyr::summarise(dplyr::across(dplyr::everything(), ~ round(mean(.x, na.rm = T), 2))) %>%
+      dplyr::summarise(dplyr::across(dplyr::everything(), ~ round(mean(.x, na.rm = T), 2))) |> 
       ## Rename with reformatting function
-      dplyr::rename_with( ~ reformat_cols(.x)) %>%
+      dplyr::rename_with( ~ reformat_cols(.x)) |> 
       ## Make long format
-      tidyr::pivot_longer(tidyr::everything(), names_to = "Question", values_to = "Percent") %>%
-      dplyr::summarise(`% Overall Score` = mean(Percent))
+      tidyr::pivot_longer(tidyr::everything(), names_to = "Question", values_to = "Percent") |> 
+      dplyr::summarise(`% Overall Score` = mean(Percent, na.rm = T))
     
-    final_gt <- data_sums %>%
-      gt::gt() %>%
+    final_gt <- data_sums |> 
+      gt::gt() |> 
       gt::fmt_percent(gt::everything(),
                     scale_values = F,
                     decimals = 0) %>%
