@@ -113,11 +113,11 @@ get_monday_board <- function(board_id) {
   ### Set up python environment ###
   path_to_python <- paste0(here::here(), "/Automations/Monday/env")
   my_env <- reticulate::use_virtualenv(path_to_python)
-  reticulate::import("requests")
-  reticulate::import("os")
-  my_env$boardId <- board_id
+  # reticulate::import("requests")
+  # reticulate::import("os")
+  # my_env$boardId <- board_id
   ### ADD TO ENVIRONMENT FOR PYTHON SCRIPT HERE SOMEHOW
-  reticulate::py_run_string("os.environ['boardId'] = 'board_id'")
+  # reticulate::py_run_string("os.environ['boardId'] = 'board_id'")
   ### Run python script to get monday json ###
   reticulate::source_python(here::here("Automations/Monday/monday_facilitators.py"))
   
@@ -146,6 +146,39 @@ get_monday_board <- function(board_id) {
 
 fac_board <- get_monday_board(board_id = 2208860812)
 
-readr::write_rds(fac_board, "data/facilitators_role.rds")
-readr::write_rds(fac_board, "Dashboards/Staffing/data/facilitators_role.rds")
+fac_board_reformat_1 <- fac_board |>
+  dplyr::filter(`FY23 Status` == "Returning") |>
+  dplyr::select(Facilitators = `Open/Active`, Curriculum) |>
+  dplyr::mutate(Emails = paste0(tolower(str_replace_all(Facilitators, " ", ".")), "@teachinglab.org"),
+                value = 1) |>
+  tidyr::drop_na(Curriculum) |>
+  tidyr::separate_rows(Curriculum) |>
+  tidyr::pivot_wider(names_from = Curriculum,
+                     names_sep = ", ",
+                     values_fill = list(Curriculum = 0)) |>
+  dplyr::mutate(dplyr::across(dplyr::everything(), ~ ifelse(is.na(.x), 0, .x)))
+
+readr::write_rds(fac_board_reformat_1, "data/facilitators_role.rds")
+readr::write_rds(fac_board_reformat_1, "Dashboards/Staffing/data/facilitators_role.rds")
+
+fac_board_reformat_2 <- fac_board |>
+  dplyr::filter(`FY23 Status` == "Returning") |>
+  dplyr::select(Facilitators = `Open/Active`, Role) |>
+  dplyr::mutate(Emails = paste0(tolower(str_replace_all(Facilitators, " ", ".")), "@teachinglab.org"),
+                value = 1) |>
+  tidyr::drop_na(Role) |>
+  tidyr::separate_rows(Role) |>
+  tidyr::pivot_wider(names_from = Role,
+                     names_sep = ", ",
+                     values_from = value,
+                     values_fill = list(Role = 0)) |>
+  dplyr::mutate(dplyr::across(dplyr::everything(), ~ ifelse(is.na(.x), 0, .x)))
+
+fac_board_reformat_2 |>
+  filter(Facilitators %!in% old_list_fac) |>
+  # filter(ELA == 1) |>
+  pull(Facilitators) |>
+  sort() |>
+  clipr::write_clip()
+
 

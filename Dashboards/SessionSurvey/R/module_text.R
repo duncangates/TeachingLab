@@ -212,7 +212,7 @@ textServer <- function(id) {
         tlShiny::neg_cond_filter(
           if_not_this = "All Content Areas",
           filter_this = input$content,
-          dat_filter = `Select the content area for today's professional learning session.`
+          dat_filter = `Select the content area for today’s professional learning session.`
         ) |>
         tlShiny::neg_cond_filter(
           if_not_this = "All Courses",
@@ -258,7 +258,7 @@ textServer <- function(id) {
         tlShiny::neg_cond_filter(
           if_not_this = "All Content Areas",
           filter_this = input$content,
-          dat_filter = `Select the content area for today's professional learning session.`
+          dat_filter = `Select the content area for today’s professional learning session.`
         ) |>
         tlShiny::neg_cond_filter(
           if_not_this = "All Courses",
@@ -304,7 +304,7 @@ textServer <- function(id) {
         tlShiny::neg_cond_filter(
           if_not_this = "All Content Areas",
           filter_this = input$content,
-          dat_filter = `Select the content area for today's professional learning session.`
+          dat_filter = `Select the content area for today’s professional learning session.`
         ) |>
         tlShiny::neg_cond_filter(
           if_not_this = "All Courses",
@@ -377,7 +377,7 @@ textServer <- function(id) {
         tlShiny::neg_cond_filter(
           if_not_this = "All Content Areas",
           filter_this = input$content,
-          dat_filter = `Select the content area for today's professional learning session.`
+          dat_filter = `Select the content area for today’s professional learning session.`
         ) |>
         tlShiny::neg_cond_filter(
           if_not_this = "All Courses",
@@ -441,7 +441,7 @@ textServer <- function(id) {
         tlShiny::neg_cond_filter(
           if_not_this = "All Content Areas",
           filter_this = input$content,
-          dat_filter = `Select the content area for today's professional learning session.`
+          dat_filter = `Select the content area for today’s professional learning session.`
         ) |>
         tlShiny::neg_cond_filter(
           if_not_this = "All Courses",
@@ -504,7 +504,7 @@ textServer <- function(id) {
         tlShiny::neg_cond_filter(
           if_not_this = "All Content Areas",
           filter_this = input$content,
-          dat_filter = `Select the content area for today's professional learning session.`
+          dat_filter = `Select the content area for today’s professional learning session.`
         ) |>
         tlShiny::neg_cond_filter(
           if_not_this = "All Courses",

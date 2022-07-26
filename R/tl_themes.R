@@ -1,7 +1,5 @@
 #' @title Teaching Lab Custom Ggplot2 Theme
-#'
-#'
-#' It requires installing Roboto, Calibri fonts unless you change the font parameters
+#' @description It requires installing Roboto, Calibri fonts unless you change the font parameters
 #'
 #' \url{https://www.google.com/fonts}
 #'

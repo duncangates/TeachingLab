@@ -527,3 +527,27 @@ selection_sum <- function(data, select, group = NULL) {
     dplyr::ungroup() |>
     pivot_longer(! {{ group }})
 }
+
+
+#' @title Get the percent of `data` in `answer`
+#' @param data the data
+#' @param answer the answer
+#' @description function for general grading of percentages
+#' @return a vector percent of correct
+#' @export
+
+tl_score_percent <- function(data, answer) {
+  ### Remove all NAs in the data ###
+  data <- data[!is.na(data)]
+  data <- data[!is.null(data)]
+  
+  ### Get percent of answer in data ###
+  data_percent <- sum(data %in% answer) / length(data)
+  
+  ### Convert to % of 100 and round
+  rounded_data_percent <- round(data_percent * 100, 2)
+  
+  ### Return
+  rounded_data_percent
+}
+

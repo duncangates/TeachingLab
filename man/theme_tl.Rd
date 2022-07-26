@@ -2,12 +2,7 @@
 % Please edit documentation in R/tl_themes.R
 \name{theme_tl}
 \alias{theme_tl}
-\title{Teaching Lab Custom Ggplot2 Theme
-
-
-It requires installing Roboto, Calibri fonts unless you change the font parameters
-
-\url{https://www.google.com/fonts}}
+\title{Teaching Lab Custom Ggplot2 Theme}
 \usage{
 theme_tl(
   base_family = "Calibri",
@@ -84,9 +79,6 @@ theme_tl(
 \item{legend}{default no legend with F}
 }
 \description{
-Teaching Lab Custom Ggplot2 Theme
-
-
 It requires installing Roboto, Calibri fonts unless you change the font parameters
 
 \url{https://www.google.com/fonts}

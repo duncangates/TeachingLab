@@ -285,12 +285,11 @@ reportServer <- function(id, in_site) {
           date_created,
           `How much do you agree with the following statements about this course? - I am satisfied with the overall quality of this course.`,
           `How much do you agree with the following statements about this course? - I am satisfied with how the course was facilitated.`,
-          `How much do you agree with the following statements about this course? - The independent online work activities were well-designed to help me meet the learning targets.`,
-          `How much do you agree with the following statements about this course? - I felt a sense of community with the other participants in this course. even though we were meeting virtually.`,
+          `How much do you agree with the following statements about this course? - I felt a sense of community with the other participants in this course.`,
           `How much do you agree with the following statements about this course? - The strategies I’ve learned in this course will improve my instruction.`,
           `How much do you agree with the following statements about this course? - The strategies I’ve learned in this course will improve my coaching or supervision of teachers.`,
           `How much do you agree with the following statements about this course? - The strategies I’ve learned in the course are easy to implement.`,
-          `How much do you agree with the following statements about this course? - I will apply what I have learned in this course to my practice in the next 4-6 weeks.`,
+          `How much do you agree with the following statements about this course? - I will apply what I have learned in this course to my practice.`,
           `How much do you agree with the following statements about this course? - This course has supported me in being responsive to students' backgrounds, cultures, and points of view.`
         ) |>
         pivot_longer(!`date_created`, names_to = "question", values_to = "answer") |>
@@ -364,12 +363,11 @@ reportServer <- function(id, in_site) {
         select(
           `How much do you agree with the following statements about this course? - I am satisfied with the overall quality of this course.`,
           `How much do you agree with the following statements about this course? - I am satisfied with how the course was facilitated.`,
-          `How much do you agree with the following statements about this course? - The independent online work activities were well-designed to help me meet the learning targets.`,
-          `How much do you agree with the following statements about this course? - I felt a sense of community with the other participants in this course. even though we were meeting virtually.`,
+          `How much do you agree with the following statements about this course? - I felt a sense of community with the other participants in this course.`,
           `How much do you agree with the following statements about this course? - The strategies I’ve learned in this course will improve my instruction.`,
           `How much do you agree with the following statements about this course? - The strategies I’ve learned in this course will improve my coaching or supervision of teachers.`,
           `How much do you agree with the following statements about this course? - The strategies I’ve learned in the course are easy to implement.`,
-          `How much do you agree with the following statements about this course? - I will apply what I have learned in this course to my practice in the next 4-6 weeks.`,
+          `How much do you agree with the following statements about this course? - I will apply what I have learned in this course to my practice.`,
           `How much do you agree with the following statements about this course? - This course has supported me in being responsive to students' backgrounds, cultures, and points of view.`
         ) |>
         pivot_longer(everything(), names_to = "Question", values_to = "Response") |>
