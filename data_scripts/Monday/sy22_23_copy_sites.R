@@ -3,8 +3,8 @@ library(tidyverse)
 library(googlesheets4)
 library(reticulate)
 
-path_to_python <- paste0(here::here(), "/Automations/Monday/env")
-use_virtualenv(path_to_python)
+# path_to_python <- paste0(here::here(), "/Automations/Monday/env")
+# use_virtualenv(path_to_python)
 import("requests")
 reticulate::source_python(here::here("Automations/Monday/sy22_23_project.py"))
 

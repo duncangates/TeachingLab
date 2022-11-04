@@ -180,7 +180,8 @@ neg_cond_filter <- function(data, if_not_this, filter_this, dat_filter) {
   } else if (filter_this == "NYC District 11 - District-wide, NY") {
     df <- data |>
       dplyr::filter(stringr::str_detect(!!quo_filter, "District 11"))
-  } else {
+  }
+  else {
     df <- data
   }
   

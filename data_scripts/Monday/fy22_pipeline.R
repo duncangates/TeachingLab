@@ -106,8 +106,8 @@ library(reticulate)
 # 
 # get_column_values(item_ids = entire_board_crossing$item_id[129:257], entire_board_crossing$col_id[129])
 
-path_to_python <- paste0(here::here(), "/Automations/Monday/env")
-use_virtualenv(path_to_python)
+# path_to_python <- paste0(here::here(), "/Automations/Monday/env")
+# use_virtualenv(path_to_python)
 import("requests")
 reticulate::source_python(here::here("Automations/Monday/fy22_pipeline_pull.py"))
 

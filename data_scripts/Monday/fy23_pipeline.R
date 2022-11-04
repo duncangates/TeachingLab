@@ -3,8 +3,8 @@ library(tidyverse)
 library(googlesheets4)
 library(reticulate)
 
-path_to_python <- paste0(here::here(), "/Automations/Monday/env")
-use_virtualenv(path_to_python)
+# path_to_python <- paste0(here::here(), "/Automations/Monday/env")
+# use_virtualenv(path_to_python)
 import("requests")
 reticulate::source_python(here::here("Automations/Monday/fy23_pipeline.py"))
 
@@ -25,13 +25,14 @@ final_df <- second_df |>
   select(-name) |>
   bind_cols(first_column) |>
   relocate(`Open/Active`, .before = 1) |>
-  mutate(across(c("Projected Amt (no passthru)",
-                  "Passthru Amt",
+  mutate(across(c("Passthru Amt",
                   "Probability (%)"), ~ as.numeric(.x)),
          across(c("Status date changed",
-                  "Proposal sent date"), ~ as.Date(.x)),
-         `Weighted Amt` = (`Projected Amt (no passthru)` * `Probability (%)`) / 100,
-         `Projected+Passthru` = `Projected Amt (no passthru)` + ifelse(!is.na(`Passthru Amt`), `Passthru Amt`, 0))
+                  "Proposal sent date",
+                  "Contract signed date"), ~ as.Date(as.character(.x)))#,
+         # `Weighted Amt` = (`Projected Amt (no passthru)` * `Probability (%)`) / 100,
+         # `Projected+Passthru` = `Projected Amt (no passthru)` + ifelse(!is.na(`Passthru Amt`), `Passthru Amt`, 0)
+         )
 
 ### IF there are more than 26 columns get the range to write by concatenating LETTERS subtracted from 26
 ### This will ONLY work so long as it doesn't get past the "A(X)" range of google sheets letters which I don't

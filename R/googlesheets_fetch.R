@@ -12,11 +12,11 @@ get_current_partner_sites <- function(update = FALSE, condense = FALSE) {
     googlesheets4::gs4_auth(token = googledrive::drive_token())
     
     df <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/11jlo9UeWxZGwunhDb24hZBwAKc5b8ZKM9AYNWZaUyZY/edit#gid=0",
-                                    sheet = "Automation",
-                                    col_types = "c",
-                                    skip = 1
+                                    sheet = "FY23 Automation (Sites + Courses)",
+                                    col_types = "c"
     ) |>
       dplyr::pull(3) |>
+      unique() |>
       sort()
     
     ## Deauthentication ##
@@ -63,7 +63,7 @@ get_ipg_forms <- function(update = FALSE) {
     googlesheets4::gs4_deauth()
     
     df <- df |>
-      mutate(
+      dplyr::mutate(
         Timestamp = lubridate::mdy_hms(Timestamp),
         `Name of Site (Parish, District, Network)` = TeachingLab::string_replace(
           `Name of Site (Parish, District, Network)`,

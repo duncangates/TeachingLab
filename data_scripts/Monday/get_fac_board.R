@@ -1,5 +1,7 @@
-library(tidyverse)
+library(qualtRics)
 library(reticulate)
+library(TeachingLab)
+library(tidyverse)
 
 # get_all_fac_board_values <- function(board_id) {
 ### Get all columns of data ###
@@ -109,10 +111,10 @@ library(reticulate)
 #                                       Emails)) %>%
 #   dplyr::relocate(Emails, .after = Facilitators)
 
-get_monday_board <- function(board_id) {
+get_monday_board <- function(board_id, first_col_name) {
   ### Set up python environment ###
-  path_to_python <- paste0(here::here(), "/Automations/Monday/env")
-  my_env <- reticulate::use_virtualenv(path_to_python)
+  # path_to_python <- paste0(here::here(), "/Automations/Monday/env")
+  # my_env <- reticulate::use_virtualenv(path_to_python)
   # reticulate::import("requests")
   # reticulate::import("os")
   # my_env$boardId <- board_id
@@ -131,54 +133,96 @@ get_monday_board <- function(board_id) {
   ### Get first column separately ###
   first_column <- initial_df$data$boards$items |>
     as.data.frame() |>
-    select(name) |>
-    rename(`Open/Active` = name)
+    dplyr::select(name) |>
+    dplyr::rename({{ first_col_name }} := name)
   
   ### Compose data.frame ###
   final_df <- second_df |>
-    select(title, contains("text")) |>
-    pivot_longer(!title) |>
-    pivot_wider(names_from = "title", values_from = "value") |>
-    select(-name) |>
-    bind_cols(first_column) |>
-    relocate(`Open/Active`, .before = 1)
+    dplyr::select(title, contains("text")) |>
+    tidyr::pivot_longer(!title) |>
+    tidyr::pivot_wider(names_from = "title", values_from = "value") |>
+    dplyr::select(-name) |>
+    dplyr::bind_cols(first_column) |>
+    dplyr::relocate({{ first_col_name }}, .before = 1)
 }
 
-fac_board <- get_monday_board(board_id = 2208860812)
+### Grab Facilitator Monday Board ###
+fac_board <- TeachingLab::get_monday_board(board_id = 2208860812, first_col_name = "Facilitator")
 
-fac_board_reformat_1 <- fac_board |>
-  dplyr::filter(`FY23 Status` == "Returning") |>
-  dplyr::select(Facilitators = `Open/Active`, Curriculum) |>
-  dplyr::mutate(Emails = paste0(tolower(str_replace_all(Facilitators, " ", ".")), "@teachinglab.org"),
-                value = 1) |>
-  tidyr::drop_na(Curriculum) |>
-  tidyr::separate_rows(Curriculum) |>
-  tidyr::pivot_wider(names_from = Curriculum,
-                     names_sep = ", ",
-                     values_fill = list(Curriculum = 0)) |>
-  dplyr::mutate(dplyr::across(dplyr::everything(), ~ ifelse(is.na(.x), 0, .x)))
+### Filter down to any not returning and just get facilitator and role ###
+signed_by_role <- fac_board |>
+  dplyr::filter(`FY23 Contract` != "Not Returning") |>
+  dplyr::select(Facilitator, Role) |>
+  tidyr::separate_rows(Role, sep = ", ") |>
+  dplyr::arrange(Facilitator)
 
-readr::write_rds(fac_board_reformat_1, "data/facilitators_role.rds")
-readr::write_rds(fac_board_reformat_1, "Dashboards/Staffing/data/facilitators_role.rds")
+### Get Qualtrics Survey to Compare ###
+participant_feedback <- qualtRics::fetch_survey("SV_djt8w6zgigaNq0C")
 
-fac_board_reformat_2 <- fac_board |>
-  dplyr::filter(`FY23 Status` == "Returning") |>
-  dplyr::select(Facilitators = `Open/Active`, Role) |>
-  dplyr::mutate(Emails = paste0(tolower(str_replace_all(Facilitators, " ", ".")), "@teachinglab.org"),
-                value = 1) |>
-  tidyr::drop_na(Role) |>
-  tidyr::separate_rows(Role) |>
-  tidyr::pivot_wider(names_from = Role,
-                     names_sep = ", ",
-                     values_from = value,
-                     values_fill = list(Role = 0)) |>
-  dplyr::mutate(dplyr::across(dplyr::everything(), ~ ifelse(is.na(.x), 0, .x)))
+### Get all ela facilitators not in current list of all facilitators of participant feedback survey ###
+setdiff(c(signed_by_role$Facilitator[signed_by_role$Role == "ELA"]), levels(participant_feedback$Q7)) |>
+  view()
 
-fac_board_reformat_2 |>
-  filter(Facilitators %!in% old_list_fac) |>
-  # filter(ELA == 1) |>
-  pull(Facilitators) |>
-  sort() |>
-  clipr::write_clip()
+ela_facs <- signed_by_role |>
+  dplyr::filter(Role == "ELA") |>
+  dplyr::distinct(Facilitator) |>
+  dplyr::arrange(Facilitator) |>
+  clipr::write_clip() |>
+  view()
+
+setdiff(c(signed_by_role$Facilitator[signed_by_role$Role == "Math"]), levels(participant_feedback$Q7)) |>
+  view()
+
+math_facs <- signed_by_role |>
+  dplyr::filter(Role == "Math") |>
+  dplyr::distinct(Facilitator) |>
+  dplyr::arrange(Facilitator) |>
+  clipr::write_clip() |>
+  view()
+
+setdiff(c(signed_by_role$Facilitator[signed_by_role$Role == "State"]), levels(participant_feedback$Q7)) |>
+  view()
+
+state_facs <- signed_by_role |>
+  dplyr::filter(Role == "State") |>
+  dplyr::distinct(Facilitator) |>
+  dplyr::arrange(Facilitator) |>
+  clipr::write_clip() |>
+  view()
+
+# fac_board_reformat_1 <- fac_board |>
+#   dplyr::filter(`FY23 Status` == "Returning") |>
+#   dplyr::select(Facilitators = {{ first_col_name }}, Curriculum) |>
+#   dplyr::mutate(Emails = paste0(tolower(str_replace_all(Facilitators, " ", ".")), "@teachinglab.org"),
+#                 value = 1) |>
+#   tidyr::drop_na(Curriculum) |>
+#   tidyr::separate_rows(Curriculum) |>
+#   tidyr::pivot_wider(names_from = Curriculum,
+#                      names_sep = ", ",
+#                      values_fill = list(Curriculum = 0)) |>
+#   dplyr::mutate(dplyr::across(dplyr::everything(), ~ ifelse(is.na(.x), 0, .x)))
+# 
+# readr::write_rds(fac_board_reformat_1, "data/facilitators_role.rds")
+# readr::write_rds(fac_board_reformat_1, "Dashboards/Staffing/data/facilitators_role.rds")
+# 
+# fac_board_reformat_2 <- fac_board |>
+#   dplyr::filter(`FY23 Status` == "Returning") |>
+#   dplyr::select(Facilitators = {{ first_col_name }}, Role) |>
+#   dplyr::mutate(Emails = paste0(tolower(str_replace_all(Facilitators, " ", ".")), "@teachinglab.org"),
+#                 value = 1) |>
+#   tidyr::drop_na(Role) |>
+#   tidyr::separate_rows(Role) |>
+#   tidyr::pivot_wider(names_from = Role,
+#                      names_sep = ", ",
+#                      values_from = value,
+#                      values_fill = list(Role = 0)) |>
+#   dplyr::mutate(dplyr::across(dplyr::everything(), ~ ifelse(is.na(.x), 0, .x)))
+# 
+# fac_board_reformat_2 |>
+#   filter(Facilitators %!in% old_list_fac) |>
+#   # filter(ELA == 1) |>
+#   pull(Facilitators) |>
+#   sort() |>
+#   clipr::write_clip()
 
 

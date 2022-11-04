@@ -370,26 +370,27 @@ gt_arrow <- function(data, colors = c("#800000", "#98AFC7"), column_one, column_
 #'
 #' @export
 find_highlight <- function(string, n = 3, print = F) {
-  stop_words <- tidytext::stop_words %>%
+  stop_words <- tidytext::stop_words |>
     dplyr::bind_rows(tibble::tibble(word = TeachingLab::na_df,
                                     lexicon = "TL_NA"))
 
-  highlight <- string %>%
-    tibble::as_tibble_col(column_name = "txt") %>%
-    tidytext::unnest_tokens(word, txt) %>%
+  highlight <- string |>
+    na.omit() |>
+    tibble::as_tibble_col(column_name = "txt") |>
+    tidytext::unnest_tokens(word, txt) |>
     # This makes sure to get rid of numbers in consideration for highlighting
     # By making sure as.numeric returns NA on words
-    dplyr::filter(is.na(as.numeric(word))) %>%
+    dplyr::filter(is.na(as.numeric(word))) |>
     # Get a count of words and sort
-    dplyr::count(word, sort = T) %>%
+    dplyr::count(word, sort = T) |>
     # Get rid of generic (stop) words
-    dplyr::anti_join(stop_words) %>%
+    dplyr::anti_join(stop_words) |>
     # Get a user-specified number of words, or the default 3
-    utils::head(n) %>%
+    utils::head(n) |>
     # Make this a vector
-    dplyr::pull(word) %>%
+    dplyr::pull(word) |>
     # Suppress warnings from the as.numeric call
-    suppressWarnings() %>%
+    suppressWarnings() |>
     suppressMessages()
 
   if (print == T) {
@@ -407,27 +408,29 @@ find_highlight <- function(string, n = 3, print = F) {
 #'
 #' @export
 highlight_fun <- function(data, highlight = TeachingLab::find_highlight(data)) {
+  
   # If the word is not plural then add highlighting for the plural version of the same word, 
   plural_highlights <- unlist(
-    purrr::map(highlight, ~ if (stringr::str_sub(.x, -1, -1) != "s") {
+    purrr::map(highlight, ~ if (stringr::str_sub(.x, -1, -1)[1] != "s") {
       paste0(.x, "s")
     })
   )
+  
   # Also do the inverse
   not_plural_highlights <- unlist(
-    purrr::map(highlight, ~ if (stringr::str_sub(.x, -1, -1) == "s") {
+    purrr::map(highlight, ~ if (stringr::str_sub(.x, -1, -1)[1] == "s") {
       stringr::str_remove(.x, "s$")
     })
   )
   # If the word is not capitalized then add highlighting for the capitalized version of the same word, 
   capital_highlights <- unlist(
-    purrr::map(highlight, ~ if (stringr::str_detect(stringr::str_sub(.x, 1, 1), "[:upper:]")) {
+    purrr::map(highlight, ~ if (stringr::str_detect(stringr::str_sub(.x, 1, 1)[1], "[:upper:]")) {
       stringr::str_to_lower(.x)
     })
   )
   # Also do the inverse
   not_capital_highlights <- unlist(
-    purrr::map(highlight, ~ if (stringr::str_detect(stringr::str_sub(.x, 1, 1), "[:lower:]")) {
+    purrr::map(highlight, ~ if (stringr::str_detect(stringr::str_sub(.x, 1, 1)[1], "[:lower:]")) {
       stringr::str_to_title(.x)
     })
   )
@@ -436,7 +439,7 @@ highlight_fun <- function(data, highlight = TeachingLab::find_highlight(data)) {
                       c(plural_highlights,
                         not_plural_highlights,
                         capital_highlights,
-                        not_capital_highlights)) %>%
+                        not_capital_highlights)) |>
     unique()
 
   # Create a vector for replacement with format <html>new_name</html> = old_name
@@ -504,13 +507,13 @@ quote_viz <- function(data,
   text_col <- rlang::enquo(text_col)
 
   if (viz_type == "ggplot") {
-    data %>%
+    data |>
       dplyr::mutate(text = stringr::str_replace_all(stringr::str_wrap(.data[[text_col]], width = 60), "\n", "<br>")) %>%
       dplyr::mutate(text = paste0("\"<i>", text, "\"")) %>%
       dplyr::mutate(
         x = 0,
         y = dplyr::row_number()
-      ) %>%
+      ) |>
       ggplot2::ggplot() +
       ggtext::geom_richtext(
         fill = NA, label.color = NA, family = "Calibri",
@@ -542,12 +545,12 @@ quote_viz <- function(data,
     }
 
     # Select just the relevant columns for highlighting
-    data_text <- data %>%
+    data_text <- data |>
       dplyr::select(!!text_col)
 
     # Get all highlights as just one vector
-    all_highlights <- highlight %>%
-      tidyr::pivot_longer(dplyr::everything(), values_to = "highlight") %>%
+    all_highlights <- highlight |>
+      tidyr::pivot_longer(dplyr::everything(), values_to = "highlight") |>
       dplyr::pull(highlight)
 
     # First map function applies the highlighting column by column
@@ -557,7 +560,7 @@ quote_viz <- function(data,
     data_final <- purrr::map2_dfc(data_text[selecting_cols], 1:length(colnames(highlight)), ~
     TeachingLab::highlight_fun(
       TeachingLab::html_wrap(.x, n = width),
-      highlight %>% dplyr::pull(.y)
+      highlight |> dplyr::pull(.y)
     )) %>% purrr::map_df(., ~ append(
       sort(as.character(factor(.x, levels = unique(.x[stringr::str_detect(.x, "<span")])))),
       .x[!stringr::str_detect(.x, "<span")]
@@ -568,9 +571,11 @@ quote_viz <- function(data,
     } else {
       # Make gt table with all HTML Formatting
       data_final |>
+        janitor::remove_empty("rows") |>
+        dplyr::filter(dplyr::if_any(dplyr::everything(), ~ .x %!in% TeachingLab::na_df)) |>
         gt::gt() %>%
         {
-          if (!is.null(title)) gt::tab_header(data = ., title = gt::html(title)) else .
+          if (!is.null(title)) gt::tab_header(data = ., title = gt::md(paste0("**", title, "**"))) else .
         } %>%
         gt::fmt_markdown(columns = gt::everything()) |>
         gt::sub_missing(columns = everything(),
@@ -1062,18 +1067,19 @@ tl_summary_table <- function(data,
       
       data_sums <- data |>
         ## Select just relevant columns
-        dplyr::select(dplyr::all_of(selected)) |>
+        dplyr::select(dplyr::all_of(selected), site) |>
         ## Only grab numbers for averaging
-        dplyr::mutate(dplyr::across(dplyr::everything(), ~ readr::parse_number(as.character(.x)))) |>
+        dplyr::mutate(dplyr::across(!site, ~ readr::parse_number(as.character(.x)))) |>
         ## If reversed subtract from 5 
         dplyr::mutate(dplyr::across(reversed, ~ 6 - .x)) |>
+        dplyr::group_by(site) |>
         ## Summarise everything with scoring
         dplyr::summarise(dplyr::across(c(equitable_questions$question, high_expectations_questions$question), ~ diagnostic_score(x = .x)),
                          dplyr::across(crse_questions, ~ round(10 * mean(.x, na.rm = T), 2))) |>
         ## Rename with reformatting function
-        dplyr::rename_with( ~ reformat_cols(.x)) |>
+        dplyr::rename_with(.cols = !site, ~ reformat_cols(.x)) |>
         ## Make long format
-        tidyr::pivot_longer(tidyr::everything(), names_to = "Question", values_to = "Percent") |>
+        tidyr::pivot_longer(!site, names_to = "Question", values_to = "Percent") |>
         ## Add groups and red coloring for negative items
         dplyr::mutate(groups = dplyr::case_when(Question %in% equitable_reformat ~ "Recognition of Race & Culture",
                                                 Question %in% high_expectations_reformat ~ "High Expectations & Beliefs",
@@ -1086,7 +1092,7 @@ tl_summary_table <- function(data,
       if (summarise == T & grouping != "crse") {
         data_sums_final <- data_sums |>
           dplyr::select(-Question) |>
-          dplyr::group_by(groups) |>
+          dplyr::group_by(groups, site) |>
           dplyr::summarise(Percent = round(mean(Percent, na.rm = T)))
         
         data_sums_final <- tibble::tibble(groups = "<b>Overall Score</b>", 
@@ -1121,7 +1127,10 @@ tl_summary_table <- function(data,
       
       ## Conditionals for creating tables
       if (grouping == "summarise") {
+        
         final_gt <- data_sums_final |>
+          mutate(site = replace_na(site, "All")) |>
+          drop_na(Percent) |>
           dplyr::rename(` ` = groups) |>
           mutate(` ` = factor(` `, levels = c("<b>Overall Score</b>",
                                               "Recognition of Race & Culture",
@@ -1327,9 +1336,9 @@ tl_summary_table <- function(data,
         
         data_sums_final <- tibble::tibble(groups = "<b>Overall Score</b>", 
                                           Question = "", 
-                                          Percent = round(mean(data_sums_final$Percent, na.rm = T), 2)) %>%
-          dplyr::bind_rows(data_sums_final) %>%
-          dplyr::relocate(groups, .before = 1) %>%
+                                          Percent = round(mean(data_sums_final$Percent, na.rm = T), 2)) |>
+          dplyr::bind_rows(data_sums_final) |>
+          dplyr::relocate(groups, .before = 1) |>
           dplyr::mutate(groups = tidyr::replace_na(groups, " "))
         
         final_gt <- data_sums_final %>%
@@ -1352,9 +1361,9 @@ tl_summary_table <- function(data,
           final_gt
         } else {
           final_gt %>%
-            gt::gt(rowname_col = "groups") %>%
+            gt::gt(rowname_col = "groups") |>
             # gt::fmt_integer(columns = "Average") %>%
-            gt::fmt_markdown(columns = "Question") %>%
+            gt::fmt_markdown(columns = "Question") |>
             gt::cols_align(align = "left",
                            columns = "Question") %>%
             {

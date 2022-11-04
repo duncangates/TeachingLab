@@ -9,9 +9,9 @@ r_scripts <- unlist(purrr::map(files, ~ list.files(.x, full.names = T)))
                                   # c("/Users/dunk/Teaching Lab/Coding/TeachingLab/data_scripts/SurveyMonkey/knowledge_assessments_data.R"))
 
 ##### For NOW only running SurveyMonkey scripts #####
-r_scripts_final <- purrr::keep(r_scripts, ~ stringr::str_detect(.x, "Monday"))
+r_scripts_final <- purrr::keep(r_scripts, ~ stringr::str_detect(.x, "Monday|Qualtrics|GoogleSheets"))
 
 ## Temporarily get rid of fac board update
 print(r_scripts_final)
 ## Run all scripts based on location ##
-purrr::walk(r_scripts_final[c(1:2, 4)], source)
+purrr::walk(r_scripts_final[c(1:9, 12:15)], source)

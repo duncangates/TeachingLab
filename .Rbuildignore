@@ -27,3 +27,4 @@ Automations/
 inst/testdata
 ^\.httr-oauth$
 videos/
+^\.secrets$

@@ -454,11 +454,11 @@ grade_ipg <- function(x, type = "character") {
   # purrr::keep( ~ !str_detect(.x, "Not Observed"))
 
   if (type == "character") {
-    x <- 100 * (sum(str_detect(x, "Yes"), na.rm = T)) /
-      (sum(str_detect(x, "No"), na.rm = T) + sum(str_detect(x, "Yes"), na.rm = T))
+    x <- 100 * (sum(stringr::str_detect(x, "Yes"), na.rm = T)) /
+      (sum(stringr::str_detect(x, "No"), na.rm = T) + sum(str_detect(x, "Yes"), na.rm = T))
   } else if (type == "numeric") {
-    x <- 100 * (sum(str_detect(x, "3|4"), na.rm = T)) /
-      (sum(!str_detect(x, "3|4"), na.rm = T) + sum(str_detect(x, "3|4"), na.rm = T))
+    x <- 100 * (sum(stringr::str_detect(x, "3|4"), na.rm = T)) /
+      (sum(!stringr::str_detect(x, "3|4"), na.rm = T) + sum(str_detect(x, "3|4"), na.rm = T))
   }
 }
 
@@ -470,9 +470,12 @@ grade_ipg <- function(x, type = "character") {
 #' @export
 
 tl_score_count <- function(data, answer) {
+  ### Get rid of all NAs and NULLs ###
   data <- data[!is.na(data)]
   data <- data[!is.null(data)]
 
+  
+  ### Sum of all correct answers in the data ###
   data_count <- sum(stringr::str_detect(data, answer))
 
   data_count
@@ -486,7 +489,9 @@ tl_score_count <- function(data, answer) {
 #' @export
 
 tl_score <- function(data, answer) {
+  ### Apply custom scoring function to find the number of answers that are correct ###
   data_counted <- TeachingLab::tl_score_count(data = data, answer = answer)
+  ### Finds the overall length of the data which is the denominator ###
   data_length <- sum(!is.na(data))
 
   data_percent <- round(100 * data_counted / data_length, 2)

@@ -461,7 +461,8 @@ site_condense <- function(data) {
 agree_strongly_agree <- function(data, question) {
   
   data |>
-    dplyr::filter(Question == question & Response %in% c("(4) Agree", "(5) Strongly agree")) |>
+    dplyr::filter(Question == question & Response %in% c("(4) Agree", "(5) Strongly agree",
+                                                         "4 - Agree", "5 - Strongly agree")) |>
     dplyr::summarise(Percent = sum(Percent)) |>
     dplyr::pull(Percent) |>
     round() |>
