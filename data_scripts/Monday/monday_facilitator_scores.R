@@ -53,6 +53,8 @@ all_facilitator_reviews <- facilitator_one_reviews |>
   dplyr::ungroup() |>
   tibble::view()
 
+reticulate::source_python(here::here("Automations/Monday/monday_board_mutate.py"))
+
 ### Add code to make monday board sync with this ###
 
 ### Add back to score board with a left join ###

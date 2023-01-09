@@ -80,6 +80,7 @@ know_assess_summary <- function(data, know_assess, summary_path = "report_summar
                   name = factor(name, levels = c("Before", "After"))) |>
     dplyr::select(name, value)
   
+  ### Make sure no over 100's ###
   plot_data$value <- ifelse(plot_data$value >= 100, 100, plot_data$value)
   
   title <- stringr::str_to_title(stringr::str_replace_all(know_assess, "_", " ")) |>
@@ -88,15 +89,13 @@ know_assess_summary <- function(data, know_assess, summary_path = "report_summar
   
   n1 <- data |>
     dplyr::filter(know_assess == !!rlang::enquo(know_assess) & prepost == "pre") |> 
-    dplyr::pull(id) |> 
-    unique() |> 
-    length()
+    # dplyr::pull(id) |> 
+    nrow()
   
   n2 <- data |> 
     dplyr::filter(know_assess == !!rlang::enquo(know_assess) & prepost == "post") |> 
-    dplyr::pull(id) |> 
-    unique() |> 
-    length()
+    # dplyr::pull(id) |> 
+    nrow()
   
   if (length(n1) == 0) {
     n1 <- 0
@@ -107,6 +106,7 @@ know_assess_summary <- function(data, know_assess, summary_path = "report_summar
   }
   
   p <- plot_data |> 
+    dplyr::mutate(value = 100 * value) |>
     ggplot2::ggplot(ggplot2::aes(x = name, y = value, fill = name)) +
     ggplot2::geom_col() +
     ggplot2::geom_text(ggplot2::aes(label = paste0(round(value), "%")),

@@ -460,13 +460,29 @@ site_condense <- function(data) {
 #' @export
 agree_strongly_agree <- function(data, question) {
   
-  data |>
+  percent <- data |>
     dplyr::filter(Question == question & Response %in% c("(4) Agree", "(5) Strongly agree",
                                                          "4 - Agree", "5 - Strongly agree")) |>
-    dplyr::summarise(Percent = sum(Percent)) |>
+    dplyr::summarise(Percent = sum(Percent, na.rm = T)) |>
     dplyr::pull(Percent) |>
     round() |>
     paste0("%")
+  
+  if (data |>
+      dplyr::filter(Question == question) |>
+      nrow() == 0) {
+    percent <- "There is no data to show the % that"
+  }
+  
+  if (percent == "%" & nrow(data |>
+                            dplyr::filter(Question == question)) == 0) {
+    percent <- "There is no data to show the % that"
+  } else if (percent == "%" & nrow(data |>
+                                   dplyr::filter(Question == question)) != 0) {
+    percent <- "0%"
+  }
+  
+  percent
   
 }
 

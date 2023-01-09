@@ -21,7 +21,7 @@ first_column <- initial_df$data$boards$items |>
 final_df <- second_df |>
   select(title, contains("text")) |>
   pivot_longer(!title) |>
-  pivot_wider(names_from = "title", values_from = "value") |>
+  pivot_wider(names_from = "title", values_from = "value", values_fn = "list") |>
   select(-name) |>
   bind_cols(first_column) |>
   relocate(`Open/Active`, .before = 1) |>

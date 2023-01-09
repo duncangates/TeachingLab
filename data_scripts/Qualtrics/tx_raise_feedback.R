@@ -3,19 +3,19 @@ participant_feedback <- qualtRics::fetch_survey(surveyID = "SV_djt8w6zgigaNq0C",
                                      force_request = TRUE)
 
 tx_raise_feedback <- participant_feedback |>
-  filter(Site == "TX_RAISE Rice University") |>
-  select(Date = RecordedDate,
+  dplyr::filter(Site == "TX_RAISE Rice University") |>
+  dplyr::select(Date = RecordedDate,
          Facilitator1,
          `End of Session_TX_1`, 
          `End of Session_TX_2`, 
          `End of Session_TX_3`, 
          `End of Session_TX_4`) |>
-  drop_na(`End of Session_TX_4`)
+  tidyr::drop_na(`End of Session_TX_4`)
 
 sheet_length <- nrow(tx_raise_feedback) + 1
 
 tx_raise_feedback |>
-  set_names(c("Date",
+  purrr::set_names(c("Date",
               "Facilitator",
               "The activities were well-designed to help me meet the learning targets.",
               "The strategies I’ve learned in this session will improve my instruction.",

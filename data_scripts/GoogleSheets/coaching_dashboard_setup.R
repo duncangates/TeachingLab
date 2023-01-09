@@ -7,7 +7,8 @@ original_sheet <- googlesheets4::read_sheet("1fvy2NTZXs3zuIi9BE1XZP_0MZW7_7I_r8l
 max_date <- max(original_sheet$Date, na.rm = T)
 
 participant_feedback |>
-  dplyr::filter(Course == "Coaching" & Finished == TRUE & RecordedDate > max_date) |>
+  dplyr::filter(Course == "Coaching" & Finished == TRUE & RecordedDate > max_date & 
+                  `Last session or not` == "Yes - there will be more sessions for this PL course or coaching support.") |>
   dplyr::select(Coach, 
                 `They demonstrate deep knowledge of the content on which they coach` = Q67_1,
                 `Their coaching is clear` = Q67_2,

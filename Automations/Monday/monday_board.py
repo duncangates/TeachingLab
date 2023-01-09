@@ -7,13 +7,8 @@ apiUrl = "https://api.monday.com/v2"
 headers = {"Authorization" : apiKey}
 print(boardId)
 
-## GET THE BOARD ID PASTED FROM R and FUNCTION ENVIRONMENT HERE ##
-query2 = '{boards(ids:' + boardId + ') { name id description items { name column_values{title id type text } } } }'
-data = {'query' : query2}
+query3 = 'mutation{ create_item (board_id:YOUR_BOARD_ID, item_name:"WHAT IS UP MY FRIENDS!") { id } }'
+data = {'query' : query3}
 
 r = requests.post(url=apiUrl, json=data, headers=headers) # make request
 print(r.json())
-
-
-with open('data/Monday/monday_board.json', 'w') as f:
-    json.dump(r.json(), f, indent=4, sort_keys=True)

@@ -459,6 +459,9 @@ grade_ipg <- function(x, type = "character") {
   } else if (type == "numeric") {
     x <- 100 * (sum(stringr::str_detect(x, "3|4"), na.rm = T)) /
       (sum(!stringr::str_detect(x, "3|4"), na.rm = T) + sum(str_detect(x, "3|4"), na.rm = T))
+  } else if (type == "numeric_low") {
+    x <- 100 * (sum(stringr::str_detect(x, "2|3"), na.rm = T)) /
+      (sum(!stringr::str_detect(x, "2|3"), na.rm = T) + sum(str_detect(x, "2|3"), na.rm = T))
   }
 }
 
