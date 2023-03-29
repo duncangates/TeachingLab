@@ -8,6 +8,8 @@ get_session_survey(update = FALSE)
 }
 \arguments{
 \item{update}{FALSE, whether or not to update}
+
+\item{year}{"21_22" or "22_23"}
 }
 \value{
 Returns a tibble

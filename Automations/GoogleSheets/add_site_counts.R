@@ -13,7 +13,7 @@ participant_feedback <- fetch_survey(surveyID = "SV_djt8w6zgigaNq0C",
                                      verbose = TRUE)
 ### End of Session Survey Count ###
 session_survey_count <- participant_feedback |>
-  # filter(`Last session or not` == "No - today was not the final session.") |>
+  # filter(last_session_or_not == "No - today was not the final session.") |>
   filter(!is.na(Facilitator1)) |>
   group_by(Site) |>
   count() |>
@@ -21,7 +21,7 @@ session_survey_count <- participant_feedback |>
 
 ### End of Course Survey Count ###
 course_survey_count <- participant_feedback |>
-  filter(`Last session or not` == "No - this was the final session for this PL course (e.g., last day of Bootcamp, close of Inquiry cycle) or coaching.") |>
+  filter(last_session_or_not == "No - this was the final session for this PL course (e.g., last day of Bootcamp, close of Inquiry cycle) or coaching.") |>
   group_by(Site) |>
   count() |>
   rename(`End of Course` = n)

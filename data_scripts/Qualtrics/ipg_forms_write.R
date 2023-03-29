@@ -1,5 +1,6 @@
-# surveys <- qualtRics::all_surveys()
-
+library(dplyr)
+library(purrr)
+library(qualtRics)
 
 ipg_forms <- qualtRics::fetch_survey(surveyID = "SV_0BSnkV9TVXK1hjw", 
                                      verbose = TRUE,

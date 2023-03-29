@@ -71,13 +71,20 @@ fetch_survey_2 <- function(id, name) {
 #' @title End of Session Dashboard Data
 #' @description Gets dashboard data by reading it in from data folder
 #' @param update FALSE, whether or not to update
+#' @param year "21_22" or "22_23"
 #' @return Returns a tibble
 #' @export
 get_session_survey <- function(update = FALSE) {
-  if (update == FALSE) {
+  if (update == FALSE & year == "21_22") {
     df <- readr::read_rds(here::here("data/session_survey_21_22data.rds"))
     session_survey <- df
-  } else {
+  } else if (update == FALSE & year == "22_23") {
+    session_survey <- qualtRics::fetch_survey(
+      surveyID = "SV_djt8w6zgigaNq0C",
+      verbose = FALSE
+    ) |>
+      dplyr::filter(last_session_or_not == "Yes - there will be more sessions for this PL course or coaching support." & course != "Coaching")
+  } else if (update == TRUE) {
     options(sm_oauth_token = options(sm_oauth_token = Sys.getenv("session_token")))
 
     surveymonkey_session <- surveymonkey::fetch_survey_obj(id = 308115193) |>
@@ -410,13 +417,20 @@ get_session_survey <- function(update = FALSE) {
 #' @title End of Course Dashboard Data
 #' @description Gets dashboard data by reading it in from data folder
 #' @param update F, optional to update end of course data or not
+#' @param year "21_22" or "22_23"
 #' @return Returns a tibble
 #' @export
-get_course_survey <- function(update = FALSE) {
-  if (update == FALSE) {
+get_course_survey <- function(update = FALSE, year = "21_22") {
+  if (update == FALSE & year == "21_22") {
     df <- readr::read_rds(file = here::here("data/course_surveymonkey.rds"))
     course_survey <- df
-  } else {
+  } else if (update == FALSE & year == "22_23") {
+    course_survey <- qualtRics::fetch_survey(
+      surveyID = "SV_djt8w6zgigaNq0C",
+      verbose = FALSE
+    ) |>
+      dplyr::filter(last_session_or_not != "Yes - there will be more sessions for this PL course or coaching support." & course != "Coaching")
+  } else if (update == TRUE) {
     old_df <- readr::read_rds(here::here("data/old_course_survey_reformatted.rds"))
 
     options(sm_oauth_token = Sys.getenv("course_token"))
@@ -1389,9 +1403,10 @@ get_family_survey <- function(update = FALSE) {
 #' @title Diagnostic Survey Update
 #' @description Get the diagnostic survey
 #' @param update FALSE, optional updating
+#' @param year "21_22" or "22_23"
 #' @return A tibble
 #' @export
-get_diagnostic_survey <- function(update = FALSE) {
+get_diagnostic_survey <- function(update = FALSE, year = "21_22") {
   if (update == TRUE) {
     ### Set OAuth for SurveyMonkey ###
     options(sm_oauth_token = "nTxsBf-VruLlFgxHpCRlmMJMRqC060bQZGd6VzrfDm5oX4Il5u-IhH2CxD4lwCiblicg3896pqYH0HzhmOr1b0SWMF9bTaX8-B9PmQVS2zFkNmfs5xRVNU1PMZoVfeBG")
@@ -1579,8 +1594,13 @@ get_diagnostic_survey <- function(update = FALSE) {
     readr::write_rds(diagnostic_final, here::here("Dashboards/DiagnosticComplete/data/diagnostic.rds"))
     readr::write_rds(diagnostic_final, here::here("data/diagnostic.rds"))
     readr::write_rds(diagnostic_final, here::here("Dashboards/SiteCollectionProgress/data/diagnostic.rds"))
-  } else {
+  } else if (update == FALSE & year == "21_22") {
     diagnostic_final <- readr::read_rds(here::here("data/diagnostic.rds"))
+  } else if (year == "22_23") {
+    qualtRics::fetch_survey(
+      surveyID = "SV_8vrKtPDtqQFbiBM",
+      verbose = FALSE
+    )
   }
 
   return(diagnostic_final)
@@ -3169,9 +3189,10 @@ get_knowledge_assessments <- function(update = FALSE) {
 #' @title Coaching Participant Feedback Data
 #' @description Gets data from Coaching Participant Feedback
 #' @param update FALSE, whether or not to pull the updated version
+#' @param year "21_22" or "22_23"
 #' @return Returns a tibble
 #' @export
-get_coaching_feedback <- function(update = FALSE) {
+get_ongoing_coaching_feedback <- function(update = FALSE, year = "21_22") {
   if (update == TRUE) {
     options(sm_oauth_token = Sys.getenv("knowledge_token"))
 
@@ -3430,8 +3451,14 @@ get_coaching_feedback <- function(update = FALSE) {
 
     readr::write_rds(coaching_feedback_clean, "data/coaching_participant_feedback.rds")
     readr::write_rds(coaching_feedback_clean, "Dashboards/CoachingParticipantFeedback/data/coaching_participant_feedback.rds")
-  } else {
+  } else if (update == FALSE & year == "21_22") {
     coaching_feedback_clean <- readr::read_rds(here::here("data/coaching_participant_feedback.rds"))
+  } else if (update == FALSE & year == "22_23") {
+    coaching_feedback_clean <- qualtRics::fetch_survey(
+      surveyID = "SV_djt8w6zgigaNq0C",
+      verbose = FALSE
+    ) |>
+      dplyr::filter(last_session_or_not == "Yes - there will be more sessions for this PL course or coaching support." & course == "Coaching")
   }
 
   return(coaching_feedback_clean)

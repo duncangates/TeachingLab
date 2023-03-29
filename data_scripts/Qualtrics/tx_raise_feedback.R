@@ -1,11 +1,16 @@
+library(dplyr)
+library(purrr)
+library(qualtRics)
+library(tidyr)
+
 participant_feedback <- qualtRics::fetch_survey(surveyID = "SV_djt8w6zgigaNq0C", 
                                      verbose = TRUE,
                                      force_request = TRUE)
 
 tx_raise_feedback <- participant_feedback |>
-  dplyr::filter(Site == "TX_RAISE Rice University") |>
-  dplyr::select(Date = RecordedDate,
-         Facilitator1,
+  dplyr::filter(site == "TX_RAISE Rice University") |>
+  dplyr::select(date = RecordedDate,
+         facilitator1,
          `End of Session_TX_1`, 
          `End of Session_TX_2`, 
          `End of Session_TX_3`, 

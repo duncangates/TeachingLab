@@ -1,8 +1,7 @@
-devtools::load_all()
-library(TeachingLab)
-library(qualtRics)
 library(dplyr)
 library(reticulate)
+library(qualtRics)
+library(TeachingLab)
 
 ### Get's facilitator board in current state ###
 fac_board <- TeachingLab::get_monday_board(board_id = 2208860812, first_col_name = "Facilitator")
@@ -23,7 +22,7 @@ facilitator_one_reviews <- session_survey |>
                 `They responded to the group’s needs` = Q8_5) |>
   dplyr::mutate(dplyr::across(c(2:6), ~ readr::parse_number(.x))) |>
   dplyr::group_by(Facilitator) |>
-  dplyr::summarise(dplyr::across(dplyr::everything(), ~ round(mean(.x, na.rm = T), 2)),
+  dplyr::summarise(dplyr::across(dplyr::everything(), ~ round(mean(.x, na.rm = T), 1)),
                    n = n()) |>
   na.omit()
 
@@ -38,7 +37,7 @@ facilitator_two_reviews <- session_survey |>
                 `They responded to the group’s needs` = Q12_5) |>
   dplyr::mutate(dplyr::across(c(2:6), ~ readr::parse_number(.x))) |>
   dplyr::group_by(Facilitator) |>
-  dplyr::summarise(dplyr::across(dplyr::everything(), ~ round(mean(.x, na.rm = T), 2)),
+  dplyr::summarise(dplyr::across(dplyr::everything(), ~ round(mean(.x, na.rm = T), 1)),
                    n = n()) |>
   na.omit()
 
@@ -53,7 +52,7 @@ all_facilitator_reviews <- facilitator_one_reviews |>
   dplyr::ungroup() |>
   tibble::view()
 
-reticulate::source_python(here::here("Automations/Monday/monday_board_mutate.py"))
+# reticulate::source_python(here::here("Automations/Monday/monday_board_mutate.py"))
 
 ### Add code to make monday board sync with this ###
 

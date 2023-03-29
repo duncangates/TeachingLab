@@ -45,6 +45,7 @@ get_current_partner_sites <- function(update = FALSE, condense = FALSE) {
 #' @title IPG Data
 #' @description Gets data from IPG forms
 #' @param update FALSE
+#' @param year "21_22" or "22_23"
 #' @return Returns a tibble
 #' @export
 get_ipg_forms <- function(update = FALSE) {
@@ -107,8 +108,13 @@ get_ipg_forms <- function(update = FALSE) {
       )
     
     readr::write_rds(df, here::here("data/ipg_forms.rds"))
-  } else {
+  } else if (update == FALSE & year == "21_22") {
     df <- readr::read_rds(here::here("data/ipg_forms.rds"))
+  } else if (update == FALSE & year == "22_23") {
+    ipg_forms <- qualtRics::fetch_survey(
+      surveyID = "SV_0BSnkV9TVXK1hjw",
+      verbose = FALSE
+    )
   }
   
   return(df)
