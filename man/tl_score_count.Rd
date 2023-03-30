@@ -12,8 +12,8 @@ tl_score_count(data, answer)
 \item{answer}{the answer}
 }
 \value{
-a percentage of correct
+a count of correct
 }
 \description{
-function for grading in general
+function for generally getting the count of a data that is correct
 }

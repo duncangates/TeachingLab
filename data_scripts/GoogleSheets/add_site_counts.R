@@ -387,13 +387,13 @@ knowledge_assessment_n <- function(survey_id, survey_name) {
   know_assess <- qualtRics::fetch_survey(surveyID = survey_id, verbose = TRUE)
 
   ### All necessary knowledge_assessment_columns ###
-  if (nrow(know_assess |> filter(Finished == TRUE)) >= 1) {
+  if (nrow(know_assess |> dplyr::filter(Finished == TRUE)) >= 1) {
     ### Ensure there is a site column ###
-    if ("Site" %in% colnames(know_assess)) {
+    if ("site" %in% colnames(know_assess)) {
       ### Get Count of each knowledge assessment by site ###
       know_assess_count <- know_assess |>
         dplyr::mutate(
-          id = paste0(tolower(Initials), DOB),
+          id = paste0(tolower(initials), dob),
           Date = RecordedDate
         ) |>
         dplyr::filter(Finished == TRUE & !id %in% c("tst1000", "TST1000", "tst0000", "TST0000")) |>
@@ -405,12 +405,12 @@ knowledge_assessment_n <- function(survey_id, survey_name) {
           prepost = factor(prepost, levels = c("pre", "post"))
         ) |>
         dplyr::ungroup() |>
-        dplyr::group_by(id, prepost, Site) |>
+        dplyr::group_by(id, prepost, site) |>
         dplyr::count(sort = T) |>
         dplyr::ungroup() |>
         tidyr::pivot_wider(names_from = "prepost", values_from = "n") |>
         dplyr::mutate(
-          Site = as.character(Site)
+          site = as.character(site)
         ) |>
         dplyr::select(-id)
 
@@ -419,7 +419,7 @@ knowledge_assessment_n <- function(survey_id, survey_name) {
       }
 
       know_assess_count <- know_assess_count |>
-        dplyr::group_by(Site) |>
+        dplyr::group_by(site) |>
         dplyr::summarise(
           pre = sum(pre, na.rm = T),
           post = sum(post, na.rm = T)
@@ -459,9 +459,9 @@ knowledge_assessment_count <- purrr::map2_dfr(
   knowledge_assessment_ids$id, knowledge_assessment_ids$name,
   ~ knowledge_assessment_n(.x, .y)
 ) |>
-  dplyr::group_by(Site) |>
+  dplyr::group_by(site) |>
   dplyr::summarise(dplyr::across(dplyr::everything(), ~ sum(.x, na.rm = TRUE))) |>
-  dplyr::mutate(dplyr::across(!Site, ~ na_if(.x, 0))) |>
+  dplyr::mutate(dplyr::across(!site, ~ na_if(.x, 0))) |>
   janitor::remove_empty("cols")
 
 d11_d9_knowledge_assessment_n <- function(survey_id, survey_name, district_filter) {
@@ -469,23 +469,23 @@ d11_d9_knowledge_assessment_n <- function(survey_id, survey_name, district_filte
   ### Get Survey ###
   know_assess <- qualtRics::fetch_survey(surveyID = survey_id)
 
-  if (nrow(know_assess |> filter(Finished == TRUE)) >= 1) {
+  if (nrow(know_assess |> dplyr::filter(Finished == TRUE)) >= 1) {
     ### First rename
     know_assess <- know_assess |>
-      dplyr::select(-Site)
+      dplyr::select(-site)
     if (district_filter == "District 11") {
-      names(know_assess)[names(know_assess) == "District 11"] <- "Site"
+      names(know_assess)[names(know_assess) == "District 11"] <- "site"
     } else if (district_filter == "District 9") {
-      names(know_assess)[names(know_assess) == "District 9"] <- "Site"
+      names(know_assess)[names(know_assess) == "District 9"] <- "site"
     }
 
-    if (sum(!is.na(know_assess$Site)) >= 1) {
+    if (sum(!is.na(know_assess$site)) >= 1) {
       ### Get Count of each knowledge assessment by site ###
       know_assess_count <- know_assess |>
         dplyr::mutate(
-          id = paste0(tolower(Initials), DOB),
+          id = paste0(tolower(initials), dob),
           Date = RecordedDate,
-          Site = tidyr::replace_na(as.character(Site), "Other")
+          site = tidyr::replace_na(as.character(site), "Other")
         ) |>
         dplyr::filter(Finished == TRUE & !id %in% c("tst1000", "TST1000", "tst0000", "TST0000")) |>
         dplyr::group_by(id) |>
@@ -496,7 +496,7 @@ d11_d9_knowledge_assessment_n <- function(survey_id, survey_name, district_filte
           prepost = factor(prepost, levels = c("pre", "post"))
         ) |>
         dplyr::ungroup() |>
-        dplyr::group_by(id, prepost, Site) |>
+        dplyr::group_by(id, prepost, site) |>
         dplyr::count(sort = T) |>
         dplyr::ungroup() |>
         tidyr::pivot_wider(names_from = "prepost", values_from = "n") |>
@@ -507,7 +507,7 @@ d11_d9_knowledge_assessment_n <- function(survey_id, survey_name, district_filte
       }
 
       know_assess_count <- know_assess_count |>
-        dplyr::group_by(Site) |>
+        dplyr::group_by(site) |>
         dplyr::summarise(
           pre = sum(pre, na.rm = T),
           post = sum(post, na.rm = T)
@@ -529,18 +529,18 @@ d9_knowledge_assessment_count <- purrr::map2_dfr(
   knowledge_assessment_ids$id, knowledge_assessment_ids$name,
   ~ d11_d9_knowledge_assessment_n(.x, .y, district_filter = "District 9")
 ) |>
-  dplyr::group_by(Site) |>
+  dplyr::group_by(site) |>
   dplyr::summarise(dplyr::across(dplyr::everything(), ~ sum(.x, na.rm = TRUE))) |>
-  dplyr::mutate(dplyr::across(!Site, ~ na_if(.x, 0))) |>
+  dplyr::mutate(dplyr::across(!site, ~ na_if(.x, 0))) |>
   janitor::remove_empty("cols")
 
 d11_knowledge_assessment_count <- purrr::map2_dfr(
   knowledge_assessment_ids$id, knowledge_assessment_ids$name,
   ~ d11_d9_knowledge_assessment_n(.x, .y, district_filter = "District 11")
 ) |>
-  dplyr::group_by(Site) |>
+  dplyr::group_by(site) |>
   dplyr::summarise(dplyr::across(dplyr::everything(), ~ sum(.x, na.rm = TRUE))) |>
-  dplyr::mutate(dplyr::across(!Site, ~ na_if(.x, 0))) |>
+  dplyr::mutate(dplyr::across(!site, ~ na_if(.x, 0))) |>
   janitor::remove_empty("cols")
 
 ### End of Knowledge Assessment Counting ###
@@ -568,7 +568,7 @@ data_collection_sy22_23 <- current_sites |>
   tibble::add_column(`Student Survey post` = NA, .after = "Student Survey pre") |>
   dplyr::left_join(student_work_count, by = c("site" = "Site")) |>
   tibble::add_column(`Student work samples round 2` = NA, .after = "Student work samples round 1") |>
-  dplyr::left_join(knowledge_assessment_count, by = c("site" = "Site"))
+  dplyr::left_join(knowledge_assessment_count, by = c("site"))
 
 ### Add two to sheet length to get actual range for google sheet to be written ###
 sheet_length <- nrow(data_collection_sy22_23) + 2
@@ -612,7 +612,7 @@ d9_data_collection_sy22_23 <- district9_sites |>
     "X"
   ))) |>
   tibble::add_column(`Student work samples round 2` = NA, .after = "Student work samples round 1") |>
-  dplyr::left_join(d9_knowledge_assessment_count, by = c("District 9" = "Site"))
+  dplyr::left_join(d9_knowledge_assessment_count, by = c("District 9" = "site"))
 
 ### Add two to sheet length to get actual range for google sheet to be written ###
 sheet_length <- nrow(d9_data_collection_sy22_23) + 2
@@ -649,7 +649,7 @@ d11_data_collection_sy22_23 <- district11_sites |>
   tibble::add_column(`Student Survey post` = NA, .after = "Student Survey pre") |>
   dplyr::left_join(student_work_count_district_11) |>
   tibble::add_column(`Student work samples round 2` = NA, .after = "Student work samples round 1") |>
-  dplyr::left_join(d11_knowledge_assessment_count, by = c("District 11" = "Site"))
+  dplyr::left_join(d11_knowledge_assessment_count, by = c("District 11" = "site"))
 
 
 ### Add two to sheet length to get actual range for google sheet to be written ###

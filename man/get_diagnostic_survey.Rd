@@ -4,7 +4,7 @@
 \alias{get_diagnostic_survey}
 \title{Diagnostic Survey Update}
 \usage{
-get_diagnostic_survey(update = FALSE, year = "21_22")
+get_diagnostic_survey(update = FALSE, year = "22_23")
 }
 \arguments{
 \item{update}{FALSE, optional updating}

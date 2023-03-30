@@ -4,7 +4,7 @@
 \alias{get_session_survey}
 \title{End of Session Dashboard Data}
 \usage{
-get_session_survey(update = FALSE)
+get_session_survey(update = FALSE, year = "22_23")
 }
 \arguments{
 \item{update}{FALSE, whether or not to update}

@@ -6,8 +6,8 @@
 #' @param correct a vector of correct answers
 #' @return a dataframe of format question1, question2, question3, with percents as answers
 score_knowledge_question <- function(data, question, correct) {
-  data %>%
-    dplyr::group_by(prepost, id, question_group) %>%
+  data |>
+    dplyr::group_by(prepost, id, question_group) |>
     dplyr::summarise(
       percent = 100 * (sum(.data[[question]] %in% correct, na.rm = T) /
         length(which(!.data[[question]] == na_type))),
@@ -67,14 +67,14 @@ score_question <- function(data, question, coding, grouping = NULL) {
 
 score_question_number <- function(data, question_pre, question_post, coding, likert = c(5, 6)) {
   
-  n1 <- data %>%
-    dplyr::summarise(length(which(!is.na(.data[[question_pre]])))) %>%
+  n1 <- data |>
+    dplyr::summarise(length(which(!is.na(.data[[question_pre]])))) |>
     purrr::as_vector()
-  n2 <- data %>%
-    dplyr::summarise(length(which(!is.na(.data[[question_post]])))) %>%
+  n2 <- data |>
+    dplyr::summarise(length(which(!is.na(.data[[question_post]])))) |>
     purrr::as_vector()
 
-  data_count <- data %>%
+  data_count <- data |>
     dplyr::summarise(
       one_pre = sum(.data[[question_pre]] %in% "1", na.rm = T),
       two_pre = sum(.data[[question_pre]] %in% "2", na.rm = T),
@@ -468,8 +468,8 @@ grade_ipg <- function(x, type = "character") {
 #' @title Grade Data
 #' @param data the data
 #' @param answer the answer
-#' @description function for grading in general
-#' @return a percentage of correct
+#' @description function for generally getting the count of a data that is correct
+#' @return a count of correct
 #' @export
 
 tl_score_count <- function(data, answer) {
@@ -557,5 +557,169 @@ tl_score_percent <- function(data, answer) {
   
   ### Return
   rounded_data_percent
+}
+
+#' @title Knowledge Assessments Scoring 2022-2023
+#' @param survey_id Qualtrics survey id
+#' @param name Name of survey - should match Qualtrics name
+#' @description function to grade and output specific set of data points for knowledge assessments
+#' @return a dataframe of columns: id, percent, prepost, site, know_assess, date
+#' @export
+
+knowledge_assess_select_score <- function(survey_id, survey_name) {
+  
+  ### Get Survey ###
+  selected_assessment <- qualtRics::fetch_survey(surveyID = survey_id, verbose = TRUE)
+  
+  ### Get max score of survey ###
+  if (survey_name == "Math: Bootcamp") {
+    max_overall_score <- 9
+  } else if (survey_name == "Math: RAISE") {
+    max_overall_score <- 11
+  } else if (survey_name == "ELA: Bootcamp - General") {
+    max_overall_score <- 8
+  } else if (survey_name == "ELA: Bootcamp - Foundational Skills") {
+    max_overall_score <- 7
+  } else if (survey_name == "ELA General: Cycle of Inquiry - Complex Text") {
+    max_overall_score <- 6
+  } else if (survey_name == "Math: Accelerating Learning") {
+    max_overall_score <- 6
+  } else if (survey_name == "Math: Cycle of Inquiry I - Eliciting Student Thinking") {
+    max_overall_score <- 6
+  } else if (survey_name == "School Leaders: Curriculum Adaptive Math|ELA (ILN)") {
+    max_overall_score <- 9
+  } else if (survey_name == "Math: Learning Across the Domains") {
+    max_overall_score <- 5
+  } else if (survey_name == "Language Standards|Conventions Knowledge_NYBlendedLit") {
+    max_overall_score <- 10
+  } else if (survey_name == "ELA Guidebooks: Cycle of Inquiry 2 - Writing & Language Skills") {
+    max_overall_score <- 6
+  } else if (survey_name == "Math: Cycle of Inquiry III - Facilitating Mathematical Discourse") {
+    max_overall_score <- 5
+  }
+  
+  ### Conditional renaming just in case ###
+  if(!"site" %in% colnames(selected_assessment)) {
+    selected_assessment <- selected_assessment |>
+      dplyr::rename(site = Q1)
+  }
+  
+  ### Select correct columns ###
+  selected_assessment |>
+    dplyr::filter(Finished == TRUE) |>
+    dplyr::mutate(id = paste0(tolower(initials), dob),
+                  know_assess = survey_name) |>
+    dplyr::group_by(id) |>
+    dplyr::mutate(n_response = dplyr::n(), # Get number of responses by person, sometimes there are more than 2 :/
+                  maxdate = max(RecordedDate), # Get max date of creation for most recent response
+                  matched = dplyr::if_else(n_response > 1 & maxdate == RecordedDate, "post", "pre")) |> # Define as post for matched if more than 1 response and date is max of date_created
+    dplyr::mutate(matched = factor(matched, levels = c("pre", "post"))) |> # Make matched a factor
+    dplyr::mutate(prepost = dplyr::if_else(RecordedDate >= maxdate & n_response > 1, "post", "pre")) |> # I forgot what this does
+    dplyr::mutate(prepost = factor(prepost, levels = c("pre", "post"))) |> # Make prepost a factor
+    dplyr::ungroup() |>
+    ### Logic in ifelse corrects for mistaken scoring from Lindsay's survey ###
+    dplyr::mutate(score = ifelse(site == "NY_D27", SC0/14, SC0/max_overall_score)) |>
+    dplyr::select(id, percent = score, prepost, site, know_assess, date = RecordedDate)
+}
+
+
+#' @title Knowledge Assessments Question Scoring 2022-2023
+#' @param survey_id Qualtrics survey id
+#' @param name Name of survey - should match Qualtrics name
+#' @description function to grade and output each question per respondent in a knowledge assessments survey
+#' @return a dataframe of columns: prepost, site, know_assess, date, question, score, question2, answer, max_score
+#' @export
+
+### Function for detailed scoring ###
+knowledge_assess_detailed_score <- function(survey_id, survey_name) {
+  
+  ### Get Survey ###
+  selected_assessment <- qualtRics::fetch_survey(surveyID = survey_id, verbose = TRUE)
+  
+  ### Get max score of survey ###
+  ### Get max score of survey ###
+  if (survey_name == "Math: Bootcamp") {
+    max_overall_score <- 9
+  } else if (survey_name == "Math: RAISE") {
+    max_overall_score <- 11
+  } else if (survey_name == "ELA: Bootcamp - General") {
+    max_overall_score <- 8
+  } else if (survey_name == "ELA: Bootcamp - Foundational Skills") {
+    max_overall_score <- 7
+  } else if (survey_name == "ELA General: Cycle of Inquiry - Complex Text") {
+    max_overall_score <- 6
+  } else if (survey_name == "Math: Accelerating Learning") {
+    max_overall_score <- 6
+  } else if (survey_name == "Math: Cycle of Inquiry I - Eliciting Student Thinking") {
+    max_overall_score <- 6
+  } else if (survey_name == "School Leaders: Curriculum Adaptive Math|ELA (ILN)") {
+    max_overall_score <- 9
+  } else if (survey_name == "Math: Learning Across the Domains") {
+    max_overall_score <- 5
+  } else if (survey_name == "Language Standards|Conventions Knowledge_NYBlendedLit") {
+    max_overall_score <- 10
+  } else if (survey_name == "ELA Guidebooks: Cycle of Inquiry 2 - Writing & Language Skills") {
+    max_overall_score <- 6
+  } else if (survey_name == "Math: Cycle of Inquiry III - Facilitating Mathematical Discourse") {
+    max_overall_score <- 5
+  }
+  
+  ### Conditional renaming just in case ###
+  if(!"site" %in% colnames(selected_assessment)) {
+    selected_assessment <- selected_assessment |>
+      dplyr::rename(site = Q1)
+  }
+  
+  ### Get score names ahead of time except for SC0 which is the total score  ###
+  score_columns <- selected_assessment |>
+    dplyr::select(contains("SC")) |>
+    dplyr::select(-SC0) |>
+    colnames()
+  ### Get attr labels except for SC0 which is the total score ###
+  score_names <- selected_assessment |>
+    dplyr::select(contains("SC")) |>
+    dplyr::select(-SC0) |>
+    purrr::map_chr( ~ attr(.x, "label"))
+  
+  ### Make a replacement vector ###
+  score_replace_vector <- c(score_names) |>
+    purrr::set_names(score_columns)
+  
+  ### Select correct columns ###
+  selected_assessment |>
+    dplyr::filter(Finished == TRUE) |>
+    dplyr::mutate(id = paste0(tolower(initials), dob),
+                  know_assess = survey_name) |>
+    dplyr::group_by(id) |>
+    dplyr::mutate(n_response = dplyr::n(), # Get number of responses by person, sometimes there are more than 2 :/
+                  maxdate = max(RecordedDate), # Get max date of creation for most recent response
+                  matched = dplyr::if_else(n_response > 1 & maxdate == RecordedDate, "post", "pre")) |> # Define as post for matched if more than 1 response and date is max of date_created
+    dplyr::mutate(matched = factor(matched, levels = c("pre", "post"))) |> # Make matched a factor
+    dplyr::mutate(prepost = dplyr::if_else(RecordedDate >= maxdate & n_response > 1, "post", "pre")) |> # I forgot what this does
+    dplyr::mutate(prepost = factor(prepost, levels = c("pre", "post"))) |> # Make prepost a factor
+    dplyr::ungroup() |>
+    dplyr::select(contains("SC"), 
+                  matches("Q[[:digit:]]"), 
+                  prepost, 
+                  site, 
+                  know_assess, 
+                  date = RecordedDate) |>
+    dplyr::select(!contains("DO") & !SC0 & !contains("D9")) |>
+    tidyr::pivot_longer(cols = starts_with("SC"), names_to = "question", values_to = "score") |>
+    dplyr::mutate(dplyr::across(starts_with("Q", ignore.case = FALSE), ~ as.character(.x))) |>
+    tidyr::pivot_longer(cols = starts_with("Q", ignore.case = FALSE), names_to = "question2", values_to = "answer") |>
+    dplyr::mutate(question2 = stringr::str_remove_all(question2, "_[:digit:]")) |>
+    dplyr::group_by(question, prepost, site) |>
+    dplyr::mutate(max_score = max(score, na.rm = T)) |>
+    dplyr::ungroup() |>
+    dplyr::mutate(score = score/max_score,
+                  question = stringr::str_replace_all(question, score_replace_vector),
+                  # question = stringr::str_replace_all(question, c("SC0" = "Total")),
+                  question2 = as.character(question2)) |>
+    dplyr::ungroup() |>
+    tidyr::drop_na() |>
+    dplyr::group_by(question, question2, prepost, site) |>
+    dplyr::mutate(answer = paste0(answer, collapse = " ")) |>
+    dplyr::ungroup()
 }
 

@@ -4,10 +4,12 @@
 \alias{get_student_survey}
 \title{Student Survey Data}
 \usage{
-get_student_survey(update = FALSE)
+get_student_survey(update = FALSE, year = "22_23")
 }
 \arguments{
 \item{update}{FALSE whether or not to update the data}
+
+\item{year}{"21_22" or "22_23"}
 }
 \value{
 Returns a tibble

@@ -4,10 +4,12 @@
 \alias{get_followup_educator}
 \title{Follow Up Educator Survey Data}
 \usage{
-get_followup_educator(update = FALSE)
+get_followup_educator(update = FALSE, year = "22_23")
 }
 \arguments{
 \item{update}{FALSE, whether or not to pull the updated version}
+
+\item{year}{"21_22" or "22_23"}
 }
 \value{
 Returns a tibble

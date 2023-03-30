@@ -1,90 +1,26 @@
-#' @title Survey Standardization
-#' @description Fetches the knowledge assessment survey specified and standardizes it
-#' @param id the SurveyMonkey id of the survey
-#' @param name the name of the survey
-#' @export
-
-fetch_survey_2 <- function(id, name) {
-  #### Get survey object and check for responses ####
-  survey_obj <- surveymonkey::fetch_survey_obj(id = id)
-  #### If there are responses parse
-  assertthat::assert_that(survey_obj$response_count > 0)
-  survey <- survey_obj |>
-    surveymonkey::parse_survey()
-  ### Standardize Site Column names ###
-  column_name_with_period <- c("Please select your site \\(district, parish, network, or school\\)\\.")
-  just_school <- "Your school"
-  if (sum(stringr::str_detect(colnames(survey), column_name_with_period)) >= 1) {
-    survey <- survey |>
-      dplyr::rename_with(~ stringr::str_replace_all(
-        .x,
-        column_name_with_period,
-        "Please select your site (district, parish, network, or school)"
-      ))
-    print("Period removed")
-  } else if (sum(stringr::str_detect(colnames(survey), just_school)) >= 1) {
-    survey <- survey |>
-      dplyr::rename_with(~ stringr::str_replace_all(
-        .x,
-        just_school,
-        "Please select your site (district, parish, network, or school)"
-      ))
-  }
-
-  #### Read through survey and standardize id column ####
-  survey_parsed <- survey %>%
-    {
-      if (nrow(.) > 1) {
-        dplyr::mutate(., id = dplyr::select(
-          .,
-          tidyselect::contains("3 initials"),
-          tidyselect::contains("birthday")
-        ) %>%
-          purrr::pmap_chr(., ~ paste0(tolower(.x[1]), "_", .x[2])))
-      } else {
-        .
-      }
-    } %>%
-    {
-      if (nrow(.) > 1) { # If there is any data create a new column with the answers from both site and district questions
-        dplyr::mutate(., `Please select your site (district, parish, network, or school)` = dplyr::if_else(is.na(`Please select your site (district, parish, network, or school)`),
-          `Please select your site (district, parish, network, or school) - Other (please specify)`,
-          as.character(`Please select your site (district, parish, network, or school)`)
-        ))
-      }
-    }
-  #### Assign to environment with format "surveynumber" ####
-  assign(value = survey_parsed, x = paste0("survey", name), envir = .GlobalEnv)
-  #### Compile dataframe of all the surveys new names and add ####
-  name_df <- tibble::tibble(names = paste0("survey", name)) |>
-    dplyr::mutate(count = name) |>
-    dplyr::left_join(ids_surveys, by = "count") |>
-    dplyr::mutate(title = stringr::str_replace_all(title, " ", "")) |>
-    dplyr::mutate(title = stringr::str_replace_all(title, ":", ""))
-
-  print(name_df)
-
-  #### Write to data folder with original name####
-  purrr::map2(.x = name_df$names, .y = name_df$title, ~ readr::write_rds(x = get(.x), file = paste0(here::here("Dashboards/KnowledgeAssessments/data/unprocessed/"), .y, ".rds")))
-}
-
 #' @title End of Session Dashboard Data
 #' @description Gets dashboard data by reading it in from data folder
 #' @param update FALSE, whether or not to update
 #' @param year "21_22" or "22_23"
 #' @return Returns a tibble
 #' @export
-get_session_survey <- function(update = FALSE) {
-  if (update == FALSE & year == "21_22") {
-    df <- readr::read_rds(here::here("data/session_survey_21_22data.rds"))
-    session_survey <- df
-  } else if (update == FALSE & year == "22_23") {
+get_session_survey <- function(update = FALSE, year = "22_23") {
+  
+  if (year == "22_23") {
+    
     session_survey <- qualtRics::fetch_survey(
       surveyID = "SV_djt8w6zgigaNq0C",
-      verbose = FALSE
+      verbose = FALSE,
+      include_display_order = FALSE, 
+      force_request = update
     ) |>
-      dplyr::filter(last_session_or_not == "Yes - there will be more sessions for this PL course or coaching support." & course != "Coaching")
-  } else if (update == TRUE) {
+      dplyr::filter(last_session_or_not == "Yes - there will be more sessions for this PL course or coaching support." & course != "Coaching" & Finished == TRUE)
+    
+  } else if (update == FALSE & year == "21_22") {
+    
+    session_survey <- readr::read_rds(here::here("data/session_survey_21_22data.rds"))
+    
+  } else if (update == TRUE & year == "21_22") {
     options(sm_oauth_token = options(sm_oauth_token = Sys.getenv("session_token")))
 
     surveymonkey_session <- surveymonkey::fetch_survey_obj(id = 308115193) |>
@@ -420,17 +356,23 @@ get_session_survey <- function(update = FALSE) {
 #' @param year "21_22" or "22_23"
 #' @return Returns a tibble
 #' @export
-get_course_survey <- function(update = FALSE, year = "21_22") {
-  if (update == FALSE & year == "21_22") {
-    df <- readr::read_rds(file = here::here("data/course_surveymonkey.rds"))
-    course_survey <- df
-  } else if (update == FALSE & year == "22_23") {
+get_course_survey <- function(update = FALSE, year = "22_23") {
+  
+  if (year == "22_23") {
+    
     course_survey <- qualtRics::fetch_survey(
       surveyID = "SV_djt8w6zgigaNq0C",
-      verbose = FALSE
+      verbose = FALSE,
+      include_display_order = FALSE, 
+      force_request = update
     ) |>
-      dplyr::filter(last_session_or_not != "Yes - there will be more sessions for this PL course or coaching support." & course != "Coaching")
-  } else if (update == TRUE) {
+      dplyr::filter(last_session_or_not != "Yes - there will be more sessions for this PL course or coaching support." & course != "Coaching" & Finished == TRUE)
+    
+  } else if (update == FALSE & year == "21_22") {
+    
+    course_survey <- readr::read_rds(file = here::here("data/course_surveymonkey.rds"))
+    
+  } else if (update == TRUE & year == "21_22") {
     old_df <- readr::read_rds(here::here("data/old_course_survey_reformatted.rds"))
 
     options(sm_oauth_token = Sys.getenv("course_token"))
@@ -810,51 +752,83 @@ get_course_survey <- function(update = FALSE, year = "21_22") {
 #' @title Student Survey Data
 #' @description Gets data from Student Survey
 #' @param update FALSE whether or not to update the data
+#' @param year "21_22" or "22_23"
 #' @return Returns a tibble
 #' @export
-get_student_survey <- function(update = FALSE) {
-  replacement_vector <- c(
-    "Aja Forte" = "Aja Forte",
-    "=Latanya Wilson" = "Latanya Wilson",
-    "aja foorte" = "Aja Forte",
-    "Aja forte" = "Aja Forte",
-    "cheere irving" = "Cheree Irving",
-    "Dr. Davenport" = "Dr. Shawnay Davenport",
-    "Dr. Shawnnay Davenport" = "Shawnay Davenport",
-    "Dr Brown" = "Dr. Brown",
-    "IRVING " = "Cheree Irving",
-    "Jackie Leach" = "Jacqueline Leach",
-    "JACKIE LEACH" = "Jacqueline Leach",
-    "Jackie Leach" = "Jacqueline Leach",
-    "leach" = "Jacqueline Leach",
-    "Mrs.Leach" = "Jacqueline Leach",
-    "lacey mckee" = "Lacey McKee",
-    "MABRY" = "Pearl Mabry",
-    "miari franklin" = "Miari Franklin",
-    "Mr.Y" = "Vivekanand Yamagowni",
-    "miss:Evrret" = "Ms. Everett",
-    "mrs. clark" = "Tammy Clark",
-    "mrs.everet" = "Ms. Everett",
-    "Mrs, robertson" = "Nykol Robertson",
-    "Mrs. Valerie Harris" = "Valerie Harris",
-    "Ms.leach" = "Jacqueline Leach",
-    "Ms Love" = "Ms. Love",
-    "Ms Rice" = "Ms. Rice",
-    "Ms Wallace" = "Ms. Wallace",
-    "ms.devenport" = "Shawnay Davenport",
-    "Ms.Hill" = "Ms. Hill",
-    "Mrs.Willson " = "Latanya Wilson",
-    "Ms.Jacqueline Leach" = "Jacqueline Leach",
-    "Mrs.S.Smith" = "Ms. Smith",
-    "Ms.Smith" = "Ms. Smith",
-    "porsha gordon" = "Porsha Gordon",
-    "Principal - Mr. Mumford" = "Jeff Mumford",
-    "Rosalyn Northwothy" = "Rosalinda Norsworthy",
-    "Rosiland Norsworthy" = "Rosalinda Norsworthy",
-    "TammyClark" = "Tammy Clark"
-  )
+get_student_survey <- function(update = FALSE, year = "22_23") {
 
-  if (update == TRUE) {
+  if (year == "22_23") {
+    
+    student_survey <- qualtRics::fetch_survey(
+      surveyID = "SV_9uze2faHuIf3vP8",
+      verbose = FALSE,
+      convert = FALSE,
+      include_display_order = FALSE, 
+      force_request = update
+    ) |>
+      dplyr::filter(Finished == TRUE) |>
+      dplyr::mutate(eic = FALSE)
+    
+    eic_student_survey <- qualtRics::fetch_survey(
+      surveyID = "SV_8f9l21n6ML58WFM",
+      convert = FALSE,
+      verbose = FALSE,
+      include_display_order = FALSE, 
+      force_request = update
+    ) |>
+      dplyr::filter(Finished == TRUE) |>
+      dplyr::mutate(eic = TRUE,
+                    grade_level = readr::parse_number(as.character(grade_level)))
+    
+    student_survey_coalesced <- student_survey |>
+      dplyr::full_join(eic_student_survey)
+    
+  } else if (year == "21_22" & update == FALSE) {
+    
+    student_survey_coalesced <- readr::read_rds(here::here("data/student_survey.rds"))
+    
+  } else if (update == TRUE & year == "21_22") {
+    
+    replacement_vector <- c(
+      "Aja Forte" = "Aja Forte",
+      "=Latanya Wilson" = "Latanya Wilson",
+      "aja foorte" = "Aja Forte",
+      "Aja forte" = "Aja Forte",
+      "cheere irving" = "Cheree Irving",
+      "Dr. Davenport" = "Dr. Shawnay Davenport",
+      "Dr. Shawnnay Davenport" = "Shawnay Davenport",
+      "Dr Brown" = "Dr. Brown",
+      "IRVING " = "Cheree Irving",
+      "Jackie Leach" = "Jacqueline Leach",
+      "JACKIE LEACH" = "Jacqueline Leach",
+      "Jackie Leach" = "Jacqueline Leach",
+      "leach" = "Jacqueline Leach",
+      "Mrs.Leach" = "Jacqueline Leach",
+      "lacey mckee" = "Lacey McKee",
+      "MABRY" = "Pearl Mabry",
+      "miari franklin" = "Miari Franklin",
+      "Mr.Y" = "Vivekanand Yamagowni",
+      "miss:Evrret" = "Ms. Everett",
+      "mrs. clark" = "Tammy Clark",
+      "mrs.everet" = "Ms. Everett",
+      "Mrs, robertson" = "Nykol Robertson",
+      "Mrs. Valerie Harris" = "Valerie Harris",
+      "Ms.leach" = "Jacqueline Leach",
+      "Ms Love" = "Ms. Love",
+      "Ms Rice" = "Ms. Rice",
+      "Ms Wallace" = "Ms. Wallace",
+      "ms.devenport" = "Shawnay Davenport",
+      "Ms.Hill" = "Ms. Hill",
+      "Mrs.Willson " = "Latanya Wilson",
+      "Ms.Jacqueline Leach" = "Jacqueline Leach",
+      "Mrs.S.Smith" = "Ms. Smith",
+      "Ms.Smith" = "Ms. Smith",
+      "porsha gordon" = "Porsha Gordon",
+      "Principal - Mr. Mumford" = "Jeff Mumford",
+      "Rosalyn Northwothy" = "Rosalinda Norsworthy",
+      "Rosiland Norsworthy" = "Rosalinda Norsworthy",
+      "TammyClark" = "Tammy Clark"
+    )
     options(sm_oauth_token = Sys.getenv("knowledge_token"))
 
     print("Getting General Student Survey...\n")
@@ -1224,179 +1198,12 @@ get_student_survey <- function(update = FALSE) {
       ) |>
       dplyr::full_join(nm_student_survey_coalesced |>
                          dplyr::mutate(`What is the name of your school, district, or parish?` = "New Mexico Public Education Department, NM"))
-  } else {
-    student_survey_coalesced <- readr::read_rds(here::here("data/student_survey.rds"))
+    
+    readr::write_rds(student_survey_coalesced, here::here("data/student_survey.rds"))
+    
   }
-
-  readr::write_rds(student_survey_coalesced, here::here("data/student_survey.rds"))
 
   return(student_survey_coalesced)
-}
-
-#' @title Family Survey Data
-#' @description Gets data from Family Survey
-#' @param update FALSE, whether or not to pull the updated version
-#' @return Returns a tibble
-#' @export
-get_family_survey <- function(update = FALSE) {
-  replacement_vector <- c(
-    "Aja Forte" = "Aja Forte",
-    "=Latanya Wilson" = "Latanya Wilson",
-    "aja foorte" = "Aja Forte",
-    "Aja forte" = "Aja Forte",
-    "Jackie Leach" = "Jacqueline Leach",
-    "JACKIE LEACH" = "Jacqueline Leach",
-    "Jackie Leach" = "Jacqueline Leach",
-    "leach" = "Jacqueline Leach",
-    "MABRY" = "Pearl Mabry",
-    "Mrs, robertson" = "Nykol Robertson",
-    "Ms.leach" = "Jacqueline Leach",
-    "Principal - Mr. Mumford" = "Jeff Mumford",
-    "Rosalyn Northwothy" = "Rosalinda Norsworthy",
-    "Rosiland Norsworthy" = "Rosalinda Norsworthy"
-  )
-
-  if (update == TRUE) {
-    options(sm_oauth_token = Sys.getenv("knowledge_token"))
-
-    df <- surveymonkey::fetch_survey_obj(318058603) |>
-      surveymonkey::parse_survey()
-
-    family_survey_coalesced <- df |>
-      dplyr::mutate(teacher = dplyr::coalesce(
-        `Please select your child's teacher.`,
-        `Please select your child's teacher. - Other (please specify)`,
-        `Please select your child's teacher._2`,
-        `Please select your child's teacher. - Other (please specify)_2`,
-        `Please select your child's teacher._3`,
-        `Please select your child's teacher. - Other (please specify)_3`,
-        `Please select your child's teacher._4`,
-        `Please select your child's teacher. - Other (please specify)_4`,
-        `Please select your child's teacher._5`,
-        `Please select your child's teacher. - Other (please specify)_5`,
-        `Please select your child's teacher._6`,
-        `Please select your child's teacher. - Other (please specify)_6`,
-        `Please select your child's teacher._7`,
-        `Please select your child's teacher. - Other (please specify)_7`,
-        `Please select your child's teacher._8`,
-        `Please select your child's teacher. - Other (please specify)_8`,
-        `Please select your child's teacher._9`,
-        `Please select your child's teacher. - Other (please specify)_9`,
-        `Please select your child's teacher._10`,
-        `Please select your child's teacher. - Other (please specify)_10`,
-        `Please select your child's teacher._11`,
-        `Please select your child's teacher. - Other (please specify)_11`,
-        `Please select your child's teacher._12`,
-        `Please select your child's teacher. - Other (please specify)_12`,
-        `Please select your child's teacher._13`,
-        `Please select your child's teacher. - Other (please specify)_13`,
-        `Please select your child's teacher._14`,
-        `Please select your child's teacher. - Other (please specify)_14`,
-        `Please select your child's teacher._15`,
-        `Please select your child's teacher. - Other (please specify)_15`,
-        `Please select your child's teacher._16`,
-        `Please select your child's teacher. - Other (please specify)_16`,
-        `Please select your child's teacher._17`,
-        `Please select your child's teacher. - Other (please specify)_17`,
-        `Please select your child's teacher._18`,
-        `Please select your child's teacher. - Other (please specify)_18`,
-        `Please select your child's teacher._19`,
-        `Please select your child's teacher. - Other (please specify)_19`,
-        `Please select your child's teacher._20`,
-        `Please select your child's teacher. - Other (please specify)_20`,
-        `Please select your child's teacher._21`,
-        `Please select your child's teacher. - Other (please specify)_21`,
-        `Please select your child's teacher._22`,
-        `Please select your child's teacher. - Other (please specify)_22`,
-        `Please select your child's teacher._23`,
-        `Please select your child's teacher. - Other (please specify)_23`,
-        `Please select your child's teacher._24`,
-        `Please select your child's teacher. - Other (please specify)_24`,
-        `Please select your child's teacher._25`,
-        `Please select your child's teacher. - Other (please specify)_25`,
-        `Please select your child's teacher._26`,
-        `Please select your child's teacher. - Other (please specify)_26`,
-        `Please select your child's teacher._27`,
-        `Please select your child's teacher. - Other (please specify)_27`,
-        `Please select your child's teacher._28`,
-        `Please select your child's teacher. - Other (please specify)_28`,
-        `Please select your child's teacher._29`,
-        `Please select your child's teacher. - Other (please specify)_29`,
-        `Please select your child's teacher._30`,
-        `Please select your child's teacher. - Other (please specify)_30`,
-        `Please write in the name of your child's teacher.`
-      )) |>
-      dplyr::select(-c(
-        `Please select your child's teacher.`,
-        `Please select your child's teacher. - Other (please specify)`,
-        `Please select your child's teacher._2`,
-        `Please select your child's teacher. - Other (please specify)_2`,
-        `Please select your child's teacher._3`,
-        `Please select your child's teacher. - Other (please specify)_3`,
-        `Please select your child's teacher._4`,
-        `Please select your child's teacher. - Other (please specify)_4`,
-        `Please select your child's teacher._5`,
-        `Please select your child's teacher. - Other (please specify)_5`,
-        `Please select your child's teacher._6`,
-        `Please select your child's teacher. - Other (please specify)_6`,
-        `Please select your child's teacher._7`,
-        `Please select your child's teacher. - Other (please specify)_7`,
-        `Please select your child's teacher._8`,
-        `Please select your child's teacher. - Other (please specify)_8`,
-        `Please select your child's teacher._9`,
-        `Please select your child's teacher. - Other (please specify)_9`,
-        `Please select your child's teacher._10`,
-        `Please select your child's teacher. - Other (please specify)_10`,
-        `Please select your child's teacher._11`,
-        `Please select your child's teacher. - Other (please specify)_11`,
-        `Please select your child's teacher._12`,
-        `Please select your child's teacher. - Other (please specify)_12`,
-        `Please select your child's teacher._13`,
-        `Please select your child's teacher. - Other (please specify)_13`,
-        `Please select your child's teacher._14`,
-        `Please select your child's teacher. - Other (please specify)_14`,
-        `Please select your child's teacher._15`,
-        `Please select your child's teacher. - Other (please specify)_15`,
-        `Please select your child's teacher._16`,
-        `Please select your child's teacher. - Other (please specify)_16`,
-        `Please select your child's teacher._17`,
-        `Please select your child's teacher. - Other (please specify)_17`,
-        `Please select your child's teacher._18`,
-        `Please select your child's teacher. - Other (please specify)_18`,
-        `Please select your child's teacher._19`,
-        `Please select your child's teacher. - Other (please specify)_19`,
-        `Please select your child's teacher._20`,
-        `Please select your child's teacher. - Other (please specify)_20`,
-        `Please select your child's teacher._21`,
-        `Please select your child's teacher. - Other (please specify)_21`,
-        `Please select your child's teacher._22`,
-        `Please select your child's teacher. - Other (please specify)_22`,
-        `Please select your child's teacher._23`,
-        `Please select your child's teacher. - Other (please specify)_23`,
-        `Please select your child's teacher._24`,
-        `Please select your child's teacher. - Other (please specify)_24`,
-        `Please select your child's teacher._25`,
-        `Please select your child's teacher. - Other (please specify)_25`,
-        `Please select your child's teacher._26`,
-        `Please select your child's teacher. - Other (please specify)_26`,
-        `Please select your child's teacher._27`,
-        `Please select your child's teacher. - Other (please specify)_27`,
-        `Please select your child's teacher._28`,
-        `Please select your child's teacher. - Other (please specify)_28`,
-        `Please select your child's teacher._29`,
-        `Please select your child's teacher. - Other (please specify)_29`,
-        `Please select your child's teacher._30`,
-        `Please select your child's teacher. - Other (please specify)_30`,
-        `Please write in the name of your child's teacher.`
-      )) |>
-      dplyr::mutate(teacher = stringr::str_replace_all(teacher, replacement_vector))
-
-    readr::write_rds(family_survey_coalesced, here::here("data/family_survey.rds"))
-  } else {
-    family_survey_coalesced <- readr::read_rds(here::here("data/family_survey.rds"))
-  }
-
-  return(family_survey_coalesced)
 }
 
 
@@ -1406,8 +1213,24 @@ get_family_survey <- function(update = FALSE) {
 #' @param year "21_22" or "22_23"
 #' @return A tibble
 #' @export
-get_diagnostic_survey <- function(update = FALSE, year = "21_22") {
-  if (update == TRUE) {
+get_diagnostic_survey <- function(update = FALSE, year = "22_23") {
+  
+  if (year == "22_23") {
+    
+    diagnostic_final <- qualtRics::fetch_survey(
+      surveyID = "SV_8vrKtPDtqQFbiBM",
+      verbose = FALSE,
+      include_display_order = FALSE,
+      force_request = update
+    ) |>
+      dplyr::filter(Finished == TRUE)
+    
+  } else if (update == FALSE & year == "21_22") {
+    
+    diagnostic_final <- readr::read_rds(here::here("data/diagnostic.rds"))
+    
+  } else if (update == TRUE & year == "21_22") {
+    
     ### Set OAuth for SurveyMonkey ###
     options(sm_oauth_token = "nTxsBf-VruLlFgxHpCRlmMJMRqC060bQZGd6VzrfDm5oX4Il5u-IhH2CxD4lwCiblicg3896pqYH0HzhmOr1b0SWMF9bTaX8-B9PmQVS2zFkNmfs5xRVNU1PMZoVfeBG")
     ## Get Diagnostic ##
@@ -1594,13 +1417,6 @@ get_diagnostic_survey <- function(update = FALSE, year = "21_22") {
     readr::write_rds(diagnostic_final, here::here("Dashboards/DiagnosticComplete/data/diagnostic.rds"))
     readr::write_rds(diagnostic_final, here::here("data/diagnostic.rds"))
     readr::write_rds(diagnostic_final, here::here("Dashboards/SiteCollectionProgress/data/diagnostic.rds"))
-  } else if (update == FALSE & year == "21_22") {
-    diagnostic_final <- readr::read_rds(here::here("data/diagnostic.rds"))
-  } else if (year == "22_23") {
-    qualtRics::fetch_survey(
-      surveyID = "SV_8vrKtPDtqQFbiBM",
-      verbose = FALSE
-    )
   }
 
   return(diagnostic_final)
@@ -1609,10 +1425,212 @@ get_diagnostic_survey <- function(update = FALSE, year = "21_22") {
 #' @title Knowledge Assessments Update
 #' @description Get the knowledge assessments survey
 #' @param update FALSE, optional updating
+#' @param year "21_22" or "22_23"
 #' @return A tibble
 #' @export
-get_knowledge_assessments <- function(update = FALSE) {
-  if (update == TRUE) {
+get_knowledge_assessments <- function(update = FALSE, year = "22_23") {
+  
+  if (year == "22_23") {
+    
+    ### List of ids and knowledge assessments ###
+    knowledge_assessment_ids <- tibble::tibble(
+      id = c(
+        "SV_37uHoiF60EUKATQ",
+        "SV_9YsBPlM5jZ30Dbg",
+        "SV_d5nw8tm0NF56kU6",
+        "SV_esouu9cYMOBSsGG",
+        "SV_0cxz1wVSJm3YOvc",
+        "SV_0GwEWwJqBGVOCPQ",
+        "SV_0vqNPC8wOinlWGa",
+        "SV_1CeZeXCWeyARdWe",
+        "SV_1HBrIAy2QDQwhiC",
+        "SV_1MJC6vEhbx69d30",
+        "SV_2lRbQxavLPyyRyC",
+        "SV_4HgPBvUQG6gxtsO",
+        "SV_55e1kSGK8f2TB4i",
+        "SV_5mCJ6o027GHTGcu",
+        "SV_5mMRhEvhx7YCLZQ",
+        "SV_6ineKFETiGhyDEq",
+        "SV_6umnpT1GKXJeWnI",
+        "SV_78OgnxKdYrBrem2",
+        "SV_7OOmjLlJxpVgME6",
+        "SV_8CFKiPQxAxwOZ9Q",
+        "SV_9HsrInMIskVsqTY",
+        "SV_bg5hii3sOQikIce",
+        "SV_bqg3mIevbXmAjfo",
+        "SV_cAMzWUjKWLZYC8e",
+        "SV_cwsF6v3SUG5zhc2",
+        "SV_d1pWuGz0wIOlO5M",
+        "SV_daT4Yvd8svibO1U",
+        "SV_efmWSbQwB6pclWm",
+        "SV_eONDuDJ9dfq5ZZk",
+        "SV_eVSKqZnfbI6k0rs",
+        "SV_ezb2kb3hqO6meHk",
+        "SV_eL4PMDURWjWyrn8",
+        "SV_1MJC6vEhbx69d30",
+        "SV_d3TcHB2JN5xnHJI"
+      ),
+      name = c(
+        "Math: Bootcamp",
+        "Math: RAISE",
+        "ELA: Bootcamp - General",
+        "ELA: Bootcamp - Foundational Skills",
+        "ELA Guidebooks: Cycle of Inquiry 2 - Writing & Language Skills",
+        "ELA Guidebooks Diverse Learners: Bootcamp - Writing",
+        "Math: Bootcamp  - Curriculum Flexible",
+        "Math: Cycle of Inquiry I - Eliciting Student Thinking – Curriculum Flexible",
+        "ELA Guidebooks Diverse Learners: Cycle of Inquiry - Fluency",
+        "Math: Supporting Math Intervention",
+        "ELA Foundational Skills: Cycle of Inquiry 1: Classroom Management",
+        "ELA Guidebooks Diverse Learners: Bootcamp - Teacher",
+        "Math: Accelerating Learning",
+        "ELA EL: HQIM & Enrichment",
+        "Math: Cycle of Inquiry VI- Summarizing the Mathematics",
+        "ELA Curriculum Adaptive Foundational Skills: Cycle of Inquiry",
+        "Math: Cycle of Inquiry II - Making Math Visible",
+        "ELA Guidebooks Diverse Learners: Cycle of Inquiry - Vocabulary",
+        "ELA Guidebooks Diverse Learners: Bootcamp - Leader",
+        "ELA EL: Bootcamp - ALL Block (3-5)",
+        "Math: Cycle of Inquiry V- Sequencing and Connecting Representations",
+        "Math: Cycle of Inquiry I - Eliciting Student Thinking",
+        "ELA General: Cycle of Inquiry - Speaking & Listening",
+        "ELA General: Cycle of Inquiry - Complex Text",
+        "Math: Cycle of Inquiry III - Facilitating Mathematical Discourse",
+        "ELA CRSE: PLC",
+        "ELA Guidebooks: Cycle of Inquiry 1 - Close Reading/ Speaking & Listening",
+        "School Leaders: ELA CRSE PLC",
+        "Math: Cycle of Inquiry IV - Checking for Understanding",
+        "ELA Foundational Skills: Cycle of Inquiry 1",
+        "ELA Foundational Skills: Cycle of Inquiry 2: Using Data to Inform Foundational Skills Instruction",
+        "School Leaders: Curriculum Adaptive Math/ELA (ILN)",
+        "Math: Learning Across the Domains",
+        "Language Standards/Conventions Knowledge_NYBlendedLit"
+      )
+    )
+    
+    ### Filter list for just those with responses ###
+    
+    knowledge_assessments_for_scoring <- knowledge_assessment_ids |>
+      dplyr::filter(name %in% c(
+        "ELA: Bootcamp - General",
+        "Math: Bootcamp",
+        "Math: Cycle of Inquiry I - Eliciting Student Thinking",
+        "ELA: Bootcamp - Foundational Skills",
+        "ELA General: Cycle of Inquiry - Complex Text",
+        "Math: Learning Across the Domains",
+        "Math: RAISE",
+        "Math: Accelerating Learning",
+        "School Leaders: Curriculum Adaptive Math/ELA (ILN)",
+        "Language Standards/Conventions Knowledge_NYBlendedLit",
+        "ELA Guidebooks: Cycle of Inquiry 2 - Writing & Language Skills",
+        "Math: Cycle of Inquiry III - Facilitating Mathematical Discourse"
+      )) |>
+      ### This line is for the knowledge assessments dashboard, it can't handle the / ###
+      dplyr::mutate(name = stringr::str_replace_all(name, "\\/", "|"))
+    
+    ### Getting Digital Nest for Joining ###
+    educator_survey <- qualtRics::fetch_survey("SV_8vrKtPDtqQFbiBM",
+                                               verbose = FALSE,
+                                               force_request = update,
+                                               include_display_order = FALSE)
+    
+    ### percent, prepost, site, know_assess ###
+    all_knowledge_assessments <- purrr::map2_dfr(
+      knowledge_assessments_for_scoring$id, knowledge_assessments_for_scoring$name,
+      ~ TeachingLab::knowledge_assess_select_score(.x, .y)
+    ) |>
+      dplyr::bind_rows(
+        ### Digital Nest School Leader Qs
+        educator_survey |>
+          dplyr::filter(Finished == TRUE & site == "US_Digital Nest") |>
+          dplyr::mutate(
+            id = paste0(tolower(initials), dob),
+            know_assess = "US_Digital Nest School Leaders"
+          ) |>
+          dplyr::group_by(id) |>
+          dplyr::mutate(
+            n_response = dplyr::n(), # Get number of responses by person, sometimes there are more than 2 :/
+            maxdate = max(RecordedDate), # Get max date of creation for most recent response
+            matched = dplyr::if_else(n_response > 1 & maxdate == RecordedDate, "post", "pre")
+          ) |> # Define as post for matched if more than 1 response and date is max of date_created
+          dplyr::mutate(matched = factor(matched, levels = c("pre", "post"))) |> # Make matched a factor
+          dplyr::mutate(prepost = dplyr::if_else(RecordedDate >= maxdate & n_response > 1, "post", "pre")) |> # Make pre and post defined by pre-October and post-October
+          dplyr::mutate(prepost = factor(prepost, levels = c("pre", "post"))) |> # Make prepost a factor
+          dplyr::ungroup() |>
+          dplyr::mutate(score = SC0 / max(SC0, na.rm = T)) |>
+          dplyr::select(percent = score, prepost, site, know_assess) |>
+          tidyr::drop_na(percent),
+        ### Math ANA ###
+        educator_survey |>
+          dplyr::filter(Finished == TRUE & RecordedDate <= as.Date("2023-01-01")) |>
+          tidyr::drop_na(hqim1_1) |>
+          dplyr::mutate(
+            id = paste0(tolower(initials), dob),
+            know_assess = "Math ANA"
+          ) |>
+          dplyr::group_by(id) |>
+          dplyr::mutate(
+            n_response = dplyr::n(), # Get number of responses by person, sometimes there are more than 2 :/
+            maxdate = max(RecordedDate), # Get max date of creation for most recent response
+            matched = dplyr::if_else(n_response > 1 & maxdate == RecordedDate, "post", "pre")
+          ) |> # Define as post for matched if more than 1 response and date is max of date_created
+          dplyr::mutate(matched = factor(matched, levels = c("pre", "post"))) |> # Make matched a factor
+          dplyr::mutate(prepost = dplyr::if_else(RecordedDate >= maxdate & n_response > 1, "post", "pre")) |> # Make pre and post defined by pre-October and post-October
+          dplyr::mutate(prepost = factor(prepost, levels = c("pre", "post"))) |> # Make prepost a factor
+          dplyr::ungroup() |>
+          dplyr::mutate(score = SC0 / max(SC0, na.rm = T)) |>
+          dplyr::select(percent = score, prepost, site, know_assess) |>
+          tidyr::drop_na(percent),
+        ### ELA ANA ###
+        educator_survey |>
+          dplyr::filter(Finished == TRUE & RecordedDate <= as.Date("2023-01-01")) |>
+          tidyr::drop_na(ela_bc_1_1) |>
+          dplyr::mutate(
+            id = paste0(tolower(initials), dob),
+            know_assess = "ELA ANA"
+          ) |>
+          dplyr::group_by(id) |>
+          dplyr::mutate(
+            n_response = dplyr::n(), # Get number of responses by person, sometimes there are more than 2 :/
+            maxdate = max(RecordedDate), # Get max date of creation for most recent response
+            matched = dplyr::if_else(n_response > 1 & maxdate == RecordedDate, "post", "pre")
+          ) |> # Define as post for matched if more than 1 response and date is max of date_created
+          dplyr::mutate(matched = factor(matched, levels = c("pre", "post"))) |> # Make matched a factor
+          dplyr::mutate(prepost = dplyr::if_else(RecordedDate >= maxdate & n_response > 1, "post", "pre")) |> # Make pre and post defined by pre-October and post-October
+          dplyr::mutate(prepost = factor(prepost, levels = c("pre", "post"))) |> # Make prepost a factor
+          dplyr::ungroup() |>
+          dplyr::mutate(score = SC0 / max(SC0, na.rm = T)) |>
+          dplyr::select(percent = score, prepost, site, know_assess) |>
+          tidyr::drop_na(percent),
+        ### ELA K-2 ANA ###
+        educator_survey |>
+          dplyr::filter(Finished == TRUE & RecordedDate <= as.Date("2023-01-01")) |>
+          tidyr::drop_na(k2_ela1_1) |>
+          dplyr::mutate(
+            id = paste0(tolower(initials), dob),
+            know_assess = "ELA K-2 ANA"
+          ) |>
+          dplyr::group_by(id) |>
+          dplyr::mutate(
+            n_response = dplyr::n(), # Get number of responses by person, sometimes there are more than 2 :/
+            maxdate = max(RecordedDate), # Get max date of creation for most recent response
+            matched = dplyr::if_else(n_response > 1 & maxdate == RecordedDate, "post", "pre")
+          ) |> # Define as post for matched if more than 1 response and date is max of date_created
+          dplyr::mutate(matched = factor(matched, levels = c("pre", "post"))) |> # Make matched a factor
+          dplyr::mutate(prepost = dplyr::if_else(RecordedDate >= maxdate & n_response > 1, "post", "pre")) |> # Make pre and post defined by pre-October and post-October
+          dplyr::mutate(prepost = factor(prepost, levels = c("pre", "post"))) |> # Make prepost a factor
+          dplyr::ungroup() |>
+          dplyr::mutate(score = SC0 / max(SC0, na.rm = TRUE)) |>
+          dplyr::select(percent = score, prepost, site, know_assess) |>
+          tidyr::drop_na(percent)
+      )
+    
+  } else if (update == FALSE & year == "21_22") {
+    
+    all_knowledge_assessments <- readr::read_rds(here::here("data/knowledge_assessments.rds"))
+    
+  } else if (update == TRUE & year == "21_22") {
+    
     options(sm_oauth_token = "wD.rd9HKenA2QV2Z2zV.kJwL7533YR3TcbP0Ii7--tHadLRlID-hv5Kz8oAVvHsKXUSn9KRnzz31DcKqb8vcLMqjuHjYz7r3vW7kQj3TZ3oboSG5mvxi5ZijlFhL8ylm")
 
     ids_surveys <- tibble::tribble(
@@ -3176,8 +3194,6 @@ get_knowledge_assessments <- function(update = FALSE) {
       all_knowledge_assessments,
       here::here("Dashboards/SiteCollectionProgress/data/knowledge_assessments.rds")
     )
-  } else {
-    all_knowledge_assessments <- readr::read_rds(here::here("data/knowledge_assessments.rds"))
   }
 
   return(all_knowledge_assessments)
@@ -3192,8 +3208,24 @@ get_knowledge_assessments <- function(update = FALSE) {
 #' @param year "21_22" or "22_23"
 #' @return Returns a tibble
 #' @export
-get_ongoing_coaching_feedback <- function(update = FALSE, year = "21_22") {
-  if (update == TRUE) {
+get_ongoing_coaching <- function(update = FALSE, year = "22_23") {
+  
+  if (update == FALSE & year == "22_23") {
+    
+    coaching_feedback_clean <- qualtRics::fetch_survey(
+      surveyID = "SV_djt8w6zgigaNq0C",
+      verbose = FALSE,
+      include_display_order = FALSE,
+      force_request = update
+    ) |>
+      dplyr::filter(last_session_or_not == "Yes - there will be more sessions for this PL course or coaching support." & course == "Coaching" & Finished == TRUE)
+    
+  } else if (update == FALSE & year == "21_22") {
+    
+    coaching_feedback_clean <- readr::read_rds(here::here("data/coaching_participant_feedback.rds"))
+    
+  } else if (update == TRUE & year == "21_22") {
+    
     options(sm_oauth_token = Sys.getenv("knowledge_token"))
 
     coaching_feedback <- surveymonkey::fetch_survey_obj(317830125) |>
@@ -3451,14 +3483,6 @@ get_ongoing_coaching_feedback <- function(update = FALSE, year = "21_22") {
 
     readr::write_rds(coaching_feedback_clean, "data/coaching_participant_feedback.rds")
     readr::write_rds(coaching_feedback_clean, "Dashboards/CoachingParticipantFeedback/data/coaching_participant_feedback.rds")
-  } else if (update == FALSE & year == "21_22") {
-    coaching_feedback_clean <- readr::read_rds(here::here("data/coaching_participant_feedback.rds"))
-  } else if (update == FALSE & year == "22_23") {
-    coaching_feedback_clean <- qualtRics::fetch_survey(
-      surveyID = "SV_djt8w6zgigaNq0C",
-      verbose = FALSE
-    ) |>
-      dplyr::filter(last_session_or_not == "Yes - there will be more sessions for this PL course or coaching support." & course == "Coaching")
   }
 
   return(coaching_feedback_clean)
@@ -3467,10 +3491,27 @@ get_ongoing_coaching_feedback <- function(update = FALSE, year = "21_22") {
 #' @title Follow Up Educator Survey Data
 #' @description Gets data from the Follow Up Educator Survey
 #' @param update FALSE, whether or not to pull the updated version
+#' @param year "21_22" or "22_23"
 #' @return Returns a tibble
 #' @export
-get_followup_educator <- function(update = FALSE) {
-  if (update == TRUE) {
+get_followup_educator <- function(update = FALSE, year = "22_23") {
+  
+  if (year == "22_23") {
+    
+    followup_educator_clean <- qualtRics::fetch_survey(
+      surveyID = "SV_8vrKtPDtqQFbiBM",
+      verbose = FALSE,
+      include_display_order = FALSE,
+      force_request = update
+    ) |>
+      dplyr::filter(Finished == TRUE)
+    
+  } else if (update == FALSE & year == "21_22") {
+    
+    followup_educator_clean <- readr::read_rds(here::here("data/followup_educator_survey.rds"))
+    
+  } else if (update == TRUE) {
+    
     options(sm_oauth_token = Sys.getenv("session_token"))
 
     follow_up_educator_survey <- surveymonkey::fetch_survey_obj(400267837) |>
@@ -3556,8 +3597,6 @@ get_followup_educator <- function(update = FALSE) {
 
     readr::write_rds(followup_educator_clean, "data/followup_educator_survey.rds")
     readr::write_rds(followup_educator_clean, "Dashboards/CoachingParticipantFeedback/data/followup_educator_survey.rds")
-  } else {
-    followup_educator_clean <- readr::read_rds(here::here("data/followup_educator_survey.rds"))
   }
 
   return(followup_educator_clean)
@@ -3566,16 +3605,33 @@ get_followup_educator <- function(update = FALSE) {
 #' @title Ongoing Coaching Feedback Survey Data
 #' @description Gets data from the Ongoing Coaching Feedback Survey
 #' @param update FALSE, whether or not to pull the updated version
+#' @param year "21_22" or "22_23"
 #' @return Returns a tibble
 #' @export
-get_ongoing_coaching <- function(update = FALSE) {
-  if (update == TRUE) {
+get_end_coaching <- function(update = FALSE, year = "22_23") {
+  
+  if (year == "22_23") {
+    
+    end_coaching_survey_clean <- qualtRics::fetch_survey(
+      surveyID = "SV_djt8w6zgigaNq0C",
+      verbose = FALSE,
+      include_display_order = FALSE,
+      force_request = update
+    ) |>
+      dplyr::filter(last_session_or_not != "Yes - there will be more sessions for this PL course or coaching support." & course == "Coaching" & Finished == TRUE)
+    
+  } else if (update == FALSE & year == "21_22") {
+    
+    end_coaching_survey_clean <- readr::read_rds(here::here("data/ongoing_coaching_feedback.rds"))
+    
+  } else if (update == TRUE & year == "21_22") {
+    
     options(sm_oauth_token = Sys.getenv("course_token"))
 
-    ongoing_coaching_survey <- surveymonkey::fetch_survey_obj(316751980) |>
+    end_coaching_survey <- surveymonkey::fetch_survey_obj(316751980) |>
       surveymonkey::parse_survey()
 
-    ongoing_coaching_survey_clean <- ongoing_coaching_survey |>
+    end_coaching_survey_clean <- ongoing_coaching_survey |>
       #### Coalescing other columns into main columns ####
       dplyr::mutate(
         Site = dplyr::coalesce(
@@ -3780,8 +3836,6 @@ get_ongoing_coaching <- function(update = FALSE) {
 
     readr::write_rds(ongoing_coaching_survey_clean, "data/ongoing_coaching_feedback.rds")
     readr::write_rds(ongoing_coaching_survey_clean, "Dashboards/CoachingParticipantFeedback/data/ongoing_coaching_feedback.rds")
-  } else {
-    ongoing_coaching_survey_clean <- readr::read_rds(here::here("data/ongoing_coaching_feedback.rds"))
   }
 
   return(ongoing_coaching_survey_clean)
