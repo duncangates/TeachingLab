@@ -11,11 +11,11 @@ tx_raise_feedback <- participant_feedback |>
   dplyr::filter(site == "TX_RAISE Rice University") |>
   dplyr::select(date = RecordedDate,
          facilitator1,
-         `End of Session_TX_1`, 
-         `End of Session_TX_2`, 
-         `End of Session_TX_3`, 
-         `End of Session_TX_4`) |>
-  tidyr::drop_na(`End of Session_TX_4`)
+         end_of_session_tx_1, 
+         end_of_session_tx_2, 
+         end_of_session_tx_3, 
+         end_of_session_tx_4) |>
+  tidyr::drop_na(end_of_session_tx_4)
 
 sheet_length <- nrow(tx_raise_feedback) + 1
 

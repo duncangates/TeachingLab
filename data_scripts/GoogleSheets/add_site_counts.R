@@ -63,8 +63,8 @@ district_11_course_count <- participant_feedback |>
 
 ### Ongoing coaching count ###
 ongoing_coaching_count <- participant_feedback |>
-  dplyr::filter(last_session_or_not == "Yes - there will be more sessions for this PL course or coaching support." & 
-                  course == "Coaching") |>
+  dplyr::filter(last_session_or_not == "Yes - there will be more sessions for this PL course or coaching support." &
+    course == "Coaching") |>
   dplyr::mutate(site = replace_na(as.character(site), "Other")) |>
   dplyr::group_by(site) |>
   dplyr::count(sort = T) |>
@@ -230,8 +230,9 @@ district11_classroom_obs_count <- ipg_forms |>
   tidyr::pivot_wider(names_from = round, values_from = n, names_sort = TRUE)
 
 if (!"Fourth site visit" %in% colnames(district11_classroom_obs_count)) {
-  district11_classroom_obs_count <- dplyr::mutate(district11_classroom_obs_count, 
-                                                  `Fourth site visit` = NA) |>
+  district11_classroom_obs_count <- dplyr::mutate(district11_classroom_obs_count,
+    `Fourth site visit` = NA
+  ) |>
     dplyr::relocate(`Fourth site visit`, .before = `Fifth site visit`)
 }
 
@@ -246,7 +247,7 @@ eic_student_survey <- qualtRics::fetch_survey(
   dplyr::filter(Finished == TRUE)
 
 eic_student_survey_count <- eic_student_survey |>
-  dplyr::mutate(site = stringr::str_replace_all(`School Districts`, c(
+  dplyr::mutate(site = stringr::str_replace_all(site, c(
     "Rochester City School District" = "NY_Rochester City School District",
     "NYC District 11" = "NY_D11"
   ))) |>
@@ -255,11 +256,11 @@ eic_student_survey_count <- eic_student_survey |>
   dplyr::rename(`Student Survey pre` = n)
 
 d11_eic_student_survey_count <- eic_student_survey |>
-  dplyr::group_by(`D11 Schools`) |>
+  dplyr::group_by(`District 11`) |>
   dplyr::count(sort = T) |>
   dplyr::ungroup() |>
-  dplyr::mutate(`D11 Schools` = as.character(`D11 Schools`)) |>
-  dplyr::filter(!is.na(`D11 Schools`)) |>
+  dplyr::mutate(`District 11` = as.character(`District 11`)) |>
+  dplyr::filter(!is.na(`District 11`)) |>
   dplyr::rename(`Student Survey pre` = n)
 
 student_survey <- qualtRics::fetch_survey(
@@ -271,7 +272,7 @@ student_survey <- qualtRics::fetch_survey(
 
 student_survey_count <- student_survey |>
   dplyr::mutate(site = dplyr::case_when(
-    State == "New Mexico" ~ "NM_NM Public Education Department",
+    site == "New Mexico" ~ "NM_NM Public Education Department",
     `IL Districts` == "CPS Network 4" ~ "IL_Chicago Public Schools_Network 4",
     `IL Districts` == "CPS Network 7" ~ "IL_Chicago Public Schools_Network 7",
     `IL Districts` == "CPS Network 12" ~ "IL_Chicago Public Schools_Network 12"
@@ -290,8 +291,8 @@ student_work <- qualtRics::fetch_survey(
   dplyr::filter(Finished == TRUE)
 
 student_work_count <- student_work |>
-  dplyr::mutate(Site = replace_na(as.character(Site), "Other")) |>
-  dplyr::group_by(Site) |>
+  dplyr::mutate(site = replace_na(as.character(site), "Other")) |>
+  dplyr::group_by(site) |>
   dplyr::count(sort = T) |>
   dplyr::rename(`Student work samples round 1` = n)
 
@@ -566,7 +567,7 @@ data_collection_sy22_23 <- current_sites |>
   dplyr::left_join(classroom_obs_count, by = "site") |>
   dplyr::left_join(student_survey_count, by = "site") |>
   tibble::add_column(`Student Survey post` = NA, .after = "Student Survey pre") |>
-  dplyr::left_join(student_work_count, by = c("site" = "Site")) |>
+  dplyr::left_join(student_work_count, by = c("site")) |>
   tibble::add_column(`Student work samples round 2` = NA, .after = "Student work samples round 1") |>
   dplyr::left_join(knowledge_assessment_count, by = c("site"))
 
@@ -645,7 +646,7 @@ d11_data_collection_sy22_23 <- district11_sites |>
   dplyr::left_join(district11_diagnostic_count) |>
   tibble::add_column(`Follow up (post)` = NA, .after = "Diagnostic (pre)") |>
   dplyr::left_join(district11_classroom_obs_count) |>
-  dplyr::left_join(d11_eic_student_survey_count, by = c("District 11" = "D11 Schools")) |>
+  dplyr::left_join(d11_eic_student_survey_count) |>
   tibble::add_column(`Student Survey post` = NA, .after = "Student Survey pre") |>
   dplyr::left_join(student_work_count_district_11) |>
   tibble::add_column(`Student work samples round 2` = NA, .after = "Student work samples round 1") |>

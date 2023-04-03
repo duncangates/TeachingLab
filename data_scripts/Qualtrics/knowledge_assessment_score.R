@@ -209,7 +209,7 @@ knowledge_assessments_scored <- purrr::map2_dfr(
 ### Digital Nest Teacher Qs
 digital_nest_teacher_qs <- educator_survey |>
   dplyr::filter(Finished == TRUE & stringr::str_detect(site, "Digital")) |> ### 12 total responses here
-  dplyr::select(tidyselect::contains("Q77"), tidyselect::contains("Q78")) |> ### Only 2 responded to this set of questions
+  dplyr::select(tidyselect::contains("interr_own_bias"), tidyselect::contains("adapt_mat_less_asses")) |> ### Only 2 responded to this set of questions
   dplyr::mutate(dplyr::across(dplyr::everything(), ~ ifelse(stringr::str_detect(.x, "NA"), NA, .x))) |>
   janitor::remove_empty("rows") |>
   tidyr::pivot_longer(dplyr::everything()) |>
@@ -220,22 +220,22 @@ digital_nest_teacher_qs <- educator_survey |>
   dplyr::mutate(
     percent = 100 * n / sum(n),
     question = dplyr::case_when(
-      name == "Q77_1" ~ "Reflected on your identity and cultural background?",
-      name == "Q77_2" ~ "Engaged in challenging conversations about your identity?",
-      name == "Q77_3" ~ "Interacted with people who have different lived experiences from yourself?",
-      name == "Q77_4" ~ "Learned about your cultural background and identity by doing things such as reading (books, magazines, newspapers), searching the internet, or keeping up with current events.",
-      name == "Q77_5" ~ "Learned about others’ cultural background and identity by doing things such as reading (books, magazines, newspapers), searching the internet, or keeping up with current events.",
-      name == "Q78_1" ~ "Modify your lessons to include culturally relevant activities and question prompts?",
-      name == "Q78_2" ~ "Modify your assessments to include culturally relevant references and questions?",
-      name == "Q78_3" ~ "Choose or develop checks for understanding that give students a choice about how to demonstrate knowledge and skills.",
-      name == "Q78_4" ~ "Choose or develop checks for understanding that allow students to demonstrate their knowledge and skills orally or in other non-text media.",
-      name == "Q78_5" ~ "Draw on knowledge of students’ cultural backgrounds and identities in daily lessons?",
-      name == "Q78_6" ~ "Create opportunities for students to share about their cultural background and identities?",
-      name == "Q78_7" ~ "Choose tasks that highlight themes involving race or ethnicity?",
-      name == "Q78_8" ~ "Choose tasks that highlight themes involving gender or sexual orientation?",
-      name == "Q78_9" ~ "Choose tasks that highlight themes involving socioeconomic status?"
+      name == "interr_own_bias_1" ~ "Reflected on your identity and cultural background?",
+      name == "interr_own_bias_2" ~ "Engaged in challenging conversations about your identity?",
+      name == "interr_own_bias_3" ~ "Interacted with people who have different lived experiences from yourself?",
+      name == "interr_own_bias_4" ~ "Learned about your cultural background and identity by doing things such as reading (books, magazines, newspapers), searching the internet, or keeping up with current events.",
+      name == "interr_own_bias_5" ~ "Learned about others’ cultural background and identity by doing things such as reading (books, magazines, newspapers), searching the internet, or keeping up with current events.",
+      name == "adapt_mat_less_asses_1" ~ "Modify your lessons to include culturally relevant activities and question prompts?",
+      name == "adapt_mat_less_asses_2" ~ "Modify your assessments to include culturally relevant references and questions?",
+      name == "adapt_mat_less_asses_3" ~ "Choose or develop checks for understanding that give students a choice about how to demonstrate knowledge and skills.",
+      name == "adapt_mat_less_asses_4" ~ "Choose or develop checks for understanding that allow students to demonstrate their knowledge and skills orally or in other non-text media.",
+      name == "adapt_mat_less_asses_5" ~ "Draw on knowledge of students’ cultural backgrounds and identities in daily lessons?",
+      name == "adapt_mat_less_asses_6" ~ "Create opportunities for students to share about their cultural background and identities?",
+      name == "adapt_mat_less_asses_7" ~ "Choose tasks that highlight themes involving race or ethnicity?",
+      name == "adapt_mat_less_asses_8" ~ "Choose tasks that highlight themes involving gender or sexual orientation?",
+      name == "adapt_mat_less_asses_9" ~ "Choose tasks that highlight themes involving socioeconomic status?"
     ),
-    name = ifelse(stringr::str_detect(name, "Q77"), "Q77", "Q78")
+    name = ifelse(stringr::str_detect(name, "interr_own_bias"), "interr_own_bias", "adapt_mat_less_asses")
   )
 
 digital_nest_teacher_qs |>
@@ -246,7 +246,7 @@ digital_nest_teacher_qs |>
       "4- Often", "5- Very often"
     ))
   ) |>
-  dplyr::filter(name == "Q77") |>
+  dplyr::filter(name == "interr_own_bias") |>
   ggplot2::ggplot(ggplot2::aes(x = question, y = percent, fill = value)) +
   ggplot2::geom_col(color = NA, width = 0.95, position = ggplot2::position_stack(reverse = TRUE)) +
   ggplot2::geom_text(
@@ -289,7 +289,7 @@ digital_nest_teacher_qs |>
     plot.title = ggplot2::element_text(lineheight = 1.1, size = 18, face = "bold")
   )
 
-ggplot2::ggsave(here::here("images/digital_nest_summary_images/q77_summary_1.png"),
+ggplot2::ggsave(here::here("images/digital_nest_summary_images/interr_own_bias_summary_1.png"),
   bg = "white",
   width = 11,
   height = 9
@@ -303,7 +303,7 @@ digital_nest_teacher_qs |>
       "4- Most lessons", "5- All lessons"
     ))
   ) |>
-  dplyr::filter(name == "Q78") |>
+  dplyr::filter(name == "adapt_mat_less_asses") |>
   ggplot2::ggplot(ggplot2::aes(x = question, y = percent, fill = value)) +
   ggplot2::geom_col(color = NA, width = 0.95, position = ggplot2::position_stack(reverse = TRUE)) +
   ggplot2::geom_text(
@@ -346,7 +346,7 @@ digital_nest_teacher_qs |>
     plot.title = ggplot2::element_text(lineheight = 1.1, size = 18, face = "bold")
   )
 
-ggplot2::ggsave(here::here("images/digital_nest_summary_images/q78_summary_1.png"),
+ggplot2::ggsave(here::here("images/digital_nest_summary_images/adapt_mat_less_asses_summary_1.png"),
   bg = "white",
   width = 13,
   height = 10

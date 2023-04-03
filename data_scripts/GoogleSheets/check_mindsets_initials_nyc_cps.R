@@ -349,9 +349,9 @@ student_work_survey_matched <- student_work_survey |>
   dplyr::filter(Finished == TRUE) |>
   dplyr::mutate(dplyr::across(c(`District 9`, `District 11`, `District 27`), ~ as.character(.x)),
     School = dplyr::coalesce(`District 9`, `District 11`, `District 27`),
-    `T Initials` = toupper(`T Initials`)
+    initials = toupper(initials)
   ) |>
-  dplyr::select(`T Initials`, `Teacher Name`, School) ## A lot of NAs for school because not all submissions are D9/D11
+  dplyr::select(initials, `teacher_name`, School) ## A lot of NAs for school because not all submissions are D9/D11
 
 student_work_survey_matched_final <- student_work_survey_matched |>
   dplyr::left_join(nyc_cps |>
@@ -360,8 +360,8 @@ student_work_survey_matched_final <- student_work_survey_matched |>
       School = ifelse(Site == "NY_D11", paste0("NY_D11_11x", School), School)
     ) |>
     dplyr::select(Teacher, `Teacher code`, School), by = c(
-    "T Initials" = "Teacher code",
-    "Teacher Name" = "Teacher",
+    "initials" = "Teacher code",
+    "teacher_name" = "Teacher",
     "School"
   )) |>
   dplyr::mutate(uploaded = "TRUE")
@@ -369,8 +369,8 @@ student_work_survey_matched_final <- student_work_survey_matched |>
 nyc_cps |>
   dplyr::select(`Teacher code`, Teacher) |>
   dplyr::mutate(
-    uploaded = ifelse(`Teacher code` %in% student_work_survey_matched_final$`T Initials`, TRUE, FALSE),
-    uploaded = ifelse(`Teacher` %in% student_work_survey_matched_final$`Teacher Name`, TRUE, FALSE),
+    uploaded = ifelse(`Teacher code` %in% student_work_survey_matched_final$initials, TRUE, FALSE),
+    uploaded = ifelse(`Teacher` %in% student_work_survey_matched_final$`teacher_name`, TRUE, FALSE),
     uploaded = tidyr::replace_na(uploaded, FALSE)
   ) |>
   dplyr::select(uploaded) |>
@@ -399,13 +399,13 @@ student_work_survey_matched |>
       School = ifelse(Site == "NY_D11", paste0("NY_D11_11x", School), School)
     ) |>
     dplyr::select(Teacher, `Teacher code`, School), by = c(
-    "T Initials" = "Teacher code",
-    "Teacher Name" = "Teacher",
+    "initials" = "Teacher code",
+    "teacher_name" = "Teacher",
     "School"
   )) |>
   dplyr::mutate(
-    check = ifelse(`Teacher Name` %in% nyc_cps$Teacher, TRUE, FALSE),
-    check = ifelse(`T Initials` %in% nyc_cps$`Teacher code`, TRUE, check)
+    check = ifelse(`teacher_name` %in% nyc_cps$Teacher, TRUE, FALSE),
+    check = ifelse(initials %in% nyc_cps$`Teacher code`, TRUE, check)
   ) |>
   dplyr::filter(check == FALSE) |>
   dplyr::select(-check) |>

@@ -47,17 +47,17 @@ student_work_survey <- qualtRics::fetch_survey(
 #### Student Work Survey Matching ####
 
 student_work_initials <- student_work_survey |>
-  dplyr::filter(str_detect(Site, "NY_D11|NY_Roch")) |>
-  dplyr::mutate(`T Initials` = toupper(`T Initials`)) |>
-  tidyr::drop_na(`T Initials`) |>
-  dplyr::group_by(`T Initials`) |>
+  dplyr::filter(str_detect(site, "NY_D11|NY_Roch")) |>
+  dplyr::mutate(initials = toupper(initials)) |>
+  tidyr::drop_na(initials) |>
+  dplyr::group_by(initials) |>
   dplyr::count(sort = T) |>
   dplyr::mutate(`Student work` = TRUE) |>
   dplyr::relocate(`Student work`, .before = n)
 
 student_work_names <- student_work_survey |>
-  dplyr::filter(str_detect(Site, "NY_D11|NY_Roch")) |>
-  dplyr::group_by(`Teacher Name`) |>
+  dplyr::filter(str_detect(site, "NY_D11|NY_Roch")) |>
+  dplyr::group_by(teacher_name) |>
   dplyr::count() |>
   tidyr::drop_na() |>
   dplyr::mutate(`Student work 2` = TRUE)
@@ -134,8 +134,8 @@ is_in_ed_survey_final <- eic_tracker |>
   dplyr::left_join(ny_is_in_ed_survey) |>
   dplyr::mutate(correct_initials = ifelse(is.na(`Teacher code`), FALSE, TRUE)) |>
   dplyr::left_join(eic_emails_student_work, by = c("Email" = "RecipientEmail")) |>
-  dplyr::left_join(student_work_initials, by = c("Teacher code" = "T Initials")) |>
-  dplyr::left_join(student_work_names, by = c("Name" = "Teacher Name")) |>
+  dplyr::left_join(student_work_initials, by = c("Teacher code" = "initials")) |>
+  dplyr::left_join(student_work_names, by = c("Name" = "teacher_name")) |>
   dplyr::mutate(`Student work` = dplyr::coalesce(`Student work`, `Student work 2`),
          n.y = dplyr::coalesce(n.y, n),
          dplyr::across(c("Student work", "Student Survey"), ~ replace_na(.x, FALSE))) |>

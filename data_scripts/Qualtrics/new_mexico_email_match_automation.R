@@ -161,19 +161,22 @@ correct_column_3_2 <- LETTERS[which(colnames(new_mexico_tracker) == "Round 1 Stu
 
 student_surveys_1 <- student_survey |>
   dplyr::filter(RecordedDate <= as.Date("2023-02-01")) |>
-  dplyr::mutate(Teacher = dplyr::coalesce(
-    `Teacher names...24`,
-    `Teacher names...25`,
-    `Teacher names...26`,
-    `Teacher names.`,
-    `Teacher names...28`,
-    `Teacher names...29`,
-    `Teacher names...30`,
-    `Teacher names...31`,
-    `Teacher names...32`,
-    `Teacher names...33`,
-    `Teacher names...34`
-  )) |>
+  dplyr::mutate(dplyr::across(dplyr::contains("teacher_names"), ~ as.character(.x)),
+                dplyr::across(dplyr::contains("teacher_names"), ~ dplyr::na_if(.x, "NA")),
+    Teacher = dplyr::coalesce(
+      `teacher_names_1`,
+      `teacher_names_2`,
+      `teacher_names_3`,
+      `teacher_names_4`,
+      `teacher_names_5`,
+      `teacher_names_6`,
+      `teacher_names_7`,
+      `teacher_names_8`,
+      `teacher_names_9`,
+      `teacher_names_10`,
+      `teacher_names_11`
+    )
+  ) |>
   # filter(is.na(Teacher)) |>
   # select(1:40, Teacher) |>
   # select(contains("Teacher")) |>
@@ -271,20 +274,22 @@ correct_column_5_2 <- LETTERS[which(colnames(new_mexico_tracker) == "Round 2 Stu
 
 student_surveys_2 <- student_survey |>
   dplyr::filter(RecordedDate >= as.Date("2023-04-19")) |>
-  dplyr::mutate(dplyr::across(dplyr::everything(), ~ as.character(.x))) |>
-  dplyr::mutate(Teacher = dplyr::coalesce(
-    `Teacher names...24`,
-    `Teacher names...25`,
-    `Teacher names...26`,
-    `Teacher names.`,
-    `Teacher names...28`,
-    `Teacher names...29`,
-    `Teacher names...30`,
-    `Teacher names...31`,
-    `Teacher names...32`,
-    `Teacher names...33`,
-    `Teacher names...34`
-  )) |>
+  dplyr::mutate(dplyr::across(dplyr::contains("teacher_names"), ~ as.character(.x)),
+                dplyr::across(dplyr::contains("teacher_names"), ~ dplyr::na_if(.x, "NA")),
+                Teacher = dplyr::coalesce(
+                  `teacher_names_1`,
+                  `teacher_names_2`,
+                  `teacher_names_3`,
+                  `teacher_names_4`,
+                  `teacher_names_5`,
+                  `teacher_names_6`,
+                  `teacher_names_7`,
+                  `teacher_names_8`,
+                  `teacher_names_9`,
+                  `teacher_names_10`,
+                  `teacher_names_11`
+                )
+  ) |>
   dplyr::group_by(Teacher) |>
   dplyr::count(sort = T) |>
   dplyr::mutate(completed = TRUE)

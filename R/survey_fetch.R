@@ -767,7 +767,8 @@ get_student_survey <- function(update = FALSE, year = "22_23") {
       force_request = update
     ) |>
       dplyr::filter(Finished == TRUE) |>
-      dplyr::mutate(eic = FALSE)
+      dplyr::mutate(eic = FALSE,
+                    site = as.character(site))
     
     eic_student_survey <- qualtRics::fetch_survey(
       surveyID = "SV_8f9l21n6ML58WFM",
@@ -778,6 +779,7 @@ get_student_survey <- function(update = FALSE, year = "22_23") {
     ) |>
       dplyr::filter(Finished == TRUE) |>
       dplyr::mutate(eic = TRUE,
+                    site = as.character(site),
                     grade_level = readr::parse_number(as.character(grade_level)))
     
     student_survey_coalesced <- student_survey |>
