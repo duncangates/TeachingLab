@@ -18,7 +18,16 @@ relabel_qualtrics_df <- function(df, switch = TRUE) {
   
   colnames_relabel <- purrr::map_chr(df, ~ attr(.x, "label"))
   
-  colnames(df) <- colnames_relabel
+  # if (length(columns_relabel) == length(colnames(df))) {
+    
+    colnames(df) <- colnames_relabel
+    
+  # } else {
+  #   
+  #   #### Need to fix here
+  #   
+  # }
+  
   
   if (switch == TRUE) {
     attr(df, "label") <- original_colnames

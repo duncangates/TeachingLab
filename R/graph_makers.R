@@ -1054,3 +1054,107 @@ fake_line_graph_create <- function(title, fake_data_fun = "time_data",
 }
 
 
+#' @title TL Themed Stacked Bar Chart
+#' @description Automatically scaled stacked bar chart with TL theming
+#' @param data the data for the plotter to use, should include all columns of interest
+#' @param title the title for the plot
+#' @param string_remove NULL by default, provides an optional string removal
+#' @param string_wrap 80 by default, the amount by which to wrap y axis text
+#' @return a ggplot object
+#' @export
+
+tl_likert <- function(data, title = "% Selected", string_remove = NULL, string_wrap = 80) {
+  
+  n <- nrow(data)
+  
+  if (!is.null(string_remove)) {
+    data <- dplyr::rename_with(data, ~ stringr::str_remove_all(.x, string_remove))
+  }
+  
+  data_final <- data |>
+    tidyr::pivot_longer(tidyr::everything()) |>
+    tidyr::drop_na(value) |>
+    dplyr::group_by(name, value) |>
+    dplyr::summarise(n = n()) |>
+    dplyr::ungroup() |>
+    dplyr::group_by(name) |>
+    dplyr::mutate(
+      percent = 100 * (n / sum(n)),
+      name = stringr::str_wrap(name, string_wrap),
+      text_color = dplyr::if_else(readr::parse_number(value) < 4, "white", "black"),
+      value = factor(value, levels = c(
+        "1 - Strongly Disagree",
+        "2 - Disagree",
+        "3 - Mostly Disagree",
+        "4 - Mostly Agree",
+        "5 - Agree",
+        "6 - Strongly Agree"
+      ))
+    )
+  
+  ggplot2::ggplot(data_final, aes(
+    x = name, y = percent
+  )) +
+    ggplot2::geom_col(
+      color = NA,
+      position = ggplot2::position_stack(vjust = 0.5, reverse = TRUE),
+      ggplot2::aes(fill = value)
+    ) +
+    ggplot2::geom_text(
+      ggplot2::aes(
+        label = dplyr::if_else(percent >= 10,
+                               paste0(round(percent), "%"),
+                               ""
+        ),
+        color = text_color
+      ),
+      position = ggplot2::position_stack(vjust = 0.5),
+      family = "Calibri Bold",
+      fontface = "bold"
+    ) +
+    ggplot2::coord_flip() +
+    ggplot2::scale_fill_manual(values = TeachingLab::tl_palette(
+      color = "blue",
+      n = 6
+    )) +
+    ggplot2::scale_color_identity() +
+    # ggplot2::scale_fill_manual(values = c(
+    #   "1 - Strongly Disagree" = "#040404",
+    #   "2 - Disagree" = "#032533",
+    #   "3 - Mostly Disagree" = "#024762",
+    #   "4 - Mostly Agree" = "#016891",
+    #   "5 - Agree" = "#008AC0",
+    #   "6 - Strongly Agree" = "#00ACF0"
+    # )) +
+    ggplot2::guides(fill = guide_legend(reverse = FALSE)) +
+    ggplot2::labs(
+      fill = "", title = glue::glue("{title}"),
+      x = "", y = "",
+      subtitle = glue::glue("n = {n}")
+    ) +
+    scale_y_continuous(labels = scales::percent_format(scale = 1)) +
+    TeachingLab::theme_tl() +
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_blank(),
+      axis.text.y = ggplot2::element_text(lineheight = 1.1, size = 14),
+      legend.position = "bottom",
+      plot.title = ggplot2::element_text(lineheight = 1.1, size = 20, face = "bold"),
+      plot.subtitle = ggplot2::element_text(size = 14, face = "bold"),
+      legend.key.size = grid::unit(1.25, "cm"),
+      legend.text = ggplot2::element_text(size = 12)
+    )
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

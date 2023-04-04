@@ -542,3 +542,23 @@ single_sort_view <- function(vector) {
     sort() |> 
     tibble::view()
 }
+
+#' @title Get the percent of a column that equals specific values
+#' @description Automatically scaled stacked bar chart with TL theming
+#' @param data the data for the plotter to use, should include all columns of interest
+#' @param percent_equal string inputs to find the percent of the column that equals those values
+#' @return a percentage as a string
+#' @export
+
+tl_select_percent <- function(data, percent_equal) {
+  
+  sum_correct <- data |>
+    table() |>
+    magrittr::extract(percent_equal) |>
+    sum()
+  
+  sum_table <- sum(!is.na(data))
+  
+  sum_correct / sum_table
+  
+}
