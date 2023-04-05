@@ -1225,7 +1225,8 @@ get_diagnostic_survey <- function(update = FALSE, year = "22_23") {
       include_display_order = FALSE,
       force_request = update
     ) |>
-      dplyr::filter(Finished == TRUE)
+      dplyr::mutate(dplyr::across(where(is.factor), ~ dplyr::na_if(as.character(.x), "NA"))) |>
+      dplyr::filter(Finished == TRUE & is.na(future_location))
     
   } else if (update == FALSE & year == "21_22") {
     
@@ -3506,7 +3507,8 @@ get_followup_educator <- function(update = FALSE, year = "22_23") {
       include_display_order = FALSE,
       force_request = update
     ) |>
-      dplyr::filter(Finished == TRUE)
+      dplyr::mutate(dplyr::across(where(is.factor), ~ dplyr::na_if(as.character(.x), "NA"))) |>
+      dplyr::filter(Finished == TRUE & !is.na(future_location))
     
   } else if (update == FALSE & year == "21_22") {
     
@@ -3836,9 +3838,9 @@ get_end_coaching <- function(update = FALSE, year = "22_23") {
         )
       )
 
-    readr::write_rds(ongoing_coaching_survey_clean, "data/ongoing_coaching_feedback.rds")
-    readr::write_rds(ongoing_coaching_survey_clean, "Dashboards/CoachingParticipantFeedback/data/ongoing_coaching_feedback.rds")
+    readr::write_rds(end_coaching_survey_clean, "data/ongoing_coaching_feedback.rds")
+    readr::write_rds(end_coaching_survey_clean, "Dashboards/CoachingParticipantFeedback/data/ongoing_coaching_feedback.rds")
   }
 
-  return(ongoing_coaching_survey_clean)
+  return(end_coaching_survey_clean)
 }

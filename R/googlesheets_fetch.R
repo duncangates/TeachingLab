@@ -5,6 +5,7 @@
 #' @return Returns a tibble
 #' @export
 get_current_partner_sites <- function(update = FALSE, condense = FALSE) {
+  
   if (update == TRUE) {
     
     ## Authentication ##
@@ -48,14 +49,25 @@ get_current_partner_sites <- function(update = FALSE, condense = FALSE) {
 #' @param year "21_22" or "22_23"
 #' @return Returns a tibble
 #' @export
-get_ipg_forms <- function(update = FALSE) {
+get_ipg_forms <- function(update = FALSE, year = "22_23") {
   
-  if (update == TRUE) {
+  if (year == "22_23") {
+    ipg_forms <- qualtRics::fetch_survey(
+      surveyID = "SV_0BSnkV9TVXK1hjw",
+      verbose = FALSE,
+      include_display_order = FALSE,
+      force_request = update
+    ) |>
+      dplyr::filter(Finished == TRUE)
+    
+  } else if (update == FALSE & year == "21_22") {
+    ipg_forms <- readr::read_rds(here::here("data/ipg_forms.rds"))
+  } else if (update == TRUE & year == "21_22") {
     ## Authentication ##
     googledrive::drive_auth(path = "Tokens/teachinglab-authentication-0a3006e60773.json")
     googlesheets4::gs4_auth(token = googledrive::drive_token())
     
-    df <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1L33wVpPERyUQdG8WO3sZiyjnHzPvDL91O4yVUQTN14A/edit#gid=1455024681",
+    ipg_forms <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1L33wVpPERyUQdG8WO3sZiyjnHzPvDL91O4yVUQTN14A/edit#gid=1455024681",
                                     sheet = 1,
                                     col_types = "c"
     )
@@ -63,7 +75,7 @@ get_ipg_forms <- function(update = FALSE) {
     googledrive::drive_deauth()
     googlesheets4::gs4_deauth()
     
-    df <- df |>
+    ipg_forms <- ipg_forms |>
       dplyr::mutate(
         Timestamp = lubridate::mdy_hms(Timestamp),
         `Name of Site (Parish, District, Network)` = TeachingLab::string_replace(
@@ -107,17 +119,10 @@ get_ipg_forms <- function(update = FALSE) {
         # ))
       )
     
-    readr::write_rds(df, here::here("data/ipg_forms.rds"))
-  } else if (update == FALSE & year == "21_22") {
-    df <- readr::read_rds(here::here("data/ipg_forms.rds"))
-  } else if (update == FALSE & year == "22_23") {
-    ipg_forms <- qualtRics::fetch_survey(
-      surveyID = "SV_0BSnkV9TVXK1hjw",
-      verbose = FALSE
-    )
+    readr::write_rds(ipg_forms, here::here("data/ipg_forms.rds"))
   }
   
-  return(df)
+  return(ipg_forms)
 }
 
 #' @title Lesson Plan Analysis Data
