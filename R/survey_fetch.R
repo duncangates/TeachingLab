@@ -1225,7 +1225,9 @@ get_diagnostic_survey <- function(update = FALSE, year = "22_23") {
       include_display_order = FALSE,
       force_request = update
     ) |>
-      dplyr::mutate(dplyr::across(where(is.factor), ~ dplyr::na_if(as.character(.x), "NA"))) |>
+      dplyr::mutate(dplyr::across(where(is.factor), ~ dplyr::na_if(as.character(.x), "NA")),
+                    prepost = "Pre",
+                    prepost = factor(prepost, levels = c("Pre", "Post"))) |>
       dplyr::filter(Finished == TRUE & is.na(future_location))
     
   } else if (update == FALSE & year == "21_22") {
@@ -3507,7 +3509,9 @@ get_followup_educator <- function(update = FALSE, year = "22_23") {
       include_display_order = FALSE,
       force_request = update
     ) |>
-      dplyr::mutate(dplyr::across(where(is.factor), ~ dplyr::na_if(as.character(.x), "NA"))) |>
+      dplyr::mutate(dplyr::across(where(is.factor), ~ dplyr::na_if(as.character(.x), "NA")),
+                    prepost = "Post",
+                    prepost = factor(prepost, levels = c("Pre", "Post"))) |>
       dplyr::filter(Finished == TRUE & !is.na(future_location))
     
   } else if (update == FALSE & year == "21_22") {

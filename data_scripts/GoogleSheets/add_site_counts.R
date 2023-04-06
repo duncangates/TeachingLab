@@ -8,9 +8,10 @@ library(tidyr)
 # surveys <- qualtRics::all_surveys()
 
 ### HAVE TO GET RESPONSES HERE TO FILTER FOR END OF COURSE/END OF SESSION ###
-participant_feedback <- fetch_survey(
+participant_feedback <- qualtRics::fetch_survey(
   surveyID = "SV_djt8w6zgigaNq0C",
-  verbose = TRUE
+  verbose = TRUE,
+  include_display_order = FALSE
 ) |>
   dplyr::filter(Finished == TRUE)
 ### End of Session Survey Count ###
@@ -111,11 +112,7 @@ district11_end_coaching_count <- participant_feedback |>
 ##### End of Coaching count ######
 
 ### Educator Survey Counting ###
-diagnostic_survey <- fetch_survey(
-  surveyID = "SV_8vrKtPDtqQFbiBM",
-  force_request = TRUE
-) |>
-  dplyr::filter(Finished == TRUE)
+diagnostic_survey <- TeachingLab::get_diagnostic_survey(update = TRUE, year = "22_23")
 
 diagnostic_survey_count <- diagnostic_survey |>
   dplyr::mutate(site = replace_na(as.character(site), "Other")) |>
@@ -138,12 +135,7 @@ district11_diagnostic_count <- diagnostic_survey |>
 ##### End of Educator Survey count ######
 
 ### Classroom Observation/IPG count ###
-ipg_forms <- qualtRics::fetch_survey(
-  surveyID = "SV_0BSnkV9TVXK1hjw",
-  verbose = FALSE,
-  force = TRUE
-) |>
-  dplyr::filter(Finished == TRUE)
+ipg_forms <- TeachingLab::get_ipg_forms(update = TRUE, year = "22_23")
 
 ### ISSUE: How to relabel baseline/mid-year to round 1, 2, 3, 4, 5??? ###
 classroom_obs_count <- ipg_forms |>
@@ -239,12 +231,9 @@ if (!"Fourth site visit" %in% colnames(district11_classroom_obs_count)) {
 ##### End of Classroom Obs count ######
 
 ### Student Survey Count ###
-eic_student_survey <- qualtRics::fetch_survey(
-  surveyID = "SV_8f9l21n6ML58WFM",
-  verbose = FALSE,
-  force_request = TRUE
-) |>
-  dplyr::filter(Finished == TRUE)
+eic_student_survey <- TeachingLab::get_student_survey(update = TRUE, year = "22_23") |>
+    dplyr::filter(eic = TRUE) |>
+    janitor::remove_empty("cols")
 
 eic_student_survey_count <- eic_student_survey |>
   dplyr::mutate(site = stringr::str_replace_all(site, c(
@@ -263,12 +252,9 @@ d11_eic_student_survey_count <- eic_student_survey |>
   dplyr::filter(!is.na(`District 11`)) |>
   dplyr::rename(`Student Survey pre` = n)
 
-student_survey <- qualtRics::fetch_survey(
-  surveyID = "SV_9uze2faHuIf3vP8",
-  verbose = FALSE,
-  force_request = TRUE
-) |>
-  dplyr::filter(Finished == TRUE)
+student_survey <- TeachingLab::get_student_survey(update = FALSE, year = "22_23") |>
+    dplyr::filter(eic = FALSE) |>
+    janitor::remove_empty("cols")
 
 student_survey_count <- student_survey |>
   dplyr::mutate(site = dplyr::case_when(
@@ -286,7 +272,8 @@ student_survey_count <- student_survey |>
 student_work <- qualtRics::fetch_survey(
   surveyID = "SV_6nwa9Yb4OyXLji6",
   verbose = FALSE,
-  force_request = TRUE
+  force_request = TRUE,
+  include_display_order = FALSE
 ) |>
   dplyr::filter(Finished == TRUE)
 
@@ -385,7 +372,9 @@ knowledge_assessment_ids <- tibble::tibble(
 knowledge_assessment_n <- function(survey_id, survey_name) {
   print(paste0("Getting... ", survey_name))
   ### Get Survey ###
-  know_assess <- qualtRics::fetch_survey(surveyID = survey_id, verbose = TRUE)
+  know_assess <- qualtRics::fetch_survey(surveyID = survey_id, 
+                                         verbose = TRUE, 
+                                         include_display_order = FALSE)
 
   ### All necessary knowledge_assessment_columns ###
   if (nrow(know_assess |> dplyr::filter(Finished == TRUE)) >= 1) {
@@ -468,7 +457,7 @@ knowledge_assessment_count <- purrr::map2_dfr(
 d11_d9_knowledge_assessment_n <- function(survey_id, survey_name, district_filter) {
   print(paste0("Getting... ", survey_name))
   ### Get Survey ###
-  know_assess <- qualtRics::fetch_survey(surveyID = survey_id)
+  know_assess <- qualtRics::fetch_survey(surveyID = survey_id, include_display_order = FALSE)
 
   if (nrow(know_assess |> dplyr::filter(Finished == TRUE)) >= 1) {
     ### First rename
@@ -667,3 +656,4 @@ googlesheets4::range_write(
 )
 ###### End D11 Data Write Section #####
 ######################################## End Script ##################################################
+

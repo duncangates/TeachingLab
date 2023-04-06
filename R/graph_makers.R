@@ -593,11 +593,12 @@ gt_percent_n <- function(df, column, custom_title, no_title = T, base_font = 10,
     ggplot_data |>
       ggplot2::ggplot(ggplot2::aes(fill = !!rlang::ensym(custom_column_name),
                                    values = n)) +
-      waffle::geom_waffle(n_rows = 10, size = 1, colour = "white", 
+      ### ISSUE: some kind of weird error here internal to the library itself I think ###
+      waffle::geom_waffle(n_rows = 10, size = 1, colour = "white",
                           make_proportional = TRUE,
                           radius = grid::unit(2, "pt"),
                           height = 0.9, width = 0.9) +
-      ggplot2::labs(title = paste0(custom_column_name, " (n = ", sum(ggplot_data$n, na.rm = T), ")"),
+      ggplot2::labs(title = paste0(custom_column_name, " (n = ", sum(ggplot_data$n, na.rm = TRUE), ")"),
                     subtitle = subtitle) +
       ggplot2::scale_fill_manual(values = TeachingLab::tl_palette(color = "blue", 
                                                                   n = length(unique(ggplot_data[[custom_column_name]])))) +
