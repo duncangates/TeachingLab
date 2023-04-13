@@ -58,6 +58,7 @@ get_ipg_forms <- function(update = FALSE, year = "22_23") {
       include_display_order = FALSE,
       force_request = update
     ) |>
+      dplyr::mutate(dplyr::across(dplyr::everything(), ~ dplyr::na_if(as.character(.x), "NA"))) |>
       dplyr::filter(Finished == TRUE)
     
   } else if (update == FALSE & year == "21_22") {

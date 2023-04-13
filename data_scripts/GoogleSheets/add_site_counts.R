@@ -253,7 +253,7 @@ d11_eic_student_survey_count <- eic_student_survey |>
   dplyr::rename(`Student Survey pre` = n)
 
 student_survey <- TeachingLab::get_student_survey(update = FALSE, year = "22_23") |>
-    dplyr::filter(eic = FALSE) |>
+    dplyr::filter(eic == FALSE) |>
     janitor::remove_empty("cols")
 
 student_survey_count <- student_survey |>
