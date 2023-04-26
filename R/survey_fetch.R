@@ -1228,7 +1228,7 @@ get_diagnostic_survey <- function(update = FALSE, year = "22_23") {
       dplyr::mutate(dplyr::across(where(is.factor), ~ dplyr::na_if(as.character(.x), "NA")),
                     prepost = "Pre",
                     prepost = factor(prepost, levels = c("Pre", "Post"))) |>
-      dplyr::filter(Finished == TRUE & is.na(future_location))
+      dplyr::filter(Finished == TRUE & is.na(future_location) & !(RecordedDate >= as.Date("2022-11-01") & site == "TX_RAISE Rice University")) # last part here gets rid of TX_RAISE follow up from initial
     
   } else if (update == FALSE & year == "21_22") {
     
@@ -1435,7 +1435,7 @@ get_diagnostic_survey <- function(update = FALSE, year = "22_23") {
 #' @export
 get_knowledge_assessments <- function(update = FALSE, year = "22_23") {
   
-  if (year == "22_23") {
+  if (year == "22_23" & update == FALSE) {
     
     ### List of ids and knowledge assessments ###
     knowledge_assessment_ids <- tibble::tibble(
@@ -1630,6 +1630,8 @@ get_knowledge_assessments <- function(update = FALSE, year = "22_23") {
           tidyr::drop_na(percent)
       )
     
+  } else if (year == "22_23" & update == FALSE) {
+    all_knowledge_assessments <- readr::read_rds(here::here("data/SY22_23/knowledge_assessments_22_23.rds"))
   } else if (update == FALSE & year == "21_22") {
     
     all_knowledge_assessments <- readr::read_rds(here::here("data/knowledge_assessments.rds"))
@@ -3503,16 +3505,30 @@ get_followup_educator <- function(update = FALSE, year = "22_23") {
   
   if (year == "22_23") {
     
-    followup_educator_clean <- qualtRics::fetch_survey(
+    followup_educator_general <- qualtRics::fetch_survey(
       surveyID = "SV_8vrKtPDtqQFbiBM",
       verbose = FALSE,
       include_display_order = FALSE,
       force_request = update
     ) |>
+      dplyr::filter(Finished == TRUE & !is.na(future_location)) |>
       dplyr::mutate(dplyr::across(where(is.factor), ~ dplyr::na_if(as.character(.x), "NA")),
                     prepost = "Post",
-                    prepost = factor(prepost, levels = c("Pre", "Post"))) |>
-      dplyr::filter(Finished == TRUE & !is.na(future_location))
+                    prepost = factor(prepost, levels = c("Pre", "Post")))
+    
+    tx_raise_additional_data <- qualtRics::fetch_survey(
+      surveyID = "SV_8vrKtPDtqQFbiBM",
+      verbose = FALSE,
+      include_display_order = FALSE,
+      force_request = update
+    ) |>
+      dplyr::filter(Finished == TRUE & RecordedDate >= as.Date("2022-11-01") & site == "TX_RAISE Rice University") |>
+      dplyr::mutate(dplyr::across(where(is.factor), ~ dplyr::na_if(as.character(.x), "NA")),
+                    prepost = "Post",
+                    prepost = factor(prepost, levels = c("Pre", "Post")))
+    
+    followup_educator_clean <- followup_educator_general |>
+      bind_rows(tx_raise_additional_data)
     
   } else if (update == FALSE & year == "21_22") {
     
