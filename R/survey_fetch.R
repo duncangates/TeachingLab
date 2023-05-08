@@ -3511,7 +3511,7 @@ get_followup_educator <- function(update = FALSE, year = "22_23") {
       include_display_order = FALSE,
       force_request = update
     ) |>
-      dplyr::mutate(dplyr::across(where(is.factor), ~ dplyr::na_if(as.character(.x), "NA")),
+      dplyr::mutate(dplyr::across(tidyselect::where(is.factor), ~ dplyr::na_if(as.character(.x), "NA")),
                     prepost = "Post",
                     prepost = factor(prepost, levels = c("Pre", "Post"))) |>
       dplyr::filter(Finished == TRUE & !is.na(future_location))
@@ -3534,7 +3534,7 @@ get_followup_educator <- function(update = FALSE, year = "22_23") {
     
     followup_educator_clean <- readr::read_rds(here::here("data/followup_educator_survey.rds"))
     
-  } else if (update == TRUE) {
+  } else if (update == TRUE & year == "21_22") {
     
     options(sm_oauth_token = Sys.getenv("session_token"))
 

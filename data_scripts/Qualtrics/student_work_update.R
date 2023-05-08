@@ -70,7 +70,7 @@ student_work_selected |>
 # just_file_names <- gsub(pattern = "^(?:[^_]*_){2}([^.]*)\\.",
 #      replacement = "\\1.",
 #      x = list.files(here::here("File")))
-
+# 
 # replacement_names <- student_work |>
 #   filter(Finished == TRUE) |>
 #   select(File_Id, File_Name, ResponseId) |>
@@ -78,7 +78,7 @@ student_work_selected |>
 #   mutate(File_Ext = str_remove(File_Name, ".*(?=\\.)"),
 #          Final_File_Name = paste0(ResponseId, File_Ext),
 #          Old_File_Name = paste0(ResponseId, "_", File_Name))
-#
+# 
 # file.rename(from = here::here("File", replacement_names$Old_File_Name),
 #             to = here::here("File", replacement_names$File_Name))
 ########################################################################################
