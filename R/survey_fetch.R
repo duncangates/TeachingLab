@@ -3864,3 +3864,23 @@ get_end_coaching <- function(update = FALSE, year = "22_23") {
 
   return(end_coaching_survey_clean)
 }
+
+
+#' @title Student Work Data
+#' @description Gets metadata about student work files
+#' @param update FALSE, whether or not to pull the updated version
+#' @param year "21_22" or "22_23"
+#' @return Returns a tibble
+#' @export
+get_student_work <- function(update = FALSE, year = "22_23") {
+  
+  if (year == "22_23") {
+    
+    student_work <- qualtRics::fetch_survey("SV_6nwa9Yb4OyXLji6",
+                                            include_display_order = FALSE,
+                                            verbose = FALSE,
+                                            force_request = update)
+    
+  }
+  
+}
