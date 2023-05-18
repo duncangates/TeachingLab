@@ -4,9 +4,9 @@ library(qualtRics)
 # library(RCurl)
 library(stringr)
 
-student_work <- TeachingLab::get_student_work(year = "22_23")
+student_work <- TeachingLab::get_student_work(year = "22_23", update = TRUE)
 
-student_work_sheet <- googlesheets4::read_sheet(ss = "15ixca0QKloZtYLcmj_9Uc20zdQ5FE6pSVj3EBamLoiI")
+# student_work_sheet <- googlesheets4::read_sheet(ss = "15ixca0QKloZtYLcmj_9Uc20zdQ5FE6pSVj3EBamLoiI")
 
 ### Update Student Work Sheet if Needed ###
 

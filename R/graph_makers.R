@@ -1381,7 +1381,7 @@ tl_likert <- function(data, title = "% Selected", string_remove = NULL, string_w
 #' @param col_select the columns to select with `tidyselect::contains`
 #' @param agree_select the type of agree/strongly agree to select, for example also often/always
 #' @param legend_position c(0.8, 0.25) by default, adjustable
-#' @param n_size the n_size to include in the title
+#' @param race_filter a parameter to filter for a specific race from the survey
 #' @return a ggplot object
 #' @export
 
@@ -1391,7 +1391,15 @@ student_bar_chart <- function(data,
                               string_remove,
                               title,
                               legend_position = c(0.8, 0.25),
-                              n_size) {
+                              race_filter = "All") {
+  
+  if (race_filter != "All") {
+    data <- data |>
+      dplyr::filter(race == race_filter)
+  }
+  
+  n_size <- sum(!is.na(data |> dplyr::select(tidyselect::contains(col_select)) |> dplyr::pull(1)))
+  
   ### Makes race column, selects relevant columns and gets percent
   ### that selected relevant levels of agreeness
   student_data_summarised <- data |>
@@ -1417,7 +1425,7 @@ student_bar_chart <- function(data,
     glue::glue('The following percentages show the % that selected "{agree_select[1]}"')
   }
 
-  ggplot2::ggplot(student_data_percent, aes(x = forcats::fct_relevel(question, "Overall", after = length(question)), y = percent)) +
+  p <- ggplot2::ggplot(student_data_percent, aes(x = forcats::fct_relevel(question, "Overall", after = length(question)), y = percent)) +
     ggplot2::geom_col(position = position_dodge(), fill = "#04abeb") +
     ggplot2::geom_text(
       ggplot2::aes(
@@ -1439,16 +1447,19 @@ student_bar_chart <- function(data,
       color = "none"
     ) +
     ggplot2::coord_flip() +
-    # scale_fill_manual(values = tl_palette(color = "blue", n = 4)[2:4]) +
-    # scale_color_manual(values = tl_palette(color = "blue", n = 4)[2:4]) +
     TeachingLab::theme_tl(legend = F) +
     ggplot2::theme(
-      # legend.position = legend_position,
-      # legend.text = element_text(face = "bold"),
-      # legend.title = element_text(face = "bold"),
       plot.title = ggplot2::element_text(family = "Calibri Bold", face = "bold"),
       plot.subtitle = ggtext::element_markdown(family = "Calibri"),
       legend.key.size = grid::unit(1.2, "cm"),
       axis.text.y = ggplot2::element_text(size = 14)
     )
+  
+  cat("#### ", race_filter, "\n")
+  cat("\n")
+  
+  print(p)
+  
+  cat("\n\n")
+  
 }

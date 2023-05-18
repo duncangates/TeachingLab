@@ -11,7 +11,7 @@ student_bar_chart(
   string_remove,
   title,
   legend_position = c(0.8, 0.25),
-  n_size
+  race_filter = "All"
 )
 }
 \arguments{
@@ -27,7 +27,7 @@ student_bar_chart(
 
 \item{legend_position}{c(0.8, 0.25) by default, adjustable}
 
-\item{n_size}{the n_size to include in the title}
+\item{race_filter}{a parameter to filter for a specific race from the survey}
 }
 \value{
 a ggplot object
