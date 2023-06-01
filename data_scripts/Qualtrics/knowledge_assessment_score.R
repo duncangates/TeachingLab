@@ -111,7 +111,9 @@ knowledge_assessments_detailed_scored <- purrr::map2_dfr(
 )
 
 ### Getting Digital Nest for Joining ###
-educator_survey <- qualtRics::fetch_survey("SV_8vrKtPDtqQFbiBM")
+educator_survey <- TeachingLab::get_diagnostic_survey(update = TRUE, year = "22_23")
+
+followup_educator <- TeachingLab::get_followup_educator(update = TRUE, year = "22_23")
 
 ### percent, prepost, site, know_assess ###
 knowledge_assessments_scored <- purrr::map2_dfr(
@@ -137,7 +139,7 @@ knowledge_assessments_scored <- purrr::map2_dfr(
       dplyr::mutate(prepost = factor(prepost, levels = c("pre", "post"))) |> # Make prepost a factor
       dplyr::ungroup() |>
       dplyr::mutate(score = SC0 / max(SC0, na.rm = T)) |>
-      dplyr::select(percent = score, prepost, site, know_assess) |>
+      dplyr::select(id, percent = score, prepost, site, know_assess, date = RecordedDate) |>
       tidyr::drop_na(percent),
     ### Math ANA ###
     educator_survey |>
@@ -157,8 +159,8 @@ knowledge_assessments_scored <- purrr::map2_dfr(
       dplyr::mutate(prepost = dplyr::if_else(RecordedDate >= maxdate & n_response > 1, "post", "pre")) |> # Make pre and post defined by pre-October and post-October
       dplyr::mutate(prepost = factor(prepost, levels = c("pre", "post"))) |> # Make prepost a factor
       dplyr::ungroup() |>
-      dplyr::mutate(score = SC0 / max(SC0, na.rm = T)) |>
-      dplyr::select(percent = score, prepost, site, know_assess) |>
+      dplyr::mutate(score = SC0 / 15) |>
+      dplyr::select(id, percent = score, prepost, site, know_assess, date = RecordedDate) |>
       tidyr::drop_na(percent),
     ### ELA ANA ###
     educator_survey |>
@@ -178,12 +180,12 @@ knowledge_assessments_scored <- purrr::map2_dfr(
       dplyr::mutate(prepost = dplyr::if_else(RecordedDate >= maxdate & n_response > 1, "post", "pre")) |> # Make pre and post defined by pre-October and post-October
       dplyr::mutate(prepost = factor(prepost, levels = c("pre", "post"))) |> # Make prepost a factor
       dplyr::ungroup() |>
-      dplyr::mutate(score = SC0 / max(SC0, na.rm = T)) |>
-      dplyr::select(percent = score, prepost, site, know_assess) |>
+      dplyr::mutate(score = SC0 / if_else(!is.na(k2_ela1_1), 21, 15)) |>
+      dplyr::select(id, percent = score, prepost, site, know_assess, date = RecordedDate) |>
       tidyr::drop_na(percent),
-    ### ELA K-2 ANA ###
+    ### JUST ELA K-2 ANA ###
     educator_survey |>
-      dplyr::filter(Finished == TRUE & RecordedDate <= as.Date("2023-01-01")) |>
+      dplyr::filter(Finished == TRUE) |>
       tidyr::drop_na(k2_ela1_1) |>
       dplyr::mutate(
         id = paste0(tolower(initials), dob),
@@ -199,8 +201,20 @@ knowledge_assessments_scored <- purrr::map2_dfr(
       dplyr::mutate(prepost = dplyr::if_else(RecordedDate >= maxdate & n_response > 1, "post", "pre")) |> # Make pre and post defined by pre-October and post-October
       dplyr::mutate(prepost = factor(prepost, levels = c("pre", "post"))) |> # Make prepost a factor
       dplyr::ungroup() |>
-      dplyr::mutate(score = SC0 / max(SC0, na.rm = TRUE)) |>
-      dplyr::select(percent = score, prepost, site, know_assess) |>
+      dplyr::mutate(score = SC0 / 21) |>
+      dplyr::select(id, percent = score, prepost, site, know_assess, date = RecordedDate) |>
+      tidyr::drop_na(percent),
+    ### New Mexico Diagnostic Scored ###
+    educator_survey |>
+      dplyr::filter(Finished == TRUE & site == "NM_NM Public Education Department") |>
+      bind_rows(followup_educator |> filter(Finished == TRUE & site == "NM_NM Public Education Department")) |>
+      dplyr::mutate(
+        know_assess = "Math: Fostering Positive Math Identities Knowledge Assessment",
+        id = email,
+        prepost = factor(tolower(as.character(prepost)), levels = c("pre", "post"))
+      ) |>
+      dplyr::mutate(score = SC0 / 40) |>
+      dplyr::select(id, percent = score, prepost, site, know_assess, date = RecordedDate) |>
       tidyr::drop_na(percent)
   )
 

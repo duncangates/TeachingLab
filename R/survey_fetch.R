@@ -768,7 +768,12 @@ get_student_survey <- function(update = FALSE, year = "22_23") {
     ) |>
       dplyr::filter(Finished == TRUE) |>
       dplyr::mutate(eic = FALSE,
-                    site = as.character(site))
+                    site = as.character(site),
+                    site = stringr::str_replace_all(site, c("New Mexico" = "NM_NM Public Education Department",
+                                                            "Illinois" = "IL_Chicago Public Schools_Network 4")),
+                    prepost = case_when(site == "NM_NM Public Education Department" & RecordedDate < as.Date("2023-02-12") ~ "Pre",
+                                        site == "NM_NM Public Education Department" & RecordedDate > as.Date("2023-02-12") ~ "Post"),
+                    prepost = factor(prepost, levels = c("Pre", "Post")))
     
     eic_student_survey <- qualtRics::fetch_survey(
       surveyID = "SV_8f9l21n6ML58WFM",
@@ -780,6 +785,8 @@ get_student_survey <- function(update = FALSE, year = "22_23") {
       dplyr::filter(Finished == TRUE) |>
       dplyr::mutate(eic = TRUE,
                     site = as.character(site),
+                    site = stringr::str_replace_all(site, c("Rochester City School District" = "NY_Rochester City Schools",
+                                                            "NYC District 11" = "NY_D11")),
                     grade_level = readr::parse_number(as.character(grade_level)))
     
     student_survey_coalesced <- student_survey |>
@@ -1219,6 +1226,24 @@ get_diagnostic_survey <- function(update = FALSE, year = "22_23") {
   
   if (year == "22_23") {
     
+    nm_diagnostic <- qualtRics::fetch_survey(
+      surveyID = "SV_3a2OM4f9j85EuyO",
+      verbose = FALSE,
+      include_display_order = FALSE,
+      force_request = update
+    ) |>
+      dplyr::filter(Finished == TRUE) |>
+      dplyr::mutate(dplyr::across(where(is.factor), ~ dplyr::na_if(as.character(.x), "NA")),
+                    email = tolower(email),
+                    prepost = "Pre",
+                    prepost = factor(prepost, levels = c("Pre", "Post")),
+                    site = "NM_NM Public Education Department",
+                    teaching_experience = as.character(teaching_experience)) |>
+      dplyr::group_by(email) |>
+      dplyr::filter(row_number() == 1) |>
+      dplyr::ungroup()
+      
+    
     diagnostic_final <- qualtRics::fetch_survey(
       surveyID = "SV_8vrKtPDtqQFbiBM",
       verbose = FALSE,
@@ -1228,7 +1253,8 @@ get_diagnostic_survey <- function(update = FALSE, year = "22_23") {
       dplyr::mutate(dplyr::across(where(is.factor), ~ dplyr::na_if(as.character(.x), "NA")),
                     prepost = "Pre",
                     prepost = factor(prepost, levels = c("Pre", "Post"))) |>
-      dplyr::filter(Finished == TRUE & is.na(future_location) & !(RecordedDate >= as.Date("2022-11-01") & site == "TX_RAISE Rice University")) # last part here gets rid of TX_RAISE follow up from initial
+      dplyr::filter(Finished == TRUE & is.na(future_location) & !(RecordedDate >= as.Date("2022-11-01") & site == "TX_RAISE Rice University")) |># last part here gets rid of TX_RAISE follow up from initial
+      dplyr::bind_rows(nm_diagnostic)
     
   } else if (update == FALSE & year == "21_22") {
     
@@ -1435,7 +1461,7 @@ get_diagnostic_survey <- function(update = FALSE, year = "22_23") {
 #' @export
 get_knowledge_assessments <- function(update = FALSE, year = "22_23") {
   
-  if (year == "22_23" & update == FALSE) {
+  if (year == "22_23" & update == TRUE) {
     
     ### List of ids and knowledge assessments ###
     knowledge_assessment_ids <- tibble::tibble(
@@ -3505,6 +3531,23 @@ get_followup_educator <- function(update = FALSE, year = "22_23") {
   
   if (year == "22_23") {
     
+    nm_diagnostic <- qualtRics::fetch_survey(
+      surveyID = "SV_3a2OM4f9j85EuyO",
+      verbose = FALSE,
+      include_display_order = FALSE,
+      force_request = update
+    ) |>
+      dplyr::filter(Finished == TRUE) |>
+      dplyr::mutate(dplyr::across(where(is.factor), ~ dplyr::na_if(as.character(.x), "NA")),
+                    email = tolower(email),
+                    prepost = "Post",
+                    prepost = factor(prepost, levels = c("Pre", "Post")),
+                    site = "NM_NM Public Education Department",
+                    teaching_experience = as.character(teaching_experience)) |>
+      dplyr::group_by(email) |>
+      dplyr::filter(row_number() == 2) |>
+      dplyr::ungroup()
+    
     followup_educator_general <- qualtRics::fetch_survey(
       surveyID = "SV_8vrKtPDtqQFbiBM",
       verbose = FALSE,
@@ -3528,7 +3571,7 @@ get_followup_educator <- function(update = FALSE, year = "22_23") {
                     prepost = factor(prepost, levels = c("Pre", "Post")))
     
     followup_educator_clean <- followup_educator_general |>
-      bind_rows(tx_raise_additional_data)
+      bind_rows(tx_raise_additional_data, nm_diagnostic)
     
   } else if (update == FALSE & year == "21_22") {
     

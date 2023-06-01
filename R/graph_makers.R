@@ -1398,7 +1398,7 @@ student_bar_chart <- function(data,
       dplyr::filter(race == race_filter)
   }
   
-  n_size <- sum(!is.na(data |> dplyr::select(tidyselect::contains(col_select)) |> dplyr::pull(1)))
+  n_size <- format(sum(!is.na(data |> dplyr::select(tidyselect::contains(col_select)) |> dplyr::pull(1))), big.mark = ",")
   
   ### Makes race column, selects relevant columns and gets percent
   ### that selected relevant levels of agreeness
@@ -1432,7 +1432,7 @@ student_bar_chart <- function(data,
         label = paste0(round(percent), "%")
       ),
       position = ggplot2::position_dodge2(width = 1, preserve = "total"),
-      hjust = -0.5,
+      hjust = -0.25,
       family = "Calibri"
     ) +
     ggplot2::labs(

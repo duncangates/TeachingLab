@@ -556,7 +556,7 @@ tl_select_percent <- function(data, percent_equal) {
   sum_correct <- data |>
     table() |>
     magrittr::extract(percent_equal) |>
-    sum()
+    sum(na.rm = T)
   
   sum_table <- sum(!is.na(data))
   

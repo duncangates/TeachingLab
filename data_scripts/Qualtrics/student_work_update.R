@@ -4,9 +4,10 @@ library(qualtRics)
 # library(RCurl)
 library(stringr)
 
+### Basically just a wrapper ###
 student_work <- TeachingLab::get_student_work(year = "22_23", update = TRUE)
 
-# student_work_sheet <- googlesheets4::read_sheet(ss = "15ixca0QKloZtYLcmj_9Uc20zdQ5FE6pSVj3EBamLoiI")
+student_work_sheet <- googlesheets4::read_sheet(ss = "15ixca0QKloZtYLcmj_9Uc20zdQ5FE6pSVj3EBamLoiI")
 
 ### Update Student Work Sheet if Needed ###
 
@@ -18,6 +19,7 @@ student_work_selected <- student_work |>
       !is.na(`grade_level_19`) ~ "K-2",
       !is.na(`grade_level_14`) ~ "K-2",
       !is.na(`grade_level_15`) ~ "K-2",
+      !is.na(`grade_level_16`) ~ "3-5",
       !is.na(`grade_level_3`) ~ "3-5",
       !is.na(`grade_level_4`) ~ "3-5",
       !is.na(`grade_level_5`) ~ "3-5",
@@ -35,6 +37,7 @@ student_work_selected <- student_work |>
       !is.na(`grade_level_19`) ~ "K",
       !is.na(`grade_level_14`) ~ "1",
       !is.na(`grade_level_15`) ~ "2",
+      !is.na(`grade_level_16`) ~ "3",
       !is.na(`grade_level_3`) ~ "3",
       !is.na(`grade_level_4`) ~ "4",
       !is.na(`grade_level_5`) ~ "5",
@@ -100,6 +103,24 @@ student_work_selected |>
 # 
 # file.rename(from = here::here("File", replacement_names$Old_File_Name),
 #             to = here::here("File", replacement_names$File_Name))
+#             
+### REMOVES OLD FILES ########
+# student_work_sheet |>
+#   filter(!is.na(`Submitted By`)) |>
+#   pull(`Student Work File`) %>%
+#   paste0("~/Teaching Lab/Coding/student_work_samples/www/pdfs/", .) -> remove_files
+# 
+# final_remove <- remove_files[which(remove_files %in% str_replace_all(list.files("~/Teaching Lab/Coding/student_work_samples/www/pdfs", full.names = TRUE), "/Users/dunk/", "~/"))]
+# 
+# file.remove(final_remove)
+
+# student_work_sheet |>
+#   filter(is.na(`Submitted By`)) |>
+#   pull(`Student Work File`) %>%
+#   paste0("~/Teaching Lab/Coding/student_work_samples/www/pdfs/", .) -> needed_files
+# 
+# str_remove_all(needed_files[which(!needed_files %in% str_replace_all(list.files("~/Teaching Lab/Coding/student_work_samples/www/pdfs", full.names = TRUE), "/Users/dunk/", "~/"))], "~/Teaching Lab/Coding/student_work_samples/www/pdfs/")
+
 ########################################################################################
 
 ### Get count of pdf pages ###
