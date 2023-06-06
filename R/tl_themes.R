@@ -313,7 +313,7 @@ gt_theme_tl <- function(data, all_caps = F, align = "center", base_font = 16, he
     gt::opt_all_caps(all_caps = all_caps) %>%
     gt::opt_table_font(
       font = list(
-        gt::google_font("Calibri"),
+        # gt::google_font("Calibri"),
         gt::default_fonts()
       )
     ) %>%

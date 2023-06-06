@@ -742,7 +742,7 @@ gt_percent_n <- function(df, column, custom_title, no_title = T, base_font = 10,
         vjust = ifelse(min(ggplot_data$Percent) == ggplot_data$Percent, -1.5, 0.5)
       ) +
       ggplot2::coord_polar("y", start = 0) +
-      ggplot2::labs(title = paste0(custom_column_name, " (n = ", sum(ggplot_data$n, na.rm = T), ")")) +
+      ggplot2::labs(title = paste0(custom_column_name, " (n = ", format(sum(ggplot_data$n, na.rm = T), big.mark = ","), ")")) +
       ggplot2::scale_fill_manual(values = TeachingLab::tl_palette(
         color = "blue",
         n = length(unique(ggplot_data[[custom_column_name]]))
@@ -791,7 +791,7 @@ gt_percent_n <- function(df, column, custom_title, no_title = T, base_font = 10,
         width = 0.9
       ) +
       ggplot2::labs(
-        title = paste0(custom_column_name, " (n = ", sum(ggplot_data$n, na.rm = TRUE), ")"),
+        title = paste0(custom_column_name, " (n = ", format(sum(ggplot_data$n, na.rm = TRUE), big.mark = ","), ")"),
         subtitle = subtitle
       ) +
       ggplot2::scale_fill_manual(values = TeachingLab::tl_palette(
@@ -837,7 +837,7 @@ gt_percent_n <- function(df, column, custom_title, no_title = T, base_font = 10,
         ),
         place = "center"
       ) +
-      ggplot2::labs(title = paste0(custom_column_name, " (n = ", sum(ggplot_data$n, na.rm = T), ")\n")) +
+      ggplot2::labs(title = paste0(custom_column_name, " (n = ", format(sum(ggplot_data$n, na.rm = T), big.mark = ","), ")\n")) +
       ggplot2::scale_fill_manual(values = TeachingLab::tl_palette(
         color = "blue",
         n = length(unique(ggplot_data[[custom_column_name]]))
@@ -1450,7 +1450,7 @@ student_bar_chart <- function(data,
     TeachingLab::theme_tl(legend = F) +
     ggplot2::theme(
       plot.title = ggplot2::element_text(family = "Calibri Bold", face = "bold"),
-      plot.subtitle = ggtext::element_markdown(family = "Calibri"),
+      plot.subtitle = ggtext::element_markdown(family = "Calibri", hjust = 1),
       legend.key.size = grid::unit(1.2, "cm"),
       axis.text.y = ggplot2::element_text(size = 14)
     )

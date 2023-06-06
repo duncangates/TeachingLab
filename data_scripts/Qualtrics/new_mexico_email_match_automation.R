@@ -46,9 +46,9 @@ course_gradebook <- rcanvas::get_course_gradebook(course_id = 2925)
 
 ############################### Script Matching Starts Here ##################################
 nm_emails <- new_mexico_diagnostic |>
-  dplyr::select(Email) |>
+  dplyr::select(email) |>
   dplyr::mutate(
-    Email = tolower(Email),
+    email = tolower(email),
     `Educator Survey Completed (Y)` = T
   )
 
@@ -58,9 +58,9 @@ correct_column <- LETTERS[which(colnames(new_mexico_tracker) == "Educator Survey
 
 ### Write diagnostic email match to Google Sheet ###
 new_mexico_tracker |>
-  dplyr::mutate(Email = tolower(Email)) |>
+  dplyr::mutate(email = tolower(Email)) |>
   dplyr::select(-`Educator Survey Completed (Y)`) |>
-  dplyr::left_join(nm_emails |> dplyr::distinct(Email, .keep_all = TRUE)) |>
+  dplyr::left_join(nm_emails |> dplyr::distinct(email, .keep_all = TRUE)) |>
   dplyr::select(`Educator Survey Completed (Y)`) |>
   googlesheets4::range_write(
     ss = "https://docs.google.com/spreadsheets/d/17SNPMYkV_Gx-g-3TpKTs-YAi6guUw-WKCI18_x4Q1qU/edit#gid=804355574",
@@ -72,9 +72,9 @@ new_mexico_tracker |>
 
 nm_emails_2 <- new_mexico_diagnostic |>
   dplyr::filter(RecordedDate >= as.Date("2022-12-08")) |>
-  dplyr::select(Email) |>
+  dplyr::select(email) |>
   dplyr::mutate(
-    Email = tolower(Email),
+    email = tolower(email),
     `Second Educator Survey completion (12/9-1/18)` = T
   )
 
@@ -82,9 +82,9 @@ correct_column_6 <- LETTERS[which(colnames(new_mexico_tracker) == "Second Educat
 
 ### Write diagnostic email match to Google Sheet ###
 new_mexico_tracker |>
-  dplyr::mutate(Email = tolower(Email)) |>
+  dplyr::mutate(email = tolower(Email)) |>
   dplyr::select(-`Second Educator Survey completion (12/9-1/18)`) |>
-  dplyr::left_join(nm_emails_2 |> dplyr::distinct(Email, .keep_all = TRUE)) |>
+  dplyr::left_join(nm_emails_2 |> dplyr::distinct(email, .keep_all = TRUE)) |>
   dplyr::select(`Second Educator Survey completion (12/9-1/18)`) |>
   dplyr::mutate(`Second Educator Survey completion (12/9-1/18)` = ifelse(is.na(`Second Educator Survey completion (12/9-1/18)`), FALSE, `Second Educator Survey completion (12/9-1/18)`)) |>
   googlesheets4::range_write(
@@ -245,9 +245,9 @@ canvas_sheet_match(
 ### Third Educator Survey Completion ###
 nm_emails_3 <- new_mexico_diagnostic |>
   dplyr::filter(RecordedDate >= as.Date("2023-04-01")) |>
-  dplyr::select(Email) |>
+  dplyr::select(email) |>
   dplyr::mutate(
-    Email = tolower(Email),
+    email = tolower(email),
     `Educator Survey Completed (Y)` = T
   )
 
@@ -255,9 +255,9 @@ correct_column_4 <- LETTERS[which(colnames(new_mexico_tracker) == "Third Educato
 
 ### Write diagnostic email match to Google Sheet ###
 new_mexico_tracker |>
-  dplyr::mutate(Email = tolower(Email)) |>
+  dplyr::mutate(email = tolower(Email)) |>
   dplyr::select(-`Educator Survey Completed (Y)`) |>
-  dplyr::left_join(nm_emails_3 |> dplyr::distinct(Email, .keep_all = TRUE)) |>
+  dplyr::left_join(nm_emails_3 |> dplyr::distinct(email, .keep_all = TRUE)) |>
   dplyr::select(`Educator Survey Completed (Y)`) |>
   dplyr::mutate(`Educator Survey Completed (Y)` = ifelse(is.na(`Educator Survey Completed (Y)`), FALSE, `Educator Survey Completed (Y)`)) |>
   googlesheets4::range_write(

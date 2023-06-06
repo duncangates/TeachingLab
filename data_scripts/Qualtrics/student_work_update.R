@@ -89,21 +89,27 @@ student_work_selected |>
 ########################################################################################
 ### Update all student work files in database for grading ###
 
-# just_file_names <- gsub(pattern = "^(?:[^_]*_){2}([^.]*)\\.",
-#      replacement = "\\1.",
+# just_file_names <- gsub(pattern = "^([^_]*_[^_]*).*?\\.(pdf|jpg).*",
+#      replacement = "\\1.\\2",
 #      x = list.files(here::here("File")))
 # 
-# replacement_names <- student_work |>
-#   filter(Finished == TRUE) |>
-#   select(File_Id, File_Name, ResponseId) |>
-#   filter(File_Name %in% just_file_names) |>
-#   mutate(File_Ext = str_remove(File_Name, ".*(?=\\.)"),
-#          Final_File_Name = paste0(ResponseId, File_Ext),
-#          Old_File_Name = paste0(ResponseId, "_", File_Name))
+# check <- data.frame(from = list.files(here::here("File")),
+#                     to = just_file_names)
 # 
-# file.rename(from = here::here("File", replacement_names$Old_File_Name),
-#             to = here::here("File", replacement_names$File_Name))
-#             
+# file.rename(from = list.files(here::here("File"), full.names = T),
+#             to = here::here("File", just_file_names))
+# 
+# file.copy(from = list.files(here::here("File"), full.names = T),
+#           to = "~/Teaching Lab/Coding/student_work_samples/www/pdfs/")
+# 
+# 
+# unlink(here::here("File"))
+# # Get all files in the directories, recursively
+# f <- list.files(here::here("File"), include.dirs = F, full.names = T, recursive = T)
+# 
+# # remove the files
+# file.remove(f)
+             
 ### REMOVES OLD FILES ########
 # student_work_sheet |>
 #   filter(!is.na(`Submitted By`)) |>

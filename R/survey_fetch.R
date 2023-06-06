@@ -1238,6 +1238,11 @@ get_diagnostic_survey <- function(update = FALSE, year = "22_23") {
                     prepost = "Pre",
                     prepost = factor(prepost, levels = c("Pre", "Post")),
                     site = "NM_NM Public Education Department",
+                    teaching_experience = dplyr::case_when(teaching_experience <= 10 ~ "1-10",
+                                                           teaching_experience > 10 & teaching_experience <= 19 ~ "11-20",
+                                                           teaching_experience > 19 & teaching_experience <= 29 ~ "21-30",
+                                                           teaching_experience > 29 & teaching_experience <= 39 ~ "31-40",
+                                                           teaching_experience > 39 & teaching_experience <= 49 ~ "41-50"),
                     teaching_experience = as.character(teaching_experience)) |>
       dplyr::group_by(email) |>
       dplyr::filter(row_number() == 1) |>
