@@ -174,13 +174,13 @@ neg_cond_filter <- function(data, if_not_this, filter_this, dat_filter) {
   filter_this_no_all <- filter_this[filter_this != if_not_this]
   
   # Check if any of the filters are not the "All x" pattern and filter for the inputs if that is TRUE
-  if (any(filter_this != if_not_this) & filter_this != "CPS Aggregate") {
+  if (any(filter_this != if_not_this) & filter_this != "IL_Chicago Public Schools_Aggregate") {
     df <- data |>
       dplyr::filter(!!quo_filter %in% filter_this_no_all)
   } else if (filter_this == "NYC District 11 - District-wide, NY") {
     df <- data |>
       dplyr::filter(stringr::str_detect(!!quo_filter, "District 11"))
-  } else if (filter_this == "CPS Aggregate") {
+  } else if (filter_this == "IL_Chicago Public Schools_Aggregate") {
     df <- data |>
       dplyr::filter(!!quo_filter == "IL_Chicago Public Schools_Network 12" |
                       !!quo_filter == "IL_Chicago Public Schools_Network 4" |

@@ -33,10 +33,6 @@ participant_feedback <- qualtRics::fetch_survey(
   surveyID = "SV_djt8w6zgigaNq0C"
 )
 
-educator_survey <- qualtRics::fetch_survey(
-  surveyID = "SV_djt8w6zgigaNq0C"
-)
-
 
 ### RPPL Qualtrics Surveys ###
 tl_treatment_nyc <- qualtRics::fetch_survey(
@@ -113,8 +109,7 @@ teacher_code_ny <- educator_survey |>
   dplyr::select(site, content_area, initials2, initials, school)
 
 ###### Join in both NY and Chicago Initial sets #####
-chicago_is_in_ed_survey <- nyc_cps |>
-  # dplyr::filter(str_detect(Site, "Chicago")) |>
+is_in_ed_survey <- nyc_cps |>
   dplyr::mutate(
     initials3 = substr(get_initials(Teacher), 1, 2),
     School = ifelse(Site == "NY_D9", paste0(Site, "_0", stringr::str_remove(Site, "NY_D"), "X", School), School),
@@ -124,17 +119,18 @@ chicago_is_in_ed_survey <- nyc_cps |>
   dplyr::select(Site, initials3, School) |>
   dplyr::left_join(teacher_code_chi |> select(-content_area),
     by = c("initials3" = "initials2", "Site" = "site", "School" = "school"),
-    multiple = "all"
+    multiple = "all",
+    relationship = "many-to-many"
   ) |>
   dplyr::left_join(teacher_code_ny |> select(-content_area),
     by = c("initials3" = "initials2", "Site" = "site", "School" = "school"),
-    multiple = "all"
+    multiple = "all",
+    relationship = "many-to-many"
   ) |>
   dplyr::mutate(Initials = dplyr::coalesce(initials.x, initials.y)) |>
   dplyr::select(-initials.x, -initials.y) |>
   dplyr::group_by(initials3, Site, School) |>
   dplyr::mutate(initials_count = dplyr::n()) |>
-  dplyr::ungroup() |>
   dplyr::mutate(name = ifelse(initials_count >= 1, "initials_dup", NA)) |>
   tidyr::pivot_wider(values_from = Initials, names_from = name, values_fn = list) |>
   dplyr::mutate(
@@ -158,7 +154,7 @@ is_in_ed_survey_final <- nyc_cps |>
     School = as.character(School)
   ) |>
   dplyr::select(Site, Initials, School) |>
-  dplyr::left_join(chicago_is_in_ed_survey) |>
+  dplyr::left_join(is_in_ed_survey) |>
   dplyr::mutate(correct_initials = ifelse(is.na(`Teacher code`), FALSE, TRUE))
 
 ### Get number of rows to write to sheet ###

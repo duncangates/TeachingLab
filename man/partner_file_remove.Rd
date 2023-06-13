@@ -4,15 +4,19 @@
 \alias{partner_file_remove}
 \title{Remove Image Files Render R Markdown}
 \usage{
-partner_file_remove(partner, input, output_dir)
+partner_file_remove(partner, content_area = NULL, input, output_dir, ...)
 }
 \arguments{
 \item{partner}{The partner to render a report for}
 
+\item{content_area}{content area to filter by default to NULL and ignored}
+
 \item{input}{the rmd to use to parametrically generate reports}
 
 \item{output_dir}{the output directory for the files}
+
+\item{...}{arguments passed to `rmarkdown::render`}
 }
 \description{
-file remove and render
+remove files from images/report_images and images/report_summary_images and render specified rmd
 }

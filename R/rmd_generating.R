@@ -2,8 +2,10 @@
 #' @param partner The partner to render a report for
 #' @param input the rmd to use to parametrically generate reports
 #' @param output_dir the output directory for the files
-#' @description file remove and render 
-partner_file_remove <- function(partner, input, output_dir) {
+#' @param content_area content area to filter by default to NULL and ignored
+#' @param ... arguments passed to `rmarkdown::render`
+#' @description remove files from images/report_images and images/report_summary_images and render specified rmd
+partner_file_remove <- function(partner, content_area = NULL, input, output_dir, ...) {
   
   print("Rendering new rmd...")
   
@@ -13,7 +15,10 @@ partner_file_remove <- function(partner, input, output_dir) {
                                                                          "-" = "_",
                                                                          "," = "_"))),
     output_dir = output_dir,
-    params = list(partner = partner)
+    params = purrr::keep(list(partner = partner,
+                              content_area = content_area),
+                         ~ !is.null(.x)),
+    ...
   )
   
   do.call(file.remove, list(list.files(here::here("images/report_images"), full.names = TRUE)))

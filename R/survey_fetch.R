@@ -1258,7 +1258,9 @@ get_diagnostic_survey <- function(update = FALSE, year = "22_23") {
       dplyr::mutate(dplyr::across(where(is.factor), ~ dplyr::na_if(as.character(.x), "NA")),
                     prepost = "Pre",
                     prepost = factor(prepost, levels = c("Pre", "Post"))) |>
-      dplyr::filter(Finished == TRUE & is.na(future_location) & !(RecordedDate >= as.Date("2022-11-01") & site == "TX_RAISE Rice University")) |># last part here gets rid of TX_RAISE follow up from initial
+      dplyr::filter(Finished == TRUE & is.na(future_location) & 
+                      !(RecordedDate >= as.Date("2022-11-01") & site == "TX_RAISE Rice University") & 
+                      !(RecordedDate >= as.Date("2023-04-15") & site == "AR_Arkansas DOE")) |># last part here gets rid of TX_RAISE follow up from initial and Ar_Arkansas DOE
       dplyr::bind_rows(nm_diagnostic)
     
   } else if (update == FALSE & year == "21_22") {
@@ -3248,7 +3250,7 @@ get_knowledge_assessments <- function(update = FALSE, year = "22_23") {
 #' @export
 get_ongoing_coaching <- function(update = FALSE, year = "22_23") {
   
-  if (update == FALSE & year == "22_23") {
+  if (year == "22_23") {
     
     coaching_feedback_clean <- qualtRics::fetch_survey(
       surveyID = "SV_djt8w6zgigaNq0C",
@@ -3575,8 +3577,19 @@ get_followup_educator <- function(update = FALSE, year = "22_23") {
                     prepost = "Post",
                     prepost = factor(prepost, levels = c("Pre", "Post")))
     
+    arkansas_doe_additional_data <- qualtRics::fetch_survey(
+      surveyID = "SV_8vrKtPDtqQFbiBM",
+      verbose = FALSE,
+      include_display_order = FALSE,
+      force_request = update
+    ) |>
+      dplyr::filter(Finished == TRUE & RecordedDate >= as.Date("2023-04-15") & site == "AR_Arkansas DOE") |>
+      dplyr::mutate(dplyr::across(where(is.factor), ~ dplyr::na_if(as.character(.x), "NA")),
+                    prepost = "Post",
+                    prepost = factor(prepost, levels = c("Pre", "Post")))
+    
     followup_educator_clean <- followup_educator_general |>
-      bind_rows(tx_raise_additional_data, nm_diagnostic)
+      bind_rows(tx_raise_additional_data, nm_diagnostic, arkansas_doe_additional_data)
     
   } else if (update == FALSE & year == "21_22") {
     
