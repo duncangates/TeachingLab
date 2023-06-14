@@ -83,6 +83,7 @@ knowledge_assessment_ids <- tibble::tibble(
     "Language Standards/Conventions Knowledge_NYBlendedLit"
   )
 )
+write_rds(knowledge_assessment_ids , here::here("data/sy22_23/knowledge_assessment_ids.rds"))
 
 ### Filter list for just those with responses ###
 
@@ -375,7 +376,7 @@ ggplot2::ggsave(here::here("images/digital_nest_summary_images/adapt_mat_less_as
 ### Final Format: id, percent, prepost, site, know_assess, date ###
 readr::write_rds(
   knowledge_assessments_scored,
-  here::here("data/SY22_23/knowledge_assessments_22_23.rds")
+  here::here("data/sy22_23/knowledge_assessments_22_23.rds")
 )
 
 ### Write to knowledge assessments dashboard ###
@@ -383,12 +384,12 @@ readr::write_rds(
 readr::write_rds(
   knowledge_assessments_scored |>
     dplyr::filter(!know_assess %in% c("ELA ANA", "ELA K-2 ANA", "Math ANA", "US_Digital Nest School Leaders")),
-  here::here("Dashboards/KnowledgeAssessments2022-2023/data/knowledge_assessments_22_23.rds")
+  here::here("dashboards/KnowledgeAssessments2022-2023/data/knowledge_assessments_22_23.rds")
 )
 
 ### Write detailed question scoring to knowledge assessments dashboard ###
 ### Final Format: prepost, site, know_assess, date, question, score, question2, answer, max_score ###
 readr::write_rds(
   knowledge_assessments_detailed_scored,
-  here::here("Dashboards/KnowledgeAssessments2022-2023/data/knowledge_assessments_22_23_detailed.rds")
+  here::here("dashboards/KnowledgeAssessments2022-2023/data/knowledge_assessments_22_23_detailed.rds")
 )

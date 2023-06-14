@@ -48,7 +48,7 @@ save_processed_data <- function(data, q_and_a, correct, save_name, question_html
   
   print(data_plot)
   
-  readr::write_rds(data_plot, here::here(glue::glue("Dashboards/KnowledgeAssessments/data/processed/{save_name}.rds")))
+  readr::write_rds(data_plot, here::here(glue::glue("dashboards/KnowledgeAssessments/data/processed/{save_name}.rds")))
 }
 
 #' @title Version 2 Knowledge Assessments Reformat
@@ -164,6 +164,6 @@ save_processed_data2 <- function(data, q_and_a, correct, save_name, question_htm
 
   print(data_final)
 
-  readr::write_rds(data_final, here::here(glue::glue("data/knowledge_assessments/{save_name}.rds")))
+  readr::write_rds(data_final, here::here(glue::glue("data/sy21_22/knowledge_assessments/{save_name}.rds")))
   
 }

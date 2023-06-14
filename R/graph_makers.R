@@ -357,7 +357,7 @@ ipg_plot <- function(data, name, save_name, height = 5, width = 8.5, wrap = 60, 
     )
 
   if (save == T) {
-    ggplot2::ggsave(here::here(glue::glue("images/ipg_forms/{save_name}.png")), width = width, height = height, bg = "white", dpi = dpi)
+    ggplot2::ggsave(here::here(glue::glue("images/sy21_22/ipg_forms/{save_name}.png")), width = width, height = height, bg = "white", dpi = dpi)
   }
 
   return(p)

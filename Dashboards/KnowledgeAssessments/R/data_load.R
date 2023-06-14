@@ -65,17 +65,17 @@ math_cycle_of_inquiry_i <- readr::read_rds("data/processed/math_cycle_of_inquiry
 #     dplyr::mutate(title = stringr::str_replace_all(title, ":", ""))
 #   print(name_df)
 #   #### Write to data folder with original name####
-#   purrr::map2(.x = name_df$names, .y = name_df$title, ~ readr::write_rds(x = get(.x), file = paste0(here::here("Dashboards/KnowledgeAssessments/data/"), .y, ".rds")))
+#   purrr::map2(.x = name_df$names, .y = name_df$title, ~ readr::write_rds(x = get(.x), file = paste0(here::here("dashboards/KnowledgeAssessments/data/"), .y, ".rds")))
 # }
 # 
 # purrr::map2(.x = ids_surveys$id, .y = ids_surveys$count, ~ fetch_survey_2(id = .x, name = .y))
 
 ##### Temporary #####
-# diagnostic <- readr::read_rds(here::here("Dashboards/KnowledgeAssessments/data/diagnostic.rds"))
-diagnostic <- readr::read_rds("data/diagnostic.rds")
+# diagnostic <- readr::read_rds(here::here("dashboards/KnowledgeAssessments/data/diagnostic.rds"))
+diagnostic <- readr::read_rds("data/sy21_22/diagnostic.rds")
 
 #### Survey 1: ELA General Bootcamp ####
-# ela_general_bootcamp <- readr::read_rds(here::here("Dashboards/KnowledgeAssessments/data/ELABootcamp-General.rds"))
+# ela_general_bootcamp <- readr::read_rds(here::here("dashboards/KnowledgeAssessments/data/ELABootcamp-General.rds"))
 # ela_general_bootcamp <- readr::read_rds("data/ELABootcamp-General.rds")
 # 
 # ela_general_bootcamp_correct <- tibble::tibble(question = c("Which of the following are literacy instructional shifts? Select all that apply. - Regular practice with complex texts and their academic language.", 
@@ -113,7 +113,7 @@ diagnostic <- readr::read_rds("data/diagnostic.rds")
 #                                                                                               grouping = "Please select your site (district, parish, network, or school)"))
 # #### Making Survey 2 ELA General Cycle of Inquiry ####
 # #### Not complete as of 10-29-31, will need updating on questions, answers ####
-# # ela_cycle_of_inquiry <- readr::read_rds(here::here("Dashboards/KnowledgeAssessments/data/ELAGeneralCycleofInquiry-ComplexText.rds"))
+# # ela_cycle_of_inquiry <- readr::read_rds(here::here("dashboards/KnowledgeAssessments/data/ELAGeneralCycleofInquiry-ComplexText.rds"))
 # ela_cycle_of_inquiry <- readr::read_rds("data/ELAGeneralCycleofInquiry-ComplexText.rds")
 # 
 # ela_cycle_of_inquiry_correct <- tibble::tibble(question = c("For each of the following, indicate if it is a component of the foundational skills of reading. Select all that apply. - Print concepts", 
@@ -139,7 +139,7 @@ diagnostic <- readr::read_rds("data/diagnostic.rds")
 #                                                                                               grouping = "Please select your site (district, parish, network, or school)"))
 # 
 # #### Making Survey 3 ELA Foundational Skills Bootcamp ####
-# # ela_foundational_skills <- readr::read_rds(here::here("Dashboards/KnowledgeAssessments/data/ELABootcamp-FoundationalSkillsBootcampSkills(K-2).rds"))
+# # ela_foundational_skills <- readr::read_rds(here::here("dashboards/KnowledgeAssessments/data/ELABootcamp-FoundationalSkillsBootcampSkills(K-2).rds"))
 # ela_foundational_skills <- readr::read_rds("data/ELABootcamp-FoundationalSkillsBootcampSkills(K-2).rds")
 # 
 # ela_foundational_skills_correct <- tibble::tibble(question = c("For each of the following, indicate if it is a component of the foundational skills of reading. Select all that apply. - Print concepts", 
@@ -165,7 +165,7 @@ diagnostic <- readr::read_rds("data/diagnostic.rds")
 #                                                                                                                         grouping = "Please select your site (district, parish, network, or school)"))
 # #### Making Survey 4 ELA Guidebooks Cycle of Inquiry 1 ####
 # #### Not complete as of 10-29-31, will need updating on questions, answers ####
-# # ela_guidebooks_cycle1 <- readr::read_rds(here::here("Dashboards/KnowledgeAssessments/data/ELAGuidebooksCycleofInquiry1.rds"))
+# # ela_guidebooks_cycle1 <- readr::read_rds(here::here("dashboards/KnowledgeAssessments/data/ELAGuidebooksCycleofInquiry1.rds"))
 # ela_guidebooks_cycle1 <- readr::read_rds("data/ELAGuidebooksCycleofInquiry1.rds")
 # 
 # ela_guidebooks_cycle1_correct <- tibble::tibble(question = c("For each of the following, indicate if it is a component of the foundational skills of reading. Select all that apply. - Print concepts", 
@@ -192,7 +192,7 @@ diagnostic <- readr::read_rds("data/diagnostic.rds")
 # 
 # #### Making Survey 5 ELA Guidebooks Cycle of Inquiry 2 ####
 # #### Not complete as of 10-29-31, will need updating on questions, answers ####
-# # ela_guidebooks_cycle2 <- readr::read_rds(here::here("Dashboards/KnowledgeAssessments/data/ELAGuidebooksCycleofInquiry2.rds"))
+# # ela_guidebooks_cycle2 <- readr::read_rds(here::here("dashboards/KnowledgeAssessments/data/ELAGuidebooksCycleofInquiry2.rds"))
 # ela_guidebooks_cycle2 <- readr::read_rds("data/ELAGuidebooksCycleofInquiry2.rds")
 # 
 # ela_guidebooks_cycle2_correct <- tibble::tibble(question = c("For each of the following, indicate if it is a component of the foundational skills of reading. Select all that apply. - Print concepts", 
@@ -219,7 +219,7 @@ diagnostic <- readr::read_rds("data/diagnostic.rds")
 # 
 # 
 # #### Making Survey 6 ELA Guidebooks Diverse Learners: Bootcamp - Leader ####
-# # ela_guidebooks_diverse_learners_leader <- readr::read_rds(here::here("Dashboards/KnowledgeAssessments/data/ELAGuidebooksDiverseLearnersBootcamp-Leader.rds"))
+# # ela_guidebooks_diverse_learners_leader <- readr::read_rds(here::here("dashboards/KnowledgeAssessments/data/ELAGuidebooksDiverseLearnersBootcamp-Leader.rds"))
 # ela_guidebooks_diverse_learners_leader <- readr::read_rds("data/ELAGuidebooksDiverseLearnersBootcamp-Leader.rds")
 # 
 # ela_guidebooks_diverse_learners_leader_correct <- tibble::tibble(
@@ -240,7 +240,7 @@ diagnostic <- readr::read_rds("data/diagnostic.rds")
 #                                                                                                                     coding = .y,
 #                                                                                                                     grouping = "Please select your site (district, parish, network, or school)."))
 # #### Making Survey 7 ELA Guidebooks Diverse Learners: Bootcamp - Teacher ####
-# # ela_guidebooks_diverse_learners_teacher <- readr::read_rds(here::here("Dashboards/KnowledgeAssessments/data/ELAGuidebooksDiverseLearnersBootcamp-Teacher.rds"))
+# # ela_guidebooks_diverse_learners_teacher <- readr::read_rds(here::here("dashboards/KnowledgeAssessments/data/ELAGuidebooksDiverseLearnersBootcamp-Teacher.rds"))
 # ela_guidebooks_diverse_learners_teacher <- readr::read_rds("data/ELAGuidebooksDiverseLearnersBootcamp-Teacher.rds")
 # 
 # ela_guidebooks_diverse_learners_teacher_correct <- tibble::tibble(
@@ -272,7 +272,7 @@ diagnostic <- readr::read_rds("data/diagnostic.rds")
 #                                                                                                                                                       grouping = "Please select your site (district, parish, network, or school)."))
 # 
 # #### Making Survey 8 ELA Guidebooks Diverse Learners: Bootcamp - Writing ####
-# # ela_guidebooks_diverse_learners_writing <- readr::read_rds(here::here("Dashboards/KnowledgeAssessments/data/ELAGuidebooksDiverseLearnersBootcampWriting.rds"))
+# # ela_guidebooks_diverse_learners_writing <- readr::read_rds(here::here("dashboards/KnowledgeAssessments/data/ELAGuidebooksDiverseLearnersBootcampWriting.rds"))
 # ela_guidebooks_diverse_learners_writing <- readr::read_rds("data/ELAGuidebooksDiverseLearnersBootcampWriting.rds")
 # 
 # ela_guidebooks_diverse_learners_writing_correct <- tibble::tibble(
@@ -297,7 +297,7 @@ diagnostic <- readr::read_rds("data/diagnostic.rds")
 # 
 # #### Making Survey 9 ELA Guidebooks Diverse Learners: Bootcamp - Fluency ####
 # #### Not complete as of 10-29-31, will need updating on questions, answers ####
-# # ela_guidebooks_diverse_learners_fluency <- readr::read_rds(here::here("Dashboards/KnowledgeAssessments/data/ELAGuidebooksDiverseLearnersCycleofInquiry-Fluency.rds"))
+# # ela_guidebooks_diverse_learners_fluency <- readr::read_rds(here::here("dashboards/KnowledgeAssessments/data/ELAGuidebooksDiverseLearnersCycleofInquiry-Fluency.rds"))
 # ela_guidebooks_diverse_learners_fluency <- readr::read_rds("data/ELAGuidebooksDiverseLearnersCycleofInquiry-Fluency.rds")
 # 
 # ela_guidebooks_diverse_learners_fluency_correct <- tibble::tibble(

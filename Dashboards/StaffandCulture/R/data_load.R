@@ -16,7 +16,7 @@ round_even <- function(x) {
   2 * ceiling(x / 2)
 }
 
-# write_rds(discrete_data, here::here("Dashboards/RaceandCulture/data/discrete_data.rds"))
+# write_rds(discrete_data, here::here("dashboards/RaceandCulture/data/discrete_data.rds"))
 data <- read_rds("data/full_data.rds") %>%
   mutate(time = factor(time, levels = rev(c("March 2019", "July 2019", "February 2020", "November 2020", "July 2021")))) #%>%
   # rename(`I am satisfied with the logistics of working for Teaching Lab.` = `I am satisfied with the logistics of working for Teaching Lab (contracting, invoices, reimbursements, payment, etc.)`)
@@ -39,13 +39,13 @@ tl_values_group <- tl_values$Question %>% unique()
 slgs_group <- slgs$Question %>% unique()
   
 
-# july_2021 <- read_rds(here::here("Dashboards/StaffandCulture/data/july_2021.rds"))
+# july_2021 <- read_rds(here::here("dashboards/StaffandCulture/data/july_2021.rds"))
 # 
-# data <- read_rds(here::here("Dashboards/StaffandCulture/data/full_data.rds")) %>%
+# data <- read_rds(here::here("dashboards/StaffandCulture/data/full_data.rds")) %>%
 #   filter(time != "July 2021") %>%
 #   bind_rows(july_2021) %>%
 #   mutate(time = factor(time, levels = c("March 2019", "July 2019", "February 2020", "November 2020", "July 2021")))
-# write_rds(data, here::here("Dashboards/StaffandCulture/data/full_data.rds"))
+# write_rds(data, here::here("dashboards/StaffandCulture/data/full_data.rds"))
 
 
 

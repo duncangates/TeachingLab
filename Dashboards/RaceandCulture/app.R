@@ -14,7 +14,7 @@ round_even <- function(x) {
   2 * ceiling(x/2)
 }
 
-# write_rds(discrete_data, here::here("Dashboards/RaceandCulture/data/discrete_data.rds"))
+# write_rds(discrete_data, here::here("dashboards/RaceandCulture/data/discrete_data.rds"))
 data <- read_rds("data/full_data.rds")
 
 likert_data <- read_rds("data/likert_data.rds")

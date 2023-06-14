@@ -1,5 +1,5 @@
 library(tidyverse)
-data <- readr::read_rds(here::here("Dashboards/RaceandCulture2/data/full_data.rds"))
+data <- readr::read_rds(here::here("dashboards/RaceandCulture2/data/full_data.rds"))
 # data <- data %>%
 #   mutate(`What is your role?` = coalesce(`What is your role?`, `What is your role`),
 #          `Are you part of the Leadership Team at Teaching Lab?` = coalesce(`Are you part of the Leadership Team at Teaching Lab?`,
@@ -11,7 +11,7 @@ data <- readr::read_rds(here::here("Dashboards/RaceandCulture2/data/full_data.rd
 #                                                                          c("Person of color" = "As a person of color",
 #                                                                            "Race: Prefer not to answer" = "Prefer not to answer",
 #                                                                            "White person" = "As a white person")))
-# data %>% readr::write_rds(here::here("Dashboards/RaceandCulture2/data/full_data.rds"))
+# data %>% readr::write_rds(here::here("dashboards/RaceandCulture2/data/full_data.rds"))
 
 gwc_1 <- data %>% select(
   `I am satisfied with the logistics of working for Teaching Lab (contracting, invoices, reimbursements, payment, etc.).`,
@@ -32,7 +32,7 @@ gwc_1 <- data %>% select(
   summarise(across(everything(), ~ round(100 * (sum(.x %in% c("4", "5"), na.rm = T)/length(which(!is.na(.x))))))) %>%
   pivot_longer(!time, names_to = "Question", values_to = "Percent")
 
-gwc_1 %>% write_rds(here::here("Dashboards/RaceandCulture2/data/gwc_1.rds"))
+gwc_1 %>% write_rds(here::here("dashboards/RaceandCulture2/data/gwc_1.rds"))
 
 mngmnt <- data %>%
   select(contains("leadership") | contains("executive") | contains("management"),
@@ -59,7 +59,7 @@ mngmnt <- data %>%
   group_by(time) %>%
   summarise(across(!c(`Are you part of the Leadership Team at Teaching Lab?`), ~ round(100 * (sum(.x %in% c("4", "5"), na.rm = T)/length(which(!is.na(.x))))))) %>%
   pivot_longer(!time, names_to = "Question", values_to = "Percent")
-mngmnt %>% write_rds(here::here("Dashboards/RaceandCulture2/data/mngmnt.rds"))
+mngmnt %>% write_rds(here::here("dashboards/RaceandCulture2/data/mngmnt.rds"))
 
 employee_engagment <- data %>%
   select(`I know what is expected of me at work.`,
@@ -78,7 +78,7 @@ employee_engagment <- data %>%
   group_by(time) %>%
   summarise(across(everything(), ~ round(100 * (sum(.x %in% c("4", "5"), na.rm = T)/length(which(!is.na(.x))))))) %>%
   pivot_longer(!time, names_to = "Question", values_to = "Percent")
-employee_engagment %>% write_rds(here::here("Dashboards/RaceandCulture2/data/employee_engagment.rds"))
+employee_engagment %>% write_rds(here::here("dashboards/RaceandCulture2/data/employee_engagment.rds"))
 
 tl_values <- data %>%
   select(
@@ -90,7 +90,7 @@ tl_values <- data %>%
   group_by(time) %>%
   summarise(across(everything(), ~ round(100 * (sum(.x %in% c("4", "5"), na.rm = T)/length(which(!is.na(.x))))))) %>%
   pivot_longer(!time, names_to = "Question", values_to = "Percent")
-tl_values %>% write_rds(here::here("Dashboards/RaceandCulture2/data/tl_values.rds"))
+tl_values %>% write_rds(here::here("dashboards/RaceandCulture2/data/tl_values.rds"))
 
 equity_inclusion <- data %>%
   select(
@@ -143,14 +143,14 @@ equity_inclusion <- data %>%
   group_by(time) %>%
   summarise(across(everything(), ~ round(100 * (sum(.x %in% c("4", "5"), na.rm = T)/length(which(!is.na(.x))))))) %>%
   pivot_longer(!time, names_to = "Question", values_to = "Percent")
-equity_inclusion %>% write_rds(here::here("Dashboards/RaceandCulture2/data/equity_inclusion.rds"))
+equity_inclusion %>% write_rds(here::here("dashboards/RaceandCulture2/data/equity_inclusion.rds"))
 
 slgs <- data %>%
   select(contains("SLG") | contains("Social Learning"), time) %>%
   group_by(time) %>%
   summarise(across(everything(), ~ round(100 * (sum(.x %in% c("4", "5"), na.rm = T)/length(which(!is.na(.x))))))) %>%
   pivot_longer(!time, names_to = "Question", values_to = "Percent")
-slgs %>% write_rds(here::here("Dashboards/RaceandCulture2/data/slgs.rds"))
+slgs %>% write_rds(here::here("dashboards/RaceandCulture2/data/slgs.rds"))
 
 
 data <- data %>%

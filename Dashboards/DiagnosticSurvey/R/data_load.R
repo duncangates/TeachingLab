@@ -1,8 +1,8 @@
 library(magrittr)
 
 ### Load the Data ###
-# diagnostic <- readr::read_rds(here::here("Dashboards/DiagnosticSurvey/data/diagnostic.rds"))
-diagnostic <- readr::read_rds("data/diagnostic.rds")
+# diagnostic <- readr::read_rds(here::here("dashboards/DiagnosticSurvey/data/diagnostic.rds"))
+diagnostic <- readr::read_rds("data/sy21_22/diagnostic.rds")
 
 #### Grade Column Names ####
 grades <- c(

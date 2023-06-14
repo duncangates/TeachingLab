@@ -626,7 +626,7 @@ gt_know_assess <- function(data, know_assess) {
     stringr::str_replace_all(., "Ela", "ELA") %>%
     stringr::str_replace_all(., "Eic", "EIC") # Correct title casing
   
-  questions_and_answers <- readr::read_rds("data/all_knowledge_questions_and_answers.rds")
+  questions_and_answers <- readr::read_rds("data/sy21_22/all_knowledge_questions_and_answers.rds")
   
   ## Overall averages ##
   if (sum(data$prepost == "pre") >= 1) {

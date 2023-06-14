@@ -42,7 +42,7 @@ fetch_survey_2 <- function(id, name) {
     dplyr::mutate(title = stringr::str_replace_all(title, ":", ""))
   print(name_df)
   #### Write to data folder with original name####
-  purrr::map2(.x = name_df$names, .y = name_df$title, ~ readr::write_rds(x = get(.x), file = paste0(here::here("Dashboards/KnowledgeAssessments/data/"), .y, ".rds")))
+  purrr::map2(.x = name_df$names, .y = name_df$title, ~ readr::write_rds(x = get(.x), file = paste0(here::here("dashboards/KnowledgeAssessments/data/"), .y, ".rds")))
 }
 
 purrr::map2(.x = ids_surveys$id, .y = ids_surveys$count, ~ fetch_survey_2(id = .x, name = .y))
@@ -92,10 +92,10 @@ ela_general_bootcamp_correct <- tibble::tibble(question = c("Which of the follow
                                                           "Have students read the full text multiple times to find the main idea.",
                                                           "Ask simpler questions about the same text."))
 readr::write_rds(ela_general_bootcamp_correct,
-          here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_general_bootcamp.rds"))
+          here::here("dashboards/KnowledgeAssessments/data/questions_and_answers/ela_general_bootcamp.rds"))
 
-TeachingLab::save_processed_data(data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELABootcamp-General.rds"),
-                    q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_general_bootcamp.rds"),
+TeachingLab::save_processed_data(data = here::here("dashboards/KnowledgeAssessments/data/unprocessed/ELABootcamp-General.rds"),
+                    q_and_a = here::here("dashboards/KnowledgeAssessments/data/questions_and_answers/ela_general_bootcamp.rds"),
                     correct = c("Regular practice with complex texts and their academic language.",
                                 "Building knowledge through content-rich non-fiction.",
                                 "A complex text that is worthy of reading multiple times.",
@@ -137,10 +137,10 @@ ela_foundational_skills_correct <- tibble::tibble(question = c("For each of the 
                                                              "Adhere to a same structure of number of groups and members of groups for the entirety of the year"))
 
 readr::write_rds(ela_foundational_skills_correct, 
-                 here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_foundational_skills.rds"))
+                 here::here("dashboards/KnowledgeAssessments/data/questions_and_answers/ela_foundational_skills.rds"))
 
-TeachingLab::save_processed_data(data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELABootcamp-FoundationalSkillsBootcampSkills(K-2).rds"),
-                    q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_foundational_skills.rds"),
+TeachingLab::save_processed_data(data = here::here("dashboards/KnowledgeAssessments/data/unprocessed/ELABootcamp-FoundationalSkillsBootcampSkills(K-2).rds"),
+                    q_and_a = here::here("dashboards/KnowledgeAssessments/data/questions_and_answers/ela_foundational_skills.rds"),
                     correct = c("Print concepts",
                                 "Phonological awareness",
                                 "Fluency",
@@ -171,10 +171,10 @@ ela_guidebooks_diverse_learners_leader_correct <- tibble::tibble(
              "I’m not sure"))
 
 readr::write_rds(ela_guidebooks_diverse_learners_leader_correct, 
-                 here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_diverse_learners.rds"))
+                 here::here("dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_diverse_learners.rds"))
 
-TeachingLab::save_processed_data(data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELAGuidebooksDiverseLearnersBootcamp-Leader.rds"),
-                    q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_diverse_learners.rds"),
+TeachingLab::save_processed_data(data = here::here("dashboards/KnowledgeAssessments/data/unprocessed/ELAGuidebooksDiverseLearnersBootcamp-Leader.rds"),
+                    q_and_a = here::here("dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_diverse_learners.rds"),
                     correct = c("Some students need targeted additional support outside of their ELA block.",
                                 "Students who need it should have practice with the text before they engage with that text in their ELA block.",
                                 "Plan with the interventionist, Mr. Liu, to have the students work with him to analyze exemplar written responses for key elements a few days before the writing task is assigned."),
@@ -218,10 +218,10 @@ ela_guidebooks_diverse_learners_teacher_correct <- tibble::tibble(
              "I’m not sure"))
 
 readr::write_rds(ela_guidebooks_diverse_learners_teacher_correct, 
-                 here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_diverse_learners_bootcamp_teacher.rds"))
+                 here::here("dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_diverse_learners_bootcamp_teacher.rds"))
 
-TeachingLab::save_processed_data(data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELAGuidebooksDiverseLearnersBootcamp-Teacher.rds"),
-                    q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_diverse_learners_bootcamp_teacher.rds"),
+TeachingLab::save_processed_data(data = here::here("dashboards/KnowledgeAssessments/data/unprocessed/ELAGuidebooksDiverseLearnersBootcamp-Teacher.rds"),
+                    q_and_a = here::here("dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_diverse_learners_bootcamp_teacher.rds"),
                     correct = c("Some students need targeted additional support outside of their ELA block.",
                                 "Students who need it should have practice with the text before they engage with that text in their ELA block.",
                                 "Plan with the interventionist, Mr. Liu, to have the students work with him to analyze exemplar written responses for key elements a few days before the writing task is assigned.",
@@ -254,10 +254,10 @@ ela_guidebooks_diverse_learners_writing_correct <- tibble::tibble(
              "I’m not sure"))
 
 readr::write_rds(ela_guidebooks_diverse_learners_writing_correct,
-          here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_diverse_learners_bootcamp_writing.rds"))
+          here::here("dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_diverse_learners_bootcamp_writing.rds"))
 
-TeachingLab::save_processed_data(data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELAGuidebooksDiverseLearnersBootcampWriting.rds"),
-                    q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_diverse_learners_bootcamp_writing.rds"),
+TeachingLab::save_processed_data(data = here::here("dashboards/KnowledgeAssessments/data/unprocessed/ELAGuidebooksDiverseLearnersBootcampWriting.rds"),
+                    q_and_a = here::here("dashboards/KnowledgeAssessments/data/questions_and_answers/ela_guidebooks_diverse_learners_bootcamp_writing.rds"),
                     correct = c("Students need to be explicitly taught how to write.",
                                 "Students should  plan out what they’re going to write before beginning to write.",
                                 "Identify incorrect uses of punctuation and correct them."),
@@ -292,10 +292,10 @@ ela_hqim_enrichment_correct <- tibble::tibble(
   ))
 
 readr::write_rds(ela_hqim_enrichment_correct, 
-          here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/el_ela_hqim_enrichment.rds"))
+          here::here("dashboards/KnowledgeAssessments/data/questions_and_answers/el_ela_hqim_enrichment.rds"))
 
-TeachingLab::save_processed_data(data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/ELAHQIM&Enrichment.rds"),
-                    q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/el_ela_hqim_enrichment.rds"),
+TeachingLab::save_processed_data(data = here::here("dashboards/KnowledgeAssessments/data/unprocessed/ELAHQIM&Enrichment.rds"),
+                    q_and_a = here::here("dashboards/KnowledgeAssessments/data/questions_and_answers/el_ela_hqim_enrichment.rds"),
                     correct = c("Gifted learners have special needs in the classroom that fall into these categories: Cognitive, Creative, Affective, Behavioral.",
                                 "Sequencing the layers of Depth and Complexity to support key standards yields the highest-impact enrichment.",
                                 "The Depth and Complexity Framework is a differentiation tool that can raise the thinking level for all students.",
@@ -342,10 +342,10 @@ math_bootcamp_correct <- tibble::tibble(
   ))
 
 readr::write_rds(math_bootcamp_correct, 
-          here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_bootcamp.rds"))
+          here::here("dashboards/KnowledgeAssessments/data/questions_and_answers/math_bootcamp.rds"))
 
-TeachingLab::save_processed_data(data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/MathBootcamp-EIC.rds"),
-                    q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_bootcamp.rds"),
+TeachingLab::save_processed_data(data = here::here("dashboards/KnowledgeAssessments/data/unprocessed/MathBootcamp-EIC.rds"),
+                    q_and_a = here::here("dashboards/KnowledgeAssessments/data/questions_and_answers/math_bootcamp.rds"),
                     correct = c("Going deeper into fewer math topics.",
                                 "Making connections between math topics across grades.",
                                 "Unguided problem solving lessons are the least effective type of math lesson.",
@@ -356,8 +356,8 @@ TeachingLab::save_processed_data(data = here::here("Dashboards/KnowledgeAssessme
                     save_name = "math_bootcamp_eic")
 
 ### Math: Bootcamp ###
-TeachingLab::save_processed_data(data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/MathBootcamp.rds"),
-                    q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_bootcamp.rds"),
+TeachingLab::save_processed_data(data = here::here("dashboards/KnowledgeAssessments/data/unprocessed/MathBootcamp.rds"),
+                    q_and_a = here::here("dashboards/KnowledgeAssessments/data/questions_and_answers/math_bootcamp.rds"),
                     correct = c("Going deeper into fewer math topics.",
                                 "Making connections between math topics across grades.",
                                 "Unguided problem solving lessons are the least effective type of math lesson.",
@@ -472,10 +472,10 @@ math_cycle_inquiry_1_eic_correct <- tibble::tibble(
   ))
 
 readr::write_rds(math_cycle_inquiry_1_eic_correct, 
-          here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_cycle_inquiry_1.rds"))
+          here::here("dashboards/KnowledgeAssessments/data/questions_and_answers/math_cycle_inquiry_1.rds"))
 
-TeachingLab::save_processed_data(data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/MathCycleofInquiryI-ElicitingStudentThinking.rds"),
-                    q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_cycle_inquiry_1.rds"),
+TeachingLab::save_processed_data(data = here::here("dashboards/KnowledgeAssessments/data/unprocessed/MathCycleofInquiryI-ElicitingStudentThinking.rds"),
+                    q_and_a = here::here("dashboards/KnowledgeAssessments/data/questions_and_answers/math_cycle_inquiry_1.rds"),
                     correct = c("How do we know that y=3x+2 represents a linear relationship?",
                                 "What key features of this graph tells us that the line represents a proportional relationship?",
                                 "How did Tessa think about this word problem?",
@@ -545,10 +545,10 @@ math_cycle_inquiry_5_scr_correct <- tibble::tibble(
              "I’m not sure."))
 
 readr::write_rds(math_cycle_inquiry_5_scr_correct,
-          here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_cycle_inquiry_5.rds"))
+          here::here("dashboards/KnowledgeAssessments/data/questions_and_answers/math_cycle_inquiry_5.rds"))
 
-TeachingLab::save_processed_data(data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/MathCycleofInquiryV-SequencingandConnectingRepresentations.rds"),
-                    q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/math_cycle_inquiry_5.rds"),
+TeachingLab::save_processed_data(data = here::here("dashboards/KnowledgeAssessments/data/unprocessed/MathCycleofInquiryV-SequencingandConnectingRepresentations.rds"),
+                    q_and_a = here::here("dashboards/KnowledgeAssessments/data/questions_and_answers/math_cycle_inquiry_5.rds"),
                     correct = c("Anticipate, Monitor, Select, Sequence, Connect",
                                 "Emphasize the importance of planning to create an engaging mathematical discussion",
                                 "We lead students to a pre-planned mathematical idea during Connecting.",
@@ -602,10 +602,10 @@ ela_school_leaders_correct <- tibble::tibble(
 ))
 
 write_rds(ela_school_leaders_correct,
-          here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_school_leaders.rds"))
+          here::here("dashboards/KnowledgeAssessments/data/questions_and_answers/ela_school_leaders.rds"))
 
-TeachingLab::save_processed_data(data = here::here("Dashboards/KnowledgeAssessments/data/unprocessed/SchoolLeadersELA.rds"),
-                    q_and_a = here::here("Dashboards/KnowledgeAssessments/data/questions_and_answers/ela_school_leaders.rds"),
+TeachingLab::save_processed_data(data = here::here("dashboards/KnowledgeAssessments/data/unprocessed/SchoolLeadersELA.rds"),
+                    q_and_a = here::here("dashboards/KnowledgeAssessments/data/questions_and_answers/ela_school_leaders.rds"),
                     correct = c("Regular practice with complex texts and their academic language.",
                                 "Building knowledge through content-rich non-fiction.",
                                 "What can you infer from Dr. King’s letter about the letter that he received?",

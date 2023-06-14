@@ -32,6 +32,6 @@ write_sheet(ss = sheet$id, data = data, sheet = "Input")
 
 all_input <- read_sheet(ss = sheet$id, sheet = "Input")
 
-write_rds(all_input, here::here("data/AllInput.rds"))
+write_rds(all_input, here::here("data/dashboards/AllInput.rds"))
 
 

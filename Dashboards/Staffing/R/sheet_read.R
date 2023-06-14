@@ -49,6 +49,6 @@ Sites <- readr::read_rds("data/Site.rds") %>%
 #      ~ write_rds(x = .x, file = paste0("data/", colnames(.x)[1], ".rds")))
 
 # readr::write_rds(facilitator_names_emails_list, 
-#                  paste0("Dashboards/Staffing/data/Facilitators.rds"))
+#                  paste0("dashboards/Staffing/data/Facilitators.rds"))
 # walk(list(pm_list, sites_list, facilitator_names_emails_list, course_list),
-#      ~ write_rds(x = .x, file = paste0("Dashboards/Staffing/data/", colnames(.x)[1], ".rds")))
+#      ~ write_rds(x = .x, file = paste0("dashboards/Staffing/data/", colnames(.x)[1], ".rds")))

@@ -2,18 +2,19 @@
 #' @description Gets data from Google Sheet of partner sites
 #' @param update FALSE, whether or not to pull the updated version
 #' @param condense FALSE whether or not to group sites like rochester, district 11, etc.
-#' @return Returns a tibble
+#' @param year the year to get the site for
+#' @return Returns a tibble of sites
 #' @export
-get_current_partner_sites <- function(update = FALSE, condense = FALSE) {
+get_current_partner_sites <- function(update = FALSE, condense = FALSE, year = "22_23") {
   
-  if (update == TRUE) {
+  if (update == TRUE & year == "21_22") {
     
     ## Authentication ##
-    googledrive::drive_auth(path = "Tokens/teachinglab-authentication-0a3006e60773.json")
+    googledrive::drive_auth(path = "tokens/teachinglab-authentication-0a3006e60773.json")
     googlesheets4::gs4_auth(token = googledrive::drive_token())
     
     df <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/11jlo9UeWxZGwunhDb24hZBwAKc5b8ZKM9AYNWZaUyZY/edit#gid=0",
-                                    sheet = "FY23 Automation (Sites + Courses)",
+                                    sheet = "FY22 Automation",
                                     col_types = "c"
     ) |>
       dplyr::pull(3) |>
@@ -29,10 +30,10 @@ get_current_partner_sites <- function(update = FALSE, condense = FALSE) {
         TeachingLab::site_condense()
     }
     
-    readr::write_rds(df, here::here("data/current_partner_sites.rds"))
+    readr::write_rds(df, here::here("data/sy21_22/current_partner_sites.rds"))
     
-  } else {
-    df <- readr::read_rds(here::here("data/current_partner_sites.rds"))
+  } else if (year == "21_22" & update == FALSE) {
+    df <- readr::read_rds(here::here("data/sy21_22/current_partner_sites.rds"))
     
     if (condense == TRUE) {
       df <- df |>
@@ -62,10 +63,10 @@ get_ipg_forms <- function(update = FALSE, year = "22_23") {
       dplyr::filter(Finished == TRUE)
     
   } else if (update == FALSE & year == "21_22") {
-    ipg_forms <- readr::read_rds(here::here("data/ipg_forms.rds"))
+    ipg_forms <- readr::read_rds(here::here("data/sy21_22/ipg_forms.rds"))
   } else if (update == TRUE & year == "21_22") {
     ## Authentication ##
-    googledrive::drive_auth(path = "Tokens/teachinglab-authentication-0a3006e60773.json")
+    googledrive::drive_auth(path = "tokens/teachinglab-authentication-0a3006e60773.json")
     googlesheets4::gs4_auth(token = googledrive::drive_token())
     
     ipg_forms <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1L33wVpPERyUQdG8WO3sZiyjnHzPvDL91O4yVUQTN14A/edit#gid=1455024681",
@@ -120,7 +121,7 @@ get_ipg_forms <- function(update = FALSE, year = "22_23") {
         # ))
       )
     
-    readr::write_rds(ipg_forms, here::here("data/ipg_forms.rds"))
+    readr::write_rds(ipg_forms, here::here("data/sy21_22/ipg_forms.rds"))
   }
   
   return(ipg_forms)
@@ -134,7 +135,7 @@ get_ipg_forms <- function(update = FALSE, year = "22_23") {
 get_lesson_analysis <- function(update = FALSE) {
   if (update == TRUE) {
     ## Authentication ##
-    googledrive::drive_auth(path = "Tokens/teachinglab-authentication-0a3006e60773.json")
+    googledrive::drive_auth(path = "tokens/teachinglab-authentication-0a3006e60773.json")
     googlesheets4::gs4_auth(token = googledrive::drive_token())
     
     df <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1fCOHSKAkP8GU1xJQh6CjtHPJriOldmqYFyI8MnPWtIg/edit?resourcekey#gid=1002617293",
@@ -145,9 +146,9 @@ get_lesson_analysis <- function(update = FALSE) {
     googledrive::drive_deauth()
     googlesheets4::gs4_deauth()
     
-    readr::write_rds(df, here::here("data/lesson_plan_analysis.rds"))
+    readr::write_rds(df, here::here("data/sy21_22/lesson_plan_analysis.rds"))
   } else {
-    df <- readr::read_rds(here::here("data/lesson_plan_analysis.rds"))
+    df <- readr::read_rds(here::here("data/sy21_22/lesson_plan_analysis.rds"))
   }
   
   
@@ -167,9 +168,9 @@ get_student_scores_mississippi <- function(update = FALSE) {
       janitor::clean_names() |>
       dplyr::select(-9)
     
-    readr::write_rds(df, here::here("data/student_scores_mississippi.rds"))
+    readr::write_rds(df, here::here("data/sy21_22/student_scores_mississippi.rds"))
   } else {
-    df <- readr::read_rds(here::here("data/student_scores_mississippi.rds"))
+    df <- readr::read_rds(here::here("data/sy21_22/student_scores_mississippi.rds"))
   }
   
   return(df)
@@ -188,9 +189,9 @@ get_student_scores_mississippi2 <- function(update = FALSE) {
       janitor::clean_names() |>
       dplyr::select(-c(9:16))
     
-    readr::write_rds(df, here::here("data/student_scores_mississippi2.rds"))
+    readr::write_rds(df, here::here("data/sy21_22/student_scores_mississippi2.rds"))
   } else {
-    df <- readr::read_rds(here::here("data/student_scores_mississippi2.rds"))
+    df <- readr::read_rds(here::here("data/sy21_22/student_scores_mississippi2.rds"))
   }
   
   return(df)

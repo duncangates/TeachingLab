@@ -65,7 +65,7 @@ fetch_survey_2 <- function(id, name) {
   print(name_df)
   
   #### Write to data folder with original name####
-  purrr::map2(.x = name_df$names, .y = name_df$title, ~ readr::write_rds(x = get(.x), file = paste0(here::here("Dashboards/KnowledgeAssessments/data/unprocessed/"), .y, ".rds")))
+  purrr::map2(.x = name_df$names, .y = name_df$title, ~ readr::write_rds(x = get(.x), file = paste0(here::here("dashboards/KnowledgeAssessments/data/unprocessed/"), .y, ".rds")))
 }
 
 
@@ -228,9 +228,9 @@ get_family_survey <- function(update = FALSE) {
       )) |>
       dplyr::mutate(teacher = stringr::str_replace_all(teacher, replacement_vector))
     
-    readr::write_rds(family_survey_coalesced, here::here("data/family_survey.rds"))
+    readr::write_rds(family_survey_coalesced, here::here("data/sy21_22/family_survey.rds"))
   } else {
-    family_survey_coalesced <- readr::read_rds(here::here("data/family_survey.rds"))
+    family_survey_coalesced <- readr::read_rds(here::here("data/sy21_22/family_survey.rds"))
   }
   
   return(family_survey_coalesced)

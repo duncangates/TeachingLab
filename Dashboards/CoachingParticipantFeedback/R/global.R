@@ -22,7 +22,7 @@ library(tlShiny)
 ### Fonts ###
 ###### CSV is From Here: https://groups.google.com/a/teachinglab.org/g/employees/members ######
 ## Get list of current employees from CSV ##
-# approved_emails_list <- readr::read_csv("Dashboards/SessionSurvey/data/employees.csv", skip = 1) %>%
+# approved_emails_list <- readr::read_csv("dashboards/SessionSurvey/data/employees.csv", skip = 1) %>%
 #   dplyr::select(1) %>%
 #   purrr::as_vector() %>%
 #   # Add extra people as requested
@@ -32,7 +32,7 @@ library(tlShiny)
 #            "kristen.taylor@teachinglab.org",
 #            "ryan.stewart@gmail.com"))
 ## Write approved list to dashboard data folder ##
-# readr::write_rds(approved_emails_list, "Dashboards/CoachingParticipantFeedback/data/employees.rds")
+# readr::write_rds(approved_emails_list, "dashboards/CoachingParticipantFeedback/data/employees.rds")
 
 ######## THIS WORKS BY RUNNING THE ABOVE CODE LOCALLY #######
 approved_emails_list <- readr::read_rds("data/employees.rds")

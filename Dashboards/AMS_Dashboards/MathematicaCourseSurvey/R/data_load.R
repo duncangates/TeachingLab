@@ -2,7 +2,7 @@
 
 library(magrittr)
 
-course_survey <- readr::read_rds("data/course_surveymonkey.rds") |> 
+course_survey <- readr::read_rds("data/merged/course_surveymonkey.rds") |> 
   dplyr::filter(date_created >= as.Date("2021-07-01")) |>
   dplyr::mutate(grades_merge = stringr::str_remove_all(paste0("_", `What grade(s) do you teach, support, and/or lead? You can select more than one. - K`, "_",
                                       `What grade(s) do you teach, support, and/or lead? You can select more than one. - 1`, "_",
