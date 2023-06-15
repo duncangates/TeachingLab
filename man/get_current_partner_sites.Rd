@@ -4,15 +4,17 @@
 \alias{get_current_partner_sites}
 \title{Ongoing list of partner sites}
 \usage{
-get_current_partner_sites(update = FALSE, condense = FALSE)
+get_current_partner_sites(update = FALSE, condense = FALSE, year = "22_23")
 }
 \arguments{
 \item{update}{FALSE, whether or not to pull the updated version}
 
 \item{condense}{FALSE whether or not to group sites like rochester, district 11, etc.}
+
+\item{year}{the year to get the site for}
 }
 \value{
-Returns a tibble
+Returns a tibble of sites
 }
 \description{
 Gets data from Google Sheet of partner sites

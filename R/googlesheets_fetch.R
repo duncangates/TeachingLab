@@ -124,6 +124,8 @@ get_ipg_forms <- function(update = FALSE, year = "22_23") {
     readr::write_rds(ipg_forms, here::here("data/sy21_22/ipg_forms.rds"))
   }
   
+  write.csv(ipg_forms, here::here(glue::glue("data/sy{year}/ipg_forms.csv")))
+  
   return(ipg_forms)
 }
 

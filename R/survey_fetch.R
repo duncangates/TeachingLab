@@ -346,6 +346,8 @@ get_session_survey <- function(update = FALSE, year = "22_23") {
     session_survey |>
       readr::write_rds(here::here("dashboards/SessionSurvey/data/session_survey_21_22data.rds"))
   }
+  
+  write.csv(session_survey, here::here(glue::glue("data/sy{year}/session_survey.csv")))
 
   return(session_survey)
 }
@@ -745,6 +747,8 @@ get_course_survey <- function(update = FALSE, year = "22_23") {
     readr::write_rds(course_survey, here::here("data/merged/course_surveymonkey.rds"))
     readr::write_rds(course_survey, here::here("dashboards/CourseSurvey/data/course_surveymonkey.rds"))
   }
+  
+  write.csv(course_survey, here::here(glue::glue("data/sy{year}/course_survey.csv")))
 
   return(course_survey)
 }
@@ -1460,6 +1464,7 @@ get_diagnostic_survey <- function(update = FALSE, year = "22_23") {
     readr::write_rds(diagnostic_final, here::here("dashboards/SiteCollectionProgress/data/diagnostic.rds"))
   }
 
+  write.csv(diagnostic_final, here::here(glue::glue("data/sy{year}/educator_survey.csv")))
   return(diagnostic_final)
 }
 
@@ -3527,6 +3532,8 @@ get_ongoing_coaching <- function(update = FALSE, year = "22_23") {
     readr::write_rds(coaching_feedback_clean, "data/sy21_22/coaching_participant_feedback.rds")
     readr::write_rds(coaching_feedback_clean, "dashboards/CoachingParticipantFeedback/data/coaching_participant_feedback.rds")
   }
+  
+  write.csv(coaching_feedback_clean, here::here(glue::glue("data/sy{year}/ongoing_coaching.csv")))
 
   return(coaching_feedback_clean)
 }
@@ -3925,6 +3932,8 @@ get_end_coaching <- function(update = FALSE, year = "22_23") {
     readr::write_rds(end_coaching_survey_clean, "data/sy21_22/ongoing_coaching_feedback.rds")
     readr::write_rds(end_coaching_survey_clean, "dashboards/CoachingParticipantFeedback/data/ongoing_coaching_feedback.rds")
   }
+  
+  write.csv(end_coaching_survey_clean, here::here(glue::glue("data/sy{year}/end_coaching.csv")))
 
   return(end_coaching_survey_clean)
 }
