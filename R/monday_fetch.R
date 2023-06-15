@@ -7,20 +7,13 @@
 #' @export
 
 get_monday_board <- function(board_id, first_col_name) {
-  ### Set up python environment ###
-  # path_to_python <- paste0(here::here(), "/Automations/Monday/env")
-  # my_env <- reticulate::use_virtualenv(path_to_python)
-  # reticulate::import("requests")
-  # reticulate::import("os")
-  # my_env$boardId <- board_id
-  ### ADD TO ENVIRONMENT FOR PYTHON SCRIPT HERE SOMEHOW
-  # reticulate::py_run_string("os.environ['boardId'] = 'board_id'")
-  ### Run python script to get monday json ###
+
+  ### Run python script and add board id to environment ###
   reticulate::py_run_string(code = paste0("boardId = '", board_id, "'"))
-  reticulate::source_python(here::here("Automations/Monday/monday_board.py"))
+  reticulate::source_python(here::here("data_scripts/monday.com/monday_board.py"))
   
   ### Read in Monday JSON ###
-  initial_df <- jsonlite::fromJSON(here::here("data/Monday/monday_board.json"))
+  initial_df <- jsonlite::fromJSON(here::here("data/monday/monday_board.json"))
   
   ### Get as a data.frame ###
   second_df <- initial_df$data$boards$items[[1]]$column_values |>

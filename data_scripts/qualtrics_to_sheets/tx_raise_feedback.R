@@ -5,7 +5,8 @@ library(tidyr)
 
 participant_feedback <- qualtRics::fetch_survey(surveyID = "SV_djt8w6zgigaNq0C", 
                                      verbose = TRUE,
-                                     force_request = TRUE)
+                                     force_request = TRUE,
+                                     include_display_order = FALSE)
 
 tx_raise_feedback <- participant_feedback |>
   dplyr::filter(site == "TX_RAISE Rice University") |>

@@ -106,12 +106,12 @@ library(reticulate)
 # 
 # get_column_values(item_ids = entire_board_crossing$item_id[129:257], entire_board_crossing$col_id[129])
 
-# path_to_python <- paste0(here::here(), "/Automations/Monday/env")
+# path_to_python <- paste0(here::here(), "/data_scripts/monday.com/env")
 # use_virtualenv(path_to_python)
 import("requests")
-reticulate::source_python(here::here("Automations/Monday/fy22_pipeline_pull.py"))
+reticulate::source_python(here::here("data_scripts/monday.com/fy22_pipeline_pull.py"))
 
-initial_df <- jsonlite::fromJSON(here::here("data/Monday/fy22_pipeline.json"))
+initial_df <- jsonlite::fromJSON(here::here("data/monday/fy22_pipeline.json"))
 
 second_df <- initial_df$data$boards$items[[1]]$column_values |>
   as.data.frame()

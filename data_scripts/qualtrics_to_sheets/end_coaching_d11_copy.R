@@ -6,7 +6,7 @@ end_coaching <- TeachingLab::get_end_coaching()
 
 coaching_responses_d11 <- end_coaching |>
   filter(site == "NY_D11") |>
-  select(`District 11`, contains("Q82")) |>
+  select(district11, contains("Q82")) |>
   TeachingLab::relabel_qualtrics_df()
 
 num_cols <- LETTERS[ncol(coaching_responses_d11)]

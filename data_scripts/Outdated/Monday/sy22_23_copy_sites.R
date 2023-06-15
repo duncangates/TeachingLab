@@ -3,12 +3,12 @@ library(googlesheets4)
 library(reticulate)
 library(tidyr)
 
-# path_to_python <- paste0(here::here(), "/Automations/Monday/env")
+# path_to_python <- paste0(here::here(), "/data_scripts/monday.com/env")
 # use_virtualenv(path_to_python)
 reticulate::import("requests")
-reticulate::source_python(here::here("Automations/Monday/sy22_23_project.py"))
+reticulate::source_python(here::here("data_scripts/monday.com/sy22_23_project.py"))
 
-initial_df <- jsonlite::fromJSON(here::here("data/Monday/sy22_23_project.json"))
+initial_df <- jsonlite::fromJSON(here::here("data/monday/sy22_23_project.json"))
 
 second_df <- initial_df$data$boards$items[[1]]$column_values %>%
   as.data.frame()

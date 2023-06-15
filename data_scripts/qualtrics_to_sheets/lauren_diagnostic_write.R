@@ -6,7 +6,7 @@ followup_survey <- TeachingLab::get_followup_educator(year = "22_23", update = T
 #### REMINDER: ADD SPECIFIC SHEET WHEN YOU HAVE INTERNET ####
 data_to_write <- followup_survey |>
   dplyr::filter(site == "NY_D11") |> 
-  dplyr::select(RecordedDate, Finished, initials, `District 11`)
+  dplyr::select(RecordedDate, Finished, initials, district11)
 
 data_to_write |>
   googlesheets4::range_write(ss = "1ltHzd47A0aaN60JcBgLw2CQgstwzPrRN6yQKGkXY3eA",

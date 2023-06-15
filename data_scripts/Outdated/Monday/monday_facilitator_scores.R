@@ -52,7 +52,7 @@ all_facilitator_reviews <- facilitator_one_reviews |>
   dplyr::ungroup() |>
   tibble::view()
 
-# reticulate::source_python(here::here("Automations/Monday/monday_board_mutate.py"))
+# reticulate::source_python(here::here("data_scripts/monday.com/monday_board_mutate.py"))
 
 ### Add code to make monday board sync with this ###
 
@@ -63,5 +63,5 @@ all_facilitator_reviews <- facilitator_one_reviews |>
 # fac_score_1 <- 
 
 # reticulate::py_run_string(code = "facScore1 = ")
-# reticulate::source_python(here::here("Automations/Monday/monday_board.py"))
+# reticulate::source_python(here::here("data_scripts/monday.com/monday_board.py"))
 

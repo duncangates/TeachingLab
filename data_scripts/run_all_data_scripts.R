@@ -18,6 +18,6 @@ run_script <- function(script) {
 }
 
 ## Run all scripts based on location ##
-purrr::walk(r_scripts_final, run_script)
+purrr::walk(r_scripts_final[c(3:13)], run_script)
 
 ############################################# End Script ######################################################
