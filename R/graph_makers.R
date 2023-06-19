@@ -1398,26 +1398,28 @@ student_bar_chart <- function(data,
       dplyr::filter(race == race_filter)
   }
   
-  n_size <- format(sum(!is.na(data |> dplyr::select(tidyselect::contains(col_select)) |> dplyr::pull(1))), big.mark = ",")
+  n_size_1 <- format(sum(!is.na(data |> dplyr::filter(prepost == "Pre") |> dplyr::select(tidyselect::contains(col_select)) |> dplyr::pull(1))), big.mark = ",")
+  n_size_2 <- format(sum(!is.na(data |> dplyr::filter(prepost == "Post") |> dplyr::select(tidyselect::contains(col_select)) |> dplyr::pull(1))), big.mark = ",")
   
   ### Makes race column, selects relevant columns and gets percent
   ### that selected relevant levels of agreeness
   student_data_summarised <- data |>
-    dplyr::select(tidyselect::contains(col_select)) |>
+    dplyr::select(tidyselect::contains(col_select), prepost) |>
     TeachingLab::relabel_qualtrics_df() |>
-    dplyr::summarise(dplyr::across(dplyr::everything(), ~ TeachingLab::tl_select_percent(.x, agree_select)))
+    dplyr::group_by(prepost) |>
+    dplyr::summarise(dplyr::across(dplyr::everything(), ~ TeachingLab::tl_select_percent(.x, agree_select))) |>
+    tidyr::drop_na(prepost) |>
+    (\(.) dplyr::mutate(., Overall = rowMeans(select(., starts_with("Please")))))()
 
   ### Reformat dataframe and prep for ggplot2
   student_data_percent <- student_data_summarised |>
-    tidyr::pivot_longer(everything(), names_to = "question", values_to = "percent") |>
+    tidyr::pivot_longer(!prepost, names_to = "question", values_to = "percent") |>
     tidyr::drop_na(percent) |>
     dplyr::mutate(
       question = stringr::str_remove_all(question, string_remove),
       question = stringr::str_wrap(question, 25),
       percent = percent * 100
-    ) |>
-    ### Anonymous function add row ###
-    (\(.) tibble::add_row(., question = "Overall", !!!colMeans(.[2]), .before = 1))()
+    )
 
   subtitle <- if (length(agree_select) > 1) {
     glue::glue('The following percentages show the % that selected "{agree_select[1]}" or "{agree_select[2]}"')
@@ -1425,8 +1427,8 @@ student_bar_chart <- function(data,
     glue::glue('The following percentages show the % that selected "{agree_select[1]}"')
   }
 
-  p <- ggplot2::ggplot(student_data_percent, aes(x = forcats::fct_relevel(question, "Overall", after = length(question)), y = percent)) +
-    ggplot2::geom_col(position = position_dodge(), fill = "#04abeb") +
+  p <- ggplot2::ggplot(student_data_percent, aes(x = forcats::fct_relevel(question, "Overall", after = length(question)), y = percent, fill = prepost)) +
+    ggplot2::geom_col(position = position_dodge()) +
     ggplot2::geom_text(
       ggplot2::aes(
         label = paste0(round(percent), "%")
@@ -1437,10 +1439,11 @@ student_bar_chart <- function(data,
     ) +
     ggplot2::labs(
       x = "", y = "",
-      title = glue::glue("{title} (n = {n_size})"),
+      title = glue::glue("{title} (n = {n_size_1}) & <span style = 'color:#04abeb;'>(n = {n_size_2})</span>"),
       subtitle = subtitle,
       fill = "Race"
     ) +
+    ggplot2::scale_fill_manual(values = c("Post" = "#040404", "Pre" = "#04ABEB")) +
     ggplot2::scale_y_continuous(labels = scales::percent_format(scale = 1), limits = c(0, 100)) +
     ggplot2::guides(
       fill = ggplot2::guide_legend(reverse = TRUE),
@@ -1449,7 +1452,7 @@ student_bar_chart <- function(data,
     ggplot2::coord_flip() +
     TeachingLab::theme_tl(legend = F) +
     ggplot2::theme(
-      plot.title = ggplot2::element_text(family = "Calibri Bold", face = "bold"),
+      plot.title = ggtext::element_markdown(family = "Calibri Bold", face = "bold"),
       plot.subtitle = ggtext::element_markdown(family = "Calibri", hjust = 1),
       legend.key.size = grid::unit(1.2, "cm"),
       axis.text.y = ggplot2::element_text(size = 14)

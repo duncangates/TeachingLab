@@ -109,10 +109,10 @@ district11_end_coaching_count <- participant_feedback |>
   dplyr::mutate(district11 = as.character(district11)) |>
   tidyr::drop_na() |>
   dplyr::rename(`End of Coaching` = n)
-##### End of Coaching count ######
+##### End of end of Coaching count ######
 
 ### Educator Survey Counting ###
-diagnostic_survey <- TeachingLab::get_diagnostic_survey(update = TRUE, year = "22_23")
+diagnostic_survey <- TeachingLab::get_diagnostic_survey(update = FALSE, year = "22_23")
 
 diagnostic_survey_count <- diagnostic_survey |>
   dplyr::mutate(site = replace_na(as.character(site), "Other")) |>
@@ -200,7 +200,7 @@ district11_classroom_obs_count <- ipg_forms |>
     dplyr::across(c(`direct_to_ts_obs`, not_direct_to_ts), ~ as.character(.x)),
     round = dplyr::coalesce(`direct_to_ts_obs`, not_direct_to_ts)
   ) |>
-  dplyr::mutate(round = str_replace_all(round, c(
+  dplyr::mutate(round = stringr::str_replace_all(round, c(
     "Baseline \\(first observation of the year\\)" = "First site visit",
     "Mid-year \\(middle of service, if applicable\\)" = "Third site visit",
     "Ongoing" = "Fourth site visit",
@@ -388,12 +388,15 @@ d11_d9_knowledge_assessment_n <- function(survey_id, survey_name, district_filte
     ### First rename
     know_assess <- know_assess |>
       dplyr::select(-site)
-    if (district_filter == "District 11") {
-      names(know_assess)[names(know_assess) == "District 11"] <- "site"
-    } else if (district_filter == "District 9") {
-      names(know_assess)[names(know_assess) == "District 9"] <- "site"
+    if (district_filter == "district11") {
+      print(know_assess$district11)
+      names(know_assess)[names(know_assess) == "district11"] <- "site"
+      print(know_assess$site)
+    } else if (district_filter == "district9") {
+      names(know_assess)[names(know_assess) == "district9"] <- "site"
     }
 
+    # print(sum(!is.na(know_assess$site)))
     if (sum(!is.na(know_assess$site)) >= 1) {
       ### Get Count of each knowledge assessment by site ###
       know_assess_count <- know_assess |>
@@ -449,14 +452,17 @@ d9_knowledge_assessment_count <- purrr::map2_dfr(
   dplyr::mutate(dplyr::across(!site, ~ na_if(.x, 0))) |>
   janitor::remove_empty("cols")
 
-d11_knowledge_assessment_count <- purrr::map2_dfr(
-  knowledge_assessment_ids$id, knowledge_assessment_ids$name,
-  ~ d11_d9_knowledge_assessment_n(.x, .y, district_filter = "district11")
-) |>
-  dplyr::group_by(site) |>
-  dplyr::summarise(dplyr::across(dplyr::everything(), ~ sum(.x, na.rm = TRUE))) |>
-  dplyr::mutate(dplyr::across(!site, ~ dplyr::na_if(.x, 0))) |>
-  janitor::remove_empty("cols")
+if (map_dbl(knowledge_assessment_ids$id, test_func) > 0) {
+  d11_knowledge_assessment_count <- purrr::map2_dfr(
+    knowledge_assessment_ids$id[1], knowledge_assessment_ids$name[1],
+    ~ d11_d9_knowledge_assessment_n(.x, .y, district_filter = "district11")
+  ) |>
+    dplyr::group_by(site) |>
+    dplyr::summarise(dplyr::across(dplyr::everything(), ~ sum(.x, na.rm = TRUE))) |>
+    dplyr::mutate(dplyr::across(!site, ~ dplyr::na_if(.x, 0))) |>
+    janitor::remove_empty("cols")
+}
+
 
 ### End of Knowledge Assessment Counting ###
 
@@ -511,7 +517,7 @@ district9_sites <- googlesheets4::read_sheet("https://docs.google.com/spreadshee
   dplyr::bind_rows(tibble::tibble(district9 = "Other"))
 
 d9_data_collection_sy22_23 <- district9_sites |>
-  dplyr::left_join(district_9_session_count, by = "District 9") |>
+  dplyr::left_join(district_9_session_count, by = "district9") |>
   dplyr::left_join(district_9_course_count) |>
   dplyr::left_join(district9_ongoing_coaching_count) |>
   dplyr::left_join(district9_end_coaching_count) |>
@@ -527,7 +533,7 @@ d9_data_collection_sy22_23 <- district9_sites |>
     "X"
   ))) |>
   tibble::add_column(`Student work samples round 2` = NA, .after = "Student work samples round 1") |>
-  dplyr::left_join(d9_knowledge_assessment_count, by = c("District 9" = "site"))
+  dplyr::left_join(d9_knowledge_assessment_count, by = c("district9" = "site"))
 
 ### Add two to sheet length to get actual range for google sheet to be written ###
 sheet_length <- nrow(d9_data_collection_sy22_23) + 2
@@ -553,7 +559,7 @@ district11_sites <- googlesheets4::read_sheet("https://docs.google.com/spreadshe
   bind_rows(tibble(district11 = "Other"))
 
 d11_data_collection_sy22_23 <- district11_sites |>
-  dplyr::left_join(district_11_session_count, by = "District 11") |>
+  dplyr::left_join(district_11_session_count, by = "district11") |>
   dplyr::left_join(district_11_course_count) |>
   dplyr::left_join(district11_ongoing_coaching_count) |>
   dplyr::left_join(district11_end_coaching_count) |>
@@ -564,7 +570,7 @@ d11_data_collection_sy22_23 <- district11_sites |>
   tibble::add_column(`Student Survey post` = NA, .after = "Student Survey pre") |>
   dplyr::left_join(student_work_count_district_11) |>
   tibble::add_column(`Student work samples round 2` = NA, .after = "Student work samples round 1") |>
-  dplyr::left_join(d11_knowledge_assessment_count, by = c("District 11" = "site"))
+  (\(.) if (exists("d11_knowledge_assessment_count")) dplyr::left_join(., d11_knowledge_assessment_count, by = c("District 11" = "site")) else .)()
 
 
 ### Add two to sheet length to get actual range for google sheet to be written ###

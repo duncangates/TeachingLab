@@ -106,15 +106,16 @@ knowledge_assessments_for_scoring <- knowledge_assessment_ids |>
   dplyr::mutate(name = stringr::str_replace_all(name, "\\/", "|"))
 
 
+### ISSUE: FIX KNOWLEDGE ASSESSMENT SCORING FOR SCORE/MAX_SCORE COLUMNS ###
 knowledge_assessments_detailed_scored <- purrr::map2_dfr(
   knowledge_assessments_for_scoring$id, knowledge_assessments_for_scoring$name,
   ~ TeachingLab::knowledge_assess_detailed_score(.x, .y)
 )
 
-### Getting Digital Nest for Joining ###
-educator_survey <- TeachingLab::get_diagnostic_survey(update = TRUE, year = "22_23")
 
-followup_educator <- TeachingLab::get_followup_educator(update = TRUE, year = "22_23")
+educator_survey <- TeachingLab::get_diagnostic_survey(update = TRUE, year = "22_23")
+# Doesn't need update because it is the same as educator survey just post results #
+followup_educator <- TeachingLab::get_followup_educator(update = FALSE, year = "22_23")
 
 ### percent, prepost, site, know_assess ###
 knowledge_assessments_scored <- purrr::map2_dfr(
@@ -124,6 +125,7 @@ knowledge_assessments_scored <- purrr::map2_dfr(
   dplyr::bind_rows(
     ### Digital Nest School Leader Qs
     educator_survey |>
+      bind_rows(followup_educator) |>
       dplyr::filter(Finished == TRUE & site == "US_Digital Nest") |>
       dplyr::mutate(
         id = paste0(tolower(initials), dob),
@@ -136,55 +138,65 @@ knowledge_assessments_scored <- purrr::map2_dfr(
         matched = dplyr::if_else(n_response > 1 & maxdate == RecordedDate, "post", "pre")
       ) |> # Define as post for matched if more than 1 response and date is max of date_created
       dplyr::mutate(matched = factor(matched, levels = c("pre", "post"))) |> # Make matched a factor
-      dplyr::mutate(prepost = dplyr::if_else(RecordedDate >= maxdate & n_response > 1, "post", "pre")) |> # Make pre and post defined by pre-October and post-October
+      dplyr::mutate(prepost = dplyr::if_else((RecordedDate >= maxdate & n_response > 1) | RecordedDate >= as.Date("2023-04-01"), "post", "pre")) |> # Make pre and post defined by pre-October and post-October
       dplyr::mutate(prepost = factor(prepost, levels = c("pre", "post"))) |> # Make prepost a factor
       dplyr::ungroup() |>
       dplyr::mutate(score = SC0 / max(SC0, na.rm = T)) |>
       dplyr::select(id, percent = score, prepost, site, know_assess, date = RecordedDate) |>
       tidyr::drop_na(percent),
-    ### Math ANA ###
+    ### Pre Math ANA ###
     educator_survey |>
-      dplyr::filter(Finished == TRUE & RecordedDate <= as.Date("2023-01-01")) |>
+      dplyr::filter(Finished == TRUE & !is.na(hqim1_1)) |>
       tidyr::drop_na(hqim1_1) |>
       dplyr::mutate(
         id = paste0(tolower(initials), dob),
         know_assess = "Math ANA"
       ) |>
-      dplyr::group_by(id) |>
-      dplyr::mutate(
-        n_response = dplyr::n(), # Get number of responses by person, sometimes there are more than 2 :/
-        maxdate = max(RecordedDate), # Get max date of creation for most recent response
-        matched = dplyr::if_else(n_response > 1 & maxdate == RecordedDate, "post", "pre")
-      ) |> # Define as post for matched if more than 1 response and date is max of date_created
-      dplyr::mutate(matched = factor(matched, levels = c("pre", "post"))) |> # Make matched a factor
-      dplyr::mutate(prepost = dplyr::if_else(RecordedDate >= maxdate & n_response > 1, "post", "pre")) |> # Make pre and post defined by pre-October and post-October
-      dplyr::mutate(prepost = factor(prepost, levels = c("pre", "post"))) |> # Make prepost a factor
-      dplyr::ungroup() |>
+      dplyr::mutate(prepost = "pre",
+                    prepost = factor(prepost, levels = c("pre", "post"))) |>
       dplyr::mutate(score = SC0 / 15) |>
       dplyr::select(id, percent = score, prepost, site, know_assess, date = RecordedDate) |>
       tidyr::drop_na(percent),
-    ### ELA ANA ###
+    ### Post Math ANA ###
     educator_survey |>
-      dplyr::filter(Finished == TRUE & RecordedDate <= as.Date("2023-01-01")) |>
+      dplyr::filter(Finished == TRUE & !is.na(hqim1_1)) |>
+      tidyr::drop_na(hqim1_1) |>
+      dplyr::mutate(
+        id = paste0(tolower(initials), dob),
+        know_assess = "Math ANA"
+      ) |>
+      dplyr::mutate(prepost = "post",
+                    prepost = factor(prepost, levels = c("pre", "post"))) |>
+      dplyr::mutate(score = SC0 / 15) |>
+      dplyr::select(id, percent = score, prepost, site, know_assess, date = RecordedDate) |>
+      tidyr::drop_na(percent),
+    ### Pre ELA ANA ###
+    educator_survey |>
+      dplyr::filter(Finished == TRUE) |>
       tidyr::drop_na(ela_bc_1_1) |>
       dplyr::mutate(
         id = paste0(tolower(initials), dob),
         know_assess = "ELA ANA"
       ) |>
-      dplyr::group_by(id) |>
-      dplyr::mutate(
-        n_response = dplyr::n(), # Get number of responses by person, sometimes there are more than 2 :/
-        maxdate = max(RecordedDate), # Get max date of creation for most recent response
-        matched = dplyr::if_else(n_response > 1 & maxdate == RecordedDate, "post", "pre")
-      ) |> # Define as post for matched if more than 1 response and date is max of date_created
-      dplyr::mutate(matched = factor(matched, levels = c("pre", "post"))) |> # Make matched a factor
-      dplyr::mutate(prepost = dplyr::if_else(RecordedDate >= maxdate & n_response > 1, "post", "pre")) |> # Make pre and post defined by pre-October and post-October
-      dplyr::mutate(prepost = factor(prepost, levels = c("pre", "post"))) |> # Make prepost a factor
-      dplyr::ungroup() |>
+      dplyr::mutate(prepost = "pre",
+                    prepost = factor(prepost, levels = c("pre", "post"))) |>
       dplyr::mutate(score = SC0 / if_else(!is.na(k2_ela1_1), 21, 15)) |>
       dplyr::select(id, percent = score, prepost, site, know_assess, date = RecordedDate) |>
       tidyr::drop_na(percent),
-    ### JUST ELA K-2 ANA ###
+    ### Post ELA ANA ###
+    followup_educator |>
+      dplyr::filter(Finished == TRUE) |>
+      tidyr::drop_na(ela_bc_1_1) |>
+      dplyr::mutate(
+        id = paste0(tolower(initials), dob),
+        know_assess = "ELA ANA"
+      ) |>
+      dplyr::mutate(prepost = "post",
+                    prepost = factor(prepost, levels = c("pre", "post"))) |>
+      dplyr::mutate(score = SC0 / if_else(!is.na(k2_ela1_1), 21, 15)) |>
+      dplyr::select(id, percent = score, prepost, site, know_assess, date = RecordedDate) |>
+      tidyr::drop_na(percent),
+    ### JUST Pre ELA K-2 ANA ###
     educator_survey |>
       dplyr::filter(Finished == TRUE) |>
       tidyr::drop_na(k2_ela1_1) |>
@@ -192,16 +204,21 @@ knowledge_assessments_scored <- purrr::map2_dfr(
         id = paste0(tolower(initials), dob),
         know_assess = "ELA K-2 ANA"
       ) |>
-      dplyr::group_by(id) |>
+      dplyr::mutate(prepost = "pre",
+                    prepost = factor(prepost, levels = c("pre", "post"))) |>
+      dplyr::mutate(score = SC0 / 21) |>
+      dplyr::select(id, percent = score, prepost, site, know_assess, date = RecordedDate) |>
+      tidyr::drop_na(percent),
+    ### JUST Post ELA K-2 ANA ###
+    followup_educator |>
+      dplyr::filter(Finished == TRUE) |>
+      tidyr::drop_na(k2_ela1_1) |>
       dplyr::mutate(
-        n_response = dplyr::n(), # Get number of responses by person, sometimes there are more than 2 :/
-        maxdate = max(RecordedDate), # Get max date of creation for most recent response
-        matched = dplyr::if_else(n_response > 1 & maxdate == RecordedDate, "post", "pre")
-      ) |> # Define as post for matched if more than 1 response and date is max of date_created
-      dplyr::mutate(matched = factor(matched, levels = c("pre", "post"))) |> # Make matched a factor
-      dplyr::mutate(prepost = dplyr::if_else(RecordedDate >= maxdate & n_response > 1, "post", "pre")) |> # Make pre and post defined by pre-October and post-October
-      dplyr::mutate(prepost = factor(prepost, levels = c("pre", "post"))) |> # Make prepost a factor
-      dplyr::ungroup() |>
+        id = paste0(tolower(initials), dob),
+        know_assess = "ELA K-2 ANA"
+      ) |>
+      dplyr::mutate(prepost = "post",
+                    prepost = factor(prepost, levels = c("pre", "post"))) |>
       dplyr::mutate(score = SC0 / 21) |>
       dplyr::select(id, percent = score, prepost, site, know_assess, date = RecordedDate) |>
       tidyr::drop_na(percent),

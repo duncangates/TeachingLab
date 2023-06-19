@@ -16,18 +16,12 @@ relabel_qualtrics_df <- function(df, switch = TRUE) {
     original_colnames <- colnames(df)
   }
   
-  colnames_relabel <- purrr::map_chr(df, ~ attr(.x, "label"))
+  colnames_relabel <- purrr::map(df, ~ attr(.x, "label"))
   
-  # if (length(columns_relabel) == length(colnames(df))) {
-    
-    colnames(df) <- colnames_relabel
-    
-  # } else {
-  #   
-  #   #### Need to fix here
-  #   
-  # }
+  need_actual_names <- which(purrr::map_dbl(colnames_relabel, ~ sum(is.null(.x))) >= 1)
+  colnames_relabel[need_actual_names] <- colnames(df)[need_actual_names]
   
+  colnames(df) <- colnames_relabel
   
   if (switch == TRUE) {
     attr(df, "label") <- original_colnames
