@@ -382,3 +382,33 @@ gt_theme_tl <- function(data, all_caps = F, align = "center", base_font = 16, he
       ...
     )
 }
+
+#' @title Teaching Lab Report Theme
+#' @description A theme for Teaching Lab RMD Reports
+#' @return a ggplot object
+#' @export
+theme_final_report <- function() {
+  theme_tl(legend = T) +
+    theme(
+      axis.text.x = element_blank(),
+      axis.text.y = element_text(
+        lineheight = 0.9, size = 12,
+        margin = margin(t = 0, l = 0, r = -25, b = 0)
+      ),
+      strip.text = element_text(
+        size = 14, face = "bold", family = "Calibri Bold",
+        hjust = 0.5
+      ),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      legend.position = "bottom",
+      legend.justification = c(0, 1),
+      legend.margin = margin(-30, 0, 0, -155),
+      legend.key.height = unit(1.3, "cm"),
+      legend.key.width = unit(1.3, "cm"),
+      legend.key.size = unit(0.75, "cm"),
+      legend.text = element_text(size = 11),
+      plot.title = element_text(lineheight = 1.1, size = 18, face = "bold"),
+      plot.subtitle = element_text(size = 14, face = "bold")
+    )
+}

@@ -452,7 +452,11 @@ d9_knowledge_assessment_count <- purrr::map2_dfr(
   dplyr::mutate(dplyr::across(!site, ~ na_if(.x, 0))) |>
   janitor::remove_empty("cols")
 
-if (map_dbl(knowledge_assessment_ids$id, test_func) > 0) {
+test_func <- function(x) {
+  sum(!is.na(fetch_survey(x)$district11))
+}
+
+if (any(map_dbl(knowledge_assessment_ids$id, test_func)) > 0) {
   d11_knowledge_assessment_count <- purrr::map2_dfr(
     knowledge_assessment_ids$id[1], knowledge_assessment_ids$name[1],
     ~ d11_d9_knowledge_assessment_n(.x, .y, district_filter = "district11")
