@@ -2,18 +2,23 @@
 #' @param partner The partner to render a report for
 #' @param input the rmd to use to parametrically generate reports
 #' @param output_dir the output directory for the files
+#' @param output_file NULL by default, takes arguments when specified
 #' @param content_area content area to filter by default to NULL and ignored
 #' @param ... arguments passed to `rmarkdown::render`
 #' @description remove files from images/report_images and images/report_summary_images and render specified rmd
-partner_file_remove <- function(partner, content_area = NULL, input, output_dir, ...) {
+partner_file_remove <- function(partner, content_area = NULL, input, output_dir, output_file = NULL, ...) {
   
   print("Rendering new rmd...")
   
+  output_file <- if (!is.null(output_file)) {
+    paste0("final_report_", str_replace_all(tolower(partner), c(" " = "_",
+                                                                "-" = "_",
+                                                                "," = "_")))
+  }
+  
   rmarkdown::render(
     input = input,
-    output_file = paste0("final_report_", str_replace_all(tolower(partner), c(" " = "_",
-                                                                         "-" = "_",
-                                                                         "," = "_"))),
+    output_file = output_file,
     output_dir = output_dir,
     params = purrr::keep(list(partner = partner,
                               content_area = content_area),
@@ -283,8 +288,8 @@ course_feedback_graph <- function(race_filter = "All", content_area_filter = "Al
     theme(
       axis.text.y = element_text(size = 13, lineheight = 0.8),
       plot.title = element_text(size = 25),
-      legend.margin = margin(-30, 0, 0, -80),
-      legend.text = element_text(size = 13)
+      legend.margin = margin(-30, 0, 0, -190),
+      legend.text = element_text(size = 12)
     )
   
   cat("#### ", race_filter, "\n")
