@@ -1003,12 +1003,12 @@ tl_summary_table <- function(data,
         
         
         if (grouping != "crse") {
-          selected <- c(equitable_questions |> pull(question),
-                        high_expectations_questions |> pull(question),
+          selected <- c(equitable_questions |> dplyr::pull(question),
+                        high_expectations_questions |> dplyr::pull(question),
                         crse_questions)
           ## Only reversed columns for later calculations
-          reversed <- c(equitable_questions %>% filter(reverse == T) |> pull(question),
-                        high_expectations_questions %>% filter(reverse == T) |> pull(question))
+          reversed <- c(equitable_questions %>% dplyr::filter(reverse == T) |> dplyr::pull(question),
+                        high_expectations_questions %>% dplyr::filter(reverse == T) |> dplyr::pull(question))
         } else {
           selected <- crse_questions
           reversed <- NULL
@@ -1103,9 +1103,9 @@ tl_summary_table <- function(data,
       } else if (summarise == F & grouping == "equitable") {
         
         data_sums_final <- data_sums |>
-          mutate(Question = stringr::str_remove_all(Question, "To what extent do you agree or disagree\\<br\\>with the following statements\\? - |\\."),
+          dplyr::mutate(Question = stringr::str_remove_all(Question, "To what extent do you agree or disagree\\<br\\>with the following statements\\? - |\\."),
                  Question = stringr::str_replace_all(Question, "\\<br\\>", " ")) |>
-          slice(c(1:3))
+          dplyr::slice(c(1:3))
         
         data_sums_final <- tibble::tibble(groups = "<b>Overall Score</b>", 
                                           Question = "", 
@@ -1129,10 +1129,10 @@ tl_summary_table <- function(data,
       if (grouping == "summarise") {
         
         final_gt <- data_sums_final |>
-          mutate(site = replace_na(site, "All")) |>
-          drop_na(Percent) |>
+          dplyr::mutate(site = replace_na(site, "All")) |>
+          tidyr::drop_na(Percent) |>
           dplyr::rename(` ` = groups) |>
-          mutate(` ` = factor(` `, levels = c("<b>Overall Score</b>",
+          dplyr::mutate(` ` = factor(` `, levels = c("<b>Overall Score</b>",
                                               "Recognition of Race & Culture",
                                               "High Expectations & Beliefs",
                                               "Self-efficacy in CRSE Practices"))) |>

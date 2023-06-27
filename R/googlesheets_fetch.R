@@ -9,10 +9,6 @@ get_current_partner_sites <- function(update = FALSE, condense = FALSE, year = "
   
   if (update == TRUE & year == "21_22") {
     
-    ## Authentication ##
-    googledrive::drive_auth(path = "tokens/teachinglab-authentication-0a3006e60773.json")
-    googlesheets4::gs4_auth(token = googledrive::drive_token())
-    
     df <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/11jlo9UeWxZGwunhDb24hZBwAKc5b8ZKM9AYNWZaUyZY/edit#gid=0",
                                     sheet = "FY22 Automation",
                                     col_types = "c"
@@ -20,10 +16,6 @@ get_current_partner_sites <- function(update = FALSE, condense = FALSE, year = "
       dplyr::pull(3) |>
       unique() |>
       sort()
-    
-    ## Deauthentication ##
-    googledrive::drive_deauth()
-    googlesheets4::gs4_deauth()
     
     if (condense == TRUE) {
       df <- df |>
@@ -65,17 +57,11 @@ get_ipg_forms <- function(update = FALSE, year = "22_23") {
   } else if (update == FALSE & year == "21_22") {
     ipg_forms <- readr::read_rds(here::here("data/sy21_22/ipg_forms.rds"))
   } else if (update == TRUE & year == "21_22") {
-    ## Authentication ##
-    googledrive::drive_auth(path = "tokens/teachinglab-authentication-0a3006e60773.json")
-    googlesheets4::gs4_auth(token = googledrive::drive_token())
     
     ipg_forms <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1L33wVpPERyUQdG8WO3sZiyjnHzPvDL91O4yVUQTN14A/edit#gid=1455024681",
                                     sheet = 1,
                                     col_types = "c"
     )
-    ## Deauthentication ##
-    googledrive::drive_deauth()
-    googlesheets4::gs4_deauth()
     
     ipg_forms <- ipg_forms |>
       dplyr::mutate(
@@ -136,17 +122,11 @@ get_ipg_forms <- function(update = FALSE, year = "22_23") {
 #' @export
 get_lesson_analysis <- function(update = FALSE) {
   if (update == TRUE) {
-    ## Authentication ##
-    googledrive::drive_auth(path = "tokens/teachinglab-authentication-0a3006e60773.json")
-    googlesheets4::gs4_auth(token = googledrive::drive_token())
     
     df <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1fCOHSKAkP8GU1xJQh6CjtHPJriOldmqYFyI8MnPWtIg/edit?resourcekey#gid=1002617293",
                                     sheet = 1,
                                     col_types = "c"
     )
-    ## Deauthentication ##
-    googledrive::drive_deauth()
-    googlesheets4::gs4_deauth()
     
     readr::write_rds(df, here::here("data/sy21_22/lesson_plan_analysis.rds"))
   } else {

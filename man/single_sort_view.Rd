@@ -15,3 +15,7 @@ a string
 \description{
 Gets all unique elements of a vector in a sorted view
 }
+\examples{
+# example code
+ c("stuff", "and", "more") |> single_sort_view()
+}

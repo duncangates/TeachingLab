@@ -852,51 +852,6 @@ gt_percent_n <- function(df, column, custom_title, no_title = T, base_font = 10,
 }
 
 
-#' @title Wordcloud Teaching Lab Visualization
-#' @description takes a dataframe and makes a wordcloud
-#' @param data the dataframe
-#' @param text_col the text to visualize
-#' @param colors the color gradient
-#' @param n_min the minimum n to accept
-#' @param size the wordcloud size
-#' @param shape the wordcloud shape
-#' @return a wordcloud
-#' @importFrom magrittr %>%
-#'
-#' @examples
-#' \dontrun{
-#' tl_wordcloud(data = iris, text_col = Species)
-#' }
-#' @export
-
-tl_wordcloud <- function(data, text_col, colors = c("blue", "orange"), n_min = 2, size = 20,
-                         shape = c(
-                           "circle", "cardioid", "diamond",
-                           "square", "triangle-forward", "triangle-upright",
-                           "pentagon", "star"
-                         )) {
-  my_text_col <- rlang::ensym(text_col)
-
-  stop_words <- tidytext::stop_words
-
-  print(my_text_col)
-
-  words <- data %>%
-    tidytext::unnest_tokens(word, as.character(my_text_col)) %>%
-    dplyr::anti_join(stop_words) %>%
-    dplyr::group_by(word) %>%
-    dplyr::count(sort = T) %>%
-    dplyr::filter(n >= n_min) %>%
-    dplyr::mutate(angle = 90 * sample(c(0, 1), n(), replace = TRUE, prob = c(60, 40)))
-
-  ggplot2::ggplot(words, ggplot2::aes(label = word, size = n, angle = angle, color = n)) +
-    ggwordcloud::geom_text_wordcloud_area() +
-    ggplot2::scale_size_area(max_size = size) +
-    ggplot2::theme_minimal() +
-    ggplot2::scale_color_gradient(low = colors[1], high = colors[2])
-}
-
-
 #' @title Fake p1, p2, n1, n2 data
 #' @description Creates fake data for knowledge assessments in SXSW report
 #' @param p1_range the range of values to sample for p1
@@ -1038,12 +993,8 @@ fake_bar_graph_create <- function(title,
         family = "Calibri"
       ) +
       ggplot2::scale_fill_manual(values = c("Before" = "#D17DF7", "After" = "#55BBC7")) +
-      # ggtext::geom_richtext(data = data.frame(name = "Before", value = 100,
-      #                                         label = "% Correct <b style='color:#d17df7'>before</b> and <b style='color:#55bbc7'>after</b>."),
-      #                       aes(x = name, y = value, label = label)) +
       ggplot2::labs(
         x = "", y = "",
-        # title = paste0(title, "\n% Correct before and after")#,
         title = paste0(title, "<br>", ifelse(know_graph == T, "% Correct ", ""), "<b style='color:#55bbc7'>before (n = ", n1, ")</b> and <b style='color:#d17df7'>after (n = ", n2, ")</b>")
       ) +
       ggplot2::scale_y_continuous(
@@ -1051,10 +1002,8 @@ fake_bar_graph_create <- function(title,
         limits = c(0, 100)
       ) +
       ggplot2::scale_x_discrete(labels = c("Before", "After")) +
-      # TeachingLab::theme_tl(markdown = F) +
       ggplot2::theme_minimal() +
       ggplot2::theme(
-        # plot.title = ggplot2::element_text(),
         plot.title = ggtext::element_markdown(lineheight = 1.1, hjust = 0.5),
         legend.position = "none",
         axis.text.x = ggplot2::element_text(face = "bold")

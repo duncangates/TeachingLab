@@ -4,12 +4,21 @@
 \alias{get_monday_board}
 \title{Get Monday Board Data}
 \usage{
-get_monday_board(board_id, first_col_name)
+get_monday_board(
+  board_id,
+  first_col_name,
+  py_script = "data_scripts/monday.com/monday_board.py",
+  json_file = "data/monday/monday_board.json"
+)
 }
 \arguments{
 \item{board_id}{Which monday board id to use when getting information}
 
 \item{first_col_name}{What to name the first column in the dataframe}
+
+\item{py_script}{the location of the python script}
+
+\item{json_file}{the location of the json file of monday data}
 }
 \value{
 Returns a tibble

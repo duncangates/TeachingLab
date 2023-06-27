@@ -6,15 +6,13 @@
 #' @param content_area content area to filter by default to NULL and ignored
 #' @param ... arguments passed to `rmarkdown::render`
 #' @description remove files from images/report_images and images/report_summary_images and render specified rmd
-partner_file_remove <- function(partner, content_area = NULL, input, output_dir, output_file = NULL, ...) {
+partner_file_remove <- function(partner, content_area = NULL, input, output_dir, ...) {
   
   print("Rendering new rmd...")
   
-  output_file <- if (!is.null(output_file)) {
-    paste0("final_report_", str_replace_all(tolower(partner), c(" " = "_",
+  output_file <- paste0("final_report_", stringr::str_replace_all(tolower(partner), c(" " = "_",
                                                                 "-" = "_",
                                                                 "," = "_")))
-  }
   
   rmarkdown::render(
     input = input,

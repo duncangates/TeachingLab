@@ -486,6 +486,9 @@ mutate_cond <- function(.data, condition, ..., envir = parent.frame()) {
 #' @description Gets all unique elements of a vector in a sorted view
 #' @param vector the vector to view
 #' @return a string
+#' @examples
+#' # example code
+#'  c("stuff", "and", "more") |> single_sort_view()
 #' @export
 single_sort_view <- function(vector) {
   vector |>

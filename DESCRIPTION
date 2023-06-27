@@ -20,7 +20,6 @@ Imports:
   forcats,
   ggplot2,
   ggtext,
-  ggwordcloud,
   glue,
   graphics,
   grid,
