@@ -16,4 +16,6 @@ the vector provided rounded
 }
 \description{
 round that actually round up 0.5 as it should be
+
+rounding function as an alternative to round due to occasional decimal errors and problems with rounding from 0.5
 }

@@ -132,6 +132,7 @@ colorize <- function(x, color) {
 #' @description round that actually round up 0.5 as it should be
 #' @param x the vector to round
 #' @param n the number of digits to round
+#' @description rounding function as an alternative to round due to occasional decimal errors and problems with rounding from 0.5
 #' @return the vector provided rounded
 
 round2 <- function(x, n) {
@@ -155,9 +156,10 @@ round2 <- function(x, n) {
 #' @export
 
 html_wrap <- function(string, n = 40) {
-  stringr::str_replace_all(
+  gsub(
     stringr::str_wrap(string = string, width = n),
-    "\n", "<br>"
+    pattern = "\n", 
+    replacement = "<br>"
   )
 }
 
@@ -173,9 +175,9 @@ html_wrap <- function(string, n = 40) {
 #' @export
 
 get_season <- function(date) {
-  numeric.date <- 100 * lubridate::month(date) + lubridate::day(date)
+  numeric.date <- 100 * as.numeric(format(Sys.Date(), "%m")) + as.numeric(format(Sys.Date(), "%d"))
   ## input Seasons upper limits in the form MMDD in the "break =" option:
-  cuts <- base::cut(numeric.date, breaks = c(0, 319, 0620, 0921, 1220, 1231))
+  cuts <- cut(numeric.date, breaks = c(0, 319, 0620, 0921, 1220, 1231))
   # rename the resulting groups (could've been done within cut(...levels=) if "Winter" wasn't double
   levels(cuts) <- c("Winter", "Spring", "Summer", "Fall", "Winter")
   return(cuts)
@@ -233,7 +235,10 @@ percent_agree <- function(agree_col) {
 #' @export
 
 coalesce_by_column <- function(df) {
-  return(dplyr::coalesce(!!!as.list(df)))
+  coalesce <- function(...) {
+    apply(cbind(...), 1, function(x) x[which(!is.na(x))[1]])
+  }
+  return(coalesce(!!!as.list(df)))
 }
 
 
@@ -249,10 +254,10 @@ drop1 <- function(before = T, options, envir, name) {
   if (before) {
     paste(
       "<p>",
-      glue::glue('<button class="btn btn-primary collapsed" data-toggle="collapse" data-target="{name}">'),
+      paste0('<button class="btn btn-primary collapsed" data-toggle="collapse" data-target="', name, '">'),
       "</button>",
       "</p>",
-      glue::glue('<div class="collapse" id="{name}">'),
+      paste0('<div class="collapse" id="', name, '">'),
       '<div class="card card-body">',
       sep = "\n"
     )
@@ -327,7 +332,7 @@ id_maker <- function(initials, birthday) {
 #' @return a single integer
 #' @export
 runif_round <- function(min, max) {
-  round(stats::runif(n = 1, min = min, max = max))
+  round(runif(n = 1, min = min, max = max))
 }
 
 #' @title First Letter Uppercase
@@ -395,51 +400,6 @@ string_replace <- function(string, string_detect, string_replace, print = FALSE)
   }
 
   new_string
-}
-
-#' @title Site Replacement
-#' @description Replaces individual sites with greater groupings
-#' @param data the data to perform replacement on
-#' @return a string
-#' @export
-
-site_condense <- function(data) {
-  if (tibble::is_tibble(data) == TRUE) {
-    data <- data[[1]]
-  }
-
-  replacement_df <-
-    tibble::tibble(
-      sites_to_replace = c(
-        "District 11",
-        "District 9",
-        "EMST",
-        "Coupee",
-        "Rochester",
-        "West Contra",
-        "Wisconsin Department"
-      ),
-      sites_new_names = c(
-        "NYC District 11 - District-wide, NY",
-        "NYC District 9 - District-wide, NY",
-        "NYC District 12 - EMST-IS 190, NY",
-        "Pointe Coupee Parish, LA",
-        "Rochester City School District - District-wide",
-        "West Contra Costa USD, CA",
-        "Wisconsin Department of Education, WI"
-      )
-    )
-
-  replaced_sites <- TeachingLab::string_replace(
-    string = data,
-    string_detect = replacement_df$sites_to_replace,
-    string_replace = replacement_df$sites_new_names
-  ) |>
-    unique() |>
-    sort() |>
-    suppressWarnings()
-
-  return(replaced_sites)
 }
 
 #' @title Agree/Strongly agree
