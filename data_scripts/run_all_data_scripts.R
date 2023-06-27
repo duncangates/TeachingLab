@@ -1,3 +1,4 @@
+library(googlesheets4)
 library(purrr)
 library(stringr)
 ## Get All Folders ##
@@ -17,7 +18,9 @@ run_script <- function(script) {
   
 }
 
+googlesheets4::gs4_auth()
+
 ## Run all scripts based on location ##
-purrr::walk(r_scripts_final, run_script)
+purrr::walk(r_scripts_final[-13], run_script)
 
 ############################################# End Script ######################################################

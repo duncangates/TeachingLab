@@ -12,6 +12,7 @@ student_work_sheet <- googlesheets4::read_sheet(ss = "15ixca0QKloZtYLcmj_9Uc20zd
 
 ### Update Student Work Sheet if Needed ###
 
+#### Make grade bands, replace file names, check if pre post by teacher name ####
 student_work2 <- student_work |>
   dplyr::mutate(
     grade_band = dplyr::case_when(
@@ -61,7 +62,19 @@ student_work2 <- student_work |>
                                     TRUE ~ NA)) |>
   dplyr::ungroup()
 
-student_work_selected <- student_work2 |>
+student_work_additional_files <- student_work2 |>
+  dplyr::filter(additional_yes_no == "Yes") |>
+  dplyr::select(-File_Name, -File_Id) |>
+  tidyr::pivot_longer(contains("additional_files_Name"), names_to = "add_file_name", values_to = "File_Name") |>
+  tidyr::drop_na(File_Name) |>
+  dplyr::mutate(File_Id = dplyr::case_when(add_file_name == "1_additional_files_Name" ~ `1_additional_files_Id`,
+                                           add_file_name == "2_additional_files_Name" ~ `2_additional_files_Id`,
+                                           add_file_name == "3_additional_files_Name" ~ `3_additional_files_Id`,
+                                           add_file_name == "4_additional_files_Name" ~ `4_additional_files_Id`,
+                                           add_file_name == "5_additional_files_Name" ~ `5_additional_files_Id`)) |>
+  dplyr::mutate(Prepost = case_when(RecordedDate >= as.Date("2023-06-15") & round == "PL - Second submission of the school year" ~ "Post",
+                                    RecordedDate >= as.Date("2023-06-15") & round == "PL - First submission of the school year" ~ "Pre",
+                                    T ~ NA)) |>
   dplyr::select(
     `Date of Submission` = RecordedDate,
     `Student Work File` = File_Name,
@@ -79,12 +92,42 @@ student_work_selected <- student_work2 |>
     Grade = grade,
     Class = class,
     `Subject Area` = subject,
-    `# of Students` = `#_of_students_1`
+    `# of Students` = `#_of_students_1`,
+    Prepost
+  )
+
+student_work_selected <- student_work2 |>
+  dplyr::mutate(Prepost = case_when(RecordedDate >= as.Date("2023-06-15") & round == "PL - Second submission of the school year" ~ "Post",
+                                    RecordedDate >= as.Date("2023-06-15") & round == "PL - First submission of the school year" ~ "Pre",
+                                    T ~ NA)) |>
+  dplyr::select(
+    `Date of Submission` = RecordedDate,
+    `Student Work File` = File_Name,
+    `Student Work File ID` = File_Id,
+    `Student Work Survey ID` = ResponseId,
+    `Teacher or Coach` = teacher_or_coach,
+    `Teacher Name` = teacher_name,
+    `Teacher Initials` = initials,
+    `Teacher DOB` = dob,
+    Site = site,
+    `District 9` = district9,
+    `District 11` = district11,
+    MA_DESE = ma_dese,
+    `Grade Band` = grade_band,
+    Grade = grade,
+    Class = class,
+    `Subject Area` = subject,
+    `# of Students` = `#_of_students_1`,
+    Prepost
   ) |>
+  dplyr::bind_rows(student_work_additional_files) |>
+  dplyr::left_join(student_work_sheet |> dplyr::select(`Student Work File ID`, Prepost), by = c("Student Work File ID")) |>
+  dplyr::mutate(Prepost = dplyr::coalesce(Prepost.x, Prepost.y)) |>
+  dplyr::select(-Prepost.x, -Prepost.y) |>
   dplyr::arrange(`Date of Submission`)
 
-# sheet_length <- nrow(student_work_selected) + 1
-# sheet_cols <- LETTERS[ncol(student_work_selected)]
+sheet_length <- nrow(student_work_selected) + 1
+sheet_cols <- LETTERS[ncol(student_work_selected)]
 
 ### Write to google sheet, overwriting previous data, except for Submitted Grade which is column O ###
 student_work_selected |>
@@ -101,7 +144,6 @@ student_work_selected |>
   # )
 
 student_work_submitted <- student_work2 |>
-  dplyr::mutate(`Matched Y/N` = NA) |>
   dplyr::select(
     `Date of Submission` = RecordedDate,
     `Student Work File` = File_Name,
@@ -148,7 +190,7 @@ response_files <- student_work |>
 student_work_sheet |>
   filter(!is.na(`Submitted By`)) |>
   pull(`Student Work File ID`) %>%
-  paste0("~/Teaching Lab/Coding/student_work_samples/www/pdfs/", .) -> remove_files
+  paste0("~/Teaching Lab/Coding/student_work_samples/www/pdfs/", ., ".pdf") -> remove_files
 
 final_remove <- remove_files[which(remove_files %in% str_replace_all(list.files("~/Teaching Lab/Coding/student_work_samples/www/pdfs", full.names = TRUE), "/Users/dunk/", "~/"))]
 
@@ -163,36 +205,20 @@ student_work_sheet |>
 files_pull <- str_remove_all(needed_files[which(!needed_files %in% str_replace_all(list.files("~/Teaching Lab/Coding/student_work_samples/www/pdfs", full.names = TRUE), "/Users/dunk/", "~/"))], "~/Teaching Lab/Coding/student_work_samples/www/pdfs/")
 
 ### File IDs ###
-response_files <- student_work |>
-  dplyr::filter(File_Id %in% files_pull) |>
-  dplyr::select(
-    ResponseId, File_Id, `1_additional_files_Id`, `2_additional_files_Id`, `3_additional_files_Id`,
-    `4_additional_files_Id`, `5_additional_files_Id`
-  )
-
-### List of all files with additional file responses ###
-# additional_files <- response_files |>
-#   dplyr::filter(dplyr::if_any(dplyr::contains("additional_"), ~ !is.na(.x))) |>
-#   tidyr::pivot_longer(!c(ResponseId)) |>
-#   dplyr::rename(File_Id = value) |>
-#   dplyr::select(-name) |>
-#   tidyr::drop_na(File_Id)
-### List of all normal file submissions ###
-final_files <- response_files |>
-  dplyr::filter(dplyr::if_any(dplyr::contains("additional_"), ~ is.na(.x))) |>
-  dplyr::select(ResponseId, File_Id) #|>
-  # dplyr::bind_rows(additional_files)
+response_files <- student_work_sheet |>
+  filter(is.na(`Submitted By`)) |>
+  dplyr::select(ResponseId = `Student Work Survey ID`, File_Id = `Student Work File ID`)
 
 ### List of all API Request URLs without additional file submissions ###
 url <- purrr::map2_chr(
-  final_files$ResponseId, final_files$File_Id,
+  response_files$ResponseId, response_files$File_Id,
   ~ glue::glue("https://iad1.qualtrics.com/API/v3/surveys/SV_6nwa9Yb4OyXLji6/responses/{.x}/uploaded-files/{.y}")
 )
 
 ### Download all submissions with file names as file ids ###
 needed_submissions <- purrr::walk2(
   url,
-  final_files$File_Id,
+  response_files$File_Id,
   ~ httr::GET(
     url = .x,
     httr::add_headers(`X-API-TOKEN` = "r1vgrzHjb3AQrBQEKgLXd8khdF5R7FFjP5lp7bzT"),
@@ -200,28 +226,6 @@ needed_submissions <- purrr::walk2(
     httr::progress()
   )
 )
-
-########################################################################################
-### Update all student work files in database for grading ###
-
-# just_file_names <- gsub(pattern = "^([^_]*_[^_]*).*?\\.(pdf|jpg).*",
-#      replacement = "\\1.\\2",
-#      x = list.files(here::here("File")))
-# 
-# check <- data.frame(from = list.files(here::here("File")),
-#                     to = just_file_names)
-# 
-# file.rename(from = list.files(here::here("File"), full.names = T),
-#             to = here::here("File", just_file_names))
-# 
-# file.copy(from = list.files(here::here("File"), full.names = T),
-#           to = "~/Teaching Lab/Coding/student_work_samples/www/pdfs/")
-# 
-# # Get all files in the directories, recursively
-# f <- list.files(here::here("File"), include.dirs = F, full.names = T, recursive = T)
-# 
-# # remove the files
-# file.remove(f)
 
 ########################################################################################
 
@@ -238,69 +242,3 @@ needed_submissions <- purrr::walk2(
 #   group_by(subject) |>
 #   summarise(n = sum(pages, na.rm = TRUE))
 ######################################################
-
-##### Tested reordering to prioritized Chicago sites ######
-# student_work_selected <- student_work |>
-#   dplyr::filter(Finished == TRUE) |>
-#   dplyr::mutate(
-#     grade_band = dplyr::case_when(
-#       !is.na(`grade_level_3`) ~ "3-5",
-#       !is.na(`grade_level_4`) ~ "3-5",
-#       !is.na(`grade_level_5`) ~ "3-5",
-#       !is.na(`grade_level_6`) ~ "6-8",
-#       !is.na(`grade_level_7`) ~ "6-8",
-#       !is.na(`grade_level_8`) ~ "6-8",
-#       !is.na(`grade_level_9`) ~ "9-12",
-#       !is.na(`grade_level_10`) ~ "9-12",
-#       !is.na(`grade_level_11`) ~ "9-12",
-#       !is.na(`grade_level_12`) ~ "9-12",
-#       !is.na(`grade_level_13`) ~ "Other"
-#     ),
-#     File_Name = stringr::str_replace_all(File_Name, "zip", "pdf"),
-#     Site = factor(Site, levels = c("IL_Chicago Public Schools_Network 7",
-#                                    "IL_Chicago Public Schools_Network 12",
-#                                    "NY_D11",
-#                                    "NY_D9",
-#                                    "NY_Rochester City Schools",
-#                                    "NY_Fannie Lou Hamer",
-#                                    "LA_Pointe Coupee Parish",
-#                                    "AR_Arkansas DOE",
-#                                    "OH_Cleveland Metro School District",
-#                                    "Other",
-#                                    "NA"))
-#   ) |>
-#   dplyr::select(
-#     Date = RecordedDate,
-#     `Student Work File` = File_Name,
-#     `Student Work File ID` = File_Id,
-#     `Student Work Survey ID` = ResponseId,
-#     `Teacher or Coach` = teacher_or_coach,
-#     teacher_name,
-#     `Teacher Initials` = initials,
-#     `Teacher DOB` = dob,
-#     Site,
-#     `District 9`,
-#     `District 11`,
-#     `Grade Band` = grade_band,
-#     class,
-#     `Subject Area` = subject,
-#     `# of Students` = `# of students_1`
-#   ) |>
-#   dplyr::arrange(Site)
-#   ########################################################
-#   
-###   Code to fix by rejoining scores into sheet once ordered by date ####
-# rejoin <- student_work_sheet |> mutate(`Grade Band` = as.character(`Grade Band`)) |>
-#   left_join(student_work_selected) |>
-#   view()
-# 
-# rejoin |>
-#   dplyr::arrange(`Date of Submission`) |>
-#   googlesheets4::range_write(
-#     ss = "15ixca0QKloZtYLcmj_9Uc20zdQ5FE6pSVj3EBamLoiI",
-#     sheet = "Student Work Scores",
-#     col_names = FALSE,
-#     reformat = FALSE,
-#     range = glue::glue("A2:T{sheet_length}")
-#   )
-#   ######################################################################

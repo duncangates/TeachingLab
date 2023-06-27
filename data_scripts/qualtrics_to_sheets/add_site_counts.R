@@ -111,26 +111,42 @@ district11_end_coaching_count <- participant_feedback |>
   dplyr::rename(`End of Coaching` = n)
 ##### End of end of Coaching count ######
 
-### Educator Survey Counting ###
+### Educator Survey & Follow Up Survey Counting ###
 diagnostic_survey <- TeachingLab::get_diagnostic_survey(update = FALSE, year = "22_23")
+followup_survey <- TeachingLab::get_followup_educator(update = FALSE, year = "22_23")
 
 diagnostic_survey_count <- diagnostic_survey |>
   dplyr::mutate(site = replace_na(as.character(site), "Other")) |>
   dplyr::group_by(site) |>
   dplyr::count(sort = T) |>
   dplyr::rename(`Diagnostic (pre)` = n)
+followup_survey_count <- followup_survey |>
+  dplyr::mutate(site = replace_na(as.character(site), "Other")) |>
+  dplyr::group_by(site) |>
+  dplyr::count(sort = T) |>
+  dplyr::rename(`Follow up (post)` = n)
 
 district9_diagnostic_count <- diagnostic_survey |>
   dplyr::group_by(district9) |>
   dplyr::count(sort = T) |>
   tidyr::drop_na() |>
   dplyr::rename(`Diagnostic (pre)` = n)
+district9_followup_count <- followup_educator |>
+  dplyr::group_by(district9) |>
+  dplyr::count(sort = T) |>
+  tidyr::drop_na() |>
+  dplyr::rename(`Follow up (post)` = n)
 
 district11_diagnostic_count <- diagnostic_survey |>
   dplyr::group_by(district11) |>
   dplyr::count(sort = T) |>
   tidyr::drop_na() |>
   dplyr::rename(`Diagnostic (pre)` = n)
+district11_followup_count <- followup_educator |>
+  dplyr::group_by(district11) |>
+  dplyr::count(sort = T) |>
+  tidyr::drop_na() |>
+  dplyr::rename(`Follow up (post)` = n)
 
 ##### End of Educator Survey count ######
 
@@ -241,17 +257,19 @@ eic_student_survey_count <- eic_student_survey |>
     "NYC District 11" = "NY_D11"
   ))) |>
   tidyr::drop_na(site) |>
-  dplyr::group_by(site) |>
+  dplyr::group_by(site, prepost) |>
   dplyr::count(sort = T) |>
-  dplyr::rename(`Student Survey pre` = n)
+  tidyr::pivot_wider(names_from = prepost, values_from = n) |>
+  dplyr::rename(`Student Survey pre` = Pre,
+                `Student Survey post` = Post)
 
 d11_eic_student_survey_count <- eic_student_survey |>
-  dplyr::group_by(district11) |>
-  dplyr::count(sort = T) |>
-  dplyr::ungroup() |>
-  dplyr::mutate(district11 = as.character(district11)) |>
   dplyr::filter(!is.na(district11)) |>
-  dplyr::rename(`Student Survey pre` = n)
+  dplyr::group_by(district11, prepost) |>
+  dplyr::count(sort = T) |>
+  tidyr::pivot_wider(names_from = prepost, values_from = n) |>
+  dplyr::rename(`Student Survey pre` = Pre,
+                `Student Survey post` = Post)
 
 student_survey <- TeachingLab::get_student_survey(update = FALSE, year = "22_23") |>
     dplyr::filter(eic == FALSE) |>
@@ -259,31 +277,40 @@ student_survey <- TeachingLab::get_student_survey(update = FALSE, year = "22_23"
 
 student_survey_count <- student_survey |>
   tidyr::drop_na(site) |>
-  dplyr::group_by(site) |>
+  dplyr::group_by(site, prepost) |>
   dplyr::count(sort = T) |>
-  dplyr::rename(`Student Survey pre` = n) |>
+  tidyr::pivot_wider(names_from = prepost, values_from = n) |>
+  dplyr::rename(`Student Survey pre` = Pre,
+                `Student Survey post` = Post) |>
   dplyr::bind_rows(eic_student_survey_count)
 
-student_work <- TeachingLab::get_student_work(year = "22_23", update = TRUE) |>
-  dplyr::filter(Finished == TRUE)
+student_work <- googlesheets4::read_sheet(ss = "15ixca0QKloZtYLcmj_9Uc20zdQ5FE6pSVj3EBamLoiI",
+                                          sheet = "Student Work Scores")
 
 student_work_count <- student_work |>
-  dplyr::mutate(site = replace_na(as.character(site), "Other")) |>
-  dplyr::group_by(site) |>
+  dplyr::filter(!Prepost %in% c("NA", "DUPLICATE") & !is.na(Prepost)) |>
+  dplyr::mutate(Site = replace_na(as.character(Site), "Other")) |>
+  dplyr::group_by(Site, Prepost) |>
   dplyr::count(sort = T) |>
-  dplyr::rename(`Student work samples round 1` = n)
+  tidyr::pivot_wider(names_from = Prepost, values_from = n) |>
+  dplyr::rename(`Student work samples round 1` = Pre,
+                `Student work samples round 2` = Post)
 
 student_work_count_district_9 <- student_work |>
-  dplyr::group_by(district9) |>
+  dplyr::filter(!Prepost %in% c("NA", "DUPLICATE") & !is.na(Prepost) & Site == "NY_D9" & !is.na(`District 9`)) |>
+  dplyr::group_by(district9 = `District 9`, Prepost) |>
   dplyr::count(sort = T) |>
-  tidyr::drop_na() |>
-  dplyr::rename(`Student work samples round 1` = n)
+  tidyr::pivot_wider(names_from = Prepost, values_from = n) |>
+  dplyr::rename(`Student work samples round 1` = Pre,
+                `Student work samples round 2` = Post)
 
 student_work_count_district_11 <- student_work |>
-  dplyr::group_by(district11) |>
+  dplyr::filter(!Prepost %in% c("NA", "DUPLICATE") & !is.na(Prepost) & Site == "NY_D11" & !is.na(`District 11`)) |>
+  dplyr::group_by(district11 = `District 11`, Prepost) |>
   dplyr::count(sort = T) |>
-  tidyr::drop_na() |>
-  dplyr::rename(`Student work samples round 1` = n)
+  tidyr::pivot_wider(names_from = Prepost, values_from = n) |>
+  dplyr::rename(`Student work samples round 1` = Pre,
+                `Student work samples round 2` = Post)
 ###### End of Student Survey/Student Work Survey Count ######
 
 ### Knowledge Assessment Counting ###
@@ -487,12 +514,10 @@ data_collection_sy22_23 <- current_sites |>
   dplyr::left_join(ongoing_coaching_count, by = "site") |>
   dplyr::left_join(end_coaching_count, by = "site") |>
   dplyr::left_join(diagnostic_survey_count) |>
-  tibble::add_column(`Follow up (post)` = NA, .after = "Diagnostic (pre)") |>
+  dplyr::left_join(followup_survey_count) |>
   dplyr::left_join(classroom_obs_count, by = "site") |>
   dplyr::left_join(student_survey_count, by = "site") |>
-  tibble::add_column(`Student Survey post` = NA, .after = "Student Survey pre") |>
-  dplyr::left_join(student_work_count, by = c("site")) |>
-  tibble::add_column(`Student work samples round 2` = NA, .after = "Student work samples round 1") |>
+  dplyr::left_join(student_work_count, by = c("site" = "Site")) |>
   dplyr::left_join(knowledge_assessment_count, by = c("site"))
 
 ### Add two to sheet length to get actual range for google sheet to be written ###
@@ -517,7 +542,6 @@ district9_sites <- googlesheets4::read_sheet("https://docs.google.com/spreadshee
   range = "B:B"
 ) |>
   dplyr::rename(district9 = NY_D9) |>
-  dplyr::mutate(district9 = stringr::str_replace_all(district9, "x", "X")) |>
   dplyr::bind_rows(tibble::tibble(district9 = "Other"))
 
 d9_data_collection_sy22_23 <- district9_sites |>
@@ -526,17 +550,11 @@ d9_data_collection_sy22_23 <- district9_sites |>
   dplyr::left_join(district9_ongoing_coaching_count) |>
   dplyr::left_join(district9_end_coaching_count) |>
   dplyr::left_join(district9_diagnostic_count) |>
-  tibble::add_column(`Follow up (post)` = NA, .after = "Diagnostic (pre)") |>
+  dplyr::left_join(district9_followup_count) |>
   dplyr::left_join(district9_classroom_obs_count) |>
-  # dplyr::left_join(student_survey_count, by = c("District 9" = "site")) |>
   tibble::add_column(`Student Survey pre` = NA, .after = "Fifth site visit") |>
   tibble::add_column(`Student Survey post` = NA, .after = "Student Survey pre") |>
-  dplyr::left_join(student_work_count_district_9 |> dplyr::mutate(district9 = stringr::str_replace_all(
-    district9,
-    "x",
-    "X"
-  ))) |>
-  tibble::add_column(`Student work samples round 2` = NA, .after = "Student work samples round 1") |>
+  dplyr::left_join(student_work_count_district_9) |>
   dplyr::left_join(d9_knowledge_assessment_count, by = c("district9" = "site"))
 
 ### Add two to sheet length to get actual range for google sheet to be written ###
@@ -571,9 +589,7 @@ d11_data_collection_sy22_23 <- district11_sites |>
   tibble::add_column(`Follow up (post)` = NA, .after = "Diagnostic (pre)") |>
   dplyr::left_join(district11_classroom_obs_count) |>
   dplyr::left_join(d11_eic_student_survey_count) |>
-  tibble::add_column(`Student Survey post` = NA, .after = "Student Survey pre") |>
   dplyr::left_join(student_work_count_district_11) |>
-  tibble::add_column(`Student work samples round 2` = NA, .after = "Student work samples round 1") |>
   (\(.) if (exists("d11_knowledge_assessment_count")) dplyr::left_join(., d11_knowledge_assessment_count, by = c("District 11" = "site")) else .)()
 
 
