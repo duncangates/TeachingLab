@@ -66,51 +66,20 @@ To get a local copy up and running follow these simple example steps.
 ### Installation
 
 ``` r
-devtools::install_github("https://github.com/duncangates/TeachingLab", auth_token = "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")
+devtools::install_github("https://github.com/duncangates/TeachingLab")
 ```
 
 ## Organization
 
-- Analysis: All files for analysis of Teaching Lab work
-	- 2021-2022
-	- 2020-2021
-	- DashboardData
-	- District 11
-	- Footer/Styles
-	- Miscellaneous
-	- New Mexico
-	- Templates
-	- 2019-2020
-- Dashboards
+- dashbaords
 	- [ParticipantFeedback](https://teachinglabhq.shinyapps.io/ParticipantFeedback/): Course Feedback Visualization Dashboard from pre 2021-2022
-	- DiagnosticComplete: An app for tracking diagnostic dashboard completeness
-	- ExternalShare: An incomplete shiny app at the moment
-	- PartnerShare: Intended to be a method for sharing reports with partners
-	- Staffing: Staffing system for Teaching Lab facilitators based on PM inputs
-	- Survey: Tracking system for TL facilitator requests
-	-YearlyDashboard: Course Survey Tracking Dashboard from SY21-22
-	-YearlyDashboard2: Session Survey Tracking Dashboard from SY21-22
-- Data-Clean: All cleaned data that needs to be stored
-- Data: All read-in data that should be stored
-- HTML: All html files
-- Images: All images created or stored for project usage
-	- D11
-	- 2019-2020
-	- 2020-2021
-	- 2021-2022
-	- Backgrounds
-	- CRT Review
-	- Legacy Graphs
-	- Legacy Tables
-	- Logos
-	- Miscellaneous
-	- Robinhood
-	- Styles Guide
-	- SY19-20 Tables
-	- SY20-21 Tables
+- data: All read-in data that should be stored
+- data_scripts: ongoing data scripts that mostly run daily
+- html: html template building files
 - inst: Rmd template building files
+- man: Internal package documentation
 - R: Internal package development .R files for Teaching Lab
-- Rmd: Storage for Rmd reports that can be broadly used, such as generated 2021 reports, as well as a template for Teaching Lab reports
+- tests: tests to ensure package integrity
 
 <!-- ROADMAP -->
 ## Roadmap

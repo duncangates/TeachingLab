@@ -237,16 +237,6 @@ coalesce_by_column <- function(df) {
 }
 
 
-#' @title Remove HTML
-#' @description Takes a string and removes html using rvest
-#' @param string a string
-#' @return a string without the html
-#' @export
-strip_html <- function(string) {
-  rvest::html_text(rvest::read_html(string))
-}
-
-
 #' @title HTML/CSS Button Content Expander
 #' @description Creates a button that will expand or hide content
 #' @param before button default, collapsed/not collapsed

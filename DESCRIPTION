@@ -11,6 +11,40 @@ Encoding: UTF-8
 LazyData: true
 URL: https://github.com/duncangates/teachinglab-duncan
 BugReports: https://github.com/duncangates/teachinglab-duncan/issues
+Imports:
+  assertthat,
+  base,
+  bookdown,
+  dplyr,
+  fontawesome,
+  forcats,
+  ggplot2,
+  ggtext,
+  ggwordcloud,
+  glue,
+  graphics,
+  grid,
+  gt,
+  here,
+  htmltools,
+  knitr,
+  lubridate,
+  magrittr,
+  purrr,
+  readr,
+  reticulate,
+  rlang,
+  rmarkdown,
+  rvest,
+  scales,
+  stats,
+  stringr,
+  tibble,
+  tidyr,
+  tidyselect,
+  tidytext,
+  treemapify,
+  waffle
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Depends: 
