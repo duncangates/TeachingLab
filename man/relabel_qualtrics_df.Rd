@@ -15,7 +15,7 @@ relabel_qualtrics_df(df, switch = TRUE)
 a data.frame
 }
 \description{
-Switches the labels and column names of a data frame, or just changes 
+Switches the labels and column names of a data frame, or just changes
 the column names to the labels
 }
 \examples{

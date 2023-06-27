@@ -2,7 +2,7 @@
 % Please edit documentation in R/scoring_functions.R
 \name{tl_score_percent}
 \alias{tl_score_percent}
-\title{Get the percent of `data` in `answer`}
+\title{Get the percent of \code{data} in \code{answer}}
 \usage{
 tl_score_percent(data, answer)
 }

@@ -21,7 +21,7 @@ save_processed_data2(
 
 \item{save_name}{a folder for the plot ready data to be saved}
 
-\item{question_html_wrap}{number of characters before <br> insertion in question}
+\item{question_html_wrap}{number of characters before \if{html}{\out{<br>}} insertion in question}
 }
 \value{
 a plot ready dataframe

@@ -24,7 +24,7 @@ partner_file_remove(
 
 \item{output_file}{NULL by default, takes arguments when specified}
 
-\item{...}{arguments passed to `rmarkdown::render`}
+\item{...}{arguments passed to \code{rmarkdown::render}}
 }
 \description{
 remove files from images/report_images and images/report_summary_images and render specified rmd

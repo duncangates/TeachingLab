@@ -13,5 +13,5 @@ temp_save(img)
 a png image
 }
 \description{
-Creates a temporary save location for an image and return it with `knitr::include_graphics`
+Creates a temporary save location for an image and return it with \code{knitr::include_graphics}
 }

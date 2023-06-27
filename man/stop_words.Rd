@@ -7,9 +7,9 @@
 \format{
 A data frame with 1149 rows and 2 variables:
 \describe{
- \item{word}{An English word}
- \item{lexicon}{The source of the stop word. Either "onix", "SMART", or "snowball"}
- }
+\item{word}{An English word}
+\item{lexicon}{The source of the stop word. Either "onix", "SMART", or "snowball"}
+}
 }
 \source{
 \itemize{

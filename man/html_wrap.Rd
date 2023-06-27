@@ -9,13 +9,13 @@ html_wrap(string, n = 40)
 \arguments{
 \item{string}{the string}
 
-\item{n}{the width of the string before a <br> tag}
+\item{n}{the width of the string before a \if{html}{\out{<br>}} tag}
 }
 \value{
-the same string with <br> inserted at the requested interval
+the same string with \if{html}{\out{<br>}} inserted at the requested interval
 }
 \description{
-Takes a string and inserts <br> at the requested intervals
+Takes a string and inserts \if{html}{\out{<br>}} at the requested intervals
 }
 \examples{
 html_wrap("a random string that has about 40 characters in it")

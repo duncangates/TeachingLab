@@ -17,7 +17,7 @@ student_bar_chart(
 \arguments{
 \item{data}{the data for the plotter to use, should include all columns of interest}
 
-\item{col_select}{the columns to select with `tidyselect::contains`}
+\item{col_select}{the columns to select with \code{tidyselect::contains}}
 
 \item{agree_select}{the type of agree/strongly agree to select, for example also often/always}
 
