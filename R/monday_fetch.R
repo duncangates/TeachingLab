@@ -1,15 +1,14 @@
-#' @title Get Monday Board Data
-#' @description Gets monday board data as a tibble
-#' @param board_id Which monday board id to use when getting information
-#' @param first_col_name What to name the first column in the dataframe
-#' @param py_script the location of the python script
-#' @param json_file the location of the json file of monday data
-#' @examples
-#' \dontrun{
-#' TeachingLab::get_monday_board(board_id = 2208860812, first_col_name = "Facilitator")
-#' }
-#' @return Returns a tibble
-
+# @title Get Monday Board Data
+# @description Gets monday board data as a tibble
+# @param board_id Which monday board id to use when getting information
+# @param first_col_name What to name the first column in the dataframe
+# @param py_script the location of the python script
+# @param json_file the location of the json file of monday data
+# @examples
+# \dontrun{
+# TeachingLab::get_monday_board(board_id = 2208860812, first_col_name = "Facilitator")
+# }
+# @return Returns a tibble
 # get_monday_board <- function(board_id, first_col_name, py_script = "data_scripts/monday.com/monday_board.py", json_file = "data/monday/monday_board.json") {
 # 
 #   ### Run python script and add board id to environment ###
