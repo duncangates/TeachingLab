@@ -2,7 +2,7 @@
 % Please edit documentation in R/dashboard_functions.R
 \name{session_agree_plot}
 \alias{session_agree_plot}
-\title{Dashboard Agree Type \\% Plot}
+\title{Dashboard Agree Type \% Plot}
 \usage{
 session_agree_plot(data)
 }
@@ -13,5 +13,5 @@ session_agree_plot(data)
 Returns a ggplot
 }
 \description{
-Creates a plot for session survey data that shows \\% in each Likert category
+Creates a plot for session survey data that shows \% in each Likert category
 }

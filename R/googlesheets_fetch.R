@@ -20,10 +20,10 @@ get_current_partner_sites <- function(update = FALSE, year = "22_23") {
       unique() |>
       sort()
     
-    readr::write_rds(df, here::here("data/sy21_22/current_partner_sites.rds"))
+    readr::write_rds(df, "data/sy21_22/current_partner_sites.rds")
     
   } else if (year == "21_22" & update == FALSE) {
-    df <- readr::read_rds(here::here("data/sy21_22/current_partner_sites.rds"))
+    df <- readr::read_rds("data/sy21_22/current_partner_sites.rds")
   }
   
   return(df)
@@ -48,7 +48,7 @@ get_ipg_forms <- function(update = FALSE, year = "22_23") {
       dplyr::filter(Finished == TRUE)
     
   } else if (update == FALSE & year == "21_22") {
-    ipg_forms <- readr::read_rds(here::here("data/sy21_22/ipg_forms.rds"))
+    ipg_forms <- readr::read_rds("data/sy21_22/ipg_forms.rds")
   } else if (update == TRUE & year == "21_22") {
     
     ipg_forms <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1L33wVpPERyUQdG8WO3sZiyjnHzPvDL91O4yVUQTN14A/edit#gid=1455024681",
@@ -100,10 +100,10 @@ get_ipg_forms <- function(update = FALSE, year = "22_23") {
         # ))
       )
     
-    readr::write_rds(ipg_forms, here::here("data/sy21_22/ipg_forms.rds"))
+    readr::write_rds(ipg_forms, "data/sy21_22/ipg_forms.rds")
   }
   
-  write.csv(ipg_forms, here::here(glue::glue("data/sy{year}/ipg_forms.csv")))
+  write.csv(ipg_forms, glue::glue("data/sy{year}/ipg_forms.csv"))
   
   return(ipg_forms)
 }
@@ -121,9 +121,9 @@ get_lesson_analysis <- function(update = FALSE) {
                                     col_types = "c"
     )
     
-    readr::write_rds(df, here::here("data/sy21_22/lesson_plan_analysis.rds"))
+    readr::write_rds(df, "data/sy21_22/lesson_plan_analysis.rds")
   } else {
-    df <- readr::read_rds(here::here("data/sy21_22/lesson_plan_analysis.rds"))
+    df <- readr::read_rds("data/sy21_22/lesson_plan_analysis.rds")
   }
   
   
@@ -143,9 +143,9 @@ get_student_scores_mississippi <- function(update = FALSE) {
       janitor::clean_names() |>
       dplyr::select(-9)
     
-    readr::write_rds(df, here::here("data/sy21_22/student_scores_mississippi.rds"))
+    readr::write_rds(df, "data/sy21_22/student_scores_mississippi.rds")
   } else {
-    df <- readr::read_rds(here::here("data/sy21_22/student_scores_mississippi.rds"))
+    df <- readr::read_rds("data/sy21_22/student_scores_mississippi.rds")
   }
   
   return(df)
@@ -164,9 +164,9 @@ get_student_scores_mississippi2 <- function(update = FALSE) {
       janitor::clean_names() |>
       dplyr::select(-c(9:16))
     
-    readr::write_rds(df, here::here("data/sy21_22/student_scores_mississippi2.rds"))
+    readr::write_rds(df, "data/sy21_22/student_scores_mississippi2.rds")
   } else {
-    df <- readr::read_rds(here::here("data/sy21_22/student_scores_mississippi2.rds"))
+    df <- readr::read_rds("data/sy21_22/student_scores_mississippi2.rds")
   }
   
   return(df)

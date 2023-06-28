@@ -17,19 +17,19 @@ session_agree_plot_ts <- function(data, scale = "1 month") {
         "How much do you agree with the following statements about this facilitator today? - They were fully prepared for the session.",
         "How much do you agree with the following statements about this facilitator today? - They responded to the group’s needs."
       )
-    ) %>%
-    tidyr::pivot_longer(!`Date`, names_to = "question", values_to = "answer") %>%
+    ) |>
+    tidyr::pivot_longer(!`Date`, names_to = "question", values_to = "answer") |>
     dplyr::mutate(question = stringr::str_remove_all(
       question,
       "How much do you agree with the following statements about this course\\? - "
-    )) %>%
+    )) |>
     # Rename with line breaks every 27 characters
-    dplyr::mutate(question = gsub("(.{28,}?)\\s", "\\1\n", question)) %>%
-    tidyr::drop_na(answer) %>%
-    dplyr::group_by(question, Date) %>%
+    dplyr::mutate(question = gsub("(.{28,}?)\\s", "\\1\n", question)) |>
+    tidyr::drop_na(answer) |>
+    dplyr::group_by(question, Date) |>
     # Group by input variable
-    dplyr::mutate(`Number Agree/Disagree` = n()) %>%
-    dplyr::mutate(answer = stringr::str_remove_all(answer, "\\([:digit:]\\) ")) %>%
+    dplyr::mutate(`Number Agree/Disagree` = n()) |>
+    dplyr::mutate(answer = stringr::str_remove_all(answer, "\\([:digit:]\\) ")) |>
     dplyr::mutate(
       Rating = dplyr::case_when(
         answer %in% c("Agree", "Strongly agree") ~ "Agree/Strongly Agree",
@@ -38,24 +38,24 @@ session_agree_plot_ts <- function(data, scale = "1 month") {
       date_group = dplyr::case_when(scale == "1 month" ~ paste0(lubridate::month(Date, label = T, abbr = F), ", ", lubridate::year(Date)),
                              scale == "1 week" ~ paste0(lubridate::year(Date), lubridate::week(Date)),
                              scale == "1 day" ~ paste0(lubridate::day(Date)))
-    ) %>%
-    dplyr::ungroup() %>%
+    ) |>
+    dplyr::ungroup() |>
     dplyr::mutate(question = stringr::str_remove_all(
       question,
       "How much do you agree with the\nfollowing statements about this\nfacilitator today\\? - "
-    )) %>%
-    dplyr::group_by(date_group, question) %>%
-    dplyr::mutate(Percent = `Number Agree/Disagree` / sum(`Number Agree/Disagree`) * 100) %>%
-    dplyr::filter(Rating == "Agree/Strongly Agree") %>%
-    dplyr::group_by(date_group, Rating, question) %>%
+    )) |>
+    dplyr::group_by(date_group, question) |>
+    dplyr::mutate(Percent = `Number Agree/Disagree` / sum(`Number Agree/Disagree`) * 100) |>
+    dplyr::filter(Rating == "Agree/Strongly Agree") |>
+    dplyr::group_by(date_group, Rating, question) |>
     dplyr::summarise(Percent = round(sum(Percent), 2),
               Date = Date)
   
-  df %>%
+  df |>
     ggplot2::ggplot(mapping = ggplot2::aes(x = lubridate::ymd(Date), 
              y = Percent)) +
     ggplot2::geom_area(color = "gray50", mapping = ggplot2::aes(fill = Rating), 
-                       alpha = 0.6, position = ggplot2::position_identity()) + # position_identity is absolutely necessary here, not sure why
+                       alpha = 0.6, position = ggplot2::position_identity()) + 
     ggplot2::geom_ribbon(color = "transparent", ggplot2::aes(
       ymin = Percent, ymax = 100,
       fill = "Neither Agree nor Disagree/Disagree/Strongly Disagree"
@@ -93,8 +93,8 @@ session_agree_plot_ts <- function(data, scale = "1 month") {
     )
 }
 
-#' @title Dashboard Agree Type \% Plot
-#' @description Creates a plot for session survey data that shows \% in each Likert category
+#' @title Dashboard Agree Type % Plot
+#' @description Creates a plot for session survey data that shows % in each Likert category
 #' @param data the data to be input
 #' @return Returns a ggplot
 #' @export
@@ -103,32 +103,32 @@ session_agree_plot <- function(data) {
   
   n <- nrow(data)
   
-  df <- data %>%
+  df <- data |>
     dplyr::select(c(
       "How much do you agree with the following statements about this facilitator today? - They demonstrated  deep knowledge of the content they facilitated.",
       "How much do you agree with the following statements about this facilitator today? - They facilitated the content clearly.",
       "How much do you agree with the following statements about this facilitator today? - They effectively built a safe learning community.",
       "How much do you agree with the following statements about this facilitator today? - They were fully prepared for the session.",
       "How much do you agree with the following statements about this facilitator today? - They responded to the group’s needs."
-    )) %>%
-    tidyr::pivot_longer(tidyselect::everything(), names_to = "Question", values_to = "Response") %>%
-    tidyr::drop_na() %>%
+    )) |>
+    tidyr::pivot_longer(tidyselect::everything(), names_to = "Question", values_to = "Response") |>
+    tidyr::drop_na() |>
     dplyr::mutate(Question = stringr::str_remove_all(
       Question,
       "How much do you agree with the following statements about this facilitator today\\? - "
-    )) %>%
-    dplyr::group_by(Question, Response) %>%
-    dplyr::count() %>%
-    dplyr::ungroup() %>%
-    dplyr::group_by(Question) %>%
-    dplyr::mutate(Question = stringr::str_wrap(Question, width = 30)) %>%
+    )) |>
+    dplyr::group_by(Question, Response) |>
+    dplyr::count() |>
+    dplyr::ungroup() |>
+    dplyr::group_by(Question) |>
+    dplyr::mutate(Question = stringr::str_wrap(Question, width = 30)) |>
     dplyr::summarise(
       n = n,
       Response = Response,
       Percent = n / sum(n) * 100
     )
   
-  df %>%
+  df |>
     ggplot2::ggplot(data = df, mapping = ggplot2::aes(x = Question, y = Percent, fill = factor(Response))) +
     ggplot2::geom_col() +
     ggplot2::geom_text(mapping = ggplot2::aes(label = dplyr::if_else(Percent >= 3, paste0(round(Percent), "%"), "")), 

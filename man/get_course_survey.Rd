@@ -7,7 +7,7 @@
 get_course_survey(update = FALSE, year = "22_23")
 }
 \arguments{
-\item{update}{F, optional to update end of course data or not}
+\item{update}{FALSE, optional to update end of course data or not}
 
 \item{year}{"21_22" or "22_23"}
 }

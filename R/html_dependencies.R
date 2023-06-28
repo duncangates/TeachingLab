@@ -18,6 +18,7 @@ html_dependency_jquery_stickytableheaders <- function()  {
 
 
 #' create an html dependency for bootstrap (function copied from rmarkdown)
+#' @param theme "bootstrap" is the only option as of yet
 html_dependency_bootstrap <- function(theme = "bootstrap") {
   htmltools::htmlDependency(name = "bootstrap",
                             version = "3.3.7",

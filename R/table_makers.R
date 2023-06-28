@@ -755,8 +755,7 @@ gt_know_assess <- function(data, know_assess) {
     } %>%
     TeachingLab::gt_theme_tl()
 
-  gt_table #%>%
-    # gt::gtsave(filename = glue::glue("{know_assess}.png"), path = here::here("images/report_images"))
+  gt_table
 }
 
 
@@ -797,7 +796,7 @@ session_quotes <- function(data = TeachingLab::get_session_survey(),
     quotes_gt
   } else {
     gt::gtsave(data = quotes_gt,
-               filename = here::here(paste0(save)))
+               filename = paste0(save))
   }
 }
 
@@ -841,7 +840,7 @@ course_quotes <- function(data = TeachingLab::get_course_survey(),
     quotes_gt
   } else {
     gt::gtsave(data = quotes_gt,
-               filename = here::here(paste0(save)))
+               filename = paste0(save))
   }
   
 }
@@ -1407,7 +1406,7 @@ tl_summary_table <- function(data,
     final_gt
   } else {
     img_return <- gt::gtsave(data = final_gt,
-                             path = here::here("images/report_images"),
+                             path = "images/report_images",
                              filename = tempfile(fileext = ".png"))
     
     knitr::include_graphics(img_return)

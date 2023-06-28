@@ -14,19 +14,19 @@ get_session_survey <- function(update = FALSE, year = "22_23") {
     ) |>
       dplyr::filter(last_session_or_not == "Yes - there will be more sessions for this PL course or coaching support." & course != "Coaching" & Finished == TRUE)
   } else if (update == FALSE & year == "21_22") {
-    session_survey <- readr::read_rds(here::here("data/sy21_22/session_survey_21_22data.rds"))
+    session_survey <- readr::read_rds("data/sy21_22/session_survey_21_22data.rds")
   } else if (update == TRUE & year == "21_22") {
     print("This code can unfortunately no longer be run due to the cancellation of the SurveyMonkey contract.")
   }
 
-  write.csv(session_survey, here::here(glue::glue("data/sy{year}/session_survey.csv")))
+  write.csv(session_survey, glue::glue("data/sy{year}/session_survey.csv"))
 
   return(session_survey)
 }
 
 #' @title End of Course Dashboard Data
 #' @description Gets dashboard data by reading it in from data folder
-#' @param update F, optional to update end of course data or not
+#' @param update FALSE, optional to update end of course data or not
 #' @param year "21_22" or "22_23"
 #' @return Returns a tibble
 #' @export
@@ -40,12 +40,12 @@ get_course_survey <- function(update = FALSE, year = "22_23") {
     ) |>
       dplyr::filter(last_session_or_not != "Yes - there will be more sessions for this PL course or coaching support." & course != "Coaching" & Finished == TRUE)
   } else if (update == FALSE & year == "21_22") {
-    course_survey <- readr::read_rds(file = here::here("data/merged/course_surveymonkey.rds"))
+    course_survey <- readr::read_rds(file = "data/merged/course_surveymonkey.rds")
   } else if (update == TRUE & year == "21_22") {
     print("This code can unfortunately no longer be run due to the cancellation of the SurveyMonkey contract.")
   }
 
-  write.csv(course_survey, here::here(glue::glue("data/sy{year}/course_survey.csv")))
+  write.csv(course_survey, glue::glue("data/sy{year}/course_survey.csv"))
 
   return(course_survey)
 }
@@ -108,7 +108,7 @@ get_student_survey <- function(update = FALSE, year = "22_23") {
     student_survey_coalesced <- student_survey |>
       dplyr::full_join(eic_student_survey)
   } else if (year == "21_22" & update == FALSE) {
-    student_survey_coalesced <- readr::read_rds(here::here("data/sy21_22/student_survey.rds"))
+    student_survey_coalesced <- readr::read_rds("data/sy21_22/student_survey.rds")
   } else if (update == TRUE & year == "21_22") {
     print("This code can unfortunately no longer be run due to the cancellation of the SurveyMonkey contract.")
   }
@@ -167,12 +167,12 @@ get_diagnostic_survey <- function(update = FALSE, year = "22_23") {
         !(RecordedDate >= as.Date("2023-04-15") & site == "AR_Arkansas DOE")) |> # last part here gets rid of TX_RAISE follow up from initial and Ar_Arkansas DOE
       dplyr::bind_rows(nm_diagnostic)
   } else if (update == FALSE & year == "21_22") {
-    diagnostic_final <- readr::read_rds(here::here("data/sy21_22/diagnostic.rds"))
+    diagnostic_final <- readr::read_rds("data/sy21_22/diagnostic.rds")
   } else if (update == TRUE & year == "21_22") {
     print("This code can unfortunately no longer be run due to the cancellation of the SurveyMonkey contract.")
   }
 
-  write.csv(diagnostic_final, here::here(glue::glue("data/sy{year}/educator_survey.csv")))
+  write.csv(diagnostic_final, glue::glue("data/sy{year}/educator_survey.csv"))
   return(diagnostic_final)
 }
 
@@ -192,12 +192,12 @@ get_ongoing_coaching <- function(update = FALSE, year = "22_23") {
     ) |>
       dplyr::filter(last_session_or_not == "Yes - there will be more sessions for this PL course or coaching support." & course == "Coaching" & Finished == TRUE)
   } else if (update == FALSE & year == "21_22") {
-    coaching_feedback_clean <- readr::read_rds(here::here("data/sy21_22/coaching_participant_feedback.rds"))
+    coaching_feedback_clean <- readr::read_rds("data/sy21_22/coaching_participant_feedback.rds")
   } else if (update == TRUE & year == "21_22") {
     print("This code can unfortunately no longer be run due to the cancellation of the SurveyMonkey contract.")
   }
 
-  write.csv(coaching_feedback_clean, here::here(glue::glue("data/sy{year}/ongoing_coaching.csv")))
+  write.csv(coaching_feedback_clean, glue::glue("data/sy{year}/ongoing_coaching.csv"))
 
   return(coaching_feedback_clean)
 }
@@ -267,7 +267,7 @@ get_followup_educator <- function(update = FALSE, year = "22_23") {
     followup_educator_clean <- followup_educator_general |>
       dplyr::bind_rows(tx_raise_additional_data, nm_diagnostic, arkansas_doe_additional_data)
   } else if (update == FALSE & year == "21_22") {
-    followup_educator_clean <- readr::read_rds(here::here("data/sy21_22/followup_educator_survey.rds"))
+    followup_educator_clean <- readr::read_rds("data/sy21_22/followup_educator_survey.rds")
   } else if (update == TRUE & year == "21_22") {
     print("This code can unfortunately no longer be run due to the cancellation of the SurveyMonkey contract.")
   }
@@ -291,12 +291,12 @@ get_end_coaching <- function(update = FALSE, year = "22_23") {
     ) |>
       dplyr::filter(last_session_or_not != "Yes - there will be more sessions for this PL course or coaching support." & course == "Coaching" & Finished == TRUE)
   } else if (update == FALSE & year == "21_22") {
-    end_coaching_survey_clean <- readr::read_rds(here::here("data/sy21_22/ongoing_coaching_feedback.rds"))
+    end_coaching_survey_clean <- readr::read_rds("data/sy21_22/ongoing_coaching_feedback.rds")
   } else if (update == TRUE & year == "21_22") {
     print("This code can unfortunately no longer be run due to the cancellation of the SurveyMonkey contract.")
   }
 
-  write.csv(end_coaching_survey_clean, here::here(glue::glue("data/sy{year}/end_coaching.csv")))
+  write.csv(end_coaching_survey_clean, glue::glue("data/sy{year}/end_coaching.csv"))
 
   return(end_coaching_survey_clean)
 }
@@ -521,9 +521,9 @@ get_knowledge_assessments <- function(update = FALSE, year = "22_23") {
           tidyr::drop_na(percent)
       )
   } else if (year == "22_23" & update == FALSE) {
-    all_knowledge_assessments <- readr::read_rds(here::here("data/sy22_23/knowledge_assessments_22_23.rds"))
+    all_knowledge_assessments <- readr::read_rds("data/sy22_23/knowledge_assessments_22_23.rds")
   } else if (update == FALSE & year == "21_22") {
-    all_knowledge_assessments <- readr::read_rds(here::here("data/sy21_22/knowledge_assessments.rds"))
+    all_knowledge_assessments <- readr::read_rds("data/sy21_22/knowledge_assessments.rds")
   } else if (update == TRUE & year == "21_22") {
     print("Can no longer update due to loss of SurveyMonkey license!")
   }

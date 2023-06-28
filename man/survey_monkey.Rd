@@ -5,11 +5,10 @@
 \alias{survey_monkey}
 \title{A survey monkey text selection}
 \format{
-A data frame with 87 rows and 1 variable:
-\describe{
-\item{\verb{What is the learning from this course that you are most excited about trying out?}}{A deidentified review in each row}
+A data frame with 87 rows and 1 variable
 }
-@source \url{https://www.surveymonkey.com/r/TLendofcourse}
+\source{
+\url{https://www.surveymonkey.com/r/TLendofcourse}
 }
 \usage{
 survey_monkey

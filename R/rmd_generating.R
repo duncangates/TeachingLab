@@ -23,8 +23,8 @@ partner_file_remove <- function(partner, content_area = NULL, input, output_dir,
     ...
   )
   
-  do.call(file.remove, list(list.files(here::here("images/report_images"), full.names = TRUE)))
-  do.call(file.remove, list(list.files(here::here("images/report_summary_images"), full.names = TRUE)))
+  do.call(file.remove, list(list.files("images/report_images", full.names = TRUE)))
+  do.call(file.remove, list(list.files("images/report_summary_images", full.names = TRUE)))
   
   print("Removing files...\n")
   

@@ -150,7 +150,7 @@ know_assess_summary <- function(data, know_assess, summary_path = "report_summar
     ggplot2::ggsave(
       plot = p,
       filename = glue::glue("{know_assess}.png"),
-      path = here::here(glue::glue("images/{summary_path}")),
+      path = glue::glue("images/{summary_path}"),
       bg = "white",
       device = "png",
       height = 5, width = 5
@@ -357,7 +357,7 @@ ipg_plot <- function(data, name, save_name, height = 5, width = 8.5, wrap = 60, 
     )
 
   if (save == T) {
-    ggplot2::ggsave(here::here(glue::glue("images/sy21_22/ipg_forms/{save_name}.png")), width = width, height = height, bg = "white", dpi = dpi)
+    ggplot2::ggsave(glue::glue("images/sy21_22/ipg_forms/{save_name}.png"), width = width, height = height, bg = "white", dpi = dpi)
   }
 
   return(p)
@@ -653,12 +653,6 @@ dashboard_ipg_plot_ts <- function(data, name, wrap = 60, sizing = 1,
 gt_percent_n <- function(df, column, custom_title, no_title = T, base_font = 10,
                          heading_font = 14, custom_column_name = "", viz_type = "gt") {
   column <- rlang::sym(column)
-  # Replaced by
-  # new_name <- stringr::str_to_title(stringr::str_replace_all(column, "_", " ")) %>%
-  #   stringr::str_remove_all(" Br") %>%
-  #   paste0(., "?") %>%
-  #   stringr::str_wrap(., width = 25) %>%
-  #   stringr::str_replace_all(., "\n", "<br>")
 
   if (viz_type == "gt") {
     df |>
@@ -938,7 +932,7 @@ p_and_n_split <- function(p1_1_range = c(30:70),
 #' @param custom_p_2 custom percentage 2, vector with 1: initial percentage, and 2: amount to set maximum increase
 #' @param randomness multiplier for amount of randomness in custom percentages, default 0
 #' @param multiple_labels a special label maker to add group labels in bar charts
-#' @param know_graph if it is a knowledge assessments graph then add \% correct to title
+#' @param know_graph if it is a knowledge assessments graph then add % correct to title
 #' @return a ggplot object
 #' @export
 fake_bar_graph_create <- function(title,

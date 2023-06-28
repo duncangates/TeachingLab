@@ -276,7 +276,7 @@ temp_save <- function(img) {
 
     img_return <- gt::gtsave(
       data = final_gt,
-      path = here::here("images/report_images"),
+      path = "images/report_images",
       filename = tempfile(fileext = ".png")
     )
 
