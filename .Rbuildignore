@@ -18,3 +18,4 @@ data/
 !data/stop_words.rda
 !data/survey_monkey.rda
 !data/na_df.rda
+^\.github$
