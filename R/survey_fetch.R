@@ -373,7 +373,7 @@ get_knowledge_assessments <- function(update = FALSE, year = "22_23") {
         "ELA Guidebooks: Cycle of Inquiry 2 - Writing & Language Skills",
         "ELA Guidebooks Diverse Learners: Bootcamp - Writing",
         "Math: Bootcamp  - Curriculum Flexible",
-        "Math: Cycle of Inquiry I - Eliciting Student Thinking – Curriculum Flexible",
+        "Math: Cycle of Inquiry I - Eliciting Student Thinking - Curriculum Flexible",
         "ELA Guidebooks Diverse Learners: Cycle of Inquiry - Fluency",
         "Math: Supporting Math Intervention",
         "ELA Foundational Skills: Cycle of Inquiry 1: Classroom Management",

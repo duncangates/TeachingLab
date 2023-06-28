@@ -9,10 +9,10 @@
 #'  \item{word}{An English word}
 #'  \item{lexicon}{The source of the stop word. Either "onix", "SMART", or "snowball"}
 #'  }
-#'
+#' @name stop_words
 #' @source \itemize{
 #' \item \url{http://www.lextek.com/manuals/onix/stopwords1.html}
 #' \item \url{https://www.jmlr.org/papers/volume5/lewis04a/lewis04a.pdf}
 #' \item \url{http://snowball.tartarus.org/algorithms/english/stop.txt}
 #' }
-"stop_words"
+NULL

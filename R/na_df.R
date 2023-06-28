@@ -1,3 +1,4 @@
-#' A list of NA type words to ignore in qualitative responses
+#' A character vector of NA type words to ignore in qualitative responses
 #' @format A character vector
-"na_df"
+#' @usage data(na_df)
+NULL

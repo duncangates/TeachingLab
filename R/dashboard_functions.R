@@ -15,7 +15,7 @@ session_agree_plot_ts <- function(data, scale = "1 month") {
         "How much do you agree with the following statements about this facilitator today? - They facilitated the content clearly.",
         "How much do you agree with the following statements about this facilitator today? - They effectively built a safe learning community.",
         "How much do you agree with the following statements about this facilitator today? - They were fully prepared for the session.",
-        "How much do you agree with the following statements about this facilitator today? - They responded to the group’s needs."
+        "How much do you agree with the following statements about this facilitator today? - They responded to the group's needs."
       )
     ) |>
     tidyr::pivot_longer(!`Date`, names_to = "question", values_to = "answer") |>
@@ -109,7 +109,7 @@ session_agree_plot <- function(data) {
       "How much do you agree with the following statements about this facilitator today? - They facilitated the content clearly.",
       "How much do you agree with the following statements about this facilitator today? - They effectively built a safe learning community.",
       "How much do you agree with the following statements about this facilitator today? - They were fully prepared for the session.",
-      "How much do you agree with the following statements about this facilitator today? - They responded to the group’s needs."
+      "How much do you agree with the following statements about this facilitator today? - They responded to the group's needs."
     )) |>
     tidyr::pivot_longer(tidyselect::everything(), names_to = "Question", values_to = "Response") |>
     tidyr::drop_na() |>

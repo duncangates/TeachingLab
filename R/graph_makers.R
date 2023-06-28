@@ -316,8 +316,8 @@ ipg_plot <- function(data, name, save_name, height = 5, width = 8.5, wrap = 60, 
   } else if (factor_level == "ca1b") {
     plot_data$value <- factor(plot_data$value,
       levels = c(
-        "No- The enacted lesson does not connect or has weak connections to students’ prior skills and understandings.",
-        "Yes- The enacted lesson builds on students’ prior skills and understandings."
+        "No- The enacted lesson does not connect or has weak connections to students' prior skills and understandings.",
+        "Yes- The enacted lesson builds on students' prior skills and understandings."
       )
     )
   } else if (factor_level == "ca1c") {

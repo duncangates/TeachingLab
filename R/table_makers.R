@@ -338,7 +338,7 @@ gt_arrow <- function(data, colors = c("#800000", "#98AFC7"), column_one, column_
     } else if (change_dir == "decrease") {
       logo_out <- fontawesome::fa("arrow-down", fill = "#800000")
     } else if (change_dir == "equal") {
-      logo_out <- "<strong>≈"
+      logo_out <- "<strong>="
     }
 
     logo_out %>%
@@ -370,8 +370,9 @@ gt_arrow <- function(data, colors = c("#800000", "#98AFC7"), column_one, column_
 #'
 #' @export
 find_highlight <- function(string, n = 3, print = F) {
+  data(na_df)
   stop_words <- tidytext::stop_words |>
-    dplyr::bind_rows(tibble::tibble(word = TeachingLab::na_df,
+    dplyr::bind_rows(tibble::tibble(word = na_df,
                                     lexicon = "TL_NA"))
 
   highlight <- string |>
@@ -570,10 +571,11 @@ quote_viz <- function(data,
     if (save == F) {
       data_final
     } else {
+      data(na_df)
       # Make gt table with all HTML Formatting
       data_final |>
         janitor::remove_empty("rows") |>
-        dplyr::filter(dplyr::if_any(dplyr::everything(), ~ .x %!in% TeachingLab::na_df)) |>
+        dplyr::filter(dplyr::if_any(dplyr::everything(), ~ .x %!in% na_df)) |>
         gt::gt() %>%
         {
           if (!is.null(title)) gt::tab_header(data = ., title = gt::md(paste0("**", title, "**"))) else .
@@ -775,12 +777,15 @@ session_quotes <- function(data = TeachingLab::get_session_survey(),
                            all = F,
                            save = NULL,
                            include_columns = NULL) {
+  
+  data(na_df)
+  
   quotes_gt <- data %>%
     dplyr::select(c("Facilitation_Feedback",
-                    "What went well in today’s session?",
-                    "What could have been better about today’s session?"),
+                    "What went well in today's session?",
+                    "What could have been better about today's session?"),
                   include_columns) %>%
-    dplyr::mutate(dplyr::across(c(1:3), ~ replace(.x, .x %in% TeachingLab::na_df, NA))) %>%
+    dplyr::mutate(dplyr::across(c(1:3), ~ replace(.x, .x %in% na_df, NA))) %>%
     janitor::remove_empty("rows") %>%
     dplyr::mutate(dplyr::across(c(1:3), ~ tidyr::replace_na(.x, "No Response"))) %>%
     {
@@ -788,8 +793,8 @@ session_quotes <- function(data = TeachingLab::get_session_survey(),
     } %>%
     tibble::as_tibble() %>%
     stats::setNames(c("General Facilitation Feedback",
-               "What went well in today’s session?",
-               "What could have been better about today’s session?",
+               "What went well in today's session?",
+               "What could have been better about today's session?",
                include_columns)) %>%
     TeachingLab::quote_viz(text_col = colnames(.), n = n)
   if (is.null(save)) {
@@ -816,6 +821,9 @@ course_quotes <- function(data = TeachingLab::get_course_survey(),
                           all = F,
                           save = NULL,
                           include_columns = NULL) {
+  
+  data(na_df)
+  
   quotes_gt <- data %>%
     dplyr::select(c("Overall, what went well in this course?", # Qualitative feedback
                     "Overall, what could have been better in this course?", # Qualitative feedback
@@ -823,7 +831,7 @@ course_quotes <- function(data = TeachingLab::get_course_survey(),
                     "Which activities best supported your learning in this course?", # Qualitative feedback
                     "Feel free to leave us any additional comments, concerns, or questions."),
                   include_columns) %>%
-    dplyr::mutate(dplyr::across(c(1:5), ~ replace(.x, .x %in% TeachingLab::na_df, NA))) %>%
+    dplyr::mutate(dplyr::across(c(1:5), ~ replace(.x, .x %in% na_df, NA))) %>%
     janitor::remove_empty("rows") %>%
     dplyr::mutate(dplyr::across(c(1:5), ~ tidyr::replace_na(.x, "No Response"))) %>%
     {
@@ -880,7 +888,7 @@ tl_summary_table <- function(data,
         TeachingLab::first_up(
           stringr::str_replace_all(
             stringr::str_remove_all(x, 
-                                    "to_what_extent_do_you_agree_or_disagree_with_the_following_statements_|please_rate_your_confidence_on_the_following_items_br_i_am_able_to_|Please rate your confidence on the following items. \\<br\\>I am able to\\.\\.\\. - "), 
+                                    "to_what_extent_do_you_agree_or_disagree_with_the_following_statements_|please_rate_your_confidence_on_the_following_items_br_i_am_able_to_|Please rate your confidence on the following items. \\<br\\>I am able to\\.\\.\\. - "), 
             "_", 
             " ")
           )
@@ -902,26 +910,26 @@ tl_summary_table <- function(data,
       
       if (prepost == T & rename == T & admin == F) {
         equitable_questions <- tibble::tibble(
-          question = c("To what extent do you agree or disagree with the following statements? - I am color blind when it comes to my teaching - I don’t think of my students in terms of their race or ethnicity.",
+          question = c("To what extent do you agree or disagree with the following statements? - I am color blind when it comes to my teaching - I don't think of my students in terms of their race or ethnicity.",
                        "To what extent do you agree or disagree with the following statements? - The gap in the achievement among students of different races is about poverty, not race.",
                        "To what extent do you agree or disagree with the following statements? - I think about my own background and experiences and how those affect my instruction."),
           reverse = c(T, T, F)
         )
         
         high_expectations_questions <- tibble::tibble(
-          question = c("To what extent do you agree or disagree with the following statements? - I try to keep in mind the limits of my students’ ability and give them assignments that I know they can do so that they do not become discouraged.",
+          question = c("To what extent do you agree or disagree with the following statements? - I try to keep in mind the limits of my students' ability and give them assignments that I know they can do so that they do not become discouraged.",
                        "To what extent do you agree or disagree with the following statements? - Before students are asked to engage in complex learning tasks, they need to have a solid grasp of basic skills.",
                        "To what extent do you agree or disagree with the following statements? - It is not fair to ask students who are struggling with English to take on challenging academic assignments.",
                        "To what extent do you agree or disagree with the following statements? - Teachers should provide all students the opportunity to work with grade-level texts and tasks."),
           reverse = c(T, T, T, F)
         )
         
-        crse_questions <- c("Please rate your confidence on the following items. <br>I am able to... - Adapt instruction to meet the needs of my students",
-                            "Please rate your confidence on the following items. <br>I am able to... - Identify ways that the school culture (e.g., values, norms, and practices) is different from my students’ home culture",
-                            "Please rate your confidence on the following items. <br>I am able to... - Use my students’ prior knowledge to help them make sense of new information",
-                            "Please rate your confidence on the following items. <br>I am able to... - Revise instructional material to include a better representation of cultural groups",
-                            "Please rate your confidence on the following items. <br>I am able to... - Teach the curriculum to students with unfinished learning",
-                            "Please rate your confidence on the following items. <br>I am able to... - Teach the curriculum to students who are from historically marginalized groups")
+        crse_questions <- c("Please rate your confidence on the following items. <br>I am able to... - Adapt instruction to meet the needs of my students",
+                            "Please rate your confidence on the following items. <br>I am able to... - Identify ways that the school culture (e.g., values, norms, and practices) is different from my students' home culture",
+                            "Please rate your confidence on the following items. <br>I am able to... - Use my students' prior knowledge to help them make sense of new information",
+                            "Please rate your confidence on the following items. <br>I am able to... - Revise instructional material to include a better representation of cultural groups",
+                            "Please rate your confidence on the following items. <br>I am able to... - Teach the curriculum to students with unfinished learning",
+                            "Please rate your confidence on the following items. <br>I am able to... - Teach the curriculum to students who are from historically marginalized groups")
         
         
         if (grouping != "crse") {
@@ -929,8 +937,8 @@ tl_summary_table <- function(data,
                         high_expectations_questions |> pull(question),
                         crse_questions)
           ## Only reversed columns for later calculations
-          reversed <- c(equitable_questions %>% filter(reverse == T) |> pull(question),
-                        high_expectations_questions %>% filter(reverse == T) |> pull(question))
+          reversed <- c(equitable_questions %>% dplyr::filter(reverse == T) |> dplyr::pull(question),
+                        high_expectations_questions %>% dplyr::filter(reverse == T) |> dplyr::pull(question))
         } else {
           selected <- crse_questions
           reversed <- NULL
@@ -967,11 +975,11 @@ tl_summary_table <- function(data,
                             "please_rate_the_extent_to_which_you_believe_you_can_support_teachers_in_the_following_areas_br_i_believe_i_can_directly_or_indirectly_support_teachers_to_teach_the_curriculum_to_students_who_are_from_historically_marginalized_groups")
         
         ## Only reversed columns for later calculations
-        reversed <- c(equitable_questions %>% filter(reverse == T) |> pull(question),
-                      high_expectations_questions %>% filter(reverse == T) |> pull(question))
+        reversed <- c(equitable_questions %>% dplyr::filter(reverse == T) |> dplyr::pull(question),
+                      high_expectations_questions %>% dplyr::filter(reverse == T) |> dplyr::pull(question))
         
-        selected <- c(equitable_questions |> pull(question),
-                      high_expectations_questions |> pull(question),
+        selected <- c(equitable_questions |> dplyr::pull(question),
+                      high_expectations_questions |> dplyr::pull(question),
                       crse_questions)
         
         ## Reformatted column names for later
@@ -980,26 +988,26 @@ tl_summary_table <- function(data,
         crse_reformat <- purrr::map_chr(crse_questions, reformat_cols)
       } else if (admin == T & prepost == T & rename == T) {
         equitable_questions <- tibble::tibble(
-          question = c("To what extent do you agree or disagree with the following statements? - Teachers should be color blind when it comes to their teaching - they shouldn't think of students in terms of their race or ethnicity.",
+          question = c("To what extent do you agree or disagree with the following statements? - Teachers should be color blind when it comes to their teaching - they shouldn't think of students in terms of their race or ethnicity.",
                        "To what extent do you agree or disagree with the following statements? - The gap in the achievement among students of different races is about poverty, not race._2",
                        "To what extent do you agree or disagree with the following statements? - I think about my own background and experiences and how those affect my instructional leadership."),
           reverse = c(T, T, F)
         )
         
         high_expectations_questions <- tibble::tibble(
-          question = c("To what extent do you agree or disagree with the following statements? - Teachers should try to keep in mind the limits of students’ ability and give them assignments that they know they can do so that they do not become discouraged.",
+          question = c("To what extent do you agree or disagree with the following statements? - Teachers should try to keep in mind the limits of students' ability and give them assignments that they know they can do so that they do not become discouraged.",
                        "To what extent do you agree or disagree with the following statements? - Before students are asked to engage in complex learning tasks, they need to have a solid grasp of basic skills._2",
                        "To what extent do you agree or disagree with the following statements? - It is not fair to ask students who are struggling with English to take on challenging academic assignments._2",
                        "To what extent do you agree or disagree with the following statements? - Teachers should provide all students the opportunity to work with grade-level texts and tasks._2"),
           reverse = c(T, T, T, F)
         )
         
-        crse_questions <- c("Please rate the extent to which you believe you can support teachers in the following areas.<br>I believe I can directly or indirectly support teachers to... - Adapt instruction to meet the needs of their students",
-                            "Please rate the extent to which you believe you can support teachers in the following areas.<br>I believe I can directly or indirectly support teachers to... - Identify ways that the school culture (e.g., values, norms, and practices) is different from their students’ home culture",
-                            "Please rate the extent to which you believe you can support teachers in the following areas.<br>I believe I can directly or indirectly support teachers to... - Use their students’ prior knowledge to help them make sense of new information",
-                            "Please rate the extent to which you believe you can support teachers in the following areas.<br>I believe I can directly or indirectly support teachers to... - Revise instructional material to include a better representation of cultural groups",
-                            "Please rate the extent to which you believe you can support teachers in the following areas.<br>I believe I can directly or indirectly support teachers to... - Teach the curriculum to students with unfinished learning",
-                            "Please rate the extent to which you believe you can support teachers in the following areas.<br>I believe I can directly or indirectly support teachers to... - Teach the curriculum to students who are from historically marginalized groups")
+        crse_questions <- c("Please rate the extent to which you believe you can support teachers in the following areas.<br>I believe I can directly or indirectly support teachers to... - Adapt instruction to meet the needs of their students",
+                            "Please rate the extent to which you believe you can support teachers in the following areas.<br>I believe I can directly or indirectly support teachers to... - Identify ways that the school culture (e.g., values, norms, and practices) is different from their students' home culture",
+                            "Please rate the extent to which you believe you can support teachers in the following areas.<br>I believe I can directly or indirectly support teachers to... - Use their students' prior knowledge to help them make sense of new information",
+                            "Please rate the extent to which you believe you can support teachers in the following areas.<br>I believe I can directly or indirectly support teachers to... - Revise instructional material to include a better representation of cultural groups",
+                            "Please rate the extent to which you believe you can support teachers in the following areas.<br>I believe I can directly or indirectly support teachers to... - Teach the curriculum to students with unfinished learning",
+                            "Please rate the extent to which you believe you can support teachers in the following areas.<br>I believe I can directly or indirectly support teachers to... - Teach the curriculum to students who are from historically marginalized groups")
         
         
         if (grouping != "crse") {
@@ -1045,11 +1053,11 @@ tl_summary_table <- function(data,
                             "please_rate_your_confidence_on_the_following_items_br_i_am_able_to_teach_the_curriculum_to_students_who_are_from_historically_marginalized_groups")
         
         ## Only reversed columns for later calculations
-        reversed <- c(equitable_questions %>% filter(reverse == T) |> pull(question),
-                      high_expectations_questions %>% filter(reverse == T) |> pull(question))
+        reversed <- c(equitable_questions %>% dplyr::filter(reverse == T) |> dplyr::pull(question),
+                      high_expectations_questions %>% dplyr::filter(reverse == T) |> dplyr::pull(question))
         
-        selected <- c(equitable_questions |> pull(question),
-                      high_expectations_questions |> pull(question),
+        selected <- c(equitable_questions |> dplyr::pull(question),
+                      high_expectations_questions |> dplyr::pull(question),
                       crse_questions)
         
         ## Reformatted column names for later
@@ -1251,12 +1259,12 @@ tl_summary_table <- function(data,
                       "please_rate_your_confidence_on_the_following_items_br_i_am_able_to_teach_the_curriculum_to_students_with_unfinished_learning",
                       "please_rate_your_confidence_on_the_following_items_br_i_am_able_to_teach_the_curriculum_to_students_who_are_from_historically_marginalized_groups")
       } else {
-        selected <- c("Please rate your confidence on the following items. <br>I am able to... - Adapt instruction to meet the needs of my students",
-                      "Please rate your confidence on the following items. <br>I am able to... - Identify ways that the school culture (e.g., values, norms, and practices) is different from my students’ home culture",
-                      "Please rate your confidence on the following items. <br>I am able to... - Use my students’ prior knowledge to help them make sense of new information",
-                      "Please rate your confidence on the following items. <br>I am able to... - Revise instructional material to include a better representation of cultural groups",
-                      "Please rate your confidence on the following items. <br>I am able to... - Teach the curriculum to students with unfinished learning",
-                      "Please rate your confidence on the following items. <br>I am able to... - Teach the curriculum to students who are from historically marginalized groups")
+        selected <- c("Please rate your confidence on the following items. <br>I am able to... - Adapt instruction to meet the needs of my students",
+                      "Please rate your confidence on the following items. <br>I am able to... - Identify ways that the school culture (e.g., values, norms, and practices) is different from my students' home culture",
+                      "Please rate your confidence on the following items. <br>I am able to... - Use my students' prior knowledge to help them make sense of new information",
+                      "Please rate your confidence on the following items. <br>I am able to... - Revise instructional material to include a better representation of cultural groups",
+                      "Please rate your confidence on the following items. <br>I am able to... - Teach the curriculum to students with unfinished learning",
+                      "Please rate your confidence on the following items. <br>I am able to... - Teach the curriculum to students who are from historically marginalized groups")
       }
       
       data_sums <- data  |> 
