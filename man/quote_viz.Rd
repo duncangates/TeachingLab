@@ -40,6 +40,8 @@ quote_viz(
 
 \item{align}{the table alignment: "left", "center", "right"}
 
+\item{save}{if TRUE actually make the gt}
+
 \item{...}{Arguments passed onto the gt table}
 }
 \value{

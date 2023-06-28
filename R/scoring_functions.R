@@ -561,7 +561,7 @@ tl_score_percent <- function(data, answer) {
 
 #' @title Knowledge Assessments Scoring 2022-2023
 #' @param survey_id Qualtrics survey id
-#' @param name Name of survey - should match Qualtrics name
+#' @param survey_name Name of survey - should match Qualtrics name
 #' @description function to grade and output specific set of data points for knowledge assessments
 #' @return a dataframe of columns: id, percent, prepost, site, know_assess, date
 #' @export
@@ -625,7 +625,7 @@ knowledge_assess_select_score <- function(survey_id, survey_name) {
 
 #' @title Knowledge Assessments Question Scoring 2022-2023
 #' @param survey_id Qualtrics survey id
-#' @param name Name of survey - should match Qualtrics name
+#' @param survey_name Name of survey - should match Qualtrics name
 #' @description function to grade and output each question per respondent in a knowledge assessments survey
 #' @return a dataframe of columns: prepost, site, know_assess, date, question, score, question2, answer, max_score
 #' @export

@@ -19,6 +19,8 @@ Switches the labels and column names of a data frame, or just changes
 the column names to the labels
 }
 \examples{
+\dontrun{
 qualtrics_survey |>
-relabel_qualtrics_df()
+  relabel_qualtrics_df()
+}
 }

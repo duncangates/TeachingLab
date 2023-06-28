@@ -1,13 +1,16 @@
 #' @title Ongoing list of partner sites
 #' @description Gets data from Google Sheet of partner sites
 #' @param update FALSE, whether or not to pull the updated version
-#' @param condense FALSE whether or not to group sites like rochester, district 11, etc.
 #' @param year the year to get the site for
 #' @return Returns a tibble of sites
 #' @export
-get_current_partner_sites <- function(update = FALSE, condense = FALSE, year = "22_23") {
+get_current_partner_sites <- function(update = FALSE, year = "22_23") {
   
-  if (update == TRUE & year == "21_22") {
+  if (year == "22_23") {
+    
+    df <- googlesheets4::read_sheet("11jlo9UeWxZGwunhDb24hZBwAKc5b8ZKM9AYNWZaUyZY")$`Site official name (monday.com) (INTERNAL)`
+    
+  } else if (update == TRUE & year == "21_22") {
     
     df <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/11jlo9UeWxZGwunhDb24hZBwAKc5b8ZKM9AYNWZaUyZY/edit#gid=0",
                                     sheet = "FY22 Automation",
@@ -17,20 +20,10 @@ get_current_partner_sites <- function(update = FALSE, condense = FALSE, year = "
       unique() |>
       sort()
     
-    if (condense == TRUE) {
-      df <- df |>
-        TeachingLab::site_condense()
-    }
-    
     readr::write_rds(df, here::here("data/sy21_22/current_partner_sites.rds"))
     
   } else if (year == "21_22" & update == FALSE) {
     df <- readr::read_rds(here::here("data/sy21_22/current_partner_sites.rds"))
-    
-    if (condense == TRUE) {
-      df <- df |>
-        TeachingLab::site_condense()
-    }
   }
   
   return(df)
@@ -177,4 +170,19 @@ get_student_scores_mississippi2 <- function(update = FALSE) {
   }
   
   return(df)
+}
+
+#' @title Ongoing list of partner sites
+#' @description Gets data from Google Sheet of partner sites
+#' @param year the year to get the site for
+#' @return Returns a tibble of sites
+#' @export
+get_student_work_grades <- function(year = "22_23") {
+  
+  if (year == "22_23") {
+    googlesheets4::read_sheet("15ixca0QKloZtYLcmj_9Uc20zdQ5FE6pSVj3EBamLoiI",
+                              "Student Work Scores") |>
+      dplyr::filter(`Date of Submission`)
+  }
+  
 }

@@ -21,7 +21,7 @@
 #' @param axis_title_just axis title font justification \code{blmcrt}
 #' @param grid panel grid (\code{TRUE}, \code{FALSE}, or a combination of
 #'        \code{X}, \code{x}, \code{Y}, \code{y})
-#' @param axis axis \code{TRUE}, \code{FALSE}, [\code{xy}]
+#' @param axis axis \code{TRUE}, \code{FALSE}
 #' @param axis_text_size axis text size
 #' @param ticks ticks \code{TRUE}, \code{FALSE}
 #' @param dark dark mode \code{TRUE}, \code{FALSE}
@@ -181,7 +181,7 @@ theme_tl <- function(base_family = "Calibri",
 #' @param axis_title_just axis title font justification \code{blmcrt}
 #' @param grid panel grid (\code{TRUE}, \code{FALSE}, or a combination of
 #'        \code{X}, \code{x}, \code{Y}, \code{y})
-#' @param axis axis \code{TRUE}, \code{FALSE}, [\code{xy}]
+#' @param axis axis \code{TRUE}, \code{FALSE}
 #' @param dark axis \code{TRUE}, \code{FALSE},
 #' @param ticks ticks axis \code{TRUE}, \code{FALSE}
 #'

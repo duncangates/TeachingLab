@@ -6,7 +6,6 @@
 #' @importFrom fontawesome fa
 #' @importFrom forcats fct_reorder
 #' @importFrom forcats fct_reorder2
-#' @importFrom ggwordcloud geom_text_wordcloud_area
 #' @importFrom graphics text
 #' @importFrom graphics title
 #' @importFrom here here

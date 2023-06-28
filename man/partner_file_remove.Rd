@@ -16,8 +16,6 @@ partner_file_remove(partner, content_area = NULL, input, output_dir, ...)
 \item{output_dir}{the output directory for the files}
 
 \item{...}{arguments passed to \code{rmarkdown::render}}
-
-\item{output_file}{NULL by default, takes arguments when specified}
 }
 \description{
 remove files from images/report_images and images/report_summary_images and render specified rmd

@@ -27,5 +27,7 @@ Returns a tibble
 Gets monday board data as a tibble
 }
 \examples{
+\dontrun{
 TeachingLab::get_monday_board(board_id = 2208860812, first_col_name = "Facilitator")
+}
 }

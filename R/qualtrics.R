@@ -6,8 +6,10 @@
 #' @return a data.frame
 #'
 #' @examples
+#' \dontrun{
 #' qualtrics_survey |>
-#' relabel_qualtrics_df()
+#'   relabel_qualtrics_df()
+#' }
 #' @export
 
 relabel_qualtrics_df <- function(df, switch = TRUE) {

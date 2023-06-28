@@ -475,6 +475,7 @@ highlight_fun <- function(data, highlight = TeachingLab::find_highlight(data)) {
 #' @param width The width of the table generated
 #' @param suppress_warnings T/F suppression of warnings
 #' @param align the table alignment: "left", "center", "right"
+#' @param save if TRUE actually make the gt
 #' @param ... Arguments passed onto the gt table
 #' @return a ggplot/gt that visualizes text
 #'
@@ -708,12 +709,12 @@ gt_know_assess <- function(data, know_assess) {
     ) %>%
     gt::fmt_markdown(columns = gt::everything()) %>%
     gt::fmt_percent(
-      columns = tidyselect:::where(is.numeric),
+      columns = tidyselect::where(is.numeric),
       scale_values = F,
       decimals = 0
     ) %>%
     gt::sub_missing(
-      columns = tidyselect:::where(is.logical),
+      columns = tidyselect::where(is.logical),
       missing_text = "no data"
     ) %>%
     # Impute in total averages

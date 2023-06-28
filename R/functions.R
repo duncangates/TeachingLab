@@ -235,10 +235,7 @@ percent_agree <- function(agree_col) {
 #' @export
 
 coalesce_by_column <- function(df) {
-  coalesce <- function(...) {
-    apply(cbind(...), 1, function(x) x[which(!is.na(x))[1]])
-  }
-  return(coalesce(!!!as.list(df)))
+  return(dplyr::coalesce(!!!as.list(df)))
 }
 
 
@@ -455,7 +452,7 @@ agree_strongly_agree2 <- function(data, name) {
 #' @title Conditionally slice
 #' @description Conditionally reduces the data
 #' @param data the data
-#' @param question a max length to slice the data for
+#' @param max a max length to slice the data for
 #' @return a string
 #' @export
 conditional_slice_sample <- function(data, max) {

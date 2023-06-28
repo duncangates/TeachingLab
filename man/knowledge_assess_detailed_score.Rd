@@ -9,7 +9,7 @@ knowledge_assess_detailed_score(survey_id, survey_name)
 \arguments{
 \item{survey_id}{Qualtrics survey id}
 
-\item{name}{Name of survey - should match Qualtrics name}
+\item{survey_name}{Name of survey - should match Qualtrics name}
 }
 \value{
 a dataframe of columns: prepost, site, know_assess, date, question, score, question2, answer, max_score

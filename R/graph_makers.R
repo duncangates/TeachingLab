@@ -1196,11 +1196,21 @@ fake_line_graph_create <- function(title, fake_data_fun = "time_data",
     ggplot2::ggplot(ggplot2::aes(x = name, y = value, color = color)) +
     ggplot2::geom_line(ggplot2::aes(group = color)) +
     ggplot2::geom_point() +
-    ggrepel::geom_text_repel(
+    # ggrepel::geom_text_repel(
+    #   data = label_df,
+    #   ggplot2::aes(label = label, x = x, y = y),
+    #   nudge_x = 1,
+    #   nudge_y = 5,
+    #   arrow = grid::arrow(length = grid::unit(0.02, "npc")),
+    #   # vjust = -0.25,
+    #   color = "black",
+    #   fontface = "bold",
+    #   family = "Calibri",
+    #   hjust = 0
+    # ) +
+    ggplot2::geom_text(
       data = label_df,
       ggplot2::aes(label = label, x = x, y = y),
-      nudge_x = 1,
-      nudge_y = 5,
       arrow = grid::arrow(length = grid::unit(0.02, "npc")),
       # vjust = -0.25,
       color = "black",

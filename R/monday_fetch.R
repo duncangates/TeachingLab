@@ -4,7 +4,10 @@
 #' @param first_col_name What to name the first column in the dataframe
 #' @param py_script the location of the python script
 #' @param json_file the location of the json file of monday data
-#' @examples TeachingLab::get_monday_board(board_id = 2208860812, first_col_name = "Facilitator")
+#' @examples
+#' \dontrun{
+#' TeachingLab::get_monday_board(board_id = 2208860812, first_col_name = "Facilitator")
+#' }
 #' @return Returns a tibble
 #' @export
 
@@ -29,7 +32,7 @@ get_monday_board <- function(board_id, first_col_name, py_script = "data_scripts
   
   ### Compose data.frame ###
   final_df <- second_df |>
-    dplyr::select(title, contains("text")) |>
+    dplyr::select(title, dplyr::contains("text")) |>
     tidyr::pivot_longer(!title) |>
     tidyr::pivot_wider(names_from = "title", values_from = "value") |>
     dplyr::select(-name) |>

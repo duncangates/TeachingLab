@@ -9,7 +9,7 @@ conditional_slice_sample(data, max)
 \arguments{
 \item{data}{the data}
 
-\item{question}{a max length to slice the data for}
+\item{max}{a max length to slice the data for}
 }
 \value{
 a string

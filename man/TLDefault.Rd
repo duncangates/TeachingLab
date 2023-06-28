@@ -44,6 +44,8 @@ highlighting.}
 
 \item{embed_fonts}{if TRUE, use local files for fonts used in the template. This leads to bigger files but ensures that these fonts are available. If FALSE they are downloaded from Google Web Fonts.}
 
+\item{fontawesome}{if TRUE use fontawesome dependencies}
+
 \item{use_bookdown}{if TRUE, uses \code{\link[bookdown]{html_document2}} instead of \code{\link[rmarkdown]{html_document}}, thus providing numbered sections and cross references}
 
 \item{pandoc_args}{arguments passed to the pandoc_args argument of rmarkdown \code{\link[rmarkdown]{html_document}}}
